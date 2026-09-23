@@ -11,7 +11,7 @@ function createWindow() {
     minWidth: 960,
     minHeight: 640,
     title: 'Riftbound Tracker',
-    backgroundColor: '#0e1116',
+    backgroundColor: '#0a0c10',
     webPreferences: {
       preload: path.join(__dirname, 'preload.cjs'),
       contextIsolation: true,

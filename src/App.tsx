@@ -385,7 +385,7 @@ export default function App() {
         <div className="stats" style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
           <span>{totals.unique} Unique | {totals.copies} Kopien | {totals.catalog} im Katalog</span>
           {collectionValue && (
-            <span className="value-pill" title="Schaetzung: Owned * Low + Foil * FoilLow (EUR, Cardmarket)">
+            <span className="value-pill" title="Schätzung: Owned * Low + Foil * FoilLow (EUR, Cardmarket)">
               ~{collectionValue.sum.toFixed(2)} EUR
             </span>
           )}
@@ -405,7 +405,7 @@ export default function App() {
             <div className="toolbar">
               <div className="grow">
                 <h2 className="section-title">Sammlung</h2>
-                <p className="help" style={{ margin: 0 }}>Set-Binder oeffnen, um Karten zu browsen und zu verwalten.</p>
+                <p className="help" style={{ margin: 0 }}>Set-Binder öffnen, um Karten zu browsen und zu verwalten.</p>
               </div>
               <button className="btn" onClick={exportCsv}>CSV Export</button>
               <label className="btn">
@@ -445,7 +445,7 @@ export default function App() {
         {tab === 'collection' && binderView != null && (
           <>
             <div className="toolbar binder-toolbar">
-              <button className="btn" onClick={() => setBinderView(null)}>Zurueck</button>
+              <button className="btn" onClick={() => setBinderView(null)}>Zurück</button>
               <div className="grow">
                 <div className="section-title">
                   {binderView === 'owned'
@@ -500,8 +500,8 @@ export default function App() {
             {binderCards.length === 0 && (
               <div className="empty">
                 {binderView === 'owned' && ownedCards.length === 0
-                  ? 'Noch keine Karten. Geh zu Bulk oder Katalog und fuege welche hinzu.'
-                  : 'Keine Karten fuer diese Filter.'}
+                  ? 'Noch keine Karten. Geh zu Bulk oder Katalog und füge welche hinzu.'
+                  : 'Keine Karten für diese Filter.'}
               </div>
             )}
 
@@ -510,7 +510,7 @@ export default function App() {
                 const o = collection[c.id] || { qty: 0, foil: 0 }
                 const n = ownedQty(o)
                 return (
-                  <article key={c.id} className={`card ${n ? 'owned' : 'missing'}`}>
+                  <article key={c.id} className={`card ${n ? 'owned' : 'missing'}${c.signed || c.overnumbered ? ' shimmer' : ''}`}>
                     <div className="art" style={{ backgroundImage: c.image ? `url(${c.image})` : undefined }}>
                       {n > 0 && <div className="badge">x{n}</div>}
                       <div className="flags">
@@ -603,7 +603,7 @@ export default function App() {
               {filtered.map((c) => {
                 const o = collection[c.id] || { qty: 0, foil: 0 }
                 return (
-                  <article key={c.id} className={`card ${ownedQty(o) ? 'owned' : ''}`}>
+                  <article key={c.id} className={`card ${ownedQty(o) ? 'owned' : ''}${c.signed || c.overnumbered ? ' shimmer' : ''}`}>
                     <div className="art" style={{ backgroundImage: c.image ? `url(${c.image})` : undefined }}>
                       {ownedQty(o) > 0 && <div className="badge">x{ownedQty(o)}</div>}
                       <div className="flags">
@@ -649,10 +649,10 @@ export default function App() {
         {tab === 'bulk' && (
           <div className="split">
             <section className="panel">
-              <h2>Bulk hinzufuegen</h2>
+              <h2>Bulk hinzufügen</h2>
               <p className="help">
                 Codes reinpasten - Leerzeichen, Komma oder Zeilen. Beispiele: <code>OGN-056/298</code>, <code>OGN-56</code>, <code>UNL 131</code>, Alt-Art <code>OGN-066a</code>.
-                Fuer ADF/Phone-Scanner: Bilder separat scannen, Codes hier einfuegen (Bilderkennung kommt spaeter).
+                Für ADF/Phone-Scanner: Bilder separat scannen, Codes hier einfügen (Bilderkennung kommt später).
               </p>
               <textarea
                 className="field"
@@ -725,11 +725,11 @@ export default function App() {
                         setActiveDeckId(null)
                       }}
                     >
-                      Loeschen
+                      Löschen
                     </button>
                   </div>
                   <div className="list">
-                    {activeDeck.cards.length === 0 && <div className="empty">Karten aus der Liste rechts hinzufuegen.</div>}
+                    {activeDeck.cards.length === 0 && <div className="empty">Karten aus der Liste rechts hinzufügen.</div>}
                     {activeDeck.cards.map((dc) => {
                       const c = byId.get(dc.id)
                       if (!c) return null
