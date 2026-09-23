@@ -1,7 +1,22 @@
 import { useEffect, useMemo, useState } from 'react'
-import type { Card, Catalog, Deck, PriceBook, PriceEntry } from './types'
+import type { Card, Catalog, Deck, DeckSection, PriceBook, PriceEntry } from './types'
 import { loadCollection, loadDecks, saveCollection, saveDecks, type Collection } from './storage'
 import { parseBulkTokens, resolveToken } from './parseBulk'
+import {
+  SAMPLE_KENNEN_DECK,
+  SECTION_ADD_LABEL,
+  SECTION_CAPS,
+  SECTION_LABEL,
+  SECTION_ORDER,
+  cardFitsSection,
+  deckTotalQtyById,
+  displayCardName,
+  inferSection,
+  migrateDeck,
+  parseDeckImport,
+  sectionCount,
+  sectionOf,
+} from './deckHelpers'
 
 type Tab = 'collection' | 'catalog' | 'bulk' | 'decks'
 
@@ -35,7 +50,7 @@ function cmUrl(p?: PriceEntry | null) {
 
 const RARITY_ORDER = ['Common', 'Uncommon', 'Rare', 'Epic', 'Showcase'] as const
 
-const DOMAINS = ['Fury', 'Body', 'Calm', 'Chaos', 'Mind', 'Order'] as const
+const DOMAINS = ['Fury', 'Body', 'Calm', 'Chaos', 'Mind', 'Order', 'Colorless'] as const
 const DOMAIN_ICON: Record<(typeof DOMAINS)[number], string> = {
   Fury: 'domains/fury.png',
   Body: 'domains/body.png',
@@ -43,6 +58,7 @@ const DOMAIN_ICON: Record<(typeof DOMAINS)[number], string> = {
   Chaos: 'domains/chaos.png',
   Mind: 'domains/mind.png',
   Order: 'domains/order.png',
+  Colorless: 'domains/colorless.png',
 }
 
 function openCm(p?: PriceEntry | null) {
@@ -71,7 +87,11 @@ export default function App() {
   const [bulkFoil, setBulkFoil] = useState(false)
   const [bulkReport, setBulkReport] = useState<string | null>(null)
   const [activeDeckId, setActiveDeckId] = useState<string | null>(null)
-  const [deckOwnedOnly, setDeckOwnedOnly] = useState(true)
+  const [deckOwnedOnly, setDeckOwnedOnly] = useState(false)
+  const [activeSection, setActiveSection] = useState<DeckSection>('main')
+  const [deckImportText, setDeckImportText] = useState('')
+  const [deckImportOpen, setDeckImportOpen] = useState(false)
+  const [deckMissingReport, setDeckMissingReport] = useState<{ name: string; need: number; have: number; short: number }[] | null>(null)
   const [appVersion, setAppVersion] = useState('')
   const [updateInfo, setUpdateInfo] = useState<{ status: string; version?: string; message?: string } | null>(null)
   const [isMaximized, setIsMaximized] = useState(false)
@@ -184,6 +204,19 @@ export default function App() {
     for (const c of cards) m.set(c.id, c)
     return m
   }, [cards])
+
+  useEffect(() => {
+    if (!cards.length) return
+    setDecks((prev) => {
+      let changed = false
+      const next = prev.map((d) => {
+        const m = migrateDeck(d, byId)
+        if (m !== d) changed = true
+        return m
+      })
+      return changed ? next : prev
+    })
+  }, [cards, byId])
 
   const filtered = useMemo(() => {
     const query = q.trim().toLowerCase()
@@ -433,6 +466,8 @@ export default function App() {
     const d: Deck = { id: uid(), name: `Deck ${decks.length + 1}`, cards: [], updatedAt: new Date().toISOString() }
     setDecks((prev) => [d, ...prev])
     setActiveDeckId(d.id)
+    setActiveSection('main')
+    setDeckMissingReport(null)
   }
 
   const activeDeck = decks.find((d) => d.id === activeDeckId) || null
@@ -442,18 +477,79 @@ export default function App() {
     setDecks((prev) => prev.map((d) => (d.id === activeDeckId ? { ...mut(d), updatedAt: new Date().toISOString() } : d)))
   }
 
-  function addToDeck(cardId: string) {
+  function addToDeck(cardId: string, section?: DeckSection) {
+    const c = byId.get(cardId)
+    const sec = section || activeSection || (c ? inferSection(c) : 'main')
     updateDeck((d) => {
-      const existing = d.cards.find((x) => x.id === cardId)
+      const existing = d.cards.find((x) => x.id === cardId && sectionOf(x) === sec)
       if (existing) {
-        return { ...d, cards: d.cards.map((x) => (x.id === cardId ? { ...x, qty: x.qty + 1 } : x)) }
+        return {
+          ...d,
+          cards: d.cards.map((x) =>
+            x.id === cardId && sectionOf(x) === sec ? { ...x, qty: x.qty + 1, section: sec } : x,
+          ),
+        }
       }
-      return { ...d, cards: [...d.cards, { id: cardId, qty: 1 }] }
+      return { ...d, cards: [...d.cards, { id: cardId, qty: 1, section: sec }] }
     })
+  }
+
+  function bumpDeckCard(cardId: string, section: DeckSection, delta: number) {
+    updateDeck((d) => ({
+      ...d,
+      cards: d.cards
+        .map((x) => {
+          if (x.id !== cardId || sectionOf(x) !== section) return x
+          return { ...x, qty: x.qty + delta, section }
+        })
+        .filter((x) => x.qty > 0),
+    }))
   }
 
   function deckCount(d: Deck) {
     return d.cards.reduce((s, c) => s + c.qty, 0)
+  }
+
+  function underOwnedLines(d: Deck) {
+    const totals = deckTotalQtyById(d.cards)
+    const out: { id: string; name: string; need: number; have: number; short: number }[] = []
+    for (const [id, need] of totals) {
+      const have = ownedQty(collection[id])
+      if (need > have) {
+        const c = byId.get(id)
+        out.push({ id, name: c ? displayCardName(c) : id, need, have, short: need - have })
+      }
+    }
+    out.sort((a, b) => b.short - a.short || a.name.localeCompare(b.name))
+    return out
+  }
+
+  function missingReportFor(d: Deck) {
+    return underOwnedLines(d).map(({ name, need, have, short }) => ({ name, need, have, short }))
+  }
+
+  function runDeckImport(text: string) {
+    if (!activeDeckId) return
+    const result = parseDeckImport(text, cards)
+    updateDeck((d) => ({ ...d, cards: result.cards }))
+    const report = result.cards
+      .map((dc) => {
+        const c = byId.get(dc.id) || cards.find((x) => x.id === dc.id)
+        const have = ownedQty(collection[dc.id])
+        const need = dc.qty
+        return {
+          name: c ? displayCardName(c) : dc.id,
+          need,
+          have,
+          short: Math.max(0, need - have),
+        }
+      })
+      .filter((r) => r.short > 0)
+    for (const u of result.unmatched) {
+      report.push({ name: `Nicht gefunden: ${u}`, need: 0, have: 0, short: 0 })
+    }
+    setDeckMissingReport(report)
+    setDeckImportOpen(false)
   }
 
   if (error) return <div className="main err">Fehler: {error}</div>
@@ -910,20 +1006,21 @@ export default function App() {
         )}
 
         {tab === 'decks' && (
-          <div className="split">
+          <div className="split deck-split">
             <section className="panel">
               <div className="toolbar">
                 <h2 style={{ margin: 0, flex: 1 }}>Decks</h2>
+                <button className="btn" onClick={() => { setDeckImportOpen((v) => !v); setDeckImportText('') }}>Import</button>
                 <button className="btn primary" onClick={newDeck}>Neues Deck</button>
               </div>
-              <div className="list">
+              <div className="list" style={{ marginBottom: 12 }}>
                 {decks.length === 0 && <div className="empty">Noch kein Deck.</div>}
                 {decks.map((d) => (
                   <button
                     key={d.id}
                     className="list-item"
                     style={{ textAlign: 'left', width: '100%' }}
-                    onClick={() => setActiveDeckId(d.id)}
+                    onClick={() => { setActiveDeckId(d.id); setDeckMissingReport(missingReportFor(d)); setActiveSection('main') }}
                   >
                     <div>
                       <div className="name">{d.name}</div>
@@ -936,7 +1033,7 @@ export default function App() {
 
               {activeDeck && (
                 <>
-                  <div className="toolbar" style={{ marginTop: 14 }}>
+                  <div className="toolbar">
                     <input
                       className="field grow"
                       value={activeDeck.name}
@@ -947,33 +1044,160 @@ export default function App() {
                       onClick={() => {
                         setDecks((prev) => prev.filter((d) => d.id !== activeDeck.id))
                         setActiveDeckId(null)
+                        setDeckMissingReport(null)
                       }}
                     >
                       Löschen
                     </button>
                   </div>
-                  <div className="list">
-                    {activeDeck.cards.length === 0 && <div className="empty">Karten aus der Liste rechts hinzufügen.</div>}
-                    {activeDeck.cards.map((dc) => {
-                      const c = byId.get(dc.id)
-                      if (!c) return null
-                      const have = ownedQty(collection[c.id])
+
+                  {deckImportOpen && (
+                    <div className="deck-import-box">
+                      <textarea
+                        className="field"
+                        placeholder={"Legend:\n1 Kennen, Heart of the Tempest\nChampion:\n1 Kennen, Storm of Shuriken\nMainDeck:\n3 Traveling Merchant\n..."}
+                        value={deckImportText}
+                        onChange={(e) => setDeckImportText(e.target.value)}
+                        rows={10}
+                      />
+                      <div className="toolbar" style={{ marginBottom: 0 }}>
+                        <button className="btn" onClick={() => setDeckImportText(SAMPLE_KENNEN_DECK)}>Kennen-Beispiel</button>
+                        <button className="btn primary" disabled={!deckImportText.trim()} onClick={() => runDeckImport(deckImportText)}>Importieren</button>
+                      </div>
+                    </div>
+                  )}
+
+                  {(() => {
+                    const under = underOwnedLines(activeDeck)
+                    if (!under.length) return null
+                    const totalShort = under.reduce((s, x) => s + x.short, 0)
+                    return (
+                      <div className="deck-warn">
+                        <div><b>Unterbesitz:</b> {under.length} Karten, {totalShort} Kopien fehlen</div>
+                        <ul>
+                          {under.slice(0, 12).map((u) => (
+                            <li key={u.id}>{u.name}: braucht {u.need}, besitzt {u.have} (−{u.short})</li>
+                          ))}
+                          {under.length > 12 && <li>… und {under.length - 12} weitere</li>}
+                        </ul>
+                      </div>
+                    )
+                  })()}
+
+                  {deckMissingReport && deckMissingReport.length > 0 && (
+                    <div className="deck-missing">
+                      <b>Import / Fehlende Karten</b>
+                      <div className="sub">
+                        {deckMissingReport.filter((r) => r.short > 0).reduce((s, r) => s + r.short, 0)} Kopien unterbesetzt
+                        {deckMissingReport.some((r) => r.need === 0) ? ' · manche Namen nicht gefunden' : ''}
+                      </div>
+                      <ul>
+                        {deckMissingReport.slice(0, 16).map((r, i) => (
+                          <li key={i}>
+                            {r.need === 0 ? r.name : `${r.name}: braucht ${r.need}, besitzt ${r.have} (−${r.short})`}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  <div className="deck-sections">
+                    <div className="deck-sec-row">
+                      {(['legend', 'champion'] as DeckSection[]).map((sec) => {
+                        const count = sectionCount(activeDeck.cards, sec)
+                        const cap = SECTION_CAPS[sec]
+                        const over = count > cap
+                        const cardsIn = activeDeck.cards.filter((dc) => sectionOf(dc) === sec)
+                        return (
+                          <div
+                            key={sec}
+                            className={`deck-sec${activeSection === sec ? ' active' : ''}`}
+                            onClick={() => setActiveSection(sec)}
+                          >
+                            <div className="deck-sec-head">
+                              <span className="deck-sec-title">{SECTION_LABEL[sec]}</span>
+                              <span className={`deck-sec-cap${over ? ' over' : ''}`}>{count}/{cap}</span>
+                            </div>
+                            <div className="list">
+                              {cardsIn.map((dc) => {
+                                const c = byId.get(dc.id)
+                                if (!c) return null
+                                const have = ownedQty(collection[c.id])
+                                const short = dc.qty > have
+                                return (
+                                  <div key={`${dc.id}-${sec}`} className={`list-item deck-card-row${short ? ' short' : ''}`}>
+                                    <div>
+                                      <div className="name">{displayName(c)}</div>
+                                      <div className="sub">
+                                        {c.energy != null ? `E${c.energy} · ` : ''}{c.code} · besitzt {have}
+                                      </div>
+                                    </div>
+                                    <div className="qty" onClick={(e) => e.stopPropagation()}>
+                                      <button type="button" onClick={() => bumpDeckCard(dc.id, sec, -1)}>−</button>
+                                      <b>{dc.qty}</b>
+                                      <button type="button" onClick={() => bumpDeckCard(dc.id, sec, 1)}>+</button>
+                                    </div>
+                                  </div>
+                                )
+                              })}
+                            </div>
+                            <button
+                              type="button"
+                              className="deck-add"
+                              onClick={(e) => { e.stopPropagation(); setActiveSection(sec) }}
+                            >
+                              {SECTION_ADD_LABEL[sec]}
+                            </button>
+                          </div>
+                        )
+                      })}
+                    </div>
+
+                    {SECTION_ORDER.filter((s) => s !== 'legend' && s !== 'champion').map((sec) => {
+                      const count = sectionCount(activeDeck.cards, sec)
+                      const cap = SECTION_CAPS[sec]
+                      const over = count > cap
+                      const cardsIn = activeDeck.cards.filter((dc) => sectionOf(dc) === sec)
                       return (
-                        <div key={dc.id} className="list-item">
-                          <div>
-                            <div className="name">{c.name}</div>
-                            <div className="sub">{c.code} | besitzt {have}</div>
+                        <div
+                          key={sec}
+                          className={`deck-sec${activeSection === sec ? ' active' : ''}`}
+                          onClick={() => setActiveSection(sec)}
+                        >
+                          <div className="deck-sec-head">
+                            <span className="deck-sec-title">{SECTION_LABEL[sec]}</span>
+                            <span className={`deck-sec-cap${over ? ' over' : ''}`}>{count}/{cap}</span>
                           </div>
-                          <div className="qty">
-                            <button onClick={() => updateDeck((d) => ({
-                              ...d,
-                              cards: d.cards
-                                .map((x) => (x.id === dc.id ? { ...x, qty: x.qty - 1 } : x))
-                                .filter((x) => x.qty > 0),
-                            }))}>-</button>
-                            <b>{dc.qty}</b>
-                            <button onClick={() => addToDeck(dc.id)}>+</button>
+                          <div className="list">
+                            {cardsIn.map((dc) => {
+                              const c = byId.get(dc.id)
+                              if (!c) return null
+                              const have = ownedQty(collection[c.id])
+                              const short = dc.qty > have
+                              return (
+                                <div key={`${dc.id}-${sec}`} className={`list-item deck-card-row${short ? ' short' : ''}`}>
+                                  <div>
+                                    <div className="name">{displayName(c)}</div>
+                                    <div className="sub">
+                                      {c.energy != null ? `E${c.energy} · ` : ''}{c.code} · besitzt {have}
+                                    </div>
+                                  </div>
+                                  <div className="qty" onClick={(e) => e.stopPropagation()}>
+                                    <button type="button" onClick={() => bumpDeckCard(dc.id, sec, -1)}>−</button>
+                                    <b>{dc.qty}</b>
+                                    <button type="button" onClick={() => bumpDeckCard(dc.id, sec, 1)}>+</button>
+                                  </div>
+                                </div>
+                              )
+                            })}
                           </div>
+                          <button
+                            type="button"
+                            className="deck-add"
+                            onClick={(e) => { e.stopPropagation(); setActiveSection(sec) }}
+                          >
+                            {SECTION_ADD_LABEL[sec]}
+                          </button>
                         </div>
                       )
                     })}
@@ -983,7 +1207,7 @@ export default function App() {
             </section>
 
             <section className="panel">
-              <h2>Karten ins Deck</h2>
+              <h2>Karten · {SECTION_LABEL[activeSection]}</h2>
               <div className="toolbar">
                 <input className="search grow" placeholder="Suche..." value={q} onChange={(e) => setQ(e.target.value)} />
                 <label className="pill">
@@ -991,24 +1215,27 @@ export default function App() {
                 </label>
               </div>
               <div className="list" style={{ maxHeight: '70vh', overflow: 'auto' }}>
-                {cards
+                {!activeDeck && <div className="empty">Zuerst ein Deck wählen oder anlegen.</div>}
+                {activeDeck && cards
                   .filter((c) => {
+                    if (!cardFitsSection(c, activeSection)) return false
                     if (deckOwnedOnly && ownedQty(collection[c.id]) <= 0) return false
                     const query = q.trim().toLowerCase()
-                    if (!query) return deckOwnedOnly ? true : false
+                    if (!query) return true
                     return (
                       c.name.toLowerCase().includes(query) ||
+                      (c.subtitle || '').toLowerCase().includes(query) ||
                       c.code.toLowerCase().includes(query)
                     )
                   })
-                  .slice(0, 80)
+                  .slice(0, 100)
                   .map((c) => (
                     <div key={c.id} className="list-item">
                       <div>
-                        <div className="name">{c.name}</div>
-                        <div className="sub">{c.code} | x{ownedQty(collection[c.id])}</div>
+                        <div className="name">{displayName(c)}</div>
+                        <div className="sub">{c.code} · x{ownedQty(collection[c.id])}{c.energy != null ? ` · E${c.energy}` : ''}</div>
                       </div>
-                      <button className="btn small primary" disabled={!activeDeck} onClick={() => addToDeck(c.id)}>
+                      <button className="btn small primary" onClick={() => addToDeck(c.id, activeSection)}>
                         Add
                       </button>
                     </div>

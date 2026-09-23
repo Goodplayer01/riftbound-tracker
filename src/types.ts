@@ -21,7 +21,9 @@ export type Card = {
 
 export type Owned = { qty: number; foil: number }
 
-export type DeckCard = { id: string; qty: number }
+export type DeckSection = 'legend' | 'champion' | 'main' | 'battlefield' | 'rune' | 'sideboard'
+
+export type DeckCard = { id: string; qty: number; section?: DeckSection }
 
 export type Deck = {
   id: string
