@@ -1,16 +1,22 @@
 export type Card = {
   id: string
   name: string
+  subtitle?: string | null
   code: string
   cn: number
   set: string
   setName: string
   types: string[]
+  superTypes?: string[]
   rarity: string | null
   domains: string[]
   energy: number | null
   might: number | null
   image: string | null
+  signed?: boolean
+  overnumbered?: boolean
+  altArt?: boolean
+  tags?: string[]
 }
 
 export type Owned = { qty: number; foil: number }

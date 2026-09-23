@@ -34,6 +34,9 @@ export default function App() {
   const [q, setQ] = useState('')
   const [setFilter, setSetFilter] = useState('')
   const [ownedOnly, setOwnedOnly] = useState(false)
+  const [typeFilter, setTypeFilter] = useState('')
+  const [signedOnly, setSignedOnly] = useState(false)
+  const [overOnly, setOverOnly] = useState(false)
   const [bulkText, setBulkText] = useState('')
   const [bulkFoil, setBulkFoil] = useState(false)
   const [bulkReport, setBulkReport] = useState<string | null>(null)
@@ -72,6 +75,34 @@ export default function App() {
 
   const cards = catalog?.cards || []
   const sets = catalog?.sets || {}
+  const allTypes = useMemo(() => {
+    const s = new Set<string>()
+    for (const c of cards) for (const t of c.types || []) if (t) s.add(t)
+    return [...s].sort((a, b) => a.localeCompare(b))
+  }, [cards])
+
+  function displayName(c: Card) {
+    return c.subtitle ? `${c.name}, ${c.subtitle}` : c.name
+  }
+
+  function matchesFilters(c: Card, query: string) {
+    if (setFilter && c.set !== setFilter) return false
+    if (typeFilter && !(c.types || []).includes(typeFilter)) return false
+    if (signedOnly && !c.signed) return false
+    if (overOnly && !c.overnumbered) return false
+    if (!query) return true
+    const hay = [
+      c.name,
+      c.subtitle || '',
+      c.code,
+      c.id,
+      ...(c.domains || []),
+      ...(c.types || []),
+      c.rarity || '',
+      ...(c.tags || []),
+    ].join(' ').toLowerCase()
+    return hay.includes(query)
+  }
 
   const byId = useMemo(() => {
     const m = new Map<string, Card>()
@@ -82,19 +113,10 @@ export default function App() {
   const filtered = useMemo(() => {
     const query = q.trim().toLowerCase()
     return cards.filter((c) => {
-      if (setFilter && c.set !== setFilter) return false
       if (ownedOnly && ownedQty(collection[c.id]) <= 0) return false
-      if (!query) return true
-      return (
-        c.name.toLowerCase().includes(query) ||
-        c.code.toLowerCase().includes(query) ||
-        c.id.toLowerCase().includes(query) ||
-        c.domains.some((d) => d.toLowerCase().includes(query)) ||
-        c.types.some((t) => t.toLowerCase().includes(query)) ||
-        (c.rarity || '').toLowerCase().includes(query)
-      )
+      return matchesFilters(c, query)
     })
-  }, [cards, q, setFilter, ownedOnly, collection])
+  }, [cards, q, setFilter, typeFilter, signedOnly, overOnly, ownedOnly, collection])
 
   const ownedCards = useMemo(
     () => cards.filter((c) => ownedQty(collection[c.id]) > 0),
@@ -308,6 +330,18 @@ export default function App() {
                   <option key={id} value={id}>{id} - {name}</option>
                 ))}
               </select>
+              <select className="select" style={{ maxWidth: 150 }} value={typeFilter} onChange={(e) => setTypeFilter(e.target.value)}>
+                <option value="">Alle Typen</option>
+                {allTypes.map((t) => (
+                  <option key={t} value={t}>{t}</option>
+                ))}
+              </select>
+              <label className="pill">
+                <input type="checkbox" checked={signedOnly} onChange={(e) => setSignedOnly(e.target.checked)} /> Signed
+              </label>
+              <label className="pill">
+                <input type="checkbox" checked={overOnly} onChange={(e) => setOverOnly(e.target.checked)} /> Overnumbered
+              </label>
               {tab === 'catalog' && (
                 <label className="pill">
                   <input type="checkbox" checked={ownedOnly} onChange={(e) => setOwnedOnly(e.target.checked)} /> nur Owned
@@ -330,25 +364,25 @@ export default function App() {
             </div>
 
             {tab === 'collection' && ownedCards.length === 0 && (
-              <div className="empty">Noch keine Karten. Geh zu Bulk oder Katalog und füge welche hinzu.</div>
+              <div className="empty">Noch keine Karten. Geh zu Bulk oder Katalog und fuege welche hinzu.</div>
             )}
 
             <div className="grid">
-              {(tab === 'collection' ? ownedCards.filter((c) => {
-                const query = q.trim().toLowerCase()
-                if (setFilter && c.set !== setFilter) return false
-                if (!query) return true
-                return c.name.toLowerCase().includes(query) || c.code.toLowerCase().includes(query)
-              }) : filtered).map((c) => {
+              {(tab === 'collection' ? ownedCards.filter((c) => matchesFilters(c, q.trim().toLowerCase())) : filtered).map((c) => {
                 const o = collection[c.id] || { qty: 0, foil: 0 }
                 return (
                   <article key={c.id} className={`card ${ownedQty(o) ? 'owned' : ''}`}>
                     <div className="art" style={{ backgroundImage: c.image ? `url(${c.image})` : undefined }}>
                       {ownedQty(o) > 0 && <div className="badge">x{ownedQty(o)}</div>}
+                      <div className="flags">
+                        {c.signed ? <span className="flag signed">Signed</span> : null}
+                        {c.overnumbered && !c.signed ? <span className="flag over">ON</span> : null}
+                        {c.altArt ? <span className="flag alt">Alt</span> : null}
+                      </div>
                     </div>
                     <div className="meta">
-                      <div className="name">{c.name}</div>
-                      <div className="sub">{c.code} | {c.set} | {(c.domains || []).join('/') || '-'}</div>
+                      <div className="name">{displayName(c)}</div>
+                      <div className="sub">{c.code} | {c.set} | {(c.types || []).join('/') || '-'} | {(c.domains || []).join('/') || '-'}</div>
                       {(() => {
                         const pl = priceLabel(priceBook?.cards[c.id])
                         if (!pl || (!pl.trend && !pl.foil)) return null
@@ -382,10 +416,10 @@ export default function App() {
         {tab === 'bulk' && (
           <div className="split">
             <section className="panel">
-              <h2>Bulk hinzufügen</h2>
+              <h2>Bulk hinzufuegen</h2>
               <p className="help">
                 Codes reinpasten - Leerzeichen, Komma oder Zeilen. Beispiele: <code>OGN-056/298</code>, <code>OGN-56</code>, <code>UNL 131</code>, Alt-Art <code>OGN-066a</code>.
-                Für ADF/Phone-Scanner: Bilder separat scannen, Codes hier einfügen (Bilderkennung kommt später).
+                Fuer ADF/Phone-Scanner: Bilder separat scannen, Codes hier einfuegen (Bilderkennung kommt spaeter).
               </p>
               <textarea
                 className="field"
@@ -458,11 +492,11 @@ export default function App() {
                         setActiveDeckId(null)
                       }}
                     >
-                      Löschen
+                      Loeschen
                     </button>
                   </div>
                   <div className="list">
-                    {activeDeck.cards.length === 0 && <div className="empty">Karten aus der Liste rechts hinzufügen.</div>}
+                    {activeDeck.cards.length === 0 && <div className="empty">Karten aus der Liste rechts hinzufuegen.</div>}
                     {activeDeck.cards.map((dc) => {
                       const c = byId.get(dc.id)
                       if (!c) return null

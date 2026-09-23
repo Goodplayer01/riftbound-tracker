@@ -108,3 +108,15 @@ textarea.field { min-height: 160px; resize: vertical; font-family: ui-monospace,
   border: 1px solid var(--border); background: var(--panel2);
   border-radius: 999px; padding: 4px 10px; font-size: 12px; color: var(--warn);
 }
+
+.flags {
+  position: absolute; top: 8px; right: 8px; display: flex; flex-direction: column; gap: 4px; align-items: flex-end;
+}
+.flag {
+  background: rgba(0,0,0,.72); border: 1px solid rgba(255,255,255,.14);
+  padding: 2px 7px; border-radius: 999px; font-size: 10px; letter-spacing: .2px;
+}
+.flag.signed { color: #ffd27a; border-color: rgba(255,210,122,.35); }
+.flag.over { color: #6ea8ff; border-color: rgba(110,168,255,.35); }
+.flag.alt { color: #c9a0ff; border-color: rgba(201,160,255,.35); }
+.select { max-width: 220px; }
