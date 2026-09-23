@@ -70,6 +70,7 @@ export default function App() {
   const [binderView, setBinderView] = useState<string | null>(null)
   const [binderOwnedOnly, setBinderOwnedOnly] = useState(false)
   const [binderMissing, setBinderMissing] = useState(false)
+  const [binderRarity, setBinderRarity] = useState<string | null>(null)
 
   useEffect(() => {
     window.riftbound?.getVersion().then(setAppVersion).catch(() => {})
@@ -275,6 +276,7 @@ export default function App() {
       const n = ownedQty(collection[c.id])
       if (binderOwnedOnly && n <= 0) return false
       if (binderMissing && n > 0) return false
+      if (binderRarity && (c.rarity || 'Other') !== binderRarity) return false
       if (signedOnly && !c.signed) return false
       if (overOnly && !c.overnumbered) return false
       if (!query) return true
@@ -291,7 +293,7 @@ export default function App() {
       return hay.includes(query)
     })
     return [...list].sort((a, b) => a.cn - b.cn || a.code.localeCompare(b.code))
-  }, [binderView, cards, collection, q, binderOwnedOnly, binderMissing, signedOnly, overOnly])
+  }, [binderView, cards, collection, q, binderOwnedOnly, binderMissing, binderRarity, signedOnly, overOnly])
 
   const rarityBySet = useMemo(() => {
     const out: Record<string, { rarity: string; total: number; owned: number }[]> = {}
@@ -521,7 +523,7 @@ export default function App() {
             </div>
             <div className="binder-grid">
               {setProgress.map((s) => (
-                <button key={s.id} type="button" className="binder-tile" onClick={() => { setBinderView(s.id); setQ(''); setBinderOwnedOnly(false); setBinderMissing(false) }}>
+                <button key={s.id} type="button" className="binder-tile" onClick={() => { setBinderView(s.id); setBinderRarity(null); setQ(''); setBinderOwnedOnly(false); setBinderMissing(false) }}>
                   <div className="binder-code">{s.id}</div>
                   <div className="binder-name">{s.name}</div>
                   <div className="binder-progress">{s.owned} / {s.total} ({s.pct}%)</div>
@@ -532,7 +534,31 @@ export default function App() {
                     {(rarityBySet[s.id] || []).map((row) => {
                       const pct = row.total ? Math.round((row.owned / row.total) * 100) : 0
                       return (
-                        <div key={row.rarity} className={`rarity-row rar-${row.rarity.toLowerCase()}`}>
+                        <div
+                          key={row.rarity}
+                          role="button"
+                          tabIndex={0}
+                          title={`${row.rarity} filtern`}
+                          className={`rarity-row rar-${row.rarity.toLowerCase()}`}
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            setBinderView(s.id)
+                            setBinderRarity(row.rarity)
+                            setQ('')
+                            setBinderOwnedOnly(false)
+                            setBinderMissing(false)
+                          }}
+                          onKeyDown={(e) => {
+                            if (e.key !== 'Enter' && e.key !== ' ') return
+                            e.preventDefault()
+                            e.stopPropagation()
+                            setBinderView(s.id)
+                            setBinderRarity(row.rarity)
+                            setQ('')
+                            setBinderOwnedOnly(false)
+                            setBinderMissing(false)
+                          }}
+                        >
                           <span className="rarity-label">{row.rarity}</span>
                           <div className="rarity-track"><span style={{ width: `${pct}%` }} /></div>
                           <span className="rarity-count">{row.owned} / {row.total}</span>
@@ -542,7 +568,7 @@ export default function App() {
                   </div>
                 </button>
               ))}
-              <button type="button" className="binder-tile binder-tile-owned" onClick={() => { setBinderView('owned'); setQ(''); setBinderOwnedOnly(false); setBinderMissing(false) }}>
+              <button type="button" className="binder-tile binder-tile-owned" onClick={() => { setBinderView('owned'); setBinderRarity(null); setQ(''); setBinderOwnedOnly(false); setBinderMissing(false) }}>
                 <div className="binder-code">ALL</div>
                 <div className="binder-name">Alle Owned</div>
                 <div className="binder-progress">{totals.unique} Unique | {totals.copies} Kopien</div>
@@ -555,7 +581,7 @@ export default function App() {
         {tab === 'collection' && binderView != null && (
           <>
             <div className="toolbar binder-toolbar">
-              <button className="btn" onClick={() => setBinderView(null)}>Zurück</button>
+              <button className="btn" onClick={() => { setBinderView(null); setBinderRarity(null) }}>Zurück</button>
               <div className="grow">
                 <div className="section-title">
                   {binderView === 'owned'
@@ -570,8 +596,21 @@ export default function App() {
                     <div className="rarity-heading">Nach Seltenheit</div>
                     {(rarityBySet[binderView] || []).map((row) => {
                       const pct = row.total ? Math.round((row.owned / row.total) * 100) : 0
+                      const active = binderRarity === row.rarity
                       return (
-                        <div key={row.rarity} className={`rarity-row rar-${row.rarity.toLowerCase()}`}>
+                        <div
+                          key={row.rarity}
+                          role="button"
+                          tabIndex={0}
+                          title={active ? 'Filter entfernen' : `${row.rarity} filtern`}
+                          className={`rarity-row rar-${row.rarity.toLowerCase()}${active ? ' active' : ''}`}
+                          onClick={() => setBinderRarity((cur) => (cur === row.rarity ? null : row.rarity))}
+                          onKeyDown={(e) => {
+                            if (e.key !== 'Enter' && e.key !== ' ') return
+                            e.preventDefault()
+                            setBinderRarity((cur) => (cur === row.rarity ? null : row.rarity))
+                          }}
+                        >
                           <span className="rarity-label">{row.rarity}</span>
                           <div className="rarity-track"><span style={{ width: `${pct}%` }} /></div>
                           <span className="rarity-count">{row.owned} / {row.total}</span>
