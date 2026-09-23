@@ -10,7 +10,7 @@ function createWindow() {
     height: 860,
     minWidth: 960,
     minHeight: 640,
-    title: 'Riftbound Tracker',
+    title: 'Deakrix Riftbound Tracker',
     backgroundColor: '#0a0c10',
     frame: false,
     autoHideMenuBar: true,

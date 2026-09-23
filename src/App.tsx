@@ -24,18 +24,19 @@ function priceLabel(p?: PriceEntry) {
   const high = fmtEur(p.high ?? null)
   const avg30 = fmtEur(p.avg30 ?? null)
   const foil = fmtEur(p.foilLow) || fmtEur(p.foilTrend)
-  return { low, high, avg30, foil, cmId: p.cmId || null }
+  return { low, high, avg30, foil, cmId: p.cmId || null, cmUrl: p.cmUrl || null }
 }
 
-function cmUrl(cmId?: string | null) {
-  if (!cmId) return null
-  return `https://www.cardmarket.com/de/Riftbound/Products/Singles?idProduct=${cmId}`
+function cmUrl(p?: PriceEntry | null) {
+  if (!p) return null
+  if (p.cmUrl) return p.cmUrl
+  return null
 }
 
 const RARITY_ORDER = ['Common', 'Uncommon', 'Rare', 'Epic', 'Showcase'] as const
 
-function openCm(cmId?: string | null) {
-  const url = cmUrl(cmId)
+function openCm(p?: PriceEntry | null) {
+  const url = cmUrl(p)
   if (!url) return
   if (window.riftbound?.openExternal) {
     void window.riftbound.openExternal(url)
@@ -446,7 +447,7 @@ export default function App() {
   return (
     <div className="app">
       <header className="top titlebar">
-        <div className="brand">Riftbound <span>Tracker</span></div>
+        <div className="brand">Deakrix <span>Riftbound Tracker</span></div>
         <nav className="tabs no-drag">
           {([
             ['collection', 'Sammlung'],
@@ -648,8 +649,8 @@ export default function App() {
                         type="button"
                         className="name name-link"
                         title="Auf Cardmarket öffnen"
-                        disabled={!priceBook?.cards[c.id]?.cmId}
-                        onClick={() => openCm(priceBook?.cards[c.id]?.cmId)}
+                        disabled={!priceBook?.cards[c.id]?.cmUrl}
+                        onClick={() => openCm(priceBook?.cards[c.id])}
                       >{displayName(c)}</button>
                       <div className="sub">{c.code} | {c.set} | {(c.types || []).join('/') || '-'} | {(c.domains || []).join('/') || '-'}</div>
                       {(() => {
@@ -748,8 +749,8 @@ export default function App() {
                         type="button"
                         className="name name-link"
                         title="Auf Cardmarket öffnen"
-                        disabled={!priceBook?.cards[c.id]?.cmId}
-                        onClick={() => openCm(priceBook?.cards[c.id]?.cmId)}
+                        disabled={!priceBook?.cards[c.id]?.cmUrl}
+                        onClick={() => openCm(priceBook?.cards[c.id])}
                       >{displayName(c)}</button>
                       <div className="sub">{c.code} | {c.set} | {(c.types || []).join('/') || '-'} | {(c.domains || []).join('/') || '-'}</div>
                       {(() => {

@@ -40,6 +40,7 @@ export type PriceEntry = {
   foilLow: number | null
   foilTrend: number | null
   cmId: string
+  cmUrl?: string | null
 }
 
 export type PriceBook = {

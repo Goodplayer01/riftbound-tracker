@@ -1,6 +1,6 @@
-# Riftbound Tracker
+# Deakrix Riftbound Tracker
 
-Windows desktop app for **Riftbound only**: collection tracking, bulk code import, CSV, and deck building.
+Windows desktop app (**Deakrix Riftbound Tracker**) for **Riftbound only**: collection tracking, bulk code import, CSV, and deck building.
 
 ## Download
 
