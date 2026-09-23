@@ -48,6 +48,10 @@ export default function App() {
   const [appVersion, setAppVersion] = useState('')
   const [updateInfo, setUpdateInfo] = useState<{ status: string; version?: string; message?: string } | null>(null)
   const [priceBook, setPriceBook] = useState<PriceBook | null>(null)
+  // null = binder dashboard; 'owned' = all owned; set code = that set binder
+  const [binderView, setBinderView] = useState<string | null>(null)
+  const [binderOwnedOnly, setBinderOwnedOnly] = useState(false)
+  const [binderMissing, setBinderMissing] = useState(false)
 
   useEffect(() => {
     window.riftbound?.getVersion().then(setAppVersion).catch(() => {})
@@ -161,6 +165,83 @@ export default function App() {
     }
     return { sum, priced }
   }, [collection, priceBook])
+
+  const setProgress = useMemo(() => {
+    const order = Object.keys(sets)
+    const out: { id: string; name: string; total: number; owned: number; pct: number; eur: number | null }[] = []
+    for (const id of order) {
+      const setCards = cards.filter((c) => c.set === id)
+      let owned = 0
+      let eur = 0
+      let eurAny = false
+      for (const c of setCards) {
+        const o = collection[c.id]
+        const n = ownedQty(o)
+        if (n <= 0) continue
+        owned += 1
+        if (!priceBook) continue
+        const p = priceBook.cards[c.id]
+        if (!p) continue
+        const qty = o?.qty || 0
+        const foil = o?.foil || 0
+        const unit = p.low != null ? p.low : p.trend
+        const foilUnit = p.foilLow != null ? p.foilLow : p.foilTrend != null ? p.foilTrend : unit
+        let add = 0
+        if (qty > 0 && unit != null) add += qty * unit
+        if (foil > 0 && foilUnit != null) add += foil * foilUnit
+        if (add > 0) {
+          eur += add
+          eurAny = true
+        }
+      }
+      const total = setCards.length
+      out.push({
+        id,
+        name: sets[id] || id,
+        total,
+        owned,
+        pct: total ? Math.round((owned / total) * 100) : 0,
+        eur: eurAny ? eur : null,
+      })
+    }
+    return out
+  }, [cards, sets, collection, priceBook])
+
+  const binderCards = useMemo(() => {
+    if (binderView == null) return [] as Card[]
+    const query = q.trim().toLowerCase()
+    let list: Card[]
+    if (binderView === 'owned') {
+      list = cards.filter((c) => ownedQty(collection[c.id]) > 0)
+    } else {
+      list = cards.filter((c) => c.set === binderView)
+    }
+    list = list.filter((c) => {
+      const n = ownedQty(collection[c.id])
+      if (binderOwnedOnly && n <= 0) return false
+      if (binderMissing && n > 0) return false
+      if (signedOnly && !c.signed) return false
+      if (overOnly && !c.overnumbered) return false
+      if (!query) return true
+      const hay = [
+        c.name,
+        c.subtitle || '',
+        c.code,
+        c.id,
+        ...(c.domains || []),
+        ...(c.types || []),
+        c.rarity || '',
+        ...(c.tags || []),
+      ].join(' ').toLowerCase()
+      return hay.includes(query)
+    })
+    return [...list].sort((a, b) => a.cn - b.cn || a.code.localeCompare(b.code))
+  }, [binderView, cards, collection, q, binderOwnedOnly, binderMissing, signedOnly, overOnly])
+
+  const activeBinderProgress = useMemo(() => {
+    if (!binderView || binderView === 'owned') return null
+    return setProgress.find((s) => s.id === binderView) || null
+  }, [binderView, setProgress])
 
   function bump(id: string, field: 'qty' | 'foil', delta: number) {
     setCollection((prev) => {
@@ -319,7 +400,160 @@ export default function App() {
       </header>
 
       <main className="main">
-        {(tab === 'collection' || tab === 'catalog') && (
+        {tab === 'collection' && binderView == null && (
+          <>
+            <div className="toolbar">
+              <div className="grow">
+                <h2 className="section-title">Sammlung</h2>
+                <p className="help" style={{ margin: 0 }}>Set-Binder oeffnen, um Karten zu browsen und zu verwalten.</p>
+              </div>
+              <button className="btn" onClick={exportCsv}>CSV Export</button>
+              <label className="btn">
+                CSV Import
+                <input
+                  type="file"
+                  accept=".csv,text/csv"
+                  hidden
+                  onChange={(e) => {
+                    const f = e.target.files?.[0]
+                    if (f) importCsv(f)
+                    e.target.value = ''
+                  }}
+                />
+              </label>
+            </div>
+            <div className="binder-grid">
+              {setProgress.map((s) => (
+                <button key={s.id} type="button" className="binder-tile" onClick={() => { setBinderView(s.id); setQ(''); setBinderOwnedOnly(false); setBinderMissing(false) }}>
+                  <div className="binder-code">{s.id}</div>
+                  <div className="binder-name">{s.name}</div>
+                  <div className="binder-progress">{s.owned} / {s.total} ({s.pct}%)</div>
+                  <div className="binder-bar"><span style={{ width: `${s.pct}%` }} /></div>
+                  {s.eur != null && <div className="binder-eur">~{s.eur.toFixed(2)} EUR</div>}
+                </button>
+              ))}
+              <button type="button" className="binder-tile binder-tile-owned" onClick={() => { setBinderView('owned'); setQ(''); setBinderOwnedOnly(false); setBinderMissing(false) }}>
+                <div className="binder-code">ALL</div>
+                <div className="binder-name">Alle Owned</div>
+                <div className="binder-progress">{totals.unique} Unique | {totals.copies} Kopien</div>
+                <p className="help" style={{ margin: '8px 0 0' }}>Nur besessene Karten (alte Sammlung)</p>
+              </button>
+            </div>
+          </>
+        )}
+
+        {tab === 'collection' && binderView != null && (
+          <>
+            <div className="toolbar binder-toolbar">
+              <button className="btn" onClick={() => setBinderView(null)}>Zurueck</button>
+              <div className="grow">
+                <div className="section-title">
+                  {binderView === 'owned'
+                    ? 'Alle Owned'
+                    : `${activeBinderProgress?.id || binderView} - ${activeBinderProgress?.name || sets[binderView] || binderView}`}
+                </div>
+                {activeBinderProgress && (
+                  <div className="sub">{activeBinderProgress.owned}/{activeBinderProgress.total} ({activeBinderProgress.pct}%)</div>
+                )}
+                {binderView === 'owned' && (
+                  <div className="sub">{totals.unique} Unique | {totals.copies} Kopien</div>
+                )}
+              </div>
+              <input
+                className="search grow"
+                placeholder="Suche Name, Code, Domain..."
+                value={q}
+                onChange={(e) => setQ(e.target.value)}
+              />
+              <button
+                type="button"
+                className={`chip ${binderOwnedOnly ? 'active' : ''}`}
+                onClick={() => { setBinderOwnedOnly((v) => !v); if (!binderOwnedOnly) setBinderMissing(false) }}
+              >
+                Owned only
+              </button>
+              {binderView !== 'owned' && (
+                <button
+                  type="button"
+                  className={`chip ${binderMissing ? 'active' : ''}`}
+                  onClick={() => { setBinderMissing((v) => !v); if (!binderMissing) setBinderOwnedOnly(false) }}
+                >
+                  Missing
+                </button>
+              )}
+              <button
+                type="button"
+                className={`chip ${signedOnly ? 'active' : ''}`}
+                onClick={() => setSignedOnly((v) => !v)}
+              >
+                Signed
+              </button>
+              <button
+                type="button"
+                className={`chip ${overOnly ? 'active' : ''}`}
+                onClick={() => setOverOnly((v) => !v)}
+              >
+                Overnumbered
+              </button>
+            </div>
+
+            {binderCards.length === 0 && (
+              <div className="empty">
+                {binderView === 'owned' && ownedCards.length === 0
+                  ? 'Noch keine Karten. Geh zu Bulk oder Katalog und fuege welche hinzu.'
+                  : 'Keine Karten fuer diese Filter.'}
+              </div>
+            )}
+
+            <div className="grid">
+              {binderCards.map((c) => {
+                const o = collection[c.id] || { qty: 0, foil: 0 }
+                const n = ownedQty(o)
+                return (
+                  <article key={c.id} className={`card ${n ? 'owned' : 'missing'}`}>
+                    <div className="art" style={{ backgroundImage: c.image ? `url(${c.image})` : undefined }}>
+                      {n > 0 && <div className="badge">x{n}</div>}
+                      <div className="flags">
+                        {c.signed ? <span className="flag signed">Signed</span> : null}
+                        {c.overnumbered && !c.signed ? <span className="flag over">ON</span> : null}
+                        {c.altArt ? <span className="flag alt">Alt</span> : null}
+                      </div>
+                    </div>
+                    <div className="meta">
+                      <div className="name">{displayName(c)}</div>
+                      <div className="sub">{c.code} | {c.set} | {(c.types || []).join('/') || '-'} | {(c.domains || []).join('/') || '-'}</div>
+                      {(() => {
+                        const pl = priceLabel(priceBook?.cards[c.id])
+                        if (!pl || (!pl.main && !pl.foil)) return null
+                        return (
+                          <div className="price">
+                            {pl.main ? <span>{pl.main} EUR</span> : <span className="na">--</span>}
+                            {pl.trend ? <span className="trend">t {pl.trend}</span> : null}
+                            {pl.foil ? <span className="foil">F {pl.foil}</span> : null}
+                          </div>
+                        )
+                      })()}
+                      <div className="row">
+                        <div className="qty" title="Normal">
+                          <button onClick={() => bump(c.id, 'qty', -1)}>-</button>
+                          <b className={o.qty > 0 ? 'ok' : 'muted'}>{o.qty}</b>
+                          <button onClick={() => bump(c.id, 'qty', 1)}>+</button>
+                        </div>
+                        <div className="qty" title="Foil">
+                          <button onClick={() => bump(c.id, 'foil', -1)}>-</button>
+                          <b className={o.foil > 0 ? 'ok' : 'muted'}>{o.foil}F</b>
+                          <button onClick={() => bump(c.id, 'foil', 1)}>+</button>
+                        </div>
+                      </div>
+                    </div>
+                  </article>
+                )
+              })}
+            </div>
+          </>
+        )}
+
+        {tab === 'catalog' && (
           <>
             <div className="toolbar">
               <input
@@ -346,11 +580,9 @@ export default function App() {
               <label className="pill">
                 <input type="checkbox" checked={overOnly} onChange={(e) => setOverOnly(e.target.checked)} /> Overnumbered
               </label>
-              {tab === 'catalog' && (
-                <label className="pill">
-                  <input type="checkbox" checked={ownedOnly} onChange={(e) => setOwnedOnly(e.target.checked)} /> nur Owned
-                </label>
-              )}
+              <label className="pill">
+                <input type="checkbox" checked={ownedOnly} onChange={(e) => setOwnedOnly(e.target.checked)} /> nur Owned
+              </label>
               <button className="btn" onClick={exportCsv}>CSV Export</button>
               <label className="btn">
                 CSV Import
@@ -367,12 +599,8 @@ export default function App() {
               </label>
             </div>
 
-            {tab === 'collection' && ownedCards.length === 0 && (
-              <div className="empty">Noch keine Karten. Geh zu Bulk oder Katalog und fuege welche hinzu.</div>
-            )}
-
             <div className="grid">
-              {(tab === 'collection' ? ownedCards.filter((c) => matchesFilters(c, q.trim().toLowerCase())) : filtered).map((c) => {
+              {filtered.map((c) => {
                 const o = collection[c.id] || { qty: 0, foil: 0 }
                 return (
                   <article key={c.id} className={`card ${ownedQty(o) ? 'owned' : ''}`}>

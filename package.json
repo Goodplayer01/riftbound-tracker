@@ -1,7 +1,7 @@
 {
   "name": "riftbound-tracker",
   "private": true,
-  "version": "0.1.6",
+  "version": "0.1.7",
   "description": "Riftbound-only collection and deck tracker for Windows",
   "author": "Goodplayer01",
   "main": "electron/main.cjs",
