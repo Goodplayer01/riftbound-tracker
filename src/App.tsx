@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type DragEvent as ReactDragEvent, type MouseEvent as ReactMouseEvent } from 'react'
+import { useEffect, useMemo, useRef, useState, type DragEvent as ReactDragEvent, type MouseEvent as ReactMouseEvent } from 'react'
 import type { Card, Catalog, Deck, DeckSection, PriceBook, PriceEntry } from './types'
 import { loadCollection, loadDecks, saveCollection, saveDecks, type Collection } from './storage'
 import { parseBulkTokens, resolveToken } from './parseBulk'
@@ -106,6 +106,7 @@ export default function App() {
   const [dropFlashSection, setDropFlashSection] = useState<DeckSection | null>(null)
   const [dragRejectSection, setDragRejectSection] = useState<DeckSection | null>(null)
   const [draggingCardId, setDraggingCardId] = useState<string | null>(null)
+  const dragGhostRef = useRef<HTMLElement | null>(null)
 
   useEffect(() => {
     window.riftbound?.getVersion().then(setAppVersion).catch(() => {})
@@ -500,29 +501,38 @@ export default function App() {
 
   function onPickerDragStart(e: ReactDragEvent, cardId: string) {
     setDraggingCardId(cardId)
+    setCardPreview(null)
     e.dataTransfer.setData('text/riftbound-card', cardId)
     e.dataTransfer.setData('text/plain', cardId)
     e.dataTransfer.effectAllowed = 'copy'
     const row = e.currentTarget as HTMLElement
+    const card = byId.get(cardId)
     try {
-      const ghost = row.cloneNode(true) as HTMLElement
-      ghost.style.position = 'absolute'
-      ghost.style.top = '-9999px'
-      ghost.style.left = '-9999px'
-      ghost.style.width = `${row.offsetWidth}px`
-      ghost.style.opacity = '0.72'
-      ghost.style.transform = 'scale(0.96)'
-      ghost.style.pointerEvents = 'none'
-      ghost.style.boxShadow = '0 8px 24px rgba(0,0,0,.55)'
-      document.body.appendChild(ghost)
-      e.dataTransfer.setDragImage(ghost, 24, 24)
-      requestAnimationFrame(() => ghost.remove())
+      dragGhostRef.current?.remove()
+      dragGhostRef.current = null
+      // Drag ghost = same card art as hover preview (~240px)
+      if (card?.image) {
+        const ghost = document.createElement('div')
+        ghost.className = 'card-float-preview card-drag-ghost'
+        ghost.style.position = 'fixed'
+        ghost.style.top = '-9999px'
+        ghost.style.left = '-9999px'
+        const img = document.createElement('img')
+        img.src = card.image
+        img.alt = ''
+        ghost.appendChild(img)
+        document.body.appendChild(ghost)
+        dragGhostRef.current = ghost
+        e.dataTransfer.setDragImage(ghost, 120, 168)
+      }
     } catch {}
     row.classList.add('dragging')
   }
 
   function onPickerDragEnd(e: ReactDragEvent) {
     (e.currentTarget as HTMLElement).classList.remove('dragging')
+    dragGhostRef.current?.remove()
+    dragGhostRef.current = null
     setDraggingCardId(null)
     setDragOverSection(null)
     setDragRejectSection(null)

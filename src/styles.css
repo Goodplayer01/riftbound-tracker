@@ -426,6 +426,10 @@ textarea.field { min-height: 160px; resize: vertical; font-family: ui-monospace,
   height: auto;
   vertical-align: top;
 }
+.card-drag-ghost {
+  opacity: 0.92;
+  transform: rotate(2deg) scale(0.98);
+}
 
 
 /* Drag-and-drop: picker → deck sections */
