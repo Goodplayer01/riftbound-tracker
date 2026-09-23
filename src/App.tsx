@@ -236,22 +236,19 @@ export default function App() {
             </button>
           ))}
         </nav>
-        <div className="stats">
-          {totals.unique} Unique | {totals.copies} Kopien | {totals.catalog} im Katalog
+        <div className="stats" style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+          <span>{totals.unique} Unique | {totals.copies} Kopien | {totals.catalog} im Katalog</span>
+          {updateInfo?.status === 'available' && <span className="pill">Update...</span>}
+          {updateInfo?.status === 'downloaded' && (
+            <>
+              <span className="pill">Update bereit - Neustart</span>
+              <button className="btn small primary" onClick={() => window.riftbound?.installUpdate()}>Neustart</button>
+            </>
+          )}
         </div>
       </header>
 
       <main className="main">
-        {updateInfo?.status === 'downloaded' && (
-        <div className="panel" style={{ marginBottom: 12, textAlign: 'left' }}>
-          <strong className="ok">Update {updateInfo.version} ready.</strong>{' '}
-          <button className="btn small primary" onClick={() => window.riftbound?.installUpdate()}>Restart & install</button>
-        </div>
-      )}
-      {updateInfo?.status === 'available' && (
-        <div className="help" style={{ marginBottom: 10 }}>Downloading update {updateInfo.version}...</div>
-      )}
-
         {(tab === 'collection' || tab === 'catalog') && (
           <>
             <div className="toolbar">
