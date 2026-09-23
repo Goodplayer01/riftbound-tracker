@@ -131,6 +131,7 @@ export default function App() {
   const [dragRejectSection, setDragRejectSection] = useState<DeckSection | null>(null)
   const [draggingCardId, setDraggingCardId] = useState<string | null>(null)
   const dragGhostRef = useRef<HTMLElement | null>(null)
+  const dragGhostCleanupRef = useRef<(() => void) | null>(null)
 
   useEffect(() => {
     window.riftbound?.getVersion().then(setAppVersion).catch(() => {})
@@ -649,31 +650,54 @@ export default function App() {
     const row = e.currentTarget as HTMLElement
     const card = byId.get(cardId)
     try {
-      dragGhostRef.current?.remove()
-      dragGhostRef.current = null
-      // Drag ghost = same card art as hover preview (~240px)
+      clearDragGhost()
+      // Opaque card-art ghost: Chromium dims native setDragImage, so hide it
+      // and follow the cursor with our own fully-opaque element instead.
       if (card?.image) {
+        const ox = 120
+        const oy = 168
         const ghost = document.createElement('div')
         ghost.className = 'card-float-preview card-drag-ghost'
         ghost.style.position = 'fixed'
-        ghost.style.top = '-9999px'
-        ghost.style.left = '-9999px'
+        ghost.style.left = `${e.clientX - ox}px`
+        ghost.style.top = `${e.clientY - oy}px`
+        ghost.style.opacity = '1'
         const img = document.createElement('img')
         img.src = card.image
         img.alt = ''
+        img.draggable = false
         ghost.appendChild(img)
         document.body.appendChild(ghost)
         dragGhostRef.current = ghost
-        e.dataTransfer.setDragImage(ghost, 120, 168)
+
+        const blank = document.createElement('canvas')
+        blank.width = 1
+        blank.height = 1
+        e.dataTransfer.setDragImage(blank, 0, 0)
+
+        const move = (ev: DragEvent) => {
+          const g = dragGhostRef.current
+          if (!g) return
+          g.style.left = `${ev.clientX - ox}px`
+          g.style.top = `${ev.clientY - oy}px`
+        }
+        document.addEventListener('dragover', move)
+        dragGhostCleanupRef.current = () => document.removeEventListener('dragover', move)
       }
     } catch {}
     row.classList.add('dragging')
   }
 
-  function onPickerDragEnd(e: ReactDragEvent) {
-    (e.currentTarget as HTMLElement).classList.remove('dragging')
+  function clearDragGhost() {
+    dragGhostCleanupRef.current?.()
+    dragGhostCleanupRef.current = null
     dragGhostRef.current?.remove()
     dragGhostRef.current = null
+  }
+
+  function onPickerDragEnd(e: ReactDragEvent) {
+    (e.currentTarget as HTMLElement).classList.remove('dragging')
+    clearDragGhost()
     setDraggingCardId(null)
     setDragOverSection(null)
     setDragRejectSection(null)

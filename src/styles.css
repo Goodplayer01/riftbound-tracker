@@ -427,8 +427,11 @@ textarea.field { min-height: 160px; resize: vertical; font-family: ui-monospace,
   vertical-align: top;
 }
 .card-drag-ghost {
-  opacity: 0.92;
+  opacity: 1;
+  -webkit-opacity: 1;
   transform: rotate(2deg) scale(0.98);
+  pointer-events: none;
+  z-index: 10000;
 }
 
 
