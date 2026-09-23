@@ -139,7 +139,7 @@ export default function App() {
     })
     setBulkReport(
       `${ok} erkannt` +
-        (miss ? `, ${miss} nicht gefunden: ${missing.slice(0, 12).join(', ')}${missing.length > 12 ? '…' : ''}` : ''),
+        (miss ? `, ${miss} nicht gefunden: ${missing.slice(0, 12).join(', ')}${missing.length > 12 ? '...' : ''}` : ''),
     )
   }
 
@@ -218,7 +218,7 @@ export default function App() {
   }
 
   if (error) return <div className="main err">Fehler: {error}</div>
-  if (!catalog) return <div className="main">Lade Riftbound-Katalog…</div>
+  if (!catalog) return <div className="main">Lade Riftbound-Katalog...</div>
 
   return (
     <div className="app">
@@ -237,7 +237,7 @@ export default function App() {
           ))}
         </nav>
         <div className="stats">
-          {totals.unique} Unique · {totals.copies} Kopien · {totals.catalog} im Katalog
+          {totals.unique} Unique | {totals.copies} Kopien | {totals.catalog} im Katalog
         </div>
       </header>
 
@@ -249,7 +249,7 @@ export default function App() {
         </div>
       )}
       {updateInfo?.status === 'available' && (
-        <div className="help" style={{ marginBottom: 10 }}>Downloading update {updateInfo.version}…</div>
+        <div className="help" style={{ marginBottom: 10 }}>Downloading update {updateInfo.version}...</div>
       )}
 
         {(tab === 'collection' || tab === 'catalog') && (
@@ -257,14 +257,14 @@ export default function App() {
             <div className="toolbar">
               <input
                 className="search grow"
-                placeholder="Suche Name, Code, Domain…"
+                placeholder="Suche Name, Code, Domain..."
                 value={q}
                 onChange={(e) => setQ(e.target.value)}
               />
               <select className="select" style={{ maxWidth: 180 }} value={setFilter} onChange={(e) => setSetFilter(e.target.value)}>
                 <option value="">Alle Sets</option>
                 {Object.entries(sets).map(([id, name]) => (
-                  <option key={id} value={id}>{id} — {name}</option>
+                  <option key={id} value={id}>{id} - {name}</option>
                 ))}
               </select>
               {tab === 'catalog' && (
@@ -303,11 +303,11 @@ export default function App() {
                 return (
                   <article key={c.id} className={`card ${ownedQty(o) ? 'owned' : ''}`}>
                     <div className="art" style={{ backgroundImage: c.image ? `url(${c.image})` : undefined }}>
-                      {ownedQty(o) > 0 && <div className="badge">×{ownedQty(o)}</div>}
+                      {ownedQty(o) > 0 && <div className="badge">x{ownedQty(o)}</div>}
                     </div>
                     <div className="meta">
                       <div className="name">{c.name}</div>
-                      <div className="sub">{c.code} · {c.set} · {(c.domains || []).join('/') || '—'}</div>
+                      <div className="sub">{c.code} | {c.set} | {(c.domains || []).join('/') || '-'}</div>
                       <div className="row">
                         <div className="qty" title="Normal">
                           <button onClick={() => bump(c.id, 'qty', -1)}>-</button>
@@ -316,7 +316,7 @@ export default function App() {
                         </div>
                         <div className="qty" title="Foil">
                           <button onClick={() => bump(c.id, 'foil', -1)}>-</button>
-                          <b className="ok">{o.foil}✦</b>
+                          <b className="ok">{o.foil}F</b>
                           <button onClick={() => bump(c.id, 'foil', 1)}>+</button>
                         </div>
                       </div>
@@ -333,7 +333,7 @@ export default function App() {
             <section className="panel">
               <h2>Bulk hinzufügen</h2>
               <p className="help">
-                Codes reinpasten — Leerzeichen, Komma oder Zeilen. Beispiele: <code>OGN-056/298</code>, <code>OGN-56</code>, <code>UNL 131</code>, Alt-Art <code>OGN-066a</code>.
+                Codes reinpasten - Leerzeichen, Komma oder Zeilen. Beispiele: <code>OGN-056/298</code>, <code>OGN-56</code>, <code>UNL 131</code>, Alt-Art <code>OGN-066a</code>.
                 Für ADF/Phone-Scanner: Bilder separat scannen, Codes hier einfügen (Bilderkennung kommt später).
               </p>
               <textarea
@@ -417,7 +417,7 @@ export default function App() {
                         <div key={dc.id} className="list-item">
                           <div>
                             <div className="name">{c.name}</div>
-                            <div className="sub">{c.code} · besitzt {have}</div>
+                            <div className="sub">{c.code} | besitzt {have}</div>
                           </div>
                           <div className="qty">
                             <button onClick={() => updateDeck((d) => ({
@@ -440,7 +440,7 @@ export default function App() {
             <section className="panel">
               <h2>Karten ins Deck</h2>
               <div className="toolbar">
-                <input className="search grow" placeholder="Suche…" value={q} onChange={(e) => setQ(e.target.value)} />
+                <input className="search grow" placeholder="Suche..." value={q} onChange={(e) => setQ(e.target.value)} />
                 <label className="pill">
                   <input type="checkbox" checked={deckOwnedOnly} onChange={(e) => setDeckOwnedOnly(e.target.checked)} /> nur Owned
                 </label>
@@ -461,7 +461,7 @@ export default function App() {
                     <div key={c.id} className="list-item">
                       <div>
                         <div className="name">{c.name}</div>
-                        <div className="sub">{c.code} · ×{ownedQty(collection[c.id])}</div>
+                        <div className="sub">{c.code} | x{ownedQty(collection[c.id])}</div>
                       </div>
                       <button className="btn small primary" disabled={!activeDeck} onClick={() => addToDeck(c.id)}>
                         Add
