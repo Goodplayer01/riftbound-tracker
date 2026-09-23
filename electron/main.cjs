@@ -5,6 +5,7 @@ const isDev = !app.isPackaged
 let mainWindow
 
 function createWindow() {
+  const iconPath = path.join(__dirname, '..', 'build', 'icon.ico')
   mainWindow = new BrowserWindow({
     width: 1280,
     height: 860,
@@ -14,6 +15,7 @@ function createWindow() {
     backgroundColor: '#0a0c10',
     frame: false,
     autoHideMenuBar: true,
+    icon: iconPath,
     webPreferences: {
       preload: path.join(__dirname, 'preload.cjs'),
       contextIsolation: true,

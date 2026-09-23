@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, type MouseEvent as ReactMouseEvent } from 'react'
 import type { Card, Catalog, Deck, DeckSection, PriceBook, PriceEntry } from './types'
 import { loadCollection, loadDecks, saveCollection, saveDecks, type Collection } from './storage'
 import { parseBulkTokens, resolveToken } from './parseBulk'
@@ -92,6 +92,7 @@ export default function App() {
   const [deckImportText, setDeckImportText] = useState('')
   const [deckImportOpen, setDeckImportOpen] = useState(false)
   const [deckMissingReport, setDeckMissingReport] = useState<{ name: string; need: number; have: number; short: number }[] | null>(null)
+  const [cardPreview, setCardPreview] = useState<{ src: string; x: number; y: number } | null>(null)
   const [appVersion, setAppVersion] = useState('')
   const [updateInfo, setUpdateInfo] = useState<{ status: string; version?: string; message?: string } | null>(null)
   const [isMaximized, setIsMaximized] = useState(false)
@@ -554,6 +555,27 @@ export default function App() {
 
   if (error) return <div className="main err">Fehler: {error}</div>
   if (!catalog) return <div className="main">Lade Riftbound-Katalog...</div>
+
+
+  function showCardPreview(e: ReactMouseEvent, src: string | null | undefined) {
+    if (!src) {
+      setCardPreview(null)
+      return
+    }
+    const pad = 14
+    const pw = 240
+    const ph = 336
+    let x = e.clientX + pad
+    let y = e.clientY + pad
+    if (x + pw > window.innerWidth - 8) x = e.clientX - pw - pad
+    if (y + ph > window.innerHeight - 8) y = Math.max(8, window.innerHeight - ph - 8)
+    if (x < 8) x = 8
+    setCardPreview({ src, x, y })
+  }
+
+  function hideCardPreview() {
+    setCardPreview(null)
+  }
 
   return (
     <div className="app">
@@ -1125,8 +1147,25 @@ export default function App() {
                                 const have = ownedQty(collection[c.id])
                                 const short = dc.qty > have
                                 return (
-                                  <div key={`${dc.id}-${sec}`} className={`list-item deck-card-row${short ? ' short' : ''}`}>
-                                    <div>
+                                                                    <div
+                                    key={`${dc.id}-${sec}`}
+                                    className={`list-item deck-card-row${short ? ' short' : ''}`}
+                                    onMouseEnter={(e) => showCardPreview(e, c.image)}
+                                    onMouseMove={(e) => showCardPreview(e, c.image)}
+                                    onMouseLeave={hideCardPreview}
+                                  >
+                                    {c.image ? (
+                                      <img
+                                        className="deck-thumb"
+                                        src={c.image}
+                                        alt=""
+                                        loading="lazy"
+                                        onError={(e) => { (e.currentTarget as HTMLImageElement).style.visibility = 'hidden' }}
+                                      />
+                                    ) : (
+                                      <div className="deck-thumb deck-thumb-empty" aria-hidden />
+                                    )}
+                                    <div className="grow">
                                       <div className="name">{displayName(c)}</div>
                                       <div className="sub">
                                         {c.energy != null ? `E${c.energy} · ` : ''}{c.code} · besitzt {have}
@@ -1175,8 +1214,25 @@ export default function App() {
                               const have = ownedQty(collection[c.id])
                               const short = dc.qty > have
                               return (
-                                <div key={`${dc.id}-${sec}`} className={`list-item deck-card-row${short ? ' short' : ''}`}>
-                                  <div>
+                                                                <div
+                                  key={`${dc.id}-${sec}`}
+                                  className={`list-item deck-card-row${short ? ' short' : ''}`}
+                                  onMouseEnter={(e) => showCardPreview(e, c.image)}
+                                  onMouseMove={(e) => showCardPreview(e, c.image)}
+                                  onMouseLeave={hideCardPreview}
+                                >
+                                  {c.image ? (
+                                    <img
+                                      className="deck-thumb"
+                                      src={c.image}
+                                      alt=""
+                                      loading="lazy"
+                                      onError={(e) => { (e.currentTarget as HTMLImageElement).style.visibility = 'hidden' }}
+                                    />
+                                  ) : (
+                                    <div className="deck-thumb deck-thumb-empty" aria-hidden />
+                                  )}
+                                  <div className="grow">
                                     <div className="name">{displayName(c)}</div>
                                     <div className="sub">
                                       {c.energy != null ? `E${c.energy} · ` : ''}{c.code} · besitzt {have}
@@ -1230,8 +1286,25 @@ export default function App() {
                   })
                   .slice(0, 100)
                   .map((c) => (
-                    <div key={c.id} className="list-item">
-                      <div>
+                                        <div
+                      key={c.id}
+                      className="list-item"
+                      onMouseEnter={(e) => showCardPreview(e, c.image)}
+                      onMouseMove={(e) => showCardPreview(e, c.image)}
+                      onMouseLeave={hideCardPreview}
+                    >
+                      {c.image ? (
+                        <img
+                          className="deck-thumb"
+                          src={c.image}
+                          alt=""
+                          loading="lazy"
+                          onError={(e) => { (e.currentTarget as HTMLImageElement).style.visibility = 'hidden' }}
+                        />
+                      ) : (
+                        <div className="deck-thumb deck-thumb-empty" aria-hidden />
+                      )}
+                      <div className="grow">
                         <div className="name">{displayName(c)}</div>
                         <div className="sub">{c.code} · x{ownedQty(collection[c.id])}{c.energy != null ? ` · E${c.energy}` : ''}</div>
                       </div>
@@ -1245,6 +1318,15 @@ export default function App() {
           </div>
         )}
       </main>
+      {cardPreview && (
+        <div
+          className="card-float-preview"
+          style={{ left: cardPreview.x, top: cardPreview.y }}
+          aria-hidden
+        >
+          <img src={cardPreview.src} alt="" />
+        </div>
+      )}
     </div>
   )
 }

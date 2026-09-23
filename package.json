@@ -1,8 +1,8 @@
 {
   "name": "riftbound-tracker",
   "private": true,
-  "version": "0.1.16",
-  "description": "Deakrix Riftbound Tracker \u2014 collection and deck tracker for Windows",
+  "version": "0.1.17",
+  "description": "Deakrix Riftbound Tracker — collection and deck tracker for Windows",
   "author": "Goodplayer01",
   "main": "electron/main.cjs",
   "type": "module",
@@ -40,7 +40,9 @@
     "files": [
       "dist/**/*",
       "electron/**/*",
-      "package.json"
+      "package.json",
+      "build/icon.ico",
+      "build/icon.png"
     ],
     "publish": [
       {
@@ -58,7 +60,8 @@
           ]
         }
       ],
-      "artifactName": "RiftboundTracker-Setup-${version}.${ext}"
+      "artifactName": "RiftboundTracker-Setup-${version}.${ext}",
+      "icon": "build/icon.ico"
     },
     "nsis": {
       "oneClick": false,
@@ -66,6 +69,7 @@
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
       "shortcutName": "Deakrix Riftbound Tracker"
-    }
+    },
+    "icon": "build/icon.ico"
   }
 }
