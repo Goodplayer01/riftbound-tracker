@@ -1,11 +1,37 @@
-const { app, BrowserWindow, shell, ipcMain, Menu } = require('electron')
+const { app, BrowserWindow, shell, ipcMain, Menu, nativeImage } = require('electron')
 const path = require('path')
+const fs = require('fs')
 
 const isDev = !app.isPackaged
 let mainWindow
 
+// Windows taskbar identity — must match package.json build.appId
+if (process.platform === 'win32') {
+  app.setAppUserModelId('com.goodplayer01.riftboundtracker')
+}
+
+function resolveAppIcon() {
+  const candidates = []
+  if (app.isPackaged) {
+    // Prefer icon outside asar (extraResources / asarUnpack)
+    candidates.push(path.join(process.resourcesPath, 'icon.ico'))
+    candidates.push(path.join(process.resourcesPath, 'app.asar.unpacked', 'electron', 'icon.ico'))
+    candidates.push(path.join(process.resourcesPath, 'app.asar.unpacked', 'build', 'icon.ico'))
+  }
+  candidates.push(path.join(__dirname, 'icon.ico'))
+  candidates.push(path.join(__dirname, '..', 'build', 'icon.ico'))
+
+  for (const candidate of candidates) {
+    try {
+      if (fs.existsSync(candidate)) return candidate
+    } catch {}
+  }
+  return null
+}
+
 function createWindow() {
-  const iconPath = path.join(__dirname, '..', 'build', 'icon.ico')
+  const iconPath = resolveAppIcon()
+  const icon = iconPath ? nativeImage.createFromPath(iconPath) : undefined
   mainWindow = new BrowserWindow({
     width: 1280,
     height: 860,
@@ -15,7 +41,7 @@ function createWindow() {
     backgroundColor: '#0a0c10',
     frame: false,
     autoHideMenuBar: true,
-    icon: iconPath,
+    icon: icon && !icon.isEmpty() ? icon : iconPath || undefined,
     webPreferences: {
       preload: path.join(__dirname, 'preload.cjs'),
       contextIsolation: true,
