@@ -1,9 +1,8 @@
-import { useEffect, useMemo, useState, type MouseEvent as ReactMouseEvent } from 'react'
+import { useEffect, useMemo, useState, type DragEvent as ReactDragEvent, type MouseEvent as ReactMouseEvent } from 'react'
 import type { Card, Catalog, Deck, DeckSection, PriceBook, PriceEntry } from './types'
 import { loadCollection, loadDecks, saveCollection, saveDecks, type Collection } from './storage'
 import { parseBulkTokens, resolveToken } from './parseBulk'
 import {
-  SAMPLE_KENNEN_DECK,
   SECTION_ADD_LABEL,
   SECTION_CAPS,
   SECTION_LABEL,
@@ -103,6 +102,10 @@ export default function App() {
   const [binderMissing, setBinderMissing] = useState(false)
   const [binderRarity, setBinderRarity] = useState<string | null>(null)
   const [domainFilter, setDomainFilter] = useState<string | null>(null)
+  const [dragOverSection, setDragOverSection] = useState<DeckSection | null>(null)
+  const [dropFlashSection, setDropFlashSection] = useState<DeckSection | null>(null)
+  const [dragRejectSection, setDragRejectSection] = useState<DeckSection | null>(null)
+  const [draggingCardId, setDraggingCardId] = useState<string | null>(null)
 
   useEffect(() => {
     window.riftbound?.getVersion().then(setAppVersion).catch(() => {})
@@ -493,6 +496,88 @@ export default function App() {
       }
       return { ...d, cards: [...d.cards, { id: cardId, qty: 1, section: sec }] }
     })
+  }
+
+  function onPickerDragStart(e: ReactDragEvent, cardId: string) {
+    setDraggingCardId(cardId)
+    e.dataTransfer.setData('text/riftbound-card', cardId)
+    e.dataTransfer.setData('text/plain', cardId)
+    e.dataTransfer.effectAllowed = 'copy'
+    const row = e.currentTarget as HTMLElement
+    try {
+      const ghost = row.cloneNode(true) as HTMLElement
+      ghost.style.position = 'absolute'
+      ghost.style.top = '-9999px'
+      ghost.style.left = '-9999px'
+      ghost.style.width = `${row.offsetWidth}px`
+      ghost.style.opacity = '0.72'
+      ghost.style.transform = 'scale(0.96)'
+      ghost.style.pointerEvents = 'none'
+      ghost.style.boxShadow = '0 8px 24px rgba(0,0,0,.55)'
+      document.body.appendChild(ghost)
+      e.dataTransfer.setDragImage(ghost, 24, 24)
+      requestAnimationFrame(() => ghost.remove())
+    } catch {}
+    row.classList.add('dragging')
+  }
+
+  function onPickerDragEnd(e: ReactDragEvent) {
+    (e.currentTarget as HTMLElement).classList.remove('dragging')
+    setDraggingCardId(null)
+    setDragOverSection(null)
+    setDragRejectSection(null)
+  }
+
+  function onSectionDragOver(e: ReactDragEvent, sec: DeckSection) {
+    const types = Array.from(e.dataTransfer.types || [])
+    const raw = types.includes('text/riftbound-card') || types.includes('text/plain') || !!draggingCardId
+    if (!raw) return
+    e.preventDefault()
+    const c = draggingCardId ? byId.get(draggingCardId) : undefined
+    if (c && !cardFitsSection(c, sec)) {
+      e.dataTransfer.dropEffect = 'none'
+      setDragOverSection(null)
+      setDragRejectSection(sec)
+      return
+    }
+    e.dataTransfer.dropEffect = 'copy'
+    setDragRejectSection(null)
+    setDragOverSection(sec)
+  }
+
+  function onSectionDragLeave(e: ReactDragEvent, sec: DeckSection) {
+    const related = e.relatedTarget as Node | null
+    if (related && (e.currentTarget as HTMLElement).contains(related)) return
+    setDragOverSection((cur) => (cur === sec ? null : cur))
+    setDragRejectSection((cur) => (cur === sec ? null : cur))
+  }
+
+  function onSectionDrop(e: ReactDragEvent, sec: DeckSection) {
+    e.preventDefault()
+    e.stopPropagation()
+    const cardId = e.dataTransfer.getData('text/riftbound-card') || e.dataTransfer.getData('text/plain')
+    setDragOverSection(null)
+    setDragRejectSection(null)
+    if (!cardId || !activeDeckId) return
+    const c = byId.get(cardId)
+    if (!c || !cardFitsSection(c, sec)) {
+      setDragRejectSection(sec)
+      window.setTimeout(() => setDragRejectSection((cur) => (cur === sec ? null : cur)), 450)
+      return
+    }
+    setActiveSection(sec)
+    addToDeck(cardId, sec)
+    setDropFlashSection(sec)
+    window.setTimeout(() => setDropFlashSection((cur) => (cur === sec ? null : cur)), 380)
+  }
+
+  function sectionDropClass(sec: DeckSection) {
+    const parts = ['deck-sec']
+    if (activeSection === sec) parts.push('active')
+    if (dragOverSection === sec) parts.push('drag-over')
+    if (dropFlashSection === sec) parts.push('drop-flash')
+    if (dragRejectSection === sec) parts.push('drag-reject')
+    return parts.join(' ')
   }
 
   function bumpDeckCard(cardId: string, section: DeckSection, delta: number) {
@@ -1083,7 +1168,6 @@ export default function App() {
                         rows={10}
                       />
                       <div className="toolbar" style={{ marginBottom: 0 }}>
-                        <button className="btn" onClick={() => setDeckImportText(SAMPLE_KENNEN_DECK)}>Kennen-Beispiel</button>
                         <button className="btn primary" disabled={!deckImportText.trim()} onClick={() => runDeckImport(deckImportText)}>Importieren</button>
                       </div>
                     </div>
@@ -1093,12 +1177,19 @@ export default function App() {
                     const under = underOwnedLines(activeDeck)
                     if (!under.length) return null
                     const totalShort = under.reduce((s, x) => s + x.short, 0)
+                    const karteWord = under.length === 1 ? 'Karte' : 'Karten'
+                    const kopieWord = totalShort === 1 ? 'Kopie' : 'Kopien'
                     return (
                       <div className="deck-warn">
-                        <div><b>Unterbesitz:</b> {under.length} Karten, {totalShort} Kopien fehlen</div>
+                        <div>
+                          <b>Fehlende Kopien in der Sammlung:</b>{' '}
+                          {under.length} {karteWord} ({totalShort} {kopieWord})
+                        </div>
                         <ul>
                           {under.slice(0, 12).map((u) => (
-                            <li key={u.id}>{u.name}: braucht {u.need}, besitzt {u.have} (−{u.short})</li>
+                            <li key={u.id}>
+                              {u.name} — benötigt {u.need}, vorhanden {u.have}
+                            </li>
                           ))}
                           {under.length > 12 && <li>… und {under.length - 12} weitere</li>}
                         </ul>
@@ -1110,13 +1201,13 @@ export default function App() {
                     <div className="deck-missing">
                       <b>Import / Fehlende Karten</b>
                       <div className="sub">
-                        {deckMissingReport.filter((r) => r.short > 0).reduce((s, r) => s + r.short, 0)} Kopien unterbesetzt
+                        {deckMissingReport.filter((r) => r.short > 0).reduce((s, r) => s + r.short, 0)} fehlende Kopien
                         {deckMissingReport.some((r) => r.need === 0) ? ' · manche Namen nicht gefunden' : ''}
                       </div>
                       <ul>
                         {deckMissingReport.slice(0, 16).map((r, i) => (
                           <li key={i}>
-                            {r.need === 0 ? r.name : `${r.name}: braucht ${r.need}, besitzt ${r.have} (−${r.short})`}
+                            {r.need === 0 ? r.name : `${r.name} — benötigt ${r.need}, vorhanden ${r.have}`}
                           </li>
                         ))}
                       </ul>
@@ -1133,8 +1224,11 @@ export default function App() {
                         return (
                           <div
                             key={sec}
-                            className={`deck-sec${activeSection === sec ? ' active' : ''}`}
+                            className={sectionDropClass(sec)}
                             onClick={() => setActiveSection(sec)}
+                            onDragOver={(e) => onSectionDragOver(e, sec)}
+                            onDragLeave={(e) => onSectionDragLeave(e, sec)}
+                            onDrop={(e) => onSectionDrop(e, sec)}
                           >
                             <div className="deck-sec-head">
                               <span className="deck-sec-title">{SECTION_LABEL[sec]}</span>
@@ -1200,8 +1294,11 @@ export default function App() {
                       return (
                         <div
                           key={sec}
-                          className={`deck-sec${activeSection === sec ? ' active' : ''}`}
+                          className={sectionDropClass(sec)}
                           onClick={() => setActiveSection(sec)}
+                          onDragOver={(e) => onSectionDragOver(e, sec)}
+                          onDragLeave={(e) => onSectionDragLeave(e, sec)}
+                          onDrop={(e) => onSectionDrop(e, sec)}
                         >
                           <div className="deck-sec-head">
                             <span className="deck-sec-title">{SECTION_LABEL[sec]}</span>
@@ -1288,7 +1385,10 @@ export default function App() {
                   .map((c) => (
                                         <div
                       key={c.id}
-                      className="list-item"
+                      className="list-item picker-card"
+                      draggable={!!activeDeck}
+                      onDragStart={(e) => onPickerDragStart(e, c.id)}
+                      onDragEnd={onPickerDragEnd}
                       onMouseEnter={(e) => showCardPreview(e, c.image)}
                       onMouseMove={(e) => showCardPreview(e, c.image)}
                       onMouseLeave={hideCardPreview}

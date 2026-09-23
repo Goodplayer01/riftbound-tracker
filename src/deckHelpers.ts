@@ -19,21 +19,21 @@ export const SECTION_CAPS: Record<DeckSection, number> = {
 }
 
 export const SECTION_LABEL: Record<DeckSection, string> = {
-  legend: 'Legende',
+  legend: 'Legend',
   champion: 'Champion',
-  main: 'Hauptdeck',
-  battlefield: 'Gefechtsfelder',
+  main: 'Main Deck',
+  battlefield: 'Battlefields',
   sideboard: 'Sideboard',
-  rune: 'Runen',
+  rune: 'Runes',
 }
 
 export const SECTION_ADD_LABEL: Record<DeckSection, string> = {
-  legend: '+ Legende hinzufügen',
-  champion: '+ Champion hinzufügen',
-  main: '+ Hauptdeck-Karten hinzufügen',
-  battlefield: '+ Gefechtsfelder hinzufügen',
-  sideboard: '+ Sideboard-Karten hinzufügen',
-  rune: '+ Runen hinzufügen',
+  legend: '+ Add Legend',
+  champion: '+ Add Champion',
+  main: '+ Add Main Deck',
+  battlefield: '+ Add Battlefields',
+  sideboard: '+ Add Sideboard',
+  rune: '+ Add Runes',
 }
 
 const SECTION_HEADER: Record<string, DeckSection> = {
@@ -200,21 +200,6 @@ export function parseDeckImport(text: string, cards: Card[]): ImportResult {
   return { cards: [...acc.values()], lines, unmatched }
 }
 
-export const SAMPLE_KENNEN_DECK = `Legend:
-1 Kennen, Heart of the Tempest
-Champion:
-1 Kennen, Storm of Shuriken
-MainDeck:
-3 Traveling Merchant
-Battlefields:
-1 Bandle Tree
-1 Altar to Unity
-1 Back-Alley Bar
-Runes:
-9 Chaos Rune
-3 Order Rune
-Sideboard:
-`
 
 export function sectionCount(cards: DeckCard[], section: DeckSection) {
   return cards.filter((c) => sectionOf(c) === section).reduce((s, c) => s + c.qty, 0)
