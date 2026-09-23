@@ -20,9 +20,12 @@ function fmtEur(n: number | null | undefined) {
 
 function priceLabel(p?: PriceEntry) {
   if (!p) return null
-  const t = fmtEur(p.trend)
-  const f = fmtEur(p.foilTrend)
-  return { trend: t, foil: f }
+  // Prefer Cardmarket low (buyable listing) as primary; trend secondary
+  const low = fmtEur(p.low)
+  const trend = fmtEur(p.trend)
+  const main = low || trend
+  const foil = fmtEur(p.foilLow) || fmtEur(p.foilTrend)
+  return { main, trend: low && trend && low !== trend ? trend : null, foil }
 }
 
 export default function App() {
@@ -147,9 +150,10 @@ export default function App() {
       const foil = o?.foil || 0
       if (qty <= 0 && foil <= 0) continue
       let add = 0
-      if (qty > 0 && p.trend != null) add += qty * p.trend
-      if (foil > 0 && p.foilTrend != null) add += foil * p.foilTrend
-      else if (foil > 0 && p.trend != null) add += foil * p.trend
+      const unit = p.low != null ? p.low : p.trend
+      const foilUnit = p.foilLow != null ? p.foilLow : p.foilTrend != null ? p.foilTrend : unit
+      if (qty > 0 && unit != null) add += qty * unit
+      if (foil > 0 && foilUnit != null) add += foil * foilUnit
       if (add > 0) {
         sum += add
         priced += 1
@@ -300,7 +304,7 @@ export default function App() {
         <div className="stats" style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
           <span>{totals.unique} Unique | {totals.copies} Kopien | {totals.catalog} im Katalog</span>
           {collectionValue && (
-            <span className="value-pill" title="Schaetzung: Owned * Trend + Foil * FoilTrend (EUR, Cardmarket)">
+            <span className="value-pill" title="Schaetzung: Owned * Low + Foil * FoilLow (EUR, Cardmarket)">
               ~{collectionValue.sum.toFixed(2)} EUR
             </span>
           )}
@@ -385,10 +389,11 @@ export default function App() {
                       <div className="sub">{c.code} | {c.set} | {(c.types || []).join('/') || '-'} | {(c.domains || []).join('/') || '-'}</div>
                       {(() => {
                         const pl = priceLabel(priceBook?.cards[c.id])
-                        if (!pl || (!pl.trend && !pl.foil)) return null
+                        if (!pl || (!pl.main && !pl.foil)) return null
                         return (
                           <div className="price">
-                            {pl.trend ? <span>{pl.trend} EUR</span> : <span className="na">--</span>}
+                            {pl.main ? <span>{pl.main} EUR</span> : <span className="na">--</span>}
+                            {pl.trend ? <span className="trend">t {pl.trend}</span> : null}
                             {pl.foil ? <span className="foil">F {pl.foil}</span> : null}
                           </div>
                         )
