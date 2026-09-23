@@ -33,10 +33,12 @@ export type Deck = {
 export type Catalog = { sets: Record<string, string>; cards: Card[] }
 
 export type PriceEntry = {
-  trend: number | null
   low: number | null
-  foilTrend: number | null
+  high?: number | null
+  avg30?: number | null
+  trend: number | null
   foilLow: number | null
+  foilTrend: number | null
   cmId: string
 }
 

@@ -101,6 +101,11 @@ ipcMain.handle('window:isMaximized', () => !!mainWindow?.isMaximized())
 ipcMain.handle('window:close', () => {
   mainWindow?.close()
 })
+ipcMain.handle('shell:openExternal', async (_e, url) => {
+  if (typeof url !== 'string' || !/^https?:\/\//i.test(url)) return { ok: false }
+  await shell.openExternal(url)
+  return { ok: true }
+})
 
 app.whenReady().then(() => {
   createWindow()

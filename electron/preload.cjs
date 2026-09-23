@@ -13,4 +13,5 @@ contextBridge.exposeInMainWorld('riftbound', {
   windowMaximize: () => ipcRenderer.invoke('window:maximize'),
   windowIsMaximized: () => ipcRenderer.invoke('window:isMaximized'),
   windowClose: () => ipcRenderer.invoke('window:close'),
+  openExternal: (url) => ipcRenderer.invoke('shell:openExternal', url),
 })

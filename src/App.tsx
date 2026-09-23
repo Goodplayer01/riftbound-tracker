@@ -20,12 +20,28 @@ function fmtEur(n: number | null | undefined) {
 
 function priceLabel(p?: PriceEntry) {
   if (!p) return null
-  // Prefer Cardmarket low (buyable listing) as primary; trend secondary
   const low = fmtEur(p.low)
-  const trend = fmtEur(p.trend)
-  const main = low || trend
+  const high = fmtEur(p.high ?? null)
+  const avg30 = fmtEur(p.avg30 ?? null)
   const foil = fmtEur(p.foilLow) || fmtEur(p.foilTrend)
-  return { main, trend: low && trend && low !== trend ? trend : null, foil }
+  return { low, high, avg30, foil, cmId: p.cmId || null }
+}
+
+function cmUrl(cmId?: string | null) {
+  if (!cmId) return null
+  return `https://www.cardmarket.com/de/Riftbound/Products/Singles?idProduct=${cmId}`
+}
+
+const RARITY_ORDER = ['Common', 'Uncommon', 'Rare', 'Epic', 'Showcase'] as const
+
+function openCm(cmId?: string | null) {
+  const url = cmUrl(cmId)
+  if (!url) return
+  if (window.riftbound?.openExternal) {
+    void window.riftbound.openExternal(url)
+  } else {
+    window.open(url, '_blank', 'noopener,noreferrer')
+  }
 }
 
 export default function App() {
@@ -276,6 +292,29 @@ export default function App() {
     return [...list].sort((a, b) => a.cn - b.cn || a.code.localeCompare(b.code))
   }, [binderView, cards, collection, q, binderOwnedOnly, binderMissing, signedOnly, overOnly])
 
+  const rarityBySet = useMemo(() => {
+    const out: Record<string, { rarity: string; total: number; owned: number }[]> = {}
+    for (const id of Object.keys(sets)) {
+      const counts = new Map<string, { total: number; owned: number }>()
+      for (const c of cards) {
+        if (c.set !== id) continue
+        const r = c.rarity || 'Other'
+        const cur = counts.get(r) || { total: 0, owned: 0 }
+        cur.total += 1
+        if (ownedQty(collection[c.id]) > 0) cur.owned += 1
+        counts.set(r, cur)
+      }
+      const rows: { rarity: string; total: number; owned: number }[] = RARITY_ORDER
+        .filter((r) => counts.has(r))
+        .map((r) => ({ rarity: r, total: counts.get(r)!.total, owned: counts.get(r)!.owned }))
+      for (const [r, v] of counts) {
+        if (!(RARITY_ORDER as readonly string[]).includes(r)) rows.push({ rarity: r, total: v.total, owned: v.owned })
+      }
+      out[id] = rows
+    }
+    return out
+  }, [cards, sets, collection])
+
   const activeBinderProgress = useMemo(() => {
     if (!binderView || binderView === 'owned') return null
     return setProgress.find((s) => s.id === binderView) || null
@@ -423,7 +462,7 @@ export default function App() {
         <div className="stats no-drag" style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
           <span>{totals.unique} Unique | {totals.copies} Kopien | {totals.catalog} im Katalog</span>
           {collectionValue && (
-            <span className="value-pill" title="Schätzung: Owned * Low + Foil * FoilLow (EUR, Cardmarket)">
+            <span className="value-pill" title="Schätzung: Owned * ab (Low) + Foil * FoilLow (EUR, Cardmarket)">
               ~{collectionValue.sum.toFixed(2)} EUR
             </span>
           )}
@@ -487,6 +526,19 @@ export default function App() {
                   <div className="binder-progress">{s.owned} / {s.total} ({s.pct}%)</div>
                   <div className="binder-bar"><span style={{ width: `${s.pct}%` }} /></div>
                   {s.eur != null && <div className="binder-eur">~{s.eur.toFixed(2)} EUR</div>}
+                  <div className="rarity-block">
+                    <div className="rarity-heading">Nach Seltenheit</div>
+                    {(rarityBySet[s.id] || []).map((row) => {
+                      const pct = row.total ? Math.round((row.owned / row.total) * 100) : 0
+                      return (
+                        <div key={row.rarity} className={`rarity-row rar-${row.rarity.toLowerCase()}`}>
+                          <span className="rarity-label">{row.rarity}</span>
+                          <div className="rarity-track"><span style={{ width: `${pct}%` }} /></div>
+                          <span className="rarity-count">{row.owned} / {row.total}</span>
+                        </div>
+                      )
+                    })}
+                  </div>
                 </button>
               ))}
               <button type="button" className="binder-tile binder-tile-owned" onClick={() => { setBinderView('owned'); setQ(''); setBinderOwnedOnly(false); setBinderMissing(false) }}>
@@ -511,6 +563,21 @@ export default function App() {
                 </div>
                 {activeBinderProgress && (
                   <div className="sub">{activeBinderProgress.owned}/{activeBinderProgress.total} ({activeBinderProgress.pct}%)</div>
+                )}
+                {binderView && binderView !== 'owned' && (rarityBySet[binderView] || []).length > 0 && (
+                  <div className="rarity-block rarity-block-inline">
+                    <div className="rarity-heading">Nach Seltenheit</div>
+                    {(rarityBySet[binderView] || []).map((row) => {
+                      const pct = row.total ? Math.round((row.owned / row.total) * 100) : 0
+                      return (
+                        <div key={row.rarity} className={`rarity-row rar-${row.rarity.toLowerCase()}`}>
+                          <span className="rarity-label">{row.rarity}</span>
+                          <div className="rarity-track"><span style={{ width: `${pct}%` }} /></div>
+                          <span className="rarity-count">{row.owned} / {row.total}</span>
+                        </div>
+                      )
+                    })}
+                  </div>
                 )}
                 {binderView === 'owned' && (
                   <div className="sub">{totals.unique} Unique | {totals.copies} Kopien</div>
@@ -577,16 +644,23 @@ export default function App() {
                       </div>
                     </div>
                     <div className="meta">
-                      <div className="name">{displayName(c)}</div>
+                      <button
+                        type="button"
+                        className="name name-link"
+                        title="Auf Cardmarket öffnen"
+                        disabled={!priceBook?.cards[c.id]?.cmId}
+                        onClick={() => openCm(priceBook?.cards[c.id]?.cmId)}
+                      >{displayName(c)}</button>
                       <div className="sub">{c.code} | {c.set} | {(c.types || []).join('/') || '-'} | {(c.domains || []).join('/') || '-'}</div>
                       {(() => {
                         const pl = priceLabel(priceBook?.cards[c.id])
-                        if (!pl || (!pl.main && !pl.foil)) return null
+                        if (!pl || (!pl.low && !pl.avg30 && !pl.high && !pl.foil)) return null
                         return (
                           <div className="price">
-                            {pl.main ? <span>{pl.main} EUR</span> : <span className="na">--</span>}
-                            {pl.trend ? <span className="trend">t {pl.trend}</span> : null}
-                            {pl.foil ? <span className="foil">F {pl.foil}</span> : null}
+                            {pl.low ? <span title="Niedrigster Preis (ab)">ab {pl.low}</span> : <span className="na">ab --</span>}
+                            {pl.high ? <span className="high" title="Höchster Preis">max {pl.high}</span> : null}
+                            {pl.avg30 ? <span className="avg30" title="30-Tage-Durchschnitt">Ø30 {pl.avg30}</span> : null}
+                            {pl.foil ? <span className="foil" title="Foil Low">F {pl.foil}</span> : null}
                           </div>
                         )
                       })()}
@@ -670,16 +744,23 @@ export default function App() {
                       </div>
                     </div>
                     <div className="meta">
-                      <div className="name">{displayName(c)}</div>
+                      <button
+                        type="button"
+                        className="name name-link"
+                        title="Auf Cardmarket öffnen"
+                        disabled={!priceBook?.cards[c.id]?.cmId}
+                        onClick={() => openCm(priceBook?.cards[c.id]?.cmId)}
+                      >{displayName(c)}</button>
                       <div className="sub">{c.code} | {c.set} | {(c.types || []).join('/') || '-'} | {(c.domains || []).join('/') || '-'}</div>
                       {(() => {
                         const pl = priceLabel(priceBook?.cards[c.id])
-                        if (!pl || (!pl.main && !pl.foil)) return null
+                        if (!pl || (!pl.low && !pl.avg30 && !pl.high && !pl.foil)) return null
                         return (
                           <div className="price">
-                            {pl.main ? <span>{pl.main} EUR</span> : <span className="na">--</span>}
-                            {pl.trend ? <span className="trend">t {pl.trend}</span> : null}
-                            {pl.foil ? <span className="foil">F {pl.foil}</span> : null}
+                            {pl.low ? <span title="Niedrigster Preis (ab)">ab {pl.low}</span> : <span className="na">ab --</span>}
+                            {pl.high ? <span className="high" title="Höchster Preis">max {pl.high}</span> : null}
+                            {pl.avg30 ? <span className="avg30" title="30-Tage-Durchschnitt">Ø30 {pl.avg30}</span> : null}
+                            {pl.foil ? <span className="foil" title="Foil Low">F {pl.foil}</span> : null}
                           </div>
                         )
                       })()}

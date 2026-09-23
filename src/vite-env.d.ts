@@ -18,6 +18,7 @@ declare global {
       windowMaximize: () => Promise<boolean>
       windowIsMaximized: () => Promise<boolean>
       windowClose: () => Promise<void>
+      openExternal: (url: string) => Promise<{ ok: boolean }>
     }
   }
 }

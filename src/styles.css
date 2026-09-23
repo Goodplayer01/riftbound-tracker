@@ -156,8 +156,49 @@ textarea.field { min-height: 160px; resize: vertical; font-family: ui-monospace,
   font-size: 12px; color: var(--warn); font-variant-numeric: tabular-nums;
 }
 .price .foil { color: var(--accent2); }
-.price .trend { color: var(--muted); font-size: 0.85em; margin-left: 0.35em; }
+.price .avg30 { color: #d7c38a; }
+.price .high { color: var(--muted); }
 .price .na { color: var(--muted); }
+.name-link {
+  display: block; width: 100%; text-align: left;
+  background: none; border: 0; padding: 0; margin: 0;
+  color: inherit; font: inherit; font-weight: 700; cursor: pointer;
+}
+.name-link:hover:not(:disabled) { color: var(--accent); text-decoration: underline; }
+.name-link:disabled { cursor: default; opacity: 0.95; }
+.rarity-block {
+  margin-top: 8px; display: grid; gap: 4px;
+}
+.rarity-block-inline {
+  margin-top: 10px; max-width: 420px;
+}
+.rarity-heading {
+  font-size: 10px; letter-spacing: .12em; text-transform: uppercase;
+  color: var(--muted); font-weight: 700; margin-bottom: 2px;
+}
+.rarity-row {
+  display: grid; grid-template-columns: 78px 1fr 52px; gap: 8px; align-items: center;
+  font-size: 11px; color: var(--muted);
+}
+.rarity-label { font-weight: 600; }
+.rarity-count { text-align: right; font-variant-numeric: tabular-nums; }
+.rarity-track {
+  height: 8px; border-radius: 999px; background: #1c2230; overflow: hidden;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.04);
+}
+.rarity-track span {
+  display: block; height: 100%; border-radius: 999px; min-width: 0;
+}
+.rar-common .rarity-track span { background: #9aa3b5; }
+.rar-common .rarity-count { color: #9aa3b5; }
+.rar-uncommon .rarity-track span { background: #6ec8c4; }
+.rar-uncommon .rarity-count { color: #6ec8c4; }
+.rar-rare .rarity-track span { background: #e05ca8; }
+.rar-rare .rarity-count, .rar-rare .rarity-label { color: #e05ca8; }
+.rar-epic .rarity-track span { background: #e0893a; }
+.rar-epic .rarity-count, .rar-epic .rarity-label { color: #e0893a; }
+.rar-showcase .rarity-track span { background: #e8c66a; }
+.rar-showcase .rarity-count, .rar-showcase .rarity-label { color: #e8c66a; }
 .value-pill {
   border: 1px solid var(--border-gold); background: rgba(42,36,24,.7);
   border-radius: 999px; padding: 4px 10px; font-size: 12px; color: var(--warn);
