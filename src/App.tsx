@@ -70,14 +70,23 @@ function cmUrl(p?: PriceEntry | null) {
 const RARITY_ORDER = ['Common', 'Uncommon', 'Rare', 'Epic', 'Showcase'] as const
 
 const DOMAINS = ['Fury', 'Calm', 'Mind', 'Body', 'Chaos', 'Order', 'Colorless'] as const
+
+/** Resolve public/ assets against the page URL (Electron loadFile + asar).
+ *  Never append ?query — Chromium file:// / asar lookups treat the query as
+ *  part of the path and break every domain icon. Cache-bust is unnecessary
+ *  because updates replace the whole asar. Matches cards.json / prices.json. */
+function publicAsset(rel: string) {
+  return new URL(rel, window.location.href).href
+}
+
 const DOMAIN_ICON: Record<(typeof DOMAINS)[number], string> = {
-  Fury: 'domains/fury.png?v=20',
-  Calm: 'domains/calm.png?v=20',
-  Mind: 'domains/mind.png?v=20',
-  Body: 'domains/body.png?v=20',
-  Chaos: 'domains/chaos.png?v=20',
-  Order: 'domains/order.png?v=20',
-  Colorless: 'domains/colorless.png?v=20',
+  Fury: publicAsset('domains/fury.png'),
+  Calm: publicAsset('domains/calm.png'),
+  Mind: publicAsset('domains/mind.png'),
+  Body: publicAsset('domains/body.png'),
+  Chaos: publicAsset('domains/chaos.png'),
+  Order: publicAsset('domains/order.png'),
+  Colorless: publicAsset('domains/colorless.png'),
 }
 
 function openCm(p?: PriceEntry | null) {
