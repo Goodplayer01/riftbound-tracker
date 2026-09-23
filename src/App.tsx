@@ -35,6 +35,16 @@ function cmUrl(p?: PriceEntry | null) {
 
 const RARITY_ORDER = ['Common', 'Uncommon', 'Rare', 'Epic', 'Showcase'] as const
 
+const DOMAINS = ['Fury', 'Body', 'Calm', 'Chaos', 'Mind', 'Order'] as const
+const DOMAIN_ICON: Record<(typeof DOMAINS)[number], string> = {
+  Fury: 'domains/fury.png',
+  Body: 'domains/body.png',
+  Calm: 'domains/calm.png',
+  Chaos: 'domains/chaos.png',
+  Mind: 'domains/mind.png',
+  Order: 'domains/order.png',
+}
+
 function openCm(p?: PriceEntry | null) {
   const url = cmUrl(p)
   if (!url) return
@@ -71,6 +81,7 @@ export default function App() {
   const [binderOwnedOnly, setBinderOwnedOnly] = useState(false)
   const [binderMissing, setBinderMissing] = useState(false)
   const [binderRarity, setBinderRarity] = useState<string | null>(null)
+  const [domainFilter, setDomainFilter] = useState<string | null>(null)
 
   useEffect(() => {
     window.riftbound?.getVersion().then(setAppVersion).catch(() => {})
@@ -151,6 +162,7 @@ export default function App() {
   function matchesFilters(c: Card, query: string) {
     if (setFilter && c.set !== setFilter) return false
     if (typeFilter && !(c.types || []).includes(typeFilter)) return false
+    if (domainFilter && !(c.domains || []).includes(domainFilter)) return false
     if (signedOnly && !c.signed) return false
     if (overOnly && !c.overnumbered) return false
     if (!query) return true
@@ -179,7 +191,7 @@ export default function App() {
       if (ownedOnly && ownedQty(collection[c.id]) <= 0) return false
       return matchesFilters(c, query)
     })
-  }, [cards, q, setFilter, typeFilter, signedOnly, overOnly, ownedOnly, collection])
+  }, [cards, q, setFilter, typeFilter, domainFilter, signedOnly, overOnly, ownedOnly, collection])
 
   const ownedCards = useMemo(
     () => cards.filter((c) => ownedQty(collection[c.id]) > 0),
@@ -277,6 +289,7 @@ export default function App() {
       if (binderOwnedOnly && n <= 0) return false
       if (binderMissing && n > 0) return false
       if (binderRarity && (c.rarity || 'Other') !== binderRarity) return false
+      if (domainFilter && !(c.domains || []).includes(domainFilter)) return false
       if (signedOnly && !c.signed) return false
       if (overOnly && !c.overnumbered) return false
       if (!query) return true
@@ -293,7 +306,7 @@ export default function App() {
       return hay.includes(query)
     })
     return [...list].sort((a, b) => a.cn - b.cn || a.code.localeCompare(b.code))
-  }, [binderView, cards, collection, q, binderOwnedOnly, binderMissing, binderRarity, signedOnly, overOnly])
+  }, [binderView, cards, collection, q, binderOwnedOnly, binderMissing, binderRarity, domainFilter, signedOnly, overOnly])
 
   const rarityBySet = useMemo(() => {
     const out: Record<string, { rarity: string; total: number; owned: number }[]> = {}
@@ -645,6 +658,23 @@ export default function App() {
                   Missing
                 </button>
               )}
+              <div className="domain-row" role="group" aria-label="Domain filter">
+                {DOMAINS.map((d) => {
+                  const active = domainFilter === d
+                  return (
+                    <button
+                      key={d}
+                      type="button"
+                      className={`domain-btn${active ? ' active' : ''}`}
+                      title={active ? `${d} Filter entfernen` : `Domain ${d}`}
+                      aria-pressed={active}
+                      onClick={() => setDomainFilter((cur) => (cur === d ? null : d))}
+                    >
+                      <img src={DOMAIN_ICON[d]} alt={d} draggable={false} />
+                    </button>
+                  )
+                })}
+              </div>
               <button
                 type="button"
                 className={`chip ${signedOnly ? 'active' : ''}`}
@@ -745,6 +775,23 @@ export default function App() {
                   <option key={t} value={t}>{t}</option>
                 ))}
               </select>
+              <div className="domain-row" role="group" aria-label="Domain filter">
+                {DOMAINS.map((d) => {
+                  const active = domainFilter === d
+                  return (
+                    <button
+                      key={d}
+                      type="button"
+                      className={`domain-btn${active ? ' active' : ''}`}
+                      title={active ? `${d} Filter entfernen` : `Domain ${d}`}
+                      aria-pressed={active}
+                      onClick={() => setDomainFilter((cur) => (cur === d ? null : d))}
+                    >
+                      <img src={DOMAIN_ICON[d]} alt={d} draggable={false} />
+                    </button>
+                  )
+                })}
+              </div>
               <label className="pill">
                 <input type="checkbox" checked={signedOnly} onChange={(e) => setSignedOnly(e.target.checked)} /> Signed
               </label>

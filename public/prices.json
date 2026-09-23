@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-23T18:14:34.954Z",
+  "updatedAt": "2026-09-23T19:56:16.733Z",
   "currency": "EUR",
   "source": "tcg-cardmarket-api",
   "cards": {
@@ -10622,6 +10622,438 @@
       "foilTrend": 4.47,
       "cmId": "884160",
       "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Unleashed/Leblanc-Fragmented-V2-Showcase"
+    },
+    "arc-001": {
+      "low": 69.99,
+      "avg30": null,
+      "trend": 0,
+      "foilLow": 69.99,
+      "foilTrend": 80.04,
+      "cmId": "858987",
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Origins-Promos/Vi-Destructive"
+    },
+    "arc-002": {
+      "low": 75,
+      "avg30": null,
+      "trend": 0,
+      "foilLow": 75,
+      "foilTrend": 101.61,
+      "cmId": "858988",
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Origins-Promos/Caitlyn-Patrolling"
+    },
+    "arc-003": {
+      "low": 48.99,
+      "avg30": 49.9,
+      "trend": 49.9,
+      "foilLow": 48.99,
+      "foilTrend": 71.45,
+      "cmId": "858986",
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Origins-Promos/Heimerdinger-Inventor"
+    },
+    "arc-004": {
+      "low": 73.99,
+      "avg30": 45,
+      "trend": 45,
+      "foilLow": 73.99,
+      "foilTrend": 78.83,
+      "cmId": "858989",
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Origins-Promos/Warwick-Hunter"
+    },
+    "arc-005": {
+      "low": 222,
+      "avg30": null,
+      "trend": 0,
+      "foilLow": 222,
+      "foilTrend": 291.52,
+      "cmId": "858991",
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Origins-Promos/Jinx-Rebel"
+    },
+    "arc-006": {
+      "low": 179.98,
+      "avg30": 76.67,
+      "trend": 94.48,
+      "foilLow": 179.98,
+      "foilTrend": 157.24,
+      "cmId": "858990",
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Origins-Promos/Viktor-Leader"
+    },
+    "ogn-007b": {
+      "low": 1.98,
+      "avg30": 3.17,
+      "trend": 2.96,
+      "foilLow": 1.98,
+      "foilTrend": 2.91,
+      "cmId": "856120",
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Origins-Promos/Fury-Rune"
+    },
+    "ogn-042b": {
+      "low": 2,
+      "avg30": 4.04,
+      "trend": 3.16,
+      "foilLow": 2,
+      "foilTrend": 3.38,
+      "cmId": "856118",
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Origins-Promos/Calm-Rune"
+    },
+    "ogn-089b": {
+      "low": 2.5,
+      "avg30": 4.25,
+      "trend": 3.49,
+      "foilLow": 2.5,
+      "foilTrend": 3.39,
+      "cmId": "856121",
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Origins-Promos/Mind-Rune"
+    },
+    "ogn-126b": {
+      "low": 1.5,
+      "avg30": 3.69,
+      "trend": 3.12,
+      "foilLow": 1.5,
+      "foilTrend": 2.96,
+      "cmId": "856117",
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Origins-Promos/Body-Rune"
+    },
+    "ogn-151b-nexus": {
+      "low": 40,
+      "avg30": 56.67,
+      "trend": 60,
+      "foilLow": 40,
+      "foilTrend": 43.01,
+      "cmId": "888291",
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Origins-Promos/Lee-Sin-Centered"
+    },
+    "ogn-166b": {
+      "low": 3.7,
+      "avg30": 5.46,
+      "trend": 4.75,
+      "foilLow": 3.7,
+      "foilTrend": 5.03,
+      "cmId": "856119",
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Origins-Promos/Chaos-Rune"
+    },
+    "ogn-197b-nexus": {
+      "low": 595,
+      "avg30": null,
+      "trend": 0,
+      "foilLow": 595,
+      "foilTrend": 1306.44,
+      "cmId": "856102",
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Origins-Promos/Teemo-Scout"
+    },
+    "ogn-214b": {
+      "low": 2,
+      "avg30": 3.48,
+      "trend": 3.44,
+      "foilLow": 2,
+      "foilTrend": 3.18,
+      "cmId": "856122",
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Origins-Promos/Order-Rune"
+    },
+    "ogn-263-worlds": {
+      "low": 200,
+      "avg30": null,
+      "trend": 0,
+      "foilLow": 200,
+      "foilTrend": 355.4,
+      "cmId": "862802",
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Origins-Promos/Teemo-Swift-Scout"
+    },
+    "ogn-276-worlds": {
+      "low": 27,
+      "avg30": 23.99,
+      "trend": 23.99,
+      "foilLow": 27,
+      "foilTrend": 30.63,
+      "cmId": "865382",
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Origins-Promos/Aspirants-Climb"
+    },
+    "ogn-278-worlds": {
+      "low": 27,
+      "avg30": null,
+      "trend": 0,
+      "foilLow": 27,
+      "foilTrend": 24.16,
+      "cmId": "865381",
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Origins-Promos/Bandle-Tree"
+    },
+    "ogn-293-worlds": {
+      "low": 24,
+      "avg30": null,
+      "trend": 0,
+      "foilLow": 24,
+      "foilTrend": 24.84,
+      "cmId": "865383",
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Origins-Promos/The-Grand-Plaza"
+    },
+    "ogn-999": {
+      "low": 0.02,
+      "avg30": 0.08,
+      "trend": 0.1,
+      "foilLow": null,
+      "foilTrend": 0,
+      "cmId": "847547",
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Origins/Buff"
+    },
+    "sfd-r01": {
+      "low": 0.02,
+      "avg30": 0.07,
+      "trend": 0.09,
+      "foilLow": null,
+      "foilTrend": 0,
+      "cmId": "872478",
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Spiritforged/Fury-Rune"
+    },
+    "sfd-r01a": {
+      "low": 1.35,
+      "avg30": 3.87,
+      "trend": 2.82,
+      "foilLow": 1.35,
+      "foilTrend": 2.99,
+      "cmId": "871893",
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Spiritforged/Fury-Rune-V2-Showcase"
+    },
+    "sfd-r02": {
+      "low": 0.02,
+      "avg30": 0.12,
+      "trend": 0.14,
+      "foilLow": null,
+      "foilTrend": 0,
+      "cmId": "872479",
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Spiritforged/Calm-Rune"
+    },
+    "sfd-r02a": {
+      "low": 2.89,
+      "avg30": 5.94,
+      "trend": 6.36,
+      "foilLow": 2.89,
+      "foilTrend": 4.67,
+      "cmId": "871894",
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Spiritforged/Calm-Rune-V2-Showcase"
+    },
+    "sfd-r03": {
+      "low": 0.02,
+      "avg30": 0.09,
+      "trend": 0.09,
+      "foilLow": null,
+      "foilTrend": 0,
+      "cmId": "872480",
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Spiritforged/Mind-Rune"
+    },
+    "sfd-r03a": {
+      "low": 1.9,
+      "avg30": 4.92,
+      "trend": 4.75,
+      "foilLow": 1.9,
+      "foilTrend": 3.76,
+      "cmId": "871895",
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Spiritforged/Mind-Rune-V2-Showcase"
+    },
+    "sfd-r04": {
+      "low": 0.02,
+      "avg30": 0.08,
+      "trend": 0.07,
+      "foilLow": null,
+      "foilTrend": 0,
+      "cmId": "872481",
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Spiritforged/Body-Rune"
+    },
+    "sfd-r04a": {
+      "low": 1.84,
+      "avg30": 4.2,
+      "trend": 4.09,
+      "foilLow": 1.84,
+      "foilTrend": 3.09,
+      "cmId": "871896",
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Spiritforged/Body-Rune-V2-Showcase"
+    },
+    "sfd-r05": {
+      "low": 0.02,
+      "avg30": 0.11,
+      "trend": 0.08,
+      "foilLow": null,
+      "foilTrend": 0,
+      "cmId": "872482",
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Spiritforged/Chaos-Rune"
+    },
+    "sfd-r05a": {
+      "low": 2.4,
+      "avg30": 5.76,
+      "trend": 5.76,
+      "foilLow": 2.4,
+      "foilTrend": 4.28,
+      "cmId": "871897",
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Spiritforged/Chaos-Rune-V2-Showcase"
+    },
+    "sfd-r06": {
+      "low": 0.02,
+      "avg30": 0.11,
+      "trend": 0.07,
+      "foilLow": null,
+      "foilTrend": 0,
+      "cmId": "872483",
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Spiritforged/Order-Rune"
+    },
+    "sfd-r06a": {
+      "low": 2.89,
+      "avg30": 4.53,
+      "trend": 4.35,
+      "foilLow": 2.89,
+      "foilTrend": 3.94,
+      "cmId": "871898",
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Spiritforged/Order-Rune-V2-Showcase"
+    },
+    "sfd-t01": {
+      "low": 0.02,
+      "avg30": 0.07,
+      "trend": 0.08,
+      "foilLow": null,
+      "foilTrend": 0,
+      "cmId": "866999",
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Spiritforged/Mech"
+    },
+    "sfd-t02": {
+      "low": 0.02,
+      "avg30": 0.16,
+      "trend": 0.15,
+      "foilLow": null,
+      "foilTrend": 0,
+      "cmId": "867000",
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Spiritforged/Sand-Soldier"
+    },
+    "unl-r01": {
+      "low": 1.95,
+      "avg30": 5.19,
+      "trend": 4.77,
+      "foilLow": 1.95,
+      "foilTrend": 3.63,
+      "cmId": "885238",
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Unleashed/Fury-Rune"
+    },
+    "unl-r01a": {
+      "low": 0.02,
+      "avg30": 0.09,
+      "trend": 0.07,
+      "foilLow": null,
+      "foilTrend": 0,
+      "cmId": "888470",
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Unleashed/Fury-Rune-V2-Showcase"
+    },
+    "unl-r02": {
+      "low": 3,
+      "avg30": 6.94,
+      "trend": 7.17,
+      "foilLow": 3,
+      "foilTrend": 6.71,
+      "cmId": "885239",
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Unleashed/Calm-Rune"
+    },
+    "unl-r02a": {
+      "low": 0.02,
+      "avg30": 0.1,
+      "trend": 0.09,
+      "foilLow": null,
+      "foilTrend": 0,
+      "cmId": "888471",
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Unleashed/Calm-Rune-V2-Showcase"
+    },
+    "unl-r03": {
+      "low": 2.8,
+      "avg30": 5.16,
+      "trend": 4.86,
+      "foilLow": 2.8,
+      "foilTrend": 4.52,
+      "cmId": "885240",
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Unleashed/Mind-Rune"
+    },
+    "unl-r03a": {
+      "low": 0.02,
+      "avg30": 0.1,
+      "trend": 0.08,
+      "foilLow": null,
+      "foilTrend": 0,
+      "cmId": "888472",
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Unleashed/Mind-Rune-V2-Showcase"
+    },
+    "unl-r04": {
+      "low": 2.95,
+      "avg30": 6.01,
+      "trend": 5.77,
+      "foilLow": 2.95,
+      "foilTrend": 4.71,
+      "cmId": "885241",
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Unleashed/Body-Rune"
+    },
+    "unl-r04a": {
+      "low": 0.02,
+      "avg30": 0.09,
+      "trend": 0.07,
+      "foilLow": null,
+      "foilTrend": 0,
+      "cmId": "888473",
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Unleashed/Body-Rune-V2-Showcase"
+    },
+    "unl-r05": {
+      "low": 3.45,
+      "avg30": 7.61,
+      "trend": 7.24,
+      "foilLow": 3.45,
+      "foilTrend": 6.27,
+      "cmId": "885242",
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Unleashed/Chaos-Rune"
+    },
+    "unl-r05a": {
+      "low": 0.02,
+      "avg30": 0.08,
+      "trend": 0.06,
+      "foilLow": null,
+      "foilTrend": 0,
+      "cmId": "888474",
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Unleashed/Chaos-Rune-V2-Showcase"
+    },
+    "unl-r06": {
+      "low": 2.8,
+      "avg30": 4.48,
+      "trend": 4.31,
+      "foilLow": 2.8,
+      "foilTrend": 4.18,
+      "cmId": "885243",
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Unleashed/Order-Rune"
+    },
+    "unl-r06a": {
+      "low": 0.02,
+      "avg30": 0.09,
+      "trend": 0.05,
+      "foilLow": null,
+      "foilTrend": 0,
+      "cmId": "888475",
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Unleashed/Order-Rune-V2-Showcase"
+    },
+    "ven-t01": {
+      "low": 0.02,
+      "avg30": 0.11,
+      "trend": 0.08,
+      "foilLow": null,
+      "foilTrend": 0,
+      "cmId": "898150",
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Vendetta/Empowered"
+    },
+    "ven-t05": {
+      "low": 0.02,
+      "avg30": 0.11,
+      "trend": 0.1,
+      "foilLow": null,
+      "foilTrend": 0,
+      "cmId": "898152",
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Vendetta/Shadow-Clone"
+    },
+    "ven-t06": {
+      "low": 0.02,
+      "avg30": 0.16,
+      "trend": 0.08,
+      "foilLow": null,
+      "foilTrend": 0,
+      "cmId": "898153",
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Vendetta/Tentacle"
     }
   }
 }

@@ -312,3 +312,28 @@ textarea.field { min-height: 160px; resize: vertical; font-family: ui-monospace,
 @media (prefers-reduced-motion: reduce) {
   .card.shimmer .art::after { animation: none; opacity: .35; }
 }
+
+/* Domain filter icons */
+.domain-row {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 2px 4px; border-radius: 999px;
+  border: 1px solid var(--border); background: rgba(0,0,0,.2);
+}
+.domain-btn {
+  width: 30px; height: 30px; padding: 0; border: none; border-radius: 50%;
+  background: transparent; cursor: pointer; display: grid; place-items: center;
+  outline: none; transition: box-shadow .12s ease, transform .12s ease;
+}
+.domain-btn img {
+  width: 26px; height: 26px; border-radius: 50%; display: block;
+  object-fit: cover; pointer-events: none;
+}
+.domain-btn:hover { transform: translateY(-1px); }
+.domain-btn:focus-visible {
+  box-shadow: 0 0 0 2px rgba(212,175,55,.45);
+}
+.domain-btn.active {
+  box-shadow:
+    0 0 0 2px rgba(212,175,55,.85),
+    0 0 10px rgba(212,175,55,.35);
+}
