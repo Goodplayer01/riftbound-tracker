@@ -1,7 +1,7 @@
 {
   "name": "riftbound-tracker",
   "private": true,
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "Riftbound-only collection and deck tracker for Windows",
   "author": "Goodplayer01",
   "main": "electron/main.cjs",
@@ -34,11 +34,30 @@
   "build": {
     "appId": "com.goodplayer01.riftboundtracker",
     "productName": "Riftbound Tracker",
-    "directories": { "output": "release" },
-    "files": ["dist/**/*", "electron/**/*", "package.json"],
-    "publish": [{ "provider": "github", "owner": "Goodplayer01", "repo": "riftbound-tracker" }],
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "electron/**/*",
+      "package.json"
+    ],
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "Goodplayer01",
+        "repo": "riftbound-tracker"
+      }
+    ],
     "win": {
-      "target": [{ "target": "nsis", "arch": ["x64"] }],
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
       "artifactName": "RiftboundTracker-Setup-${version}.${ext}"
     },
     "nsis": {

@@ -25,3 +25,18 @@ export type Deck = {
 }
 
 export type Catalog = { sets: Record<string, string>; cards: Card[] }
+
+export type PriceEntry = {
+  trend: number | null
+  low: number | null
+  foilTrend: number | null
+  foilLow: number | null
+  cmId: string
+}
+
+export type PriceBook = {
+  updatedAt: string
+  currency: string
+  source: string
+  cards: Record<string, PriceEntry>
+}

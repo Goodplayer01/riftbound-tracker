@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import type { Card, Catalog, Deck } from './types'
+import type { Card, Catalog, Deck, PriceBook, PriceEntry } from './types'
 import { loadCollection, loadDecks, saveCollection, saveDecks, type Collection } from './storage'
 import { parseBulkTokens, resolveToken } from './parseBulk'
 
@@ -11,6 +11,18 @@ function uid() {
 
 function ownedQty(o?: { qty: number; foil: number }) {
   return (o?.qty || 0) + (o?.foil || 0)
+}
+
+function fmtEur(n: number | null | undefined) {
+  if (n == null || Number.isNaN(n)) return null
+  return n.toFixed(2)
+}
+
+function priceLabel(p?: PriceEntry) {
+  if (!p) return null
+  const t = fmtEur(p.trend)
+  const f = fmtEur(p.foilTrend)
+  return { trend: t, foil: f }
 }
 
 export default function App() {
@@ -29,6 +41,7 @@ export default function App() {
   const [deckOwnedOnly, setDeckOwnedOnly] = useState(true)
   const [appVersion, setAppVersion] = useState('')
   const [updateInfo, setUpdateInfo] = useState<{ status: string; version?: string; message?: string } | null>(null)
+  const [priceBook, setPriceBook] = useState<PriceBook | null>(null)
 
   useEffect(() => {
     window.riftbound?.getVersion().then(setAppVersion).catch(() => {})
@@ -48,6 +61,10 @@ export default function App() {
       })
       .then((data: Catalog) => setCatalog(data))
       .catch((e: Error) => setError(e.message))
+    fetch(new URL('prices.json', window.location.href))
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data: PriceBook | null) => { if (data) setPriceBook(data) })
+      .catch(() => {})
   }, [])
 
   useEffect(() => saveCollection(collection), [collection])
@@ -96,6 +113,28 @@ export default function App() {
     }
     return { unique, copies, catalog: cards.length }
   }, [collection, cards.length])
+
+  const collectionValue = useMemo(() => {
+    if (!priceBook) return null
+    let sum = 0
+    let priced = 0
+    for (const [id, o] of Object.entries(collection)) {
+      const p = priceBook.cards[id]
+      if (!p) continue
+      const qty = o?.qty || 0
+      const foil = o?.foil || 0
+      if (qty <= 0 && foil <= 0) continue
+      let add = 0
+      if (qty > 0 && p.trend != null) add += qty * p.trend
+      if (foil > 0 && p.foilTrend != null) add += foil * p.foilTrend
+      else if (foil > 0 && p.trend != null) add += foil * p.trend
+      if (add > 0) {
+        sum += add
+        priced += 1
+      }
+    }
+    return { sum, priced }
+  }, [collection, priceBook])
 
   function bump(id: string, field: 'qty' | 'foil', delta: number) {
     setCollection((prev) => {
@@ -238,6 +277,11 @@ export default function App() {
         </nav>
         <div className="stats" style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
           <span>{totals.unique} Unique | {totals.copies} Kopien | {totals.catalog} im Katalog</span>
+          {collectionValue && (
+            <span className="value-pill" title="Schaetzung: Owned * Trend + Foil * FoilTrend (EUR, Cardmarket)">
+              ~{collectionValue.sum.toFixed(2)} EUR
+            </span>
+          )}
           {updateInfo?.status === 'available' && <span className="pill">Update...</span>}
           {updateInfo?.status === 'downloaded' && (
             <>
@@ -305,6 +349,16 @@ export default function App() {
                     <div className="meta">
                       <div className="name">{c.name}</div>
                       <div className="sub">{c.code} | {c.set} | {(c.domains || []).join('/') || '-'}</div>
+                      {(() => {
+                        const pl = priceLabel(priceBook?.cards[c.id])
+                        if (!pl || (!pl.trend && !pl.foil)) return null
+                        return (
+                          <div className="price">
+                            {pl.trend ? <span>{pl.trend} EUR</span> : <span className="na">--</span>}
+                            {pl.foil ? <span className="foil">F {pl.foil}</span> : null}
+                          </div>
+                        )
+                      })()}
                       <div className="row">
                         <div className="qty" title="Normal">
                           <button onClick={() => bump(c.id, 'qty', -1)}>-</button>
@@ -356,6 +410,9 @@ export default function App() {
                 <div className="list-item"><span>Unique</span><b>{totals.unique}</b></div>
                 <div className="list-item"><span>Kopien</span><b>{totals.copies}</b></div>
                 <div className="list-item"><span>Katalog</span><b>{totals.catalog}</b></div>
+                {collectionValue && (
+                  <div className="list-item"><span>Wert (EUR)</span><b>~{collectionValue.sum.toFixed(2)}</b></div>
+                )}
               </div>
             </section>
           </div>
