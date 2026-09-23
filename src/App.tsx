@@ -47,6 +47,7 @@ export default function App() {
   const [deckOwnedOnly, setDeckOwnedOnly] = useState(true)
   const [appVersion, setAppVersion] = useState('')
   const [updateInfo, setUpdateInfo] = useState<{ status: string; version?: string; message?: string } | null>(null)
+  const [isMaximized, setIsMaximized] = useState(false)
   const [priceBook, setPriceBook] = useState<PriceBook | null>(null)
   // null = binder dashboard; 'owned' = all owned; set code = that set binder
   const [binderView, setBinderView] = useState<string | null>(null)
@@ -55,9 +56,46 @@ export default function App() {
 
   useEffect(() => {
     window.riftbound?.getVersion().then(setAppVersion).catch(() => {})
+    window.riftbound?.windowIsMaximized?.().then(setIsMaximized).catch(() => {})
     const off = window.riftbound?.onUpdater((p) => setUpdateInfo(p))
     return () => { off?.() }
   }, [])
+
+  async function checkUpdates() {
+    setUpdateInfo({ status: 'checking' })
+    try {
+      await window.riftbound?.checkForUpdates?.()
+    } catch (e) {
+      setUpdateInfo({ status: 'error', message: String(e) })
+    }
+  }
+
+  async function toggleMaximize() {
+    try {
+      const next = await window.riftbound?.windowMaximize?.()
+      if (typeof next === 'boolean') setIsMaximized(next)
+    } catch {}
+  }
+
+  function updateLabel() {
+    const s = updateInfo?.status
+    if (s === 'checking') return 'Suche Updates...'
+    if (s === 'available') return `Update ${updateInfo?.version || ''}...`
+    if (s === 'downloaded') return `Update bereit ${updateInfo?.version || ''}`.trim()
+    if (s === 'not-available') return 'Aktuell'
+    if (s === 'error') return 'Update-Fehler'
+    return appVersion ? `v${appVersion}` : 'v?'
+  }
+
+  function updateTitle() {
+    const s = updateInfo?.status
+    if (s === 'checking') return 'Suche nach Updates...'
+    if (s === 'available') return `Update ${updateInfo?.version} verfügbar`
+    if (s === 'downloaded') return `Update ${updateInfo?.version} bereit - Neustart`
+    if (s === 'not-available') return 'Keine Updates - aktuell'
+    if (s === 'error') return updateInfo?.message || 'Update-Fehler'
+    return 'Nach Updates suchen'
+  }
 
   useEffect(() => {
     setCollection(loadCollection())
@@ -368,9 +406,9 @@ export default function App() {
 
   return (
     <div className="app">
-      <header className="top">
-        <div className="brand">Riftbound <span>Tracker</span>{appVersion ? <span className="pill" style={{ marginLeft: 8 }}>v{appVersion}</span> : null}</div>
-        <nav className="tabs">
+      <header className="top titlebar">
+        <div className="brand">Riftbound <span>Tracker</span></div>
+        <nav className="tabs no-drag">
           {([
             ['collection', 'Sammlung'],
             ['catalog', 'Katalog'],
@@ -382,20 +420,39 @@ export default function App() {
             </button>
           ))}
         </nav>
-        <div className="stats" style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+        <div className="stats no-drag" style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
           <span>{totals.unique} Unique | {totals.copies} Kopien | {totals.catalog} im Katalog</span>
           {collectionValue && (
             <span className="value-pill" title="Schätzung: Owned * Low + Foil * FoilLow (EUR, Cardmarket)">
               ~{collectionValue.sum.toFixed(2)} EUR
             </span>
           )}
-          {updateInfo?.status === 'available' && <span className="pill">Update...</span>}
           {updateInfo?.status === 'downloaded' && (
-            <>
-              <span className="pill">Update bereit - Neustart</span>
-              <button className="btn small primary" onClick={() => window.riftbound?.installUpdate()}>Neustart</button>
-            </>
+            <button className="btn small primary" onClick={() => window.riftbound?.installUpdate()}>Neustart</button>
           )}
+        </div>
+        <div className="chrome no-drag">
+          <button
+            type="button"
+            className={`version-btn${updateInfo?.status ? ` status-${updateInfo.status}` : ''}`}
+            title={updateTitle()}
+            onClick={checkUpdates}
+          >
+            {updateLabel()}
+          </button>
+          <button type="button" className="win-btn" title="Minimieren" aria-label="Minimieren" onClick={() => window.riftbound?.windowMinimize?.()}>
+            <svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><path d="M1 5h8" stroke="currentColor" strokeWidth="1.2" fill="none" /></svg>
+          </button>
+          <button type="button" className="win-btn" title={isMaximized ? 'Wiederherstellen' : 'Maximieren'} aria-label={isMaximized ? 'Wiederherstellen' : 'Maximieren'} onClick={toggleMaximize}>
+            {isMaximized ? (
+              <svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><path d="M2.5 3.5h5v5h-5zM3.5 2.5h5v5" stroke="currentColor" strokeWidth="1.1" fill="none" /></svg>
+            ) : (
+              <svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><rect x="1.5" y="1.5" width="7" height="7" stroke="currentColor" strokeWidth="1.2" fill="none" /></svg>
+            )}
+          </button>
+          <button type="button" className="win-btn win-close" title="Schließen" aria-label="Schließen" onClick={() => window.riftbound?.windowClose?.()}>
+            <svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><path d="M2 2l6 6M8 2L2 8" stroke="currentColor" strokeWidth="1.2" fill="none" /></svg>
+          </button>
         </div>
       </header>
 

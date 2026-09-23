@@ -1,4 +1,4 @@
-const { app, BrowserWindow, shell, ipcMain } = require('electron')
+const { app, BrowserWindow, shell, ipcMain, Menu } = require('electron')
 const path = require('path')
 
 const isDev = !app.isPackaged
@@ -12,12 +12,16 @@ function createWindow() {
     minHeight: 640,
     title: 'Riftbound Tracker',
     backgroundColor: '#0a0c10',
+    frame: false,
+    autoHideMenuBar: true,
     webPreferences: {
       preload: path.join(__dirname, 'preload.cjs'),
       contextIsolation: true,
       nodeIntegration: false,
     },
   })
+
+  Menu.setApplicationMenu(null)
 
   if (isDev) {
     mainWindow.loadURL(process.env.VITE_DEV_SERVER_URL || 'http://127.0.0.1:5173')
@@ -38,8 +42,14 @@ async function setupAutoUpdater() {
     const { autoUpdater } = require('electron-updater')
     autoUpdater.autoDownload = true
     autoUpdater.autoInstallOnAppQuit = true
+    autoUpdater.on('checking-for-update', () => {
+      mainWindow?.webContents.send('updater', { status: 'checking' })
+    })
     autoUpdater.on('update-available', (info) => {
       mainWindow?.webContents.send('updater', { status: 'available', version: info.version })
+    })
+    autoUpdater.on('update-not-available', (info) => {
+      mainWindow?.webContents.send('updater', { status: 'not-available', version: info?.version })
     })
     autoUpdater.on('update-downloaded', (info) => {
       mainWindow?.webContents.send('updater', { status: 'downloaded', version: info.version })
@@ -59,6 +69,37 @@ ipcMain.handle('updater:install', () => {
     const { autoUpdater } = require('electron-updater')
     autoUpdater.quitAndInstall()
   } catch {}
+})
+ipcMain.handle('updater:check', async () => {
+  if (isDev) {
+    mainWindow?.webContents.send('updater', { status: 'not-available', version: app.getVersion() })
+    return { ok: true, dev: true }
+  }
+  try {
+    const { autoUpdater } = require('electron-updater')
+    const result = await autoUpdater.checkForUpdates()
+    return { ok: true, version: result?.updateInfo?.version }
+  } catch (e) {
+    mainWindow?.webContents.send('updater', { status: 'error', message: String(e) })
+    return { ok: false, error: String(e) }
+  }
+})
+
+ipcMain.handle('window:minimize', () => {
+  mainWindow?.minimize()
+})
+ipcMain.handle('window:maximize', () => {
+  if (!mainWindow) return false
+  if (mainWindow.isMaximized()) {
+    mainWindow.unmaximize()
+    return false
+  }
+  mainWindow.maximize()
+  return true
+})
+ipcMain.handle('window:isMaximized', () => !!mainWindow?.isMaximized())
+ipcMain.handle('window:close', () => {
+  mainWindow?.close()
 })
 
 app.whenReady().then(() => {
