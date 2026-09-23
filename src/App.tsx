@@ -41,7 +41,7 @@ export default function App() {
     const d = loadDecks()
     setDecks(d)
     if (d[0]) setActiveDeckId(d[0].id)
-    fetch('/cards.json')
+    fetch(new URL('cards.json', window.location.href))
       .then((r) => {
         if (!r.ok) throw new Error('cards.json fehlt')
         return r.json()
