@@ -49,7 +49,7 @@ function subtractOwnedCopies(o: { qty: number; foil: number }, sellQty: number) 
 
 function fmtEur(n: number | null | undefined) {
   if (n == null || Number.isNaN(n)) return null
-  return n.toFixed(2)
+  return `${n.toFixed(2)}€`
 }
 
 function priceLabel(p?: PriceEntry) {
