@@ -1,8 +1,8 @@
 {
   "name": "riftbound-tracker",
   "private": true,
-  "version": "0.1.19",
-  "description": "Deakrix Riftbound Tracker \u2014 collection and deck tracker for Windows",
+  "version": "0.1.20",
+  "description": "Deakrix Riftbound Tracker — collection and deck tracker for Windows",
   "author": "Goodplayer01",
   "main": "electron/main.cjs",
   "type": "module",

@@ -49,15 +49,15 @@ function cmUrl(p?: PriceEntry | null) {
 
 const RARITY_ORDER = ['Common', 'Uncommon', 'Rare', 'Epic', 'Showcase'] as const
 
-const DOMAINS = ['Fury', 'Body', 'Calm', 'Chaos', 'Mind', 'Order', 'Colorless'] as const
+const DOMAINS = ['Fury', 'Calm', 'Mind', 'Body', 'Chaos', 'Order', 'Colorless'] as const
 const DOMAIN_ICON: Record<(typeof DOMAINS)[number], string> = {
-  Fury: 'domains/fury.png',
-  Body: 'domains/body.png',
-  Calm: 'domains/calm.png',
-  Chaos: 'domains/chaos.png',
-  Mind: 'domains/mind.png',
-  Order: 'domains/order.png',
-  Colorless: 'domains/colorless.png',
+  Fury: 'domains/fury.png?v=20',
+  Calm: 'domains/calm.png?v=20',
+  Mind: 'domains/mind.png?v=20',
+  Body: 'domains/body.png?v=20',
+  Chaos: 'domains/chaos.png?v=20',
+  Order: 'domains/order.png?v=20',
+  Colorless: 'domains/colorless.png?v=20',
 }
 
 function openCm(p?: PriceEntry | null) {
