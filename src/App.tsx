@@ -361,7 +361,7 @@ export default function App() {
       return next
     })
     setBulkReport(
-      `${ok} erkannt` +
+      `${ok} gefunden` +
         (miss ? `, ${miss} nicht gefunden: ${missing.slice(0, 12).join(', ')}${missing.length > 12 ? '...' : ''}` : ''),
     )
   }
@@ -451,7 +451,7 @@ export default function App() {
           {([
             ['collection', 'Sammlung'],
             ['catalog', 'Katalog'],
-            ['bulk', 'Bulk'],
+            ['bulk', 'Codes'],
             ['decks', 'Decks'],
           ] as const).map(([id, label]) => (
             <button key={id} className={`tab ${tab === id ? 'active' : ''}`} onClick={() => setTab(id)}>
@@ -787,10 +787,9 @@ export default function App() {
         {tab === 'bulk' && (
           <div className="split">
             <section className="panel">
-              <h2>Bulk hinzufügen</h2>
+              <h2>Karten per Code</h2>
               <p className="help">
-                Codes reinpasten - Leerzeichen, Komma oder Zeilen. Beispiele: <code>OGN-056/298</code>, <code>OGN-56</code>, <code>UNL 131</code>, Alt-Art <code>OGN-066a</code>.
-                Für ADF/Phone-Scanner: Bilder separat scannen, Codes hier einfügen (Bilderkennung kommt später).
+                Sammlercodes einfügen: Leerzeichen, Komma oder je Zeile einen Code. Beispiele: <code>OGN-056/298</code>, <code>OGN-56</code>, <code>UNL 131</code>, Alt-Art <code>OGN-066a</code>. Scanner: Codes aus dem Scan hier einfügen (Bilderkennung folgt später).
               </p>
               <textarea
                 className="field"
@@ -800,17 +799,17 @@ export default function App() {
               />
               <div className="toolbar" style={{ marginTop: 10 }}>
                 <label className="pill">
-                  <input type="checkbox" checked={bulkFoil} onChange={(e) => setBulkFoil(e.target.checked)} /> als Foil
+                  <input type="checkbox" checked={bulkFoil} onChange={(e) => setBulkFoil(e.target.checked)} /> Als Foil
                 </label>
-                <button className="btn primary" onClick={() => applyBulk('add')}>+1 je Token</button>
-                <button className="btn" onClick={() => applyBulk('set')}>Setze auf 1</button>
-                <button className="btn danger" onClick={() => applyBulk('remove')}>-1 je Token</button>
+                <button className="btn primary" onClick={() => applyBulk('add')}>+1 je Code</button>
+                <button className="btn" onClick={() => applyBulk('set')}>Auf 1 setzen</button>
+                <button className="btn danger" onClick={() => applyBulk('remove')}>-1 je Code</button>
               </div>
               {bulkReport && <p className="help">{bulkReport}</p>}
             </section>
             <section className="panel">
-              <h2>Schnell</h2>
-              <p className="help">Sammlung liegt lokal im Browser (localStorage). CSV Export als Backup nutzen.</p>
+              <h2>Übersicht</h2>
+              <p className="help">Sammlung liegt lokal auf diesem PC. CSV Export als Backup nutzen.</p>
               <div className="list">
                 <div className="list-item"><span>Unique</span><b>{totals.unique}</b></div>
                 <div className="list-item"><span>Kopien</span><b>{totals.copies}</b></div>
