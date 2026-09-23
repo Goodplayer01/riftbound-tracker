@@ -11,13 +11,14 @@ import {
   deckTotalQtyById,
   displayCardName,
   inferSection,
+  matchCardByName,
   migrateDeck,
   parseDeckImport,
   sectionCount,
   sectionOf,
 } from './deckHelpers'
 
-type Tab = 'collection' | 'catalog' | 'bulk' | 'decks'
+type Tab = 'collection' | 'catalog' | 'sales' | 'bulk' | 'decks'
 
 function uid() {
   return crypto.randomUUID()
@@ -25,6 +26,25 @@ function uid() {
 
 function ownedQty(o?: { qty: number; foil: number }) {
   return (o?.qty || 0) + (o?.foil || 0)
+}
+
+/** Reduce non-foil (qty) first, then foil. Never below 0. */
+function subtractOwnedCopies(o: { qty: number; foil: number }, sellQty: number) {
+  const have = ownedQty(o)
+  const want = Math.max(0, Math.floor(sellQty) || 0)
+  const sold = Math.min(want, have)
+  const short = want - sold
+  let rem = sold
+  let qty = o.qty || 0
+  let foil = o.foil || 0
+  const fromNonFoil = Math.min(qty, rem)
+  qty -= fromNonFoil
+  rem -= fromNonFoil
+  if (rem > 0) {
+    const fromFoil = Math.min(foil, rem)
+    foil -= fromFoil
+  }
+  return { qty, foil, sold, short }
 }
 
 function fmtEur(n: number | null | undefined) {
@@ -85,6 +105,10 @@ export default function App() {
   const [bulkText, setBulkText] = useState('')
   const [bulkFoil, setBulkFoil] = useState(false)
   const [bulkReport, setBulkReport] = useState<string | null>(null)
+  const [saleList, setSaleList] = useState<Record<string, number>>({})
+  const [saleQ, setSaleQ] = useState('')
+  const [salePaste, setSalePaste] = useState('')
+  const [saleReport, setSaleReport] = useState<string | null>(null)
   const [activeDeckId, setActiveDeckId] = useState<string | null>(null)
   const [deckOwnedOnly, setDeckOwnedOnly] = useState(false)
   const [activeSection, setActiveSection] = useState<DeckSection>('main')
@@ -420,7 +444,124 @@ export default function App() {
     )
   }
 
-  function exportCsv() {
+  function saleRemaining(id: string) {
+    const have = ownedQty(collection[id])
+    const inSale = saleList[id] || 0
+    return Math.max(0, have - inSale)
+  }
+
+  function addToSale(id: string, n = 1) {
+    const add = Math.max(0, Math.floor(n) || 0)
+    if (add <= 0) return
+    setSaleList((prev) => {
+      const have = ownedQty(collection[id])
+      if (have <= 0) return prev
+      const cur = prev[id] || 0
+      const nextQty = Math.min(have, cur + add)
+      if (nextQty <= 0) return prev
+      return { ...prev, [id]: nextQty }
+    })
+    setSaleReport(null)
+  }
+
+  function bumpSale(id: string, delta: number) {
+    setSaleList((prev) => {
+      const have = ownedQty(collection[id])
+      const cur = prev[id] || 0
+      const nextQty = Math.max(0, Math.min(have, cur + delta))
+      const copy = { ...prev }
+      if (nextQty <= 0) delete copy[id]
+      else copy[id] = nextQty
+      return copy
+    })
+  }
+
+  function setSaleQty(id: string, raw: number) {
+    const have = ownedQty(collection[id])
+    const nextQty = Math.max(0, Math.min(have, Math.floor(raw) || 0))
+    setSaleList((prev) => {
+      const copy = { ...prev }
+      if (nextQty <= 0) delete copy[id]
+      else copy[id] = nextQty
+      return copy
+    })
+  }
+
+  function applySalePaste() {
+    const lines = salePaste.split(/\r?\n/).map((l) => l.trim()).filter(Boolean)
+    let added = 0
+    let copies = 0
+    const problems: string[] = []
+    const next = { ...saleList }
+    for (const line of lines) {
+      const m = line.match(/^(\d+)\s*[xX]?\s+(.+)$/)
+      const qty = m ? Math.max(1, Number(m[1]) || 1) : 1
+      const token = (m ? m[2] : line).trim()
+      const card = resolveToken(token, cards) || matchCardByName(cards, token)
+      if (!card) {
+        problems.push(`nicht gefunden: ${line}`)
+        continue
+      }
+      const have = ownedQty(collection[card.id])
+      if (have <= 0) {
+        problems.push(`nicht owned: ${displayName(card)}`)
+        continue
+      }
+      const cur = next[card.id] || 0
+      const room = Math.max(0, have - cur)
+      if (room <= 0) {
+        problems.push(`Limit erreicht: ${displayName(card)}`)
+        continue
+      }
+      const take = Math.min(qty, room)
+      next[card.id] = cur + take
+      added += 1
+      copies += take
+      if (take < qty) problems.push(`nur ${take}/${qty}: ${displayName(card)}`)
+    }
+    setSaleList(next)
+    const ok = `${copies} Kopie${copies === 1 ? '' : 'n'} (${added} Karte${added === 1 ? '' : 'n'}) hinzugefügt`
+    setSaleReport(
+      problems.length
+        ? `${ok}. ${problems.slice(0, 8).join(' · ')}${problems.length > 8 ? '…' : ''}`
+        : ok,
+    )
+  }
+
+  function confirmSale() {
+    const entries = Object.entries(saleList).filter(([, q]) => q > 0)
+    if (!entries.length) {
+      setSaleReport('Warenkorb ist leer.')
+      return
+    }
+    let soldCards = 0
+    let soldCopies = 0
+    const notes: string[] = []
+    const next = { ...collection }
+    for (const [id, want] of entries) {
+      const cur = next[id] || { qty: 0, foil: 0 }
+      const r = subtractOwnedCopies(cur, want)
+      if (r.sold > 0) {
+        soldCards += 1
+        soldCopies += r.sold
+      }
+      if (r.short > 0) {
+        const c = byId.get(id)
+        notes.push(`knapp: ${c ? displayName(c) : id} (−${r.short})`)
+      }
+      if (r.qty === 0 && r.foil === 0) delete next[id]
+      else next[id] = { qty: r.qty, foil: r.foil }
+    }
+    setCollection(next)
+    setSaleList({})
+    setSalePaste('')
+    setSaleReport(
+      `Verkauft: ${soldCards} Karte${soldCards === 1 ? '' : 'n'} (${soldCopies} Kopien) aus der Sammlung entfernt.` +
+        (notes.length ? ` ${notes.slice(0, 4).join(' · ')}` : ''),
+    )
+  }
+
+    function exportCsv() {
     const lines = ['id,code,name,set,qty,foil']
     for (const [id, o] of Object.entries(collection)) {
       const c = byId.get(id)
@@ -680,6 +821,7 @@ export default function App() {
           {([
             ['collection', 'Sammlung'],
             ['catalog', 'Katalog'],
+            ['sales', 'Verkauf'],
             ['bulk', 'Codes'],
             ['decks', 'Decks'],
           ] as const).map(([id, label]) => (
@@ -1084,7 +1226,159 @@ export default function App() {
           </>
         )}
 
-        {tab === 'bulk' && (
+        {tab === 'sales' && (
+          <div className="split deck-split">
+            <section className="panel">
+              <div className="toolbar">
+                <div className="grow">
+                  <h2 className="section-title" style={{ margin: 0 }}>Warenkorb</h2>
+                  <p className="help" style={{ margin: '4px 0 0' }}>Karten zum Verkauf — Mengen anpassen, dann als verkauft markieren.</p>
+                </div>
+                <button
+                  className="btn primary"
+                  disabled={Object.keys(saleList).length === 0}
+                  onClick={confirmSale}
+                >
+                  Als verkauft markieren
+                </button>
+              </div>
+              {saleReport && <p className="help">{saleReport}</p>}
+              <div className="list" style={{ maxHeight: '62vh', overflow: 'auto' }}>
+                {Object.keys(saleList).length === 0 && (
+                  <div className="empty">Warenkorb leer. Rechts owned Karten suchen oder Liste einfügen.</div>
+                )}
+                {Object.entries(saleList).map(([id, qty]) => {
+                  const c = byId.get(id)
+                  if (!c) return null
+                  const have = ownedQty(collection[id])
+                  return (
+                    <div
+                      key={id}
+                      className="list-item deck-card-row"
+                      onMouseEnter={(e) => showCardPreview(e, c.image)}
+                      onMouseMove={(e) => showCardPreview(e, c.image)}
+                      onMouseLeave={hideCardPreview}
+                    >
+                      {c.image ? (
+                        <img
+                          className="deck-thumb"
+                          src={c.image}
+                          alt=""
+                          loading="lazy"
+                          onError={(e) => { (e.currentTarget as HTMLImageElement).style.visibility = 'hidden' }}
+                        />
+                      ) : (
+                        <div className="deck-thumb deck-thumb-empty" aria-hidden />
+                      )}
+                      <div className="grow">
+                        <div className="name">{displayName(c)}</div>
+                        <div className="sub">{c.code} · besitzt {have}</div>
+                      </div>
+                      <div className="qty" onClick={(e) => e.stopPropagation()}>
+                        <button type="button" onClick={() => bumpSale(id, -1)}>−</button>
+                        <input
+                          className="field"
+                          style={{ width: 48, textAlign: 'center', padding: '4px 6px' }}
+                          value={qty}
+                          onChange={(e) => setSaleQty(id, Number(e.target.value))}
+                        />
+                        <button type="button" onClick={() => bumpSale(id, 1)} disabled={qty >= have}>+</button>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            </section>
+            <section className="panel">
+              <h2 style={{ marginTop: 0 }}>Karten hinzufügen</h2>
+              <p className="help">Nur Karten mit Bestand (qty &gt; 0). Menge ist auf den Restbestand begrenzt.</p>
+              <input
+                className="field"
+                placeholder="Suche in Owned…"
+                value={saleQ}
+                onChange={(e) => setSaleQ(e.target.value)}
+                style={{ marginBottom: 10 }}
+              />
+              <div className="list" style={{ maxHeight: '36vh', overflow: 'auto', marginBottom: 14 }}>
+                {ownedCards.filter((c) => {
+                  const query = saleQ.trim().toLowerCase()
+                  if (!query) return true
+                  return (
+                    c.name.toLowerCase().includes(query) ||
+                    (c.subtitle || '').toLowerCase().includes(query) ||
+                    c.code.toLowerCase().includes(query) ||
+                    displayName(c).toLowerCase().includes(query)
+                  )
+                }).slice(0, 80).map((c) => {
+                  const have = ownedQty(collection[c.id])
+                  const room = saleRemaining(c.id)
+                  return (
+                    <div
+                      key={c.id}
+                      className="list-item picker-card"
+                      onMouseEnter={(e) => showCardPreview(e, c.image)}
+                      onMouseMove={(e) => showCardPreview(e, c.image)}
+                      onMouseLeave={hideCardPreview}
+                    >
+                      {c.image ? (
+                        <img
+                          className="deck-thumb"
+                          src={c.image}
+                          alt=""
+                          loading="lazy"
+                          onError={(e) => { (e.currentTarget as HTMLImageElement).style.visibility = 'hidden' }}
+                        />
+                      ) : (
+                        <div className="deck-thumb deck-thumb-empty" aria-hidden />
+                      )}
+                      <div className="grow">
+                        <div className="name">{displayName(c)}</div>
+                        <div className="sub">{c.code} · x{have}{room < have ? ` · im Warenkorb ${have - room}` : ''}</div>
+                      </div>
+                      <button className="btn small primary" disabled={room <= 0} onClick={() => addToSale(c.id, 1)}>
+                        +
+                      </button>
+                    </div>
+                  )
+                })}
+                {ownedCards.length === 0 && (
+                  <div className="empty">Keine owned Karten. Zuerst Sammlung füllen.</div>
+                )}
+                {ownedCards.length > 0 && ownedCards.filter((c) => {
+                  const query = saleQ.trim().toLowerCase()
+                  if (!query) return true
+                  return (
+                    c.name.toLowerCase().includes(query) ||
+                    (c.subtitle || '').toLowerCase().includes(query) ||
+                    c.code.toLowerCase().includes(query) ||
+                    displayName(c).toLowerCase().includes(query)
+                  )
+                }).length === 0 && (
+                  <div className="empty">Keine Treffer für „{saleQ.trim()}“.</div>
+                )}
+              </div>
+              <h3 style={{ margin: '0 0 6px', fontSize: 14 }}>Liste einfügen</h3>
+              <p className="help">Zeilen wie <code>2 Card Name</code> oder Codes (<code>OGN-056</code>). Nur owned.</p>
+              <textarea
+                className="field"
+                rows={5}
+                value={salePaste}
+                onChange={(e) => setSalePaste(e.target.value)}
+                placeholder={'2 Traveling Merchant\nOGN-056/298\n1 Kennen, Heart of the Tempest'}
+              />
+              <div className="toolbar" style={{ marginTop: 10 }}>
+                <button className="btn primary" disabled={!salePaste.trim()} onClick={applySalePaste}>
+                  In Warenkorb
+                </button>
+                <button className="btn" disabled={!salePaste.trim()} onClick={() => setSalePaste('')}>
+                  Leeren
+                </button>
+              </div>
+            </section>
+          </div>
+        )}
+
+                {tab === 'bulk' && (
           <div className="split">
             <section className="panel">
               <h2>Karten per Code</h2>
