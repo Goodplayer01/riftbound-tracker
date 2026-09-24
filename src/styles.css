@@ -545,3 +545,36 @@ textarea.field { min-height: 160px; resize: vertical; font-family: ui-monospace,
   margin-top: 2px;
   font-size: 0.85em;
 }
+
+/* Deck build gates */
+.deck-notice {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  margin: 10px 0; padding: 10px 12px; border-radius: 10px;
+  border: 1px solid rgba(212,175,55,.45);
+  background: rgba(212,175,55,.1); color: var(--accent2);
+  font-size: 13px;
+}
+.deck-sec.locked {
+  opacity: .72;
+  border-style: dashed;
+}
+.deck-sec.locked .deck-add,
+.deck-sec.at-cap .deck-add {
+  cursor: not-allowed;
+  opacity: .65;
+}
+.deck-add:disabled {
+  cursor: not-allowed;
+  opacity: .65;
+}
+.qty button:disabled {
+  opacity: .35;
+  cursor: not-allowed;
+}
+.deck-gate {
+  padding: 24px 12px;
+  text-align: center;
+  color: var(--accent2);
+  font-weight: 600;
+  letter-spacing: .02em;
+}

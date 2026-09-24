@@ -208,6 +208,159 @@ export function sectionCount(cards: DeckCard[], section: DeckSection) {
   return cards.filter((c) => sectionOf(c) === section).reduce((s, c) => s + c.qty, 0)
 }
 
+/** Sections that require exactly one Legend before building (Battlefields exempt). */
+export const SECTIONS_NEED_LEGEND: DeckSection[] = ['champion', 'main', 'sideboard', 'rune']
+
+export function sectionNeedsLegend(section: DeckSection): boolean {
+  return SECTIONS_NEED_LEGEND.includes(section)
+}
+
+/** True if card has no real domain / only Colorless (Battlefields etc.). */
+export function isColorlessCard(c: Card): boolean {
+  const domains = c.domains || []
+  if (domains.length === 0) return true
+  return domains.every((d) => d === 'Colorless')
+}
+
+/** Non-Colorless domains that must be covered by Legend identity (103.1.b). */
+export function cardDomainIdentity(c: Card): string[] {
+  return (c.domains || []).filter((d) => d && d !== 'Colorless')
+}
+
+/**
+ * Official Domain Identity (103.1.b.3–4): every non-Colorless domain on the card
+ * must be included in the Legend's domains. Colorless cards always match.
+ */
+export function cardMatchesLegendDomains(c: Card, legendDomains: string[]): boolean {
+  if (isColorlessCard(c)) return true
+  const cardDoms = cardDomainIdentity(c)
+  if (cardDoms.length === 0) return true
+  return cardDoms.every((d) => legendDomains.includes(d))
+}
+
+/** Domains of the deck's Legend (first legend entry), or null if none. */
+export function getLegendDomains(deckCards: DeckCard[], byId: Map<string, Card>): string[] | null {
+  const legendEntry = deckCards.find((dc) => sectionOf(dc) === 'legend')
+  if (!legendEntry) return null
+  const c = byId.get(legendEntry.id)
+  if (!c) return null
+  return cardDomainIdentity(c)
+}
+
+export function hasLegend(deckCards: DeckCard[]): boolean {
+  return sectionCount(deckCards, 'legend') >= 1
+}
+
+export type AddBlockReason = 'type' | 'legend' | 'domain' | 'cap'
+
+export type CanAddResult = { ok: true } | { ok: false; reason: AddBlockReason; message: string }
+
+/** Hard gate: type fit, Legend-first (except Battlefields), domain identity, section cap. */
+export function canAddToSection(
+  deckCards: DeckCard[],
+  card: Card,
+  section: DeckSection,
+  byId: Map<string, Card>,
+  qtyToAdd = 1,
+): CanAddResult {
+  if (!cardFitsSection(card, section)) {
+    return { ok: false, reason: 'type', message: 'Kartentyp passt nicht in diese Sektion.' }
+  }
+  const needsLeg = sectionNeedsLegend(section)
+  if (needsLeg && !hasLegend(deckCards)) {
+    return { ok: false, reason: 'legend', message: 'Zuerst eine Legend wählen' }
+  }
+  if (needsLeg) {
+    const legendDomains = getLegendDomains(deckCards, byId)
+    if (legendDomains && !cardMatchesLegendDomains(card, legendDomains)) {
+      return { ok: false, reason: 'domain', message: 'Domain passt nicht zur Legend.' }
+    }
+  }
+  const count = sectionCount(deckCards, section)
+  const cap = SECTION_CAPS[section]
+  if (count + qtyToAdd > cap) {
+    return { ok: false, reason: 'cap', message: `Limit ${cap} für ${SECTION_LABEL[section]} erreicht.` }
+  }
+  return { ok: true }
+}
+
+export type SanitizeResult = {
+  cards: DeckCard[]
+  trimmed: number
+  domainRemoved: number
+  notice: string | null
+}
+
+/**
+ * Trim excess beyond section caps and strip Champion/Main/Sideboard/Runes
+ * that violate Legend domain identity. Battlefields are never domain-filtered.
+ */
+export function sanitizeDeckCards(deckCards: DeckCard[], byId: Map<string, Card>): SanitizeResult {
+  let trimmed = 0
+  let domainRemoved = 0
+
+  // 1) Cap trim per section (preserve order)
+  const bySec = new Map<DeckSection, DeckCard[]>()
+  for (const sec of SECTION_ORDER) bySec.set(sec, [])
+  for (const dc of deckCards) {
+    const sec = sectionOf(dc)
+    const list = bySec.get(sec) || []
+    list.push({ ...dc, section: sec })
+    bySec.set(sec, list)
+  }
+
+  const capped: DeckCard[] = []
+  for (const sec of SECTION_ORDER) {
+    const list = bySec.get(sec) || []
+    let remaining = SECTION_CAPS[sec]
+    for (const dc of list) {
+      if (remaining <= 0) {
+        trimmed += dc.qty
+        continue
+      }
+      if (dc.qty <= remaining) {
+        capped.push(dc)
+        remaining -= dc.qty
+      } else {
+        trimmed += dc.qty - remaining
+        capped.push({ ...dc, qty: remaining })
+        remaining = 0
+      }
+    }
+  }
+
+  // 2) Domain strip for gated sections when a Legend is present
+  const legendDomains = getLegendDomains(capped, byId)
+  let afterDomain = capped
+  if (legendDomains && hasLegend(capped)) {
+    afterDomain = []
+    for (const dc of capped) {
+      const sec = sectionOf(dc)
+      if (!sectionNeedsLegend(sec)) {
+        afterDomain.push(dc)
+        continue
+      }
+      const c = byId.get(dc.id)
+      if (!c || cardMatchesLegendDomains(c, legendDomains)) {
+        afterDomain.push(dc)
+      } else {
+        domainRemoved += dc.qty
+      }
+    }
+  }
+
+  const parts: string[] = []
+  if (trimmed > 0) {
+    parts.push(`${trimmed} Karte${trimmed === 1 ? '' : 'n'} über dem Sektionslimit entfernt`)
+  }
+  if (domainRemoved > 0) {
+    parts.push(`${domainRemoved} Karte${domainRemoved === 1 ? '' : 'n'} passen nicht zur Legend-Domain`)
+  }
+  const notice = parts.length ? parts.join(' · ') + '.' : null
+  return { cards: afterDomain, trimmed, domainRemoved, notice }
+}
+
+
 export function deckTotalQtyById(cards: DeckCard[]): Map<string, number> {
   const m = new Map<string, number>()
   for (const dc of cards) {

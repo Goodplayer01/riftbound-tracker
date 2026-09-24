@@ -7,14 +7,20 @@ import {
   SECTION_CAPS,
   SECTION_LABEL,
   SECTION_ORDER,
+  canAddToSection,
   cardFitsSection,
+  cardMatchesLegendDomains,
   deckTotalQtyById,
   displayCardName,
+  getLegendDomains,
+  hasLegend,
   inferSection,
   matchCardByName,
   migrateDeck,
   parseDeckImport,
+  sanitizeDeckCards,
   sectionCount,
+  sectionNeedsLegend,
   sectionOf,
 } from './deckHelpers'
 
@@ -140,6 +146,7 @@ export default function App() {
   const [dropFlashSection, setDropFlashSection] = useState<DeckSection | null>(null)
   const [dragRejectSection, setDragRejectSection] = useState<DeckSection | null>(null)
   const [draggingCardId, setDraggingCardId] = useState<string | null>(null)
+  const [deckNotice, setDeckNotice] = useState<string | null>(null)
   const dragGhostRef = useRef<HTMLElement | null>(null)
   const dragGhostCleanupRef = useRef<(() => void) | null>(null)
 
@@ -249,13 +256,26 @@ export default function App() {
     if (!cards.length) return
     setDecks((prev) => {
       let changed = false
+      let notice: string | null = null
       const next = prev.map((d) => {
         const m = migrateDeck(d, byId)
-        if (m !== d) changed = true
+        const s = sanitizeDeckCards(m.cards, byId)
+        const cardsChanged = s.trimmed > 0 || s.domainRemoved > 0 || m !== d
+        if (cardsChanged) {
+          changed = true
+          if (d.id === activeDeckId && s.notice) notice = s.notice
+          return { ...m, cards: s.cards }
+        }
         return m
       })
+      if (notice) {
+        // Defer so we don't call setState of another hook inside this updater
+        queueMicrotask(() => setDeckNotice(notice))
+      }
       return changed ? next : prev
     })
+    // activeDeckId intentionally omitted: only sanitize when catalog/byId changes
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cards, byId])
 
   const filtered = useMemo(() => {
@@ -655,8 +675,9 @@ export default function App() {
     const d: Deck = { id: uid(), name: `Deck ${decks.length + 1}`, cards: [], updatedAt: new Date().toISOString() }
     setDecks((prev) => [d, ...prev])
     setActiveDeckId(d.id)
-    setActiveSection('main')
+    setActiveSection('legend')
     setDeckMissingReport(null)
+    setDeckNotice(null)
   }
 
   const activeDeck = decks.find((d) => d.id === activeDeckId) || null
@@ -668,18 +689,33 @@ export default function App() {
 
   function addToDeck(cardId: string, section?: DeckSection) {
     const c = byId.get(cardId)
-    const sec = section || activeSection || (c ? inferSection(c) : 'main')
+    if (!c) return
+    const sec = section || activeSection || inferSection(c)
+    const deck = decks.find((d) => d.id === activeDeckId)
+    if (!deck) return
+    const check = canAddToSection(deck.cards, c, sec, byId, 1)
+    if (!check.ok) {
+      setDeckNotice(check.message)
+      if (check.reason === 'legend') setActiveSection('legend')
+      return
+    }
+    const legendChanging = sec === 'legend'
     updateDeck((d) => {
       const existing = d.cards.find((x) => x.id === cardId && sectionOf(x) === sec)
+      let cards: typeof d.cards
       if (existing) {
-        return {
-          ...d,
-          cards: d.cards.map((x) =>
-            x.id === cardId && sectionOf(x) === sec ? { ...x, qty: x.qty + 1, section: sec } : x,
-          ),
-        }
+        cards = d.cards.map((x) =>
+          x.id === cardId && sectionOf(x) === sec ? { ...x, qty: x.qty + 1, section: sec } : x,
+        )
+      } else {
+        cards = [...d.cards, { id: cardId, qty: 1, section: sec }]
       }
-      return { ...d, cards: [...d.cards, { id: cardId, qty: 1, section: sec }] }
+      if (legendChanging) {
+        const s = sanitizeDeckCards(cards, byId)
+        if (s.notice) setDeckNotice(s.notice)
+        return { ...d, cards: s.cards }
+      }
+      return { ...d, cards }
     })
   }
 
@@ -751,7 +787,16 @@ export default function App() {
     if (!raw) return
     e.preventDefault()
     const c = draggingCardId ? byId.get(draggingCardId) : undefined
-    if (c && !cardFitsSection(c, sec)) {
+    const deck = decks.find((d) => d.id === activeDeckId)
+    if (c && deck) {
+      const check = canAddToSection(deck.cards, c, sec, byId, 1)
+      if (!check.ok) {
+        e.dataTransfer.dropEffect = 'none'
+        setDragOverSection(null)
+        setDragRejectSection(sec)
+        return
+      }
+    } else if (c && !cardFitsSection(c, sec)) {
       e.dataTransfer.dropEffect = 'none'
       setDragOverSection(null)
       setDragRejectSection(sec)
@@ -777,7 +822,16 @@ export default function App() {
     setDragRejectSection(null)
     if (!cardId || !activeDeckId) return
     const c = byId.get(cardId)
-    if (!c || !cardFitsSection(c, sec)) {
+    const deck = decks.find((d) => d.id === activeDeckId)
+    if (!c || !deck) {
+      setDragRejectSection(sec)
+      window.setTimeout(() => setDragRejectSection((cur) => (cur === sec ? null : cur)), 450)
+      return
+    }
+    const check = canAddToSection(deck.cards, c, sec, byId, 1)
+    if (!check.ok) {
+      setDeckNotice(check.message)
+      if (check.reason === 'legend') setActiveSection('legend')
       setDragRejectSection(sec)
       window.setTimeout(() => setDragRejectSection((cur) => (cur === sec ? null : cur)), 450)
       return
@@ -788,25 +842,44 @@ export default function App() {
     window.setTimeout(() => setDropFlashSection((cur) => (cur === sec ? null : cur)), 380)
   }
 
-  function sectionDropClass(sec: DeckSection) {
+  function sectionDropClass(sec: DeckSection, locked = false, atCap = false) {
     const parts = ['deck-sec']
     if (activeSection === sec) parts.push('active')
     if (dragOverSection === sec) parts.push('drag-over')
     if (dropFlashSection === sec) parts.push('drop-flash')
     if (dragRejectSection === sec) parts.push('drag-reject')
+    if (locked) parts.push('locked')
+    if (atCap) parts.push('at-cap')
     return parts.join(' ')
   }
 
   function bumpDeckCard(cardId: string, section: DeckSection, delta: number) {
-    updateDeck((d) => ({
-      ...d,
-      cards: d.cards
+    const c = byId.get(cardId)
+    const deck = decks.find((d) => d.id === activeDeckId)
+    if (!deck) return
+    if (delta > 0) {
+      if (!c) return
+      const check = canAddToSection(deck.cards, c, section, byId, delta)
+      if (!check.ok) {
+        setDeckNotice(check.message)
+        return
+      }
+    }
+    const legendLeaving = section === 'legend' && delta < 0
+    updateDeck((d) => {
+      let cards = d.cards
         .map((x) => {
           if (x.id !== cardId || sectionOf(x) !== section) return x
           return { ...x, qty: x.qty + delta, section }
         })
-        .filter((x) => x.qty > 0),
-    }))
+        .filter((x) => x.qty > 0)
+      if (legendLeaving || section === 'legend') {
+        const s = sanitizeDeckCards(cards, byId)
+        if (s.notice) setDeckNotice(s.notice)
+        cards = s.cards
+      }
+      return { ...d, cards }
+    })
   }
 
   function deckCount(d: Deck) {
@@ -856,8 +929,10 @@ export default function App() {
   function runDeckImport(text: string) {
     if (!activeDeckId) return
     const result = parseDeckImport(text, cards)
-    updateDeck((d) => ({ ...d, cards: result.cards }))
-    const report = result.cards
+    const sanitized = sanitizeDeckCards(result.cards, byId)
+    updateDeck((d) => ({ ...d, cards: sanitized.cards }))
+    if (sanitized.notice) setDeckNotice(`Import angepasst: ${sanitized.notice}`)
+    const report = sanitized.cards
       .map((dc) => {
         const c = byId.get(dc.id) || cards.find((x) => x.id === dc.id)
         const have = ownedQty(collection[dc.id])
@@ -872,6 +947,14 @@ export default function App() {
       .filter((r) => r.short > 0)
     for (const u of result.unmatched) {
       report.push({ name: `Nicht gefunden: ${u}`, need: 0, have: 0, short: 0 })
+    }
+    if (sanitized.trimmed > 0 || sanitized.domainRemoved > 0) {
+      report.unshift({
+        name: `Limit/Domain: ${sanitized.notice || 'Karten entfernt'}`,
+        need: 0,
+        have: 0,
+        short: 0,
+      })
     }
     setDeckMissingReport(report)
     setDeckImportOpen(false)
@@ -1651,17 +1734,26 @@ export default function App() {
                     </div>
                   )}
 
+                  {deckNotice && (
+                    <div className="deck-notice" role="status">
+                      <span>{deckNotice}</span>
+                      <button type="button" className="btn small" onClick={() => setDeckNotice(null)}>OK</button>
+                    </div>
+                  )}
+
                   <div className="deck-sections">
                     <div className="deck-sec-row">
                       {(['legend', 'champion'] as DeckSection[]).map((sec) => {
                         const count = sectionCount(activeDeck.cards, sec)
                         const cap = SECTION_CAPS[sec]
                         const over = count > cap
+                        const atCap = count >= cap
+                        const locked = sectionNeedsLegend(sec) && !hasLegend(activeDeck.cards)
                         const cardsIn = activeDeck.cards.filter((dc) => sectionOf(dc) === sec)
                         return (
                           <div
                             key={sec}
-                            className={sectionDropClass(sec)}
+                            className={sectionDropClass(sec, locked, atCap)}
                             onClick={() => setActiveSection(sec)}
                             onDragOver={(e) => onSectionDragOver(e, sec)}
                             onDragLeave={(e) => onSectionDragLeave(e, sec)}
@@ -1722,7 +1814,7 @@ export default function App() {
                                     <div className="qty" onClick={(e) => e.stopPropagation()}>
                                       <button type="button" onClick={() => bumpDeckCard(dc.id, sec, -1)}>−</button>
                                       <b>{dc.qty}</b>
-                                      <button type="button" onClick={() => bumpDeckCard(dc.id, sec, 1)}>+</button>
+                                      <button type="button" disabled={atCap || locked} title={locked ? 'Zuerst eine Legend wählen' : atCap ? `Limit ${cap}` : undefined} onClick={() => bumpDeckCard(dc.id, sec, 1)}>+</button>
                                     </div>
                                   </div>
                                 )
@@ -1731,9 +1823,19 @@ export default function App() {
                             <button
                               type="button"
                               className="deck-add"
-                              onClick={(e) => { e.stopPropagation(); setActiveSection(sec) }}
+                              disabled={locked || atCap}
+                              title={locked ? 'Zuerst eine Legend wählen' : atCap ? `Limit ${cap} erreicht` : undefined}
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                if (locked) {
+                                  setDeckNotice('Zuerst eine Legend wählen')
+                                  setActiveSection('legend')
+                                  return
+                                }
+                                setActiveSection(sec)
+                              }}
                             >
-                              {SECTION_ADD_LABEL[sec]}
+                              {locked ? 'Zuerst eine Legend wählen' : SECTION_ADD_LABEL[sec]}
                             </button>
                           </div>
                         )
@@ -1744,11 +1846,13 @@ export default function App() {
                       const count = sectionCount(activeDeck.cards, sec)
                       const cap = SECTION_CAPS[sec]
                       const over = count > cap
+                      const atCap = count >= cap
+                      const locked = sectionNeedsLegend(sec) && !hasLegend(activeDeck.cards)
                       const cardsIn = activeDeck.cards.filter((dc) => sectionOf(dc) === sec)
                       return (
                         <div
                           key={sec}
-                          className={sectionDropClass(sec)}
+                          className={sectionDropClass(sec, locked, atCap)}
                           onClick={() => setActiveSection(sec)}
                           onDragOver={(e) => onSectionDragOver(e, sec)}
                           onDragLeave={(e) => onSectionDragLeave(e, sec)}
@@ -1809,7 +1913,7 @@ export default function App() {
                                   <div className="qty" onClick={(e) => e.stopPropagation()}>
                                     <button type="button" onClick={() => bumpDeckCard(dc.id, sec, -1)}>−</button>
                                     <b>{dc.qty}</b>
-                                    <button type="button" onClick={() => bumpDeckCard(dc.id, sec, 1)}>+</button>
+                                    <button type="button" disabled={atCap || locked} title={locked ? 'Zuerst eine Legend wählen' : atCap ? `Limit ${cap}` : undefined} onClick={() => bumpDeckCard(dc.id, sec, 1)}>+</button>
                                   </div>
                                 </div>
                               )
@@ -1818,9 +1922,19 @@ export default function App() {
                           <button
                             type="button"
                             className="deck-add"
-                            onClick={(e) => { e.stopPropagation(); setActiveSection(sec) }}
+                            disabled={locked || atCap}
+                            title={locked ? 'Zuerst eine Legend wählen' : atCap ? `Limit ${cap} erreicht` : undefined}
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              if (locked) {
+                                setDeckNotice('Zuerst eine Legend wählen')
+                                setActiveSection('legend')
+                                return
+                              }
+                              setActiveSection(sec)
+                            }}
                           >
-                            {SECTION_ADD_LABEL[sec]}
+                            {locked ? 'Zuerst eine Legend wählen' : SECTION_ADD_LABEL[sec]}
                           </button>
                         </div>
                       )
@@ -1840,10 +1954,17 @@ export default function App() {
               </div>
               <div className="list" style={{ maxHeight: '70vh', overflow: 'auto' }}>
                 {!activeDeck && <div className="empty">Zuerst ein Deck wählen oder anlegen.</div>}
-                {activeDeck && cards
+                {activeDeck && sectionNeedsLegend(activeSection) && !hasLegend(activeDeck.cards) && (
+                  <div className="empty deck-gate">Zuerst eine Legend wählen</div>
+                )}
+                {activeDeck && !(sectionNeedsLegend(activeSection) && !hasLegend(activeDeck.cards)) && cards
                   .filter((c) => {
                     if (!cardFitsSection(c, activeSection)) return false
                     if (deckOwnedOnly && ownedQty(collection[c.id]) <= 0) return false
+                    if (sectionNeedsLegend(activeSection)) {
+                      const domains = getLegendDomains(activeDeck.cards, byId)
+                      if (domains && !cardMatchesLegendDomains(c, domains)) return false
+                    }
                     const query = q.trim().toLowerCase()
                     if (!query) return true
                     return (
@@ -1857,7 +1978,7 @@ export default function App() {
                                         <div
                       key={c.id}
                       className="list-item picker-card"
-                      draggable={!!activeDeck}
+                      draggable={!!activeDeck && !(sectionNeedsLegend(activeSection) && !hasLegend(activeDeck.cards)) && sectionCount(activeDeck.cards, activeSection) < SECTION_CAPS[activeSection]}
                       onDragStart={(e) => onPickerDragStart(e, c.id)}
                       onDragEnd={onPickerDragEnd}
                       onMouseEnter={(e) => showCardPreview(e, c.image)}
@@ -1896,7 +2017,21 @@ export default function App() {
                           )
                         })()}
                       </div>
-                      <button className="btn small primary" onClick={() => addToDeck(c.id, activeSection)}>
+                      <button
+                        className="btn small primary"
+                        disabled={
+                          sectionCount(activeDeck.cards, activeSection) >= SECTION_CAPS[activeSection]
+                          || (sectionNeedsLegend(activeSection) && !hasLegend(activeDeck.cards))
+                        }
+                        title={
+                          sectionNeedsLegend(activeSection) && !hasLegend(activeDeck.cards)
+                            ? 'Zuerst eine Legend wählen'
+                            : sectionCount(activeDeck.cards, activeSection) >= SECTION_CAPS[activeSection]
+                              ? `Limit ${SECTION_CAPS[activeSection]} erreicht`
+                              : undefined
+                        }
+                        onClick={() => addToDeck(c.id, activeSection)}
+                      >
                         Add
                       </button>
                     </div>
