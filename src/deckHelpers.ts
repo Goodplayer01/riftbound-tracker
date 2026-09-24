@@ -76,13 +76,16 @@ export function cardFitsSection(c: Card, section: DeckSection): boolean {
   const isBf = types.includes('Battlefield')
   const isRune = types.includes('Rune')
   const isToken = types.includes('Token') || supers.includes('Token')
+  // Champion Unit = Unit + superType Champion (not Legend). Chosen Champion slot
+  // is separate; additional Champion Unit copies are legal in Main Deck / Sideboard.
   const isChamp = supers.includes('Champion') && !isLegend
 
   if (section === 'legend') return isLegend
   if (section === 'champion') return isChamp
   if (section === 'battlefield') return isBf
   if (section === 'rune') return isRune
-  if (isLegend || isBf || isRune || isToken || isChamp) return false
+  // main / sideboard: Units (incl. Champion Units), Spells, Gear — not Legend/BF/Rune/Token
+  if (isLegend || isBf || isRune || isToken) return false
   return types.some((t) => t === 'Unit' || t === 'Spell' || t === 'Gear') || types.length > 0
 }
 
