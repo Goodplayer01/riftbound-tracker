@@ -475,3 +475,23 @@ textarea.field { min-height: 160px; resize: vertical; font-family: ui-monospace,
   60% { transform: translateX(-3px); }
   80% { transform: translateX(2px); }
 }
+
+.sale-check {
+  display: flex;
+  align-items: center;
+  margin-right: 4px;
+  flex-shrink: 0;
+}
+.sale-check input {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+.deck-price-sums {
+  line-height: 1.45;
+}
+.deck-card-row .price {
+  margin-top: 2px;
+  font-size: 0.85em;
+}

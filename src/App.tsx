@@ -115,6 +115,7 @@ export default function App() {
   const [bulkFoil, setBulkFoil] = useState(false)
   const [bulkReport, setBulkReport] = useState<string | null>(null)
   const [saleList, setSaleList] = useState<Record<string, number>>({})
+  const [saleSelected, setSaleSelected] = useState<Record<string, boolean>>({})
   const [saleQ, setSaleQ] = useState('')
   const [salePaste, setSalePaste] = useState('')
   const [saleReport, setSaleReport] = useState<string | null>(null)
@@ -480,8 +481,15 @@ export default function App() {
       const cur = prev[id] || 0
       const nextQty = Math.max(0, Math.min(have, cur + delta))
       const copy = { ...prev }
-      if (nextQty <= 0) delete copy[id]
-      else copy[id] = nextQty
+      if (nextQty <= 0) {
+        delete copy[id]
+        setSaleSelected((sel) => {
+          if (!(id in sel)) return sel
+          const n = { ...sel }
+          delete n[id]
+          return n
+        })
+      } else copy[id] = nextQty
       return copy
     })
   }
@@ -491,11 +499,26 @@ export default function App() {
     const nextQty = Math.max(0, Math.min(have, Math.floor(raw) || 0))
     setSaleList((prev) => {
       const copy = { ...prev }
-      if (nextQty <= 0) delete copy[id]
-      else copy[id] = nextQty
+      if (nextQty <= 0) {
+        delete copy[id]
+        setSaleSelected((sel) => {
+          if (!(id in sel)) return sel
+          const n = { ...sel }
+          delete n[id]
+          return n
+        })
+      } else copy[id] = nextQty
       return copy
     })
   }
+
+  function toggleSaleSelected(id: string) {
+    setSaleSelected((prev) => ({ ...prev, [id]: !prev[id] }))
+  }
+
+  const saleSelectedEntries = Object.entries(saleList).filter(([id, q]) => q > 0 && saleSelected[id])
+  const saleSelectedCount = saleSelectedEntries.length
+  const saleSelectedCopies = saleSelectedEntries.reduce((sum, [, q]) => sum + q, 0)
 
   function applySalePaste() {
     const lines = salePaste.split(/\r?\n/).map((l) => l.trim()).filter(Boolean)
@@ -539,21 +562,23 @@ export default function App() {
   }
 
   function confirmSale() {
-    const entries = Object.entries(saleList).filter(([, q]) => q > 0)
+    const entries = Object.entries(saleList).filter(([id, q]) => q > 0 && saleSelected[id])
     if (!entries.length) {
-      setSaleReport('Warenkorb ist leer.')
+      setSaleReport('Keine Karten ausgewählt. Bitte per Checkbox markieren.')
       return
     }
     let soldCards = 0
     let soldCopies = 0
     const notes: string[] = []
     const next = { ...collection }
+    const soldIds = new Set<string>()
     for (const [id, want] of entries) {
       const cur = next[id] || { qty: 0, foil: 0 }
       const r = subtractOwnedCopies(cur, want)
       if (r.sold > 0) {
         soldCards += 1
         soldCopies += r.sold
+        soldIds.add(id)
       }
       if (r.short > 0) {
         const c = byId.get(id)
@@ -563,8 +588,16 @@ export default function App() {
       else next[id] = { qty: r.qty, foil: r.foil }
     }
     setCollection(next)
-    setSaleList({})
-    setSalePaste('')
+    setSaleList((prev) => {
+      const copy = { ...prev }
+      for (const id of soldIds) delete copy[id]
+      return copy
+    })
+    setSaleSelected((prev) => {
+      const copy = { ...prev }
+      for (const id of soldIds) delete copy[id]
+      return copy
+    })
     setSaleReport(
       `Verkauft: ${soldCards} Karte${soldCards === 1 ? '' : 'n'} (${soldCopies} Kopien) aus der Sammlung entfernt.` +
         (notes.length ? ` ${notes.slice(0, 4).join(' · ')}` : ''),
@@ -792,6 +825,28 @@ export default function App() {
     }
     out.sort((a, b) => b.short - a.short || a.name.localeCompare(b.name))
     return out
+  }
+
+  /** Deck aggregate using Cardmarket Low (`ab`), non-foil — same primary as Katalog totals. */
+  function deckPriceSums(d: Deck) {
+    const totals = deckTotalQtyById(d.cards)
+    let deckLow = 0
+    let missingLow = 0
+    let priced = 0
+    let missingPriced = 0
+    for (const [id, need] of totals) {
+      const low = priceBook?.cards[id]?.low
+      if (low == null || Number.isNaN(low)) continue
+      deckLow += low * need
+      priced += need
+      const have = ownedQty(collection[id])
+      const short = Math.max(0, need - have)
+      if (short > 0) {
+        missingLow += low * short
+        missingPriced += short
+      }
+    }
+    return { deckLow, missingLow, priced, missingPriced }
   }
 
   function missingReportFor(d: Deck) {
@@ -1265,14 +1320,15 @@ export default function App() {
               <div className="toolbar">
                 <div className="grow">
                   <h2 className="section-title" style={{ margin: 0 }}>Warenkorb</h2>
-                  <p className="help" style={{ margin: '4px 0 0' }}>Karten zum Verkauf — Mengen anpassen, dann als verkauft markieren.</p>
+                  <p className="help" style={{ margin: '4px 0 0' }}>Karten zum Verkauf — auswählen, Mengen anpassen, dann nur die markierten als verkauft markieren.{saleSelectedCount > 0 ? ` Ausgewählt: ${saleSelectedCount} Karte${saleSelectedCount === 1 ? '' : 'n'} (${saleSelectedCopies} Kopien).` : ''}</p>
                 </div>
                 <button
                   className="btn primary"
-                  disabled={Object.keys(saleList).length === 0}
+                  disabled={saleSelectedCount === 0}
                   onClick={confirmSale}
+                  title={saleSelectedCount === 0 ? 'Zuerst Karten per Checkbox auswählen' : undefined}
                 >
-                  Als verkauft markieren
+                  Als verkauft markieren{saleSelectedCount > 0 ? ` (${saleSelectedCount})` : ''}
                 </button>
               </div>
               {saleReport && <p className="help">{saleReport}</p>}
@@ -1292,6 +1348,13 @@ export default function App() {
                       onMouseMove={(e) => showCardPreview(e, c.image)}
                       onMouseLeave={hideCardPreview}
                     >
+                      <label className="sale-check" onClick={(e) => e.stopPropagation()} title="Zum Verkauf auswählen">
+                        <input
+                          type="checkbox"
+                          checked={!!saleSelected[id]}
+                          onChange={() => toggleSaleSelected(id)}
+                        />
+                      </label>
                       {c.image ? (
                         <img
                           className="deck-thumb"
@@ -1494,6 +1557,27 @@ export default function App() {
                       Löschen
                     </button>
                   </div>
+                  {(() => {
+                    const sums = deckPriceSums(activeDeck)
+                    const under = underOwnedLines(activeDeck)
+                    const missCopies = under.reduce((acc, x) => acc + x.short, 0)
+                    return (
+                      <div className="deck-price-sums help" style={{ margin: '6px 0 10px' }}>
+                        <div>
+                          <b>Gesamt (ab Low):</b>{' '}
+                          {sums.priced > 0 ? fmtEur(sums.deckLow) : '—'}
+                          {sums.priced > 0 && sums.priced < deckCount(activeDeck) ? ' · teilweise ohne Preis' : ''}
+                        </div>
+                        {missCopies > 0 && (
+                          <div>
+                            <b>Fehlende Kopien:</b>{' '}
+                            {sums.missingPriced > 0 ? fmtEur(sums.missingLow) : '—'}
+                            {` (${missCopies} Kopien)`}
+                          </div>
+                        )}
+                      </div>
+                    )
+                  })()}
 
                   {deckImportOpen && (
                     <div className="deck-import-box">
@@ -1597,10 +1681,27 @@ export default function App() {
                                       <div className="deck-thumb deck-thumb-empty" aria-hidden />
                                     )}
                                     <div className="grow">
-                                      <div className="name">{displayName(c)}</div>
+                                      <button
+                                        type="button"
+                                        className="name name-link"
+                                        title="Auf Cardmarket öffnen"
+                                        disabled={!priceBook?.cards[c.id]?.cmUrl}
+                                        onClick={(e) => { e.stopPropagation(); openCm(priceBook?.cards[c.id]) }}
+                                      >{displayName(c)}</button>
                                       <div className="sub">
                                         {c.energy != null ? `E${c.energy} · ` : ''}{c.code} · besitzt {have}
                                       </div>
+                                      {(() => {
+                                        const pl = priceLabel(priceBook?.cards[c.id])
+                                        if (!pl || (!pl.low && !pl.avg30 && !pl.high && !pl.foil)) return null
+                                        return (
+                                          <div className="price">
+                                            {pl.low ? <span title="Niedrigster Preis (ab)">ab {pl.low}</span> : <span className="na">ab --</span>}
+                                            {pl.avg30 ? <span className="avg30" title="30-Tage-Durchschnitt">Ø30 {pl.avg30}</span> : null}
+                                            {pl.foil ? <span className="foil" title="Foil Low">F {pl.foil}</span> : null}
+                                          </div>
+                                        )
+                                      })()}
                                     </div>
                                     <div className="qty" onClick={(e) => e.stopPropagation()}>
                                       <button type="button" onClick={() => bumpDeckCard(dc.id, sec, -1)}>−</button>
@@ -1667,10 +1768,27 @@ export default function App() {
                                     <div className="deck-thumb deck-thumb-empty" aria-hidden />
                                   )}
                                   <div className="grow">
-                                    <div className="name">{displayName(c)}</div>
+                                    <button
+                                      type="button"
+                                      className="name name-link"
+                                      title="Auf Cardmarket öffnen"
+                                      disabled={!priceBook?.cards[c.id]?.cmUrl}
+                                      onClick={(e) => { e.stopPropagation(); openCm(priceBook?.cards[c.id]) }}
+                                    >{displayName(c)}</button>
                                     <div className="sub">
                                       {c.energy != null ? `E${c.energy} · ` : ''}{c.code} · besitzt {have}
                                     </div>
+                                    {(() => {
+                                      const pl = priceLabel(priceBook?.cards[c.id])
+                                      if (!pl || (!pl.low && !pl.avg30 && !pl.high && !pl.foil)) return null
+                                      return (
+                                        <div className="price">
+                                          {pl.low ? <span title="Niedrigster Preis (ab)">ab {pl.low}</span> : <span className="na">ab --</span>}
+                                          {pl.avg30 ? <span className="avg30" title="30-Tage-Durchschnitt">Ø30 {pl.avg30}</span> : null}
+                                          {pl.foil ? <span className="foil" title="Foil Low">F {pl.foil}</span> : null}
+                                        </div>
+                                      )
+                                    })()}
                                   </div>
                                   <div className="qty" onClick={(e) => e.stopPropagation()}>
                                     <button type="button" onClick={() => bumpDeckCard(dc.id, sec, -1)}>−</button>
