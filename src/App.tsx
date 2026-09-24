@@ -15,9 +15,13 @@ import {
   getLegendDomains,
   hasLegend,
   inferSection,
+  isLegendSwapState,
+  isSingleSlotSection,
+  legendCoversRequiredDomains,
   matchCardByName,
   migrateDeck,
   parseDeckImport,
+  requiredDomainsFromDeck,
   sanitizeDeckCards,
   sectionCount,
   sectionNeedsLegend,
@@ -873,13 +877,26 @@ export default function App() {
           return { ...x, qty: x.qty + delta, section }
         })
         .filter((x) => x.qty > 0)
-      if (legendLeaving || section === 'legend') {
+      // Removing Legend keeps existing cards; only sanitize when a Legend is (re)set
+      if (section === 'legend' && !legendLeaving) {
         const s = sanitizeDeckCards(cards, byId)
         if (s.notice) setDeckNotice(s.notice)
         cards = s.cards
       }
       return { ...d, cards }
     })
+    if (legendLeaving) {
+      setActiveSection('legend')
+      setDeckNotice(null)
+    }
+  }
+
+  function removeDeckCard(cardId: string, section: DeckSection) {
+    const deck = decks.find((d) => d.id === activeDeckId)
+    if (!deck) return
+    const entry = deck.cards.find((x) => x.id === cardId && sectionOf(x) === section)
+    if (!entry) return
+    bumpDeckCard(cardId, section, -entry.qty)
   }
 
   function deckCount(d: Deck) {
@@ -1612,32 +1629,45 @@ export default function App() {
                   const missCopies = under.reduce((acc, x) => acc + x.short, 0)
                   return (
                     <div key={d.id} className={`deck-acc-item${expanded ? ' expanded' : ''}${expanded ? ' active' : ''}`}>
-                      <button
-                        type="button"
+                      <div
                         className="deck-acc-head"
+                        role="button"
+                        tabIndex={0}
                         onClick={() => {
                           setActiveDeckId(d.id)
                           setDeckMissingReport(missingReportFor(d))
-                          setActiveSection('main')
+                          if (!expanded) setActiveSection('main')
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault()
+                            setActiveDeckId(d.id)
+                            setDeckMissingReport(missingReportFor(d))
+                            if (!expanded) setActiveSection('main')
+                          }
                         }}
                       >
                         <span className="deck-acc-chevron" aria-hidden>{expanded ? '▾' : '▸'}</span>
-                        <div className="grow">
-                          <div className="name">{d.name}</div>
-                          <div className="sub">{deckCount(d)} Karten</div>
-                        </div>
-                        {expanded && <span className="pill ok">aktiv</span>}
-                      </button>
-                      {expanded && (
-                        <div className="deck-acc-body">
-                          <div className="deck-acc-rename">
+                        <div className="grow deck-acc-title">
+                          {expanded ? (
                             <input
-                              className="field grow"
+                              className="field deck-acc-name-input"
                               value={d.name}
                               onChange={(e) => updateDeck((deck) => ({ ...deck, name: e.target.value }))}
                               onClick={(e) => e.stopPropagation()}
+                              onKeyDown={(e) => e.stopPropagation()}
                               aria-label="Deck umbenennen"
                             />
+                          ) : (
+                            <span className="name">{d.name}</span>
+                          )}
+                          <span className="deck-acc-count">· {deckCount(d)} Karten</span>
+                        </div>
+                        {expanded && <span className="pill ok">aktiv</span>}
+                      </div>
+                      {expanded && (
+                        <div className="deck-acc-body">
+                          <div className="deck-acc-actions">
                             <button
                               type="button"
                               className="btn icon danger deck-trash"
@@ -1741,6 +1771,20 @@ export default function App() {
                     </div>
                   )}
 
+                  {isLegendSwapState(activeDeck.cards) && (() => {
+                    const req = requiredDomainsFromDeck(activeDeck.cards, byId)
+                    return (
+                      <div className="deck-legend-swap" role="status">
+                        <b>Legend entfernt</b>
+                        {' — '}
+                        {req.length > 0
+                          ? <>Nur Legends wählbar, die die aktuellen Deck-Domains abdecken: <b>{req.join(', ')}</b>.</>
+                          : <>Bestehende Karten bleiben — beliebige Legend wählbar.</>}
+                        {' '}Champion/Main/Sideboard/Runes sind für neue Karten gesperrt, bis eine passende Legend gesetzt ist.
+                      </div>
+                    )
+                  })()}
+
                   <div className="deck-sections">
                     <div className="deck-sec-row">
                       {(['legend', 'champion'] as DeckSection[]).map((sec) => {
@@ -1811,32 +1855,49 @@ export default function App() {
                                         )
                                       })()}
                                     </div>
-                                    <div className="qty" onClick={(e) => e.stopPropagation()}>
-                                      <button type="button" onClick={() => bumpDeckCard(dc.id, sec, -1)}>−</button>
-                                      <b>{dc.qty}</b>
-                                      <button type="button" disabled={atCap || locked} title={locked ? 'Zuerst eine Legend wählen' : atCap ? `Limit ${cap}` : undefined} onClick={() => bumpDeckCard(dc.id, sec, 1)}>+</button>
-                                    </div>
+                                    {isSingleSlotSection(sec) ? (
+                                      <button
+                                        type="button"
+                                        className="btn icon danger deck-trash deck-card-trash"
+                                        title={`${SECTION_LABEL[sec]} entfernen`}
+                                        aria-label={`${SECTION_LABEL[sec]} entfernen`}
+                                        onClick={(e) => {
+                                          e.stopPropagation()
+                                          removeDeckCard(dc.id, sec)
+                                        }}
+                                      >
+                                        🗑
+                                      </button>
+                                    ) : (
+                                      <div className="qty" onClick={(e) => e.stopPropagation()}>
+                                        <button type="button" onClick={() => bumpDeckCard(dc.id, sec, -1)}>−</button>
+                                        <b>{dc.qty}</b>
+                                        <button type="button" disabled={atCap || locked} title={locked ? 'Zuerst eine Legend wählen' : atCap ? `Limit ${cap}` : undefined} onClick={() => bumpDeckCard(dc.id, sec, 1)}>+</button>
+                                      </div>
+                                    )}
                                   </div>
                                 )
                               })}
                             </div>
-                            <button
-                              type="button"
-                              className="deck-add"
-                              disabled={locked || atCap}
-                              title={locked ? 'Zuerst eine Legend wählen' : atCap ? `Limit ${cap} erreicht` : undefined}
-                              onClick={(e) => {
-                                e.stopPropagation()
-                                if (locked) {
-                                  setDeckNotice('Zuerst eine Legend wählen')
-                                  setActiveSection('legend')
-                                  return
-                                }
-                                setActiveSection(sec)
-                              }}
-                            >
-                              {locked ? 'Zuerst eine Legend wählen' : SECTION_ADD_LABEL[sec]}
-                            </button>
+                            {!(isSingleSlotSection(sec) && atCap) && (
+                              <button
+                                type="button"
+                                className="deck-add"
+                                disabled={locked || atCap}
+                                title={locked ? 'Zuerst eine Legend wählen' : atCap ? `Limit ${cap} erreicht` : undefined}
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  if (locked) {
+                                    setDeckNotice('Zuerst eine Legend wählen')
+                                    setActiveSection('legend')
+                                    return
+                                  }
+                                  setActiveSection(sec)
+                                }}
+                              >
+                                {locked ? 'Zuerst eine Legend wählen' : SECTION_ADD_LABEL[sec]}
+                              </button>
+                            )}
                           </div>
                         )
                       })}
@@ -1964,6 +2025,10 @@ export default function App() {
                     if (sectionNeedsLegend(activeSection)) {
                       const domains = getLegendDomains(activeDeck.cards, byId)
                       if (domains && !cardMatchesLegendDomains(c, domains)) return false
+                    }
+                    if (activeSection === 'legend') {
+                      const required = requiredDomainsFromDeck(activeDeck.cards, byId)
+                      if (!legendCoversRequiredDomains(c, required)) return false
                     }
                     const query = q.trim().toLowerCase()
                     if (!query) return true

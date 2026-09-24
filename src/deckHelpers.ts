@@ -251,6 +251,46 @@ export function hasLegend(deckCards: DeckCard[]): boolean {
   return sectionCount(deckCards, 'legend') >= 1
 }
 
+/** Sections with hard cap 1 (qty steppers → trash; hide Add when full). */
+export function isSingleSlotSection(section: DeckSection): boolean {
+  return SECTION_CAPS[section] === 1
+}
+
+/**
+ * Non-Colorless domains already present in Champion/Main/Sideboard/Runes.
+ * A replacement Legend must cover all of these. Empty → any Legend OK
+ * (Colorless-only leftovers, Battlefields-only, or empty gated sections).
+ */
+export function requiredDomainsFromDeck(deckCards: DeckCard[], byId: Map<string, Card>): string[] {
+  const set = new Set<string>()
+  for (const dc of deckCards) {
+    const sec = sectionOf(dc)
+    if (!sectionNeedsLegend(sec)) continue
+    const c = byId.get(dc.id)
+    if (!c) continue
+    for (const d of cardDomainIdentity(c)) set.add(d)
+  }
+  return [...set].sort((a, b) => a.localeCompare(b))
+}
+
+/** True when Legend is missing but gated sections still hold cards (swap / re-pick). */
+export function isLegendSwapState(deckCards: DeckCard[]): boolean {
+  if (hasLegend(deckCards)) return false
+  return SECTIONS_NEED_LEGEND.some((sec) => sectionCount(deckCards, sec) > 0)
+}
+
+/** Legend card domains include every required deck domain. */
+export function legendCoversRequiredDomains(legend: Card, required: string[]): boolean {
+  if (required.length === 0) return true
+  const legendDoms = cardDomainIdentity(legend)
+  return required.every((d) => legendDoms.includes(d))
+}
+
+export function legendSwapBlockMessage(required: string[]): string {
+  if (required.length === 0) return 'Legend muss zum bestehenden Deck passen.'
+  return `Legend muss die Deck-Domains abdecken: ${required.join(', ')}`
+}
+
 export type AddBlockReason = 'type' | 'legend' | 'domain' | 'cap'
 
 export type CanAddResult = { ok: true } | { ok: false; reason: AddBlockReason; message: string }
@@ -274,6 +314,13 @@ export function canAddToSection(
     const legendDomains = getLegendDomains(deckCards, byId)
     if (legendDomains && !cardMatchesLegendDomains(card, legendDomains)) {
       return { ok: false, reason: 'domain', message: 'Domain passt nicht zur Legend.' }
+    }
+  }
+  // Replacement Legend must cover domains already used in gated sections
+  if (section === 'legend') {
+    const required = requiredDomainsFromDeck(deckCards, byId)
+    if (!legendCoversRequiredDomains(card, required)) {
+      return { ok: false, reason: 'domain', message: legendSwapBlockMessage(required) }
     }
   }
   const count = sectionCount(deckCards, section)

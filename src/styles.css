@@ -524,8 +524,39 @@ textarea.field { min-height: 160px; resize: vertical; font-family: ui-monospace,
   border-top: 1px solid rgba(44,51,68,.8);
   padding-top: 10px;
 }
-.deck-acc-rename {
-  display: flex; gap: 8px; align-items: center;
+.deck-acc-title {
+  display: flex; align-items: center; gap: 8px; min-width: 0; flex-wrap: wrap;
+}
+.deck-acc-name-input {
+  flex: 1 1 140px;
+  min-width: 0;
+  max-width: 280px;
+  padding: 6px 10px;
+  font-weight: 600;
+}
+.deck-acc-count {
+  color: var(--muted);
+  font-size: 13px;
+  white-space: nowrap;
+}
+.deck-acc-actions {
+  display: flex; gap: 8px; align-items: center; justify-content: flex-end;
+}
+.deck-card-trash {
+  flex-shrink: 0;
+  padding: 6px 8px;
+  min-width: 34px;
+  font-size: 14px;
+}
+.deck-legend-swap {
+  margin: 10px 0;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(255,123,138,.4);
+  background: rgba(255,123,138,.1);
+  color: #ffc4cb;
+  font-size: 13px;
+  line-height: 1.45;
 }
 .btn.icon {
   padding: 8px 10px; min-width: 40px; line-height: 1;
