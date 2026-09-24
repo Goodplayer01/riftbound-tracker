@@ -150,6 +150,9 @@ export default function App() {
   const [dropFlashSection, setDropFlashSection] = useState<DeckSection | null>(null)
   const [dragRejectSection, setDragRejectSection] = useState<DeckSection | null>(null)
   const [draggingCardId, setDraggingCardId] = useState<string | null>(null)
+  const [dragOverSale, setDragOverSale] = useState(false)
+  const [dropFlashSale, setDropFlashSale] = useState(false)
+  const [dragRejectSale, setDragRejectSale] = useState(false)
   const [deckNotice, setDeckNotice] = useState<string | null>(null)
   const dragGhostRef = useRef<HTMLElement | null>(null)
   const dragGhostCleanupRef = useRef<(() => void) | null>(null)
@@ -783,6 +786,57 @@ export default function App() {
     setDraggingCardId(null)
     setDragOverSection(null)
     setDragRejectSection(null)
+    setDragOverSale(false)
+    setDragRejectSale(false)
+  }
+
+  function onSaleCartDragOver(e: ReactDragEvent) {
+    const types = Array.from(e.dataTransfer.types || [])
+    const raw = types.includes('text/riftbound-card') || types.includes('text/plain') || !!draggingCardId
+    if (!raw) return
+    e.preventDefault()
+    const id = draggingCardId
+    if (id && saleRemaining(id) <= 0) {
+      e.dataTransfer.dropEffect = 'none'
+      setDragOverSale(false)
+      setDragRejectSale(true)
+      return
+    }
+    e.dataTransfer.dropEffect = 'copy'
+    setDragRejectSale(false)
+    setDragOverSale(true)
+  }
+
+  function onSaleCartDragLeave(e: ReactDragEvent) {
+    const related = e.relatedTarget as Node | null
+    if (related && (e.currentTarget as HTMLElement).contains(related)) return
+    setDragOverSale(false)
+    setDragRejectSale(false)
+  }
+
+  function onSaleCartDrop(e: ReactDragEvent) {
+    e.preventDefault()
+    e.stopPropagation()
+    const cardId = e.dataTransfer.getData('text/riftbound-card') || e.dataTransfer.getData('text/plain')
+    setDragOverSale(false)
+    setDragRejectSale(false)
+    if (!cardId) return
+    if (ownedQty(collection[cardId]) <= 0 || saleRemaining(cardId) <= 0) {
+      setDragRejectSale(true)
+      window.setTimeout(() => setDragRejectSale(false), 450)
+      return
+    }
+    addToSale(cardId, 1)
+    setDropFlashSale(true)
+    window.setTimeout(() => setDropFlashSale(false), 380)
+  }
+
+  function saleCartDropClass() {
+    const parts = ['list', 'sale-cart']
+    if (dragOverSale) parts.push('drag-over')
+    if (dropFlashSale) parts.push('drop-flash')
+    if (dragRejectSale) parts.push('drag-reject')
+    return parts.join(' ')
   }
 
   function onSectionDragOver(e: ReactDragEvent, sec: DeckSection) {
@@ -1432,9 +1486,15 @@ export default function App() {
                 </button>
               </div>
               {saleReport && <p className="help">{saleReport}</p>}
-              <div className="list" style={{ maxHeight: '62vh', overflow: 'auto' }}>
+              <div
+                className={saleCartDropClass()}
+                style={{ maxHeight: '62vh', overflow: 'auto' }}
+                onDragOver={onSaleCartDragOver}
+                onDragLeave={onSaleCartDragLeave}
+                onDrop={onSaleCartDrop}
+              >
                 {Object.keys(saleList).length === 0 && (
-                  <div className="empty">Warenkorb leer. Rechts owned Karten suchen oder Liste einfügen.</div>
+                  <div className="empty">Warenkorb leer. Rechts owned Karten suchen, ziehen oder Liste einfügen.</div>
                 )}
                 {Object.entries(saleList).map(([id, qty]) => {
                   const c = byId.get(id)
@@ -1487,7 +1547,7 @@ export default function App() {
             </section>
             <section className="panel">
               <h2 style={{ marginTop: 0 }}>Karten hinzufügen</h2>
-              <p className="help">Nur Karten mit Bestand (qty &gt; 0). Menge ist auf den Restbestand begrenzt.</p>
+              <p className="help">Nur Karten mit Bestand (qty &gt; 0). Menge auf Restbestand begrenzt — Ziehen in den Warenkorb oder +.</p>
               <input
                 className="field"
                 placeholder="Suche in Owned…"
@@ -1512,6 +1572,9 @@ export default function App() {
                     <div
                       key={c.id}
                       className="list-item picker-card"
+                      draggable={room > 0}
+                      onDragStart={(e) => onPickerDragStart(e, c.id)}
+                      onDragEnd={onPickerDragEnd}
                       onMouseEnter={(e) => showCardPreview(e, c.image)}
                       onMouseMove={(e) => showCardPreview(e, c.image)}
                       onMouseLeave={hideCardPreview}
@@ -1528,8 +1591,25 @@ export default function App() {
                         <div className="deck-thumb deck-thumb-empty" aria-hidden />
                       )}
                       <div className="grow">
-                        <div className="name">{displayName(c)}</div>
+                        <button
+                          type="button"
+                          className="name name-link"
+                          title="Auf Cardmarket öffnen"
+                          disabled={!priceBook?.cards[c.id]?.cmUrl}
+                          onClick={(e) => { e.stopPropagation(); openCm(priceBook?.cards[c.id]) }}
+                        >{displayName(c)}</button>
                         <div className="sub">{c.code} · x{have}{room < have ? ` · im Warenkorb ${have - room}` : ''}</div>
+                        {(() => {
+                          const pl = priceLabel(priceBook?.cards[c.id])
+                          if (!pl || (!pl.low && !pl.avg30 && !pl.high && !pl.foil)) return null
+                          return (
+                            <div className="price">
+                              {pl.low ? <span title="Niedrigster Preis (ab)">ab {pl.low}</span> : <span className="na">ab --</span>}
+                              {pl.avg30 ? <span className="avg30" title="30-Tage-Durchschnitt">Ø30 {pl.avg30}</span> : null}
+                              {pl.foil ? <span className="foil" title="Foil Low">F {pl.foil}</span> : null}
+                            </div>
+                          )
+                        })()}
                       </div>
                       <button className="btn small primary" disabled={room <= 0} onClick={() => addToSale(c.id, 1)}>
                         +

@@ -476,6 +476,30 @@ textarea.field { min-height: 160px; resize: vertical; font-family: ui-monospace,
   80% { transform: translateX(2px); }
 }
 
+/* Drag-and-drop: picker → Verkauf Warenkorb (reuse deck flash/reject motion) */
+.sale-cart {
+  transition: border-color .15s ease, box-shadow .15s ease, transform .15s ease, background .15s ease;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  min-height: 120px;
+}
+.sale-cart.drag-over {
+  border-color: rgba(212,175,55,.95);
+  box-shadow:
+    inset 0 0 0 1px rgba(212,175,55,.35),
+    0 0 18px rgba(212,175,55,.28);
+  transform: scale(1.01);
+  background: rgba(212,175,55,.07);
+}
+.sale-cart.drop-flash {
+  animation: deck-drop-settle .38s ease-out;
+}
+.sale-cart.drag-reject {
+  border-color: rgba(255,123,138,.75);
+  box-shadow: inset 0 0 0 1px rgba(255,123,138,.25), 0 0 12px rgba(255,123,138,.2);
+  animation: deck-drop-reject .45s ease-out;
+}
+
 .sale-check {
   display: flex;
   align-items: center;
