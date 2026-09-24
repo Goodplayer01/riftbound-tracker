@@ -55,10 +55,11 @@ def suffix_for(c: dict, has_alt: bool, has_base: bool) -> str | None:
         return "V2-Showcase"
 
     if c.get("signed"):
-        # Rare signed (Kennen VEN / UNL style) → Signed-Showcase
-        if rarity == "Rare":
+        # VEN/UNL signed legends are CM "Signed-Showcase" (jewel Showcase).
+        # Keep this even after catalog rarity is Showcase (was Rare historically).
+        if c.get("set") in ("VEN", "UNL") or rarity == "Rare":
             return "V3-Signed-Showcase"
-        # Showcase-style signed ON legends
+        # OGN/SFD Showcase-style signed ON
         if has_alt:
             # Unsigned ON already claims V3-Overnumbered
             return "V3-Signed-Showcase"
