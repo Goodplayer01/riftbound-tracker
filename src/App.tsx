@@ -1520,65 +1520,81 @@ export default function App() {
                 <button className="btn" onClick={() => { setDeckImportOpen((v) => !v); setDeckImportText('') }}>Import</button>
                 <button className="btn primary" onClick={newDeck}>Neues Deck</button>
               </div>
-              <div className="list" style={{ marginBottom: 12 }}>
+              <div className="deck-accordion" style={{ marginBottom: 12 }}>
                 {decks.length === 0 && <div className="empty">Noch kein Deck.</div>}
-                {decks.map((d) => (
-                  <button
-                    key={d.id}
-                    className="list-item"
-                    style={{ textAlign: 'left', width: '100%' }}
-                    onClick={() => { setActiveDeckId(d.id); setDeckMissingReport(missingReportFor(d)); setActiveSection('main') }}
-                  >
-                    <div>
-                      <div className="name">{d.name}</div>
-                      <div className="sub">{deckCount(d)} Karten</div>
+                {decks.map((d) => {
+                  const expanded = d.id === activeDeckId
+                  const sums = expanded ? deckPriceSums(d) : null
+                  const under = expanded ? underOwnedLines(d) : []
+                  const missCopies = under.reduce((acc, x) => acc + x.short, 0)
+                  return (
+                    <div key={d.id} className={`deck-acc-item${expanded ? ' expanded' : ''}${expanded ? ' active' : ''}`}>
+                      <button
+                        type="button"
+                        className="deck-acc-head"
+                        onClick={() => {
+                          setActiveDeckId(d.id)
+                          setDeckMissingReport(missingReportFor(d))
+                          setActiveSection('main')
+                        }}
+                      >
+                        <span className="deck-acc-chevron" aria-hidden>{expanded ? '▾' : '▸'}</span>
+                        <div className="grow">
+                          <div className="name">{d.name}</div>
+                          <div className="sub">{deckCount(d)} Karten</div>
+                        </div>
+                        {expanded && <span className="pill ok">aktiv</span>}
+                      </button>
+                      {expanded && (
+                        <div className="deck-acc-body">
+                          <div className="deck-acc-rename">
+                            <input
+                              className="field grow"
+                              value={d.name}
+                              onChange={(e) => updateDeck((deck) => ({ ...deck, name: e.target.value }))}
+                              onClick={(e) => e.stopPropagation()}
+                              aria-label="Deck umbenennen"
+                            />
+                            <button
+                              type="button"
+                              className="btn icon danger deck-trash"
+                              title="Deck löschen"
+                              aria-label="Deck löschen"
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                setDecks((prev) => prev.filter((x) => x.id !== d.id))
+                                setActiveDeckId(null)
+                                setDeckMissingReport(null)
+                              }}
+                            >
+                              🗑
+                            </button>
+                          </div>
+                          {sums && (
+                            <div className="deck-price-sums help">
+                              <div>
+                                <b>Gesamt (ab Low):</b>{' '}
+                                {sums.priced > 0 ? fmtEur(sums.deckLow) : '—'}
+                                {sums.priced > 0 && sums.priced < deckCount(d) ? ' · teilweise ohne Preis' : ''}
+                              </div>
+                              {missCopies > 0 && (
+                                <div>
+                                  <b>Fehlende Kopien:</b>{' '}
+                                  {sums.missingPriced > 0 ? fmtEur(sums.missingLow) : '—'}
+                                  {` (${missCopies} Kopien)`}
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      )}
                     </div>
-                    {d.id === activeDeckId && <span className="pill ok">aktiv</span>}
-                  </button>
-                ))}
+                  )
+                })}
               </div>
 
               {activeDeck && (
                 <>
-                  <div className="toolbar">
-                    <input
-                      className="field grow"
-                      value={activeDeck.name}
-                      onChange={(e) => updateDeck((d) => ({ ...d, name: e.target.value }))}
-                    />
-                    <button
-                      className="btn danger"
-                      onClick={() => {
-                        setDecks((prev) => prev.filter((d) => d.id !== activeDeck.id))
-                        setActiveDeckId(null)
-                        setDeckMissingReport(null)
-                      }}
-                    >
-                      Löschen
-                    </button>
-                  </div>
-                  {(() => {
-                    const sums = deckPriceSums(activeDeck)
-                    const under = underOwnedLines(activeDeck)
-                    const missCopies = under.reduce((acc, x) => acc + x.short, 0)
-                    return (
-                      <div className="deck-price-sums help" style={{ margin: '6px 0 10px' }}>
-                        <div>
-                          <b>Gesamt (ab Low):</b>{' '}
-                          {sums.priced > 0 ? fmtEur(sums.deckLow) : '—'}
-                          {sums.priced > 0 && sums.priced < deckCount(activeDeck) ? ' · teilweise ohne Preis' : ''}
-                        </div>
-                        {missCopies > 0 && (
-                          <div>
-                            <b>Fehlende Kopien:</b>{' '}
-                            {sums.missingPriced > 0 ? fmtEur(sums.missingLow) : '—'}
-                            {` (${missCopies} Kopien)`}
-                          </div>
-                        )}
-                      </div>
-                    )
-                  })()}
-
                   {deckImportOpen && (
                     <div className="deck-import-box">
                       <textarea
@@ -1860,8 +1876,25 @@ export default function App() {
                         <div className="deck-thumb deck-thumb-empty" aria-hidden />
                       )}
                       <div className="grow">
-                        <div className="name">{displayName(c)}</div>
+                        <button
+                          type="button"
+                          className="name name-link"
+                          title="Auf Cardmarket öffnen"
+                          disabled={!priceBook?.cards[c.id]?.cmUrl}
+                          onClick={(e) => { e.stopPropagation(); openCm(priceBook?.cards[c.id]) }}
+                        >{displayName(c)}</button>
                         <div className="sub">{c.code} · x{ownedQty(collection[c.id])}{c.energy != null ? ` · E${c.energy}` : ''}</div>
+                        {(() => {
+                          const pl = priceLabel(priceBook?.cards[c.id])
+                          if (!pl || (!pl.low && !pl.avg30 && !pl.high && !pl.foil)) return null
+                          return (
+                            <div className="price">
+                              {pl.low ? <span title="Niedrigster Preis (ab)">ab {pl.low}</span> : <span className="na">ab --</span>}
+                              {pl.avg30 ? <span className="avg30" title="30-Tage-Durchschnitt">Ø30 {pl.avg30}</span> : null}
+                              {pl.foil ? <span className="foil" title="Foil Low">F {pl.foil}</span> : null}
+                            </div>
+                          )
+                        })()}
                       </div>
                       <button className="btn small primary" onClick={() => addToDeck(c.id, activeSection)}>
                         Add
