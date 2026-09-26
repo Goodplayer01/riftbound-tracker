@@ -17,8 +17,9 @@ declare global {
       checkForUpdates: () => Promise<{ ok: boolean; dev?: boolean; version?: string; error?: string }>
       onUpdater: (cb: (p: UpdaterPayload) => void) => () => void
       windowMinimize: () => Promise<void>
-      windowMaximize: () => Promise<boolean>
-      windowIsMaximized: () => Promise<boolean>
+      windowToggleFullscreen: () => Promise<boolean>
+      windowIsFullScreen: () => Promise<boolean>
+      onFullscreen: (cb: (isFullScreen: boolean) => void) => () => void
       windowClose: () => Promise<void>
       openExternal: (url: string) => Promise<{ ok: boolean }>
     }

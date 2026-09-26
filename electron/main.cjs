@@ -5,6 +5,10 @@ const fs = require('fs')
 const isDev = !app.isPackaged
 let mainWindow
 
+/** Fixed windowed size — measured from Stefan-PC running v0.1.35 (DWM bounds @ 125% DPI → 1426×860 DIP). */
+const WINDOWED_WIDTH = 1426
+const WINDOWED_HEIGHT = 860
+
 // Windows taskbar identity — must match package.json build.appId
 if (process.platform === 'win32') {
   app.setAppUserModelId('com.goodplayer01.riftboundtracker')
@@ -29,14 +33,31 @@ function resolveAppIcon() {
   return null
 }
 
+function applyWindowedBounds() {
+  if (!mainWindow || mainWindow.isDestroyed()) return
+  mainWindow.setFullScreen(false)
+  if (mainWindow.isMaximized()) mainWindow.unmaximize()
+  mainWindow.setResizable(true)
+  mainWindow.setMinimumSize(WINDOWED_WIDTH, WINDOWED_HEIGHT)
+  mainWindow.setMaximumSize(WINDOWED_WIDTH, WINDOWED_HEIGHT)
+  mainWindow.setSize(WINDOWED_WIDTH, WINDOWED_HEIGHT)
+  mainWindow.setResizable(false)
+  mainWindow.center()
+}
+
 function createWindow() {
   const iconPath = resolveAppIcon()
   const icon = iconPath ? nativeImage.createFromPath(iconPath) : undefined
   mainWindow = new BrowserWindow({
-    width: 1280,
-    height: 860,
-    minWidth: 960,
-    minHeight: 640,
+    width: WINDOWED_WIDTH,
+    height: WINDOWED_HEIGHT,
+    minWidth: WINDOWED_WIDTH,
+    minHeight: WINDOWED_HEIGHT,
+    maxWidth: WINDOWED_WIDTH,
+    maxHeight: WINDOWED_HEIGHT,
+    resizable: false,
+    maximizable: false,
+    fullscreenable: true,
     title: 'Deakrix Riftbound Tracker',
     backgroundColor: '#0a0c10',
     frame: false,
@@ -50,6 +71,7 @@ function createWindow() {
   })
 
   Menu.setApplicationMenu(null)
+  mainWindow.center()
 
   if (isDev) {
     mainWindow.loadURL(process.env.VITE_DEV_SERVER_URL || 'http://127.0.0.1:5173')
@@ -61,6 +83,25 @@ function createWindow() {
   mainWindow.webContents.setWindowOpenHandler(({ url }) => {
     shell.openExternal(url)
     return { action: 'deny' }
+  })
+
+  const pushFullscreenState = () => {
+    if (!mainWindow || mainWindow.isDestroyed()) return
+    mainWindow.webContents.send('window:fullscreen', mainWindow.isFullScreen())
+  }
+
+  mainWindow.on('enter-full-screen', pushFullscreenState)
+  mainWindow.on('leave-full-screen', () => {
+    // Force fixed windowed size so OS cannot leave a weird intermediate size.
+    applyWindowedBounds()
+    pushFullscreenState()
+  })
+  mainWindow.on('maximize', () => {
+    // Block OS maximize — only true fullscreen is allowed.
+    if (mainWindow && !mainWindow.isDestroyed() && !mainWindow.isFullScreen()) {
+      mainWindow.unmaximize()
+      applyWindowedBounds()
+    }
   })
 }
 
@@ -135,16 +176,21 @@ ipcMain.handle('updater:check', async () => {
 ipcMain.handle('window:minimize', () => {
   mainWindow?.minimize()
 })
-ipcMain.handle('window:maximize', () => {
-  if (!mainWindow) return false
-  if (mainWindow.isMaximized()) {
-    mainWindow.unmaximize()
+/** Toggle true fullscreen (Vollbild) ↔ fixed windowed size. Returns isFullScreen. */
+ipcMain.handle('window:toggleFullscreen', () => {
+  if (!mainWindow || mainWindow.isDestroyed()) return false
+  if (mainWindow.isFullScreen()) {
+    applyWindowedBounds()
     return false
   }
-  mainWindow.maximize()
+  // Temporarily allow size change for fullscreen transition.
+  mainWindow.setResizable(true)
+  mainWindow.setMaximumSize(0, 0)
+  mainWindow.setMinimumSize(0, 0)
+  mainWindow.setFullScreen(true)
   return true
 })
-ipcMain.handle('window:isMaximized', () => !!mainWindow?.isMaximized())
+ipcMain.handle('window:isFullScreen', () => !!mainWindow?.isFullScreen())
 ipcMain.handle('window:close', () => {
   mainWindow?.close()
 })

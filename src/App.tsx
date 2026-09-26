@@ -153,7 +153,7 @@ export default function App() {
   const [cardPreview, setCardPreview] = useState<{ src: string; x: number; y: number } | null>(null)
   const [appVersion, setAppVersion] = useState('')
   const [updateInfo, setUpdateInfo] = useState<{ status: string; version?: string; message?: string; percent?: number } | null>(null)
-  const [isMaximized, setIsMaximized] = useState(false)
+  const [isFullScreen, setIsFullScreen] = useState(false)
   const [priceBook, setPriceBook] = useState<PriceBook | null>(null)
   // null = binder dashboard; 'owned' = all owned; set code = that set binder
   const [binderView, setBinderView] = useState<string | null>(null)
@@ -174,9 +174,10 @@ export default function App() {
 
   useEffect(() => {
     window.riftbound?.getVersion().then(setAppVersion).catch(() => {})
-    window.riftbound?.windowIsMaximized?.().then(setIsMaximized).catch(() => {})
-    const off = window.riftbound?.onUpdater((p) => setUpdateInfo(p))
-    return () => { off?.() }
+    window.riftbound?.windowIsFullScreen?.().then(setIsFullScreen).catch(() => {})
+    const offUpdater = window.riftbound?.onUpdater((p) => setUpdateInfo(p))
+    const offFs = window.riftbound?.onFullscreen?.((v) => setIsFullScreen(v))
+    return () => { offUpdater?.(); offFs?.() }
   }, [])
 
   async function onVersionClick() {
@@ -207,10 +208,10 @@ export default function App() {
     }
   }
 
-  async function toggleMaximize() {
+  async function toggleFullscreen() {
     try {
-      const next = await window.riftbound?.windowMaximize?.()
-      if (typeof next === 'boolean') setIsMaximized(next)
+      const next = await window.riftbound?.windowToggleFullscreen?.()
+      if (typeof next === 'boolean') setIsFullScreen(next)
     } catch {}
   }
 
@@ -1166,8 +1167,8 @@ export default function App() {
           <button type="button" className="win-btn" title={t(lang, 'win.minimize')} aria-label={t(lang, 'win.minimize')} onClick={() => window.riftbound?.windowMinimize?.()}>
             <svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><path d="M1 5h8" stroke="currentColor" strokeWidth="1.2" fill="none" /></svg>
           </button>
-          <button type="button" className="win-btn" title={isMaximized ? t(lang, 'win.restore') : t(lang, 'win.maximize')} aria-label={isMaximized ? t(lang, 'win.restore') : t(lang, 'win.maximize')} onClick={toggleMaximize}>
-            {isMaximized ? (
+          <button type="button" className="win-btn" title={isFullScreen ? t(lang, 'win.windowed') : t(lang, 'win.fullscreen')} aria-label={isFullScreen ? t(lang, 'win.windowed') : t(lang, 'win.fullscreen')} onClick={toggleFullscreen}>
+            {isFullScreen ? (
               <svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><path d="M2.5 3.5h5v5h-5zM3.5 2.5h5v5" stroke="currentColor" strokeWidth="1.1" fill="none" /></svg>
             ) : (
               <svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><rect x="1.5" y="1.5" width="7" height="7" stroke="currentColor" strokeWidth="1.2" fill="none" /></svg>

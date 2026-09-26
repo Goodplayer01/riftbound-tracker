@@ -11,8 +11,13 @@ contextBridge.exposeInMainWorld('riftbound', {
     return () => ipcRenderer.removeListener('updater', listener)
   },
   windowMinimize: () => ipcRenderer.invoke('window:minimize'),
-  windowMaximize: () => ipcRenderer.invoke('window:maximize'),
-  windowIsMaximized: () => ipcRenderer.invoke('window:isMaximized'),
+  windowToggleFullscreen: () => ipcRenderer.invoke('window:toggleFullscreen'),
+  windowIsFullScreen: () => ipcRenderer.invoke('window:isFullScreen'),
+  onFullscreen: (cb) => {
+    const listener = (_event, isFullScreen) => cb(!!isFullScreen)
+    ipcRenderer.on('window:fullscreen', listener)
+    return () => ipcRenderer.removeListener('window:fullscreen', listener)
+  },
   windowClose: () => ipcRenderer.invoke('window:close'),
   openExternal: (url) => ipcRenderer.invoke('shell:openExternal', url),
 })

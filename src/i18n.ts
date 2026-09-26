@@ -46,8 +46,8 @@ const de: Record<string, string> = {
   'update.titleIdle': 'Nach Updates suchen',
 
   'win.minimize': 'Minimieren',
-  'win.maximize': 'Maximieren',
-  'win.restore': 'Wiederherstellen',
+  'win.fullscreen': 'Vollbild',
+  'win.windowed': 'Fenster',
   'win.close': 'Schließen',
 
   'load.error': 'Fehler: {message}',
@@ -199,8 +199,8 @@ const en: Record<string, string> = {
   'update.titleIdle': 'Check for updates',
 
   'win.minimize': 'Minimise',
-  'win.maximize': 'Maximise',
-  'win.restore': 'Restore',
+  'win.fullscreen': 'Fullscreen',
+  'win.windowed': 'Window',
   'win.close': 'Close',
 
   'load.error': 'Error: {message}',
