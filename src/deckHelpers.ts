@@ -1,4 +1,5 @@
 import type { Card, Deck, DeckCard, DeckSection } from './types'
+import { loadLang, t } from './i18n'
 
 export const SECTION_ORDER: DeckSection[] = [
   'legend',
@@ -287,8 +288,9 @@ export function legendCoversRequiredDomains(legend: Card, required: string[]): b
 }
 
 export function legendSwapBlockMessage(required: string[]): string {
-  if (required.length === 0) return 'Legend muss zum bestehenden Deck passen.'
-  return `Legend muss die Deck-Domains abdecken: ${required.join(', ')}`
+  const lang = loadLang()
+  if (required.length === 0) return t(lang, 'deck.legendSwapAny')
+  return t(lang, 'deck.legendSwapDomains', { domains: required.join(', ') })
 }
 
 export type AddBlockReason = 'type' | 'legend' | 'domain' | 'cap'
@@ -303,17 +305,18 @@ export function canAddToSection(
   byId: Map<string, Card>,
   qtyToAdd = 1,
 ): CanAddResult {
+  const lang = loadLang()
   if (!cardFitsSection(card, section)) {
-    return { ok: false, reason: 'type', message: 'Kartentyp passt nicht in diese Sektion.' }
+    return { ok: false, reason: 'type', message: t(lang, 'deck.typeMismatch') }
   }
   const needsLeg = sectionNeedsLegend(section)
   if (needsLeg && !hasLegend(deckCards)) {
-    return { ok: false, reason: 'legend', message: 'Zuerst eine Legend wählen' }
+    return { ok: false, reason: 'legend', message: t(lang, 'deck.needLegend') }
   }
   if (needsLeg) {
     const legendDomains = getLegendDomains(deckCards, byId)
     if (legendDomains && !cardMatchesLegendDomains(card, legendDomains)) {
-      return { ok: false, reason: 'domain', message: 'Domain passt nicht zur Legend.' }
+      return { ok: false, reason: 'domain', message: t(lang, 'deck.domainMismatch') }
     }
   }
   // Replacement Legend must cover domains already used in gated sections
@@ -326,7 +329,7 @@ export function canAddToSection(
   const count = sectionCount(deckCards, section)
   const cap = SECTION_CAPS[section]
   if (count + qtyToAdd > cap) {
-    return { ok: false, reason: 'cap', message: `Limit ${cap} für ${SECTION_LABEL[section]} erreicht.` }
+    return { ok: false, reason: 'cap', message: t(lang, 'deck.capReached', { cap, section: SECTION_LABEL[section] }) }
   }
   return { ok: true }
 }
@@ -396,12 +399,13 @@ export function sanitizeDeckCards(deckCards: DeckCard[], byId: Map<string, Card>
     }
   }
 
+  const lang = loadLang()
   const parts: string[] = []
   if (trimmed > 0) {
-    parts.push(`${trimmed} Karte${trimmed === 1 ? '' : 'n'} über dem Sektionslimit entfernt`)
+    parts.push(t(lang, 'deck.sanitizedCap', { n: trimmed, plural: trimmed === 1 ? '' : (lang === 'de' ? 'n' : 's') }))
   }
   if (domainRemoved > 0) {
-    parts.push(`${domainRemoved} Karte${domainRemoved === 1 ? '' : 'n'} passen nicht zur Legend-Domain`)
+    parts.push(t(lang, 'deck.sanitizedDomain', { n: domainRemoved, plural: domainRemoved === 1 ? '' : (lang === 'de' ? 'n' : 's') }))
   }
   const notice = parts.length ? parts.join(' · ') + '.' : null
   return { cards: afterDomain, trimmed, domainRemoved, notice }

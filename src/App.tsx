@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type DragEvent as ReactDragEvent, type MouseEvent as ReactMouseEvent } from 'react'
 import type { Card, Catalog, Deck, DeckSection, PriceBook, PriceEntry } from './types'
 import { loadCollection, loadDecks, saveCollection, saveDecks, type Collection } from './storage'
+import { loadLang, saveLang, t, type Lang } from './i18n'
 import { parseBulkTokens, resolveToken } from './parseBulk'
 import {
   SECTION_ADD_LABEL,
@@ -57,6 +58,15 @@ function subtractOwnedCopies(o: { qty: number; foil: number }, sellQty: number) 
   return { qty, foil, sold, short }
 }
 
+
+function cardWord(lang: Lang, n: number) {
+  return lang === 'de' ? (n === 1 ? 'Karte' : 'Karten') : (n === 1 ? 'card' : 'cards')
+}
+
+function copyWord(lang: Lang, n: number) {
+  return lang === 'de' ? (n === 1 ? 'Kopie' : 'Kopien') : (n === 1 ? 'copy' : 'copies')
+}
+
 function fmtEur(n: number | null | undefined) {
   if (n == null || Number.isNaN(n)) return null
   return `${n.toFixed(2)}€`
@@ -111,6 +121,7 @@ function openCm(p?: PriceEntry | null) {
 
 export default function App() {
   const [tab, setTab] = useState<Tab>('collection')
+  const [lang, setLang] = useState<Lang>(() => loadLang())
   const [catalog, setCatalog] = useState<Catalog | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [collection, setCollection] = useState<Collection>({})
@@ -182,22 +193,27 @@ export default function App() {
 
   function updateLabel() {
     const s = updateInfo?.status
-    if (s === 'checking') return 'Suche Updates...'
-    if (s === 'available') return `Update ${updateInfo?.version || ''}...`
-    if (s === 'downloaded') return `Update bereit ${updateInfo?.version || ''}`.trim()
-    if (s === 'not-available') return 'Aktuell'
-    if (s === 'error') return 'Update-Fehler'
+    if (s === 'checking') return t(lang, 'update.checking')
+    if (s === 'available') return t(lang, 'update.available', { version: updateInfo?.version || '' })
+    if (s === 'downloaded') return t(lang, 'update.downloaded', { version: updateInfo?.version || '' }).trim()
+    if (s === 'not-available') return appVersion ? `v${appVersion}` : 'v?'
+    if (s === 'error') return t(lang, 'update.error')
     return appVersion ? `v${appVersion}` : 'v?'
   }
 
   function updateTitle() {
     const s = updateInfo?.status
-    if (s === 'checking') return 'Suche nach Updates...'
-    if (s === 'available') return `Update ${updateInfo?.version} verfügbar`
-    if (s === 'downloaded') return `Update ${updateInfo?.version} bereit - Neustart`
-    if (s === 'not-available') return 'Keine Updates - aktuell'
-    if (s === 'error') return updateInfo?.message || 'Update-Fehler'
-    return 'Nach Updates suchen'
+    if (s === 'checking') return t(lang, 'update.titleChecking')
+    if (s === 'available') return t(lang, 'update.titleAvailable', { version: updateInfo?.version || '' })
+    if (s === 'downloaded') return t(lang, 'update.titleDownloaded', { version: updateInfo?.version || '' })
+    if (s === 'not-available') return t(lang, 'update.titleNotAvailable')
+    if (s === 'error') return updateInfo?.message || t(lang, 'update.error')
+    return t(lang, 'update.titleIdle')
+  }
+
+  function setAppLang(next: Lang) {
+    setLang(next)
+    saveLang(next)
   }
 
   useEffect(() => {
@@ -477,8 +493,13 @@ export default function App() {
       return next
     })
     setBulkReport(
-      `${ok} gefunden` +
-        (miss ? `, ${miss} nicht gefunden: ${missing.slice(0, 12).join(', ')}${missing.length > 12 ? '...' : ''}` : ''),
+      t(lang, 'bulk.found', { ok }) +
+        (miss
+          ? t(lang, 'bulk.missing', {
+              miss,
+              list: `${missing.slice(0, 12).join(', ')}${missing.length > 12 ? '...' : ''}`,
+            })
+          : ''),
     )
   }
 
@@ -559,28 +580,28 @@ export default function App() {
       const token = (m ? m[2] : line).trim()
       const card = resolveToken(token, cards) || matchCardByName(cards, token)
       if (!card) {
-        problems.push(`nicht gefunden: ${line}`)
+        problems.push(t(lang, 'sales.notFound', { line }))
         continue
       }
       const have = ownedQty(collection[card.id])
       if (have <= 0) {
-        problems.push(`nicht owned: ${displayName(card)}`)
+        problems.push(t(lang, 'sales.notOwned', { name: displayName(card) }))
         continue
       }
       const cur = next[card.id] || 0
       const room = Math.max(0, have - cur)
       if (room <= 0) {
-        problems.push(`Limit erreicht: ${displayName(card)}`)
+        problems.push(t(lang, 'sales.limitReached', { name: displayName(card) }))
         continue
       }
       const take = Math.min(qty, room)
       next[card.id] = cur + take
       added += 1
       copies += take
-      if (take < qty) problems.push(`nur ${take}/${qty}: ${displayName(card)}`)
+      if (take < qty) problems.push(t(lang, 'sales.onlyPartial', { take, qty, name: displayName(card) }))
     }
     setSaleList(next)
-    const ok = `${copies} Kopie${copies === 1 ? '' : 'n'} (${added} Karte${added === 1 ? '' : 'n'}) hinzugefügt`
+    const ok = t(lang, 'sales.added', { copies, cards: added, copyWord: copyWord(lang, copies), cardWord: cardWord(lang, added) })
     setSaleReport(
       problems.length
         ? `${ok}. ${problems.slice(0, 8).join(' · ')}${problems.length > 8 ? '…' : ''}`
@@ -591,7 +612,7 @@ export default function App() {
   function confirmSale() {
     const entries = Object.entries(saleList).filter(([id, q]) => q > 0 && saleSelected[id])
     if (!entries.length) {
-      setSaleReport('Keine Karten ausgewählt. Bitte per Checkbox markieren.')
+      setSaleReport(t(lang, 'sales.noneSelected'))
       return
     }
     let soldCards = 0
@@ -609,7 +630,7 @@ export default function App() {
       }
       if (r.short > 0) {
         const c = byId.get(id)
-        notes.push(`knapp: ${c ? displayName(c) : id} (−${r.short})`)
+        notes.push(t(lang, 'sales.short', { name: c ? displayName(c) : id, short: r.short }))
       }
       if (r.qty === 0 && r.foil === 0) delete next[id]
       else next[id] = { qty: r.qty, foil: r.foil }
@@ -626,8 +647,12 @@ export default function App() {
       return copy
     })
     setSaleReport(
-      `Verkauft: ${soldCards} Karte${soldCards === 1 ? '' : 'n'} (${soldCopies} Kopien) aus der Sammlung entfernt.` +
-        (notes.length ? ` ${notes.slice(0, 4).join(' · ')}` : ''),
+      t(lang, 'sales.sold', {
+        cards: soldCards,
+        copies: soldCopies,
+        cardWord: cardWord(lang, soldCards),
+        copyWord: copyWord(lang, soldCopies),
+      }) + (notes.length ? ` ${notes.slice(0, 4).join(' · ')}` : ''),
     )
   }
 
@@ -662,7 +687,7 @@ export default function App() {
         }
         return next
       })
-      setBulkReport(`CSV importiert (${file.name})`)
+      setBulkReport(t(lang, 'catalog.csvImported', { name: file.name }))
       setTab('collection')
     }
     reader.readAsText(file)
@@ -679,7 +704,7 @@ export default function App() {
   }
 
   function newDeck() {
-    const d: Deck = { id: uid(), name: `Deck ${decks.length + 1}`, cards: [], updatedAt: new Date().toISOString() }
+    const d: Deck = { id: uid(), name: t(lang, 'decks.newName', { n: decks.length + 1 }), cards: [], updatedAt: new Date().toISOString() }
     setDecks((prev) => [d, ...prev])
     setActiveDeckId(d.id)
     setActiveSection('legend')
@@ -1002,7 +1027,7 @@ export default function App() {
     const result = parseDeckImport(text, cards)
     const sanitized = sanitizeDeckCards(result.cards, byId)
     updateDeck((d) => ({ ...d, cards: sanitized.cards }))
-    if (sanitized.notice) setDeckNotice(`Import angepasst: ${sanitized.notice}`)
+    if (sanitized.notice) setDeckNotice(t(lang, 'decks.importAdjusted', { notice: sanitized.notice }))
     const report = sanitized.cards
       .map((dc) => {
         const c = byId.get(dc.id) || cards.find((x) => x.id === dc.id)
@@ -1017,11 +1042,11 @@ export default function App() {
       })
       .filter((r) => r.short > 0)
     for (const u of result.unmatched) {
-      report.push({ name: `Nicht gefunden: ${u}`, need: 0, have: 0, short: 0 })
+      report.push({ name: t(lang, 'decks.notFoundPrefix', { name: u }), need: 0, have: 0, short: 0 })
     }
     if (sanitized.trimmed > 0 || sanitized.domainRemoved > 0) {
       report.unshift({
-        name: `Limit/Domain: ${sanitized.notice || 'Karten entfernt'}`,
+        name: `Limit/Domain: ${sanitized.notice || t(lang, 'decks.cardsRemoved')}`,
         need: 0,
         have: 0,
         short: 0,
@@ -1031,8 +1056,8 @@ export default function App() {
     setDeckImportOpen(false)
   }
 
-  if (error) return <div className="main err">Fehler: {error}</div>
-  if (!catalog) return <div className="main">Lade Riftbound-Katalog...</div>
+  if (error) return <div className="main err">{t(lang, 'load.error', { message: error })}</div>
+  if (!catalog) return <div className="main">{t(lang, 'load.catalog')}</div>
 
 
   function showCardPreview(e: ReactMouseEvent, src: string | null | undefined) {
@@ -1061,26 +1086,44 @@ export default function App() {
         <div className="brand">Deakrix <span>Riftbound Tracker</span></div>
         <nav className="tabs no-drag">
           {([
-            ['collection', 'Sammlung'],
-            ['catalog', 'Katalog'],
-            ['sales', 'Verkauf'],
-            ['bulk', 'Codes'],
-            ['decks', 'Decks'],
-          ] as const).map(([id, label]) => (
+            ['collection', 'tab.collection'],
+            ['catalog', 'tab.catalog'],
+            ['sales', 'tab.sales'],
+            ['bulk', 'tab.bulk'],
+            ['decks', 'tab.decks'],
+          ] as const).map(([id, key]) => (
             <button key={id} className={`tab ${tab === id ? 'active' : ''}`} onClick={() => setTab(id)}>
-              {label}
+              {t(lang, key)}
             </button>
           ))}
         </nav>
         <div className="stats no-drag" style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-          <span>{totals.unique} Unique | {totals.copies} Kopien | {totals.catalog} im Katalog</span>
+          <span>{t(lang, 'stats.line', { unique: totals.unique, copies: totals.copies, catalog: totals.catalog })}</span>
           {collectionValue && (
-            <span className="value-pill" title="Schätzung: Owned * ab (Low) + Foil * FoilLow (EUR, Cardmarket)">
+            <span className="value-pill" title={t(lang, 'stats.valueTitle')}>
               ~{collectionValue.sum.toFixed(2)} EUR
             </span>
           )}
+          <div className="lang-toggle" role="group" aria-label="Language">
+            <button
+              type="button"
+              className={`lang-btn${lang === 'de' ? ' active' : ''}`}
+              title={t(lang, 'lang.de')}
+              aria-label={t(lang, 'lang.de')}
+              aria-pressed={lang === 'de'}
+              onClick={() => setAppLang('de')}
+            >🇩🇪</button>
+            <button
+              type="button"
+              className={`lang-btn${lang === 'en' ? ' active' : ''}`}
+              title={t(lang, 'lang.en')}
+              aria-label={t(lang, 'lang.en')}
+              aria-pressed={lang === 'en'}
+              onClick={() => setAppLang('en')}
+            >🇬🇧</button>
+          </div>
           {updateInfo?.status === 'downloaded' && (
-            <button className="btn small primary" onClick={() => window.riftbound?.installUpdate()}>Neustart</button>
+            <button className="btn small primary" onClick={() => window.riftbound?.installUpdate()}>{t(lang, 'stats.restart')}</button>
           )}
         </div>
         <div className="chrome no-drag">
@@ -1092,17 +1135,17 @@ export default function App() {
           >
             {updateLabel()}
           </button>
-          <button type="button" className="win-btn" title="Minimieren" aria-label="Minimieren" onClick={() => window.riftbound?.windowMinimize?.()}>
+          <button type="button" className="win-btn" title={t(lang, 'win.minimize')} aria-label={t(lang, 'win.minimize')} onClick={() => window.riftbound?.windowMinimize?.()}>
             <svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><path d="M1 5h8" stroke="currentColor" strokeWidth="1.2" fill="none" /></svg>
           </button>
-          <button type="button" className="win-btn" title={isMaximized ? 'Wiederherstellen' : 'Maximieren'} aria-label={isMaximized ? 'Wiederherstellen' : 'Maximieren'} onClick={toggleMaximize}>
+          <button type="button" className="win-btn" title={isMaximized ? t(lang, 'win.restore') : t(lang, 'win.maximize')} aria-label={isMaximized ? t(lang, 'win.restore') : t(lang, 'win.maximize')} onClick={toggleMaximize}>
             {isMaximized ? (
               <svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><path d="M2.5 3.5h5v5h-5zM3.5 2.5h5v5" stroke="currentColor" strokeWidth="1.1" fill="none" /></svg>
             ) : (
               <svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><rect x="1.5" y="1.5" width="7" height="7" stroke="currentColor" strokeWidth="1.2" fill="none" /></svg>
             )}
           </button>
-          <button type="button" className="win-btn win-close" title="Schließen" aria-label="Schließen" onClick={() => window.riftbound?.windowClose?.()}>
+          <button type="button" className="win-btn win-close" title={t(lang, 'win.close')} aria-label={t(lang, 'win.close')} onClick={() => window.riftbound?.windowClose?.()}>
             <svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><path d="M2 2l6 6M8 2L2 8" stroke="currentColor" strokeWidth="1.2" fill="none" /></svg>
           </button>
         </div>
@@ -1113,12 +1156,12 @@ export default function App() {
           <>
             <div className="toolbar">
               <div className="grow">
-                <h2 className="section-title">Sammlung</h2>
-                <p className="help" style={{ margin: 0 }}>Set-Binder öffnen, um Karten zu browsen und zu verwalten.</p>
+                <h2 className="section-title">{t(lang, 'collection.title')}</h2>
+                <p className="help" style={{ margin: 0 }}>{t(lang, 'collection.help')}</p>
               </div>
-              <button className="btn" onClick={exportCsv}>CSV Export</button>
+              <button className="btn" onClick={exportCsv}>{t(lang, 'catalog.csvExport')}</button>
               <label className="btn">
-                CSV Import
+                {t(lang, 'catalog.csvImport')}
                 <input
                   type="file"
                   accept=".csv,text/csv"
@@ -1140,7 +1183,7 @@ export default function App() {
                   <div className="binder-bar"><span style={{ width: `${s.pct}%` }} /></div>
                   {s.eur != null && <div className="binder-eur">~{s.eur.toFixed(2)} EUR</div>}
                   <div className="rarity-block">
-                    <div className="rarity-heading">Nach Seltenheit</div>
+                    <div className="rarity-heading">{t(lang, 'collection.byRarity')}</div>
                     {(rarityBySet[s.id] || []).map((row) => {
                       const pct = row.total ? Math.round((row.owned / row.total) * 100) : 0
                       return (
@@ -1148,7 +1191,7 @@ export default function App() {
                           key={row.rarity}
                           role="button"
                           tabIndex={0}
-                          title={`${row.rarity} filtern`}
+                          title={t(lang, 'collection.filterRarity', { rarity: row.rarity })}
                           className={`rarity-row rar-${row.rarity.toLowerCase()}`}
                           onClick={(e) => {
                             e.stopPropagation()
@@ -1180,9 +1223,9 @@ export default function App() {
               ))}
               <button type="button" className="binder-tile binder-tile-owned" onClick={() => { setBinderView('owned'); setBinderRarity(null); setQ(''); setBinderOwnedOnly(false); setBinderMissing(false) }}>
                 <div className="binder-code">ALL</div>
-                <div className="binder-name">Alle Owned</div>
-                <div className="binder-progress">{totals.unique} Unique | {totals.copies} Kopien</div>
-                <p className="help" style={{ margin: '8px 0 0' }}>Nur besessene Karten (alte Sammlung)</p>
+                <div className="binder-name">{t(lang, 'collection.allOwned')}</div>
+                <div className="binder-progress">{totals.unique} Unique | {totals.copies} {t(lang, 'bulk.copies')}</div>
+                <p className="help" style={{ margin: '8px 0 0' }}>{t(lang, 'collection.allOwnedHelp')}</p>
               </button>
             </div>
           </>
@@ -1191,11 +1234,11 @@ export default function App() {
         {tab === 'collection' && binderView != null && (
           <>
             <div className="toolbar binder-toolbar">
-              <button className="btn" onClick={() => { setBinderView(null); setBinderRarity(null) }}>Zurück</button>
+              <button className="btn" onClick={() => { setBinderView(null); setBinderRarity(null) }}>{t(lang, 'collection.back')}</button>
               <div className="grow">
                 <div className="section-title">
                   {binderView === 'owned'
-                    ? 'Alle Owned'
+                    ? t(lang, 'collection.allOwned')
                     : `${activeBinderProgress?.id || binderView} - ${activeBinderProgress?.name || sets[binderView] || binderView}`}
                 </div>
                 {activeBinderProgress && (
@@ -1203,7 +1246,7 @@ export default function App() {
                 )}
                 {binderView && binderView !== 'owned' && (rarityBySet[binderView] || []).length > 0 && (
                   <div className="rarity-block rarity-block-inline">
-                    <div className="rarity-heading">Nach Seltenheit</div>
+                    <div className="rarity-heading">{t(lang, 'collection.byRarity')}</div>
                     {(rarityBySet[binderView] || []).map((row) => {
                       const pct = row.total ? Math.round((row.owned / row.total) * 100) : 0
                       const active = binderRarity === row.rarity
@@ -1212,7 +1255,7 @@ export default function App() {
                           key={row.rarity}
                           role="button"
                           tabIndex={0}
-                          title={active ? 'Filter entfernen' : `${row.rarity} filtern`}
+                          title={active ? t(lang, 'collection.clearFilter') : t(lang, 'collection.filterRarity', { rarity: row.rarity })}
                           className={`rarity-row rar-${row.rarity.toLowerCase()}${active ? ' active' : ''}`}
                           onClick={() => setBinderRarity((cur) => (cur === row.rarity ? null : row.rarity))}
                           onKeyDown={(e) => {
@@ -1230,12 +1273,12 @@ export default function App() {
                   </div>
                 )}
                 {binderView === 'owned' && (
-                  <div className="sub">{totals.unique} Unique | {totals.copies} Kopien</div>
+                  <div className="sub">{totals.unique} Unique | {totals.copies} {t(lang, 'bulk.copies')}</div>
                 )}
               </div>
               <input
                 className="search grow"
-                placeholder="Suche Name, Code, Domain..."
+                placeholder={t(lang, 'collection.search')}
                 value={q}
                 onChange={(e) => setQ(e.target.value)}
               />
@@ -1244,7 +1287,7 @@ export default function App() {
                 className={`chip ${binderOwnedOnly ? 'active' : ''}`}
                 onClick={() => { setBinderOwnedOnly((v) => !v); if (!binderOwnedOnly) setBinderMissing(false) }}
               >
-                Owned only
+                {t(lang, 'collection.ownedOnly')}
               </button>
               {binderView !== 'owned' && (
                 <button
@@ -1252,7 +1295,7 @@ export default function App() {
                   className={`chip ${binderMissing ? 'active' : ''}`}
                   onClick={() => { setBinderMissing((v) => !v); if (!binderMissing) setBinderOwnedOnly(false) }}
                 >
-                  Missing
+                  {t(lang, 'collection.missing')}
                 </button>
               )}
               <div className="domain-row" role="group" aria-label="Domain filter">
@@ -1263,7 +1306,7 @@ export default function App() {
                       key={d}
                       type="button"
                       className={`domain-btn${active ? ' active' : ''}`}
-                      title={active ? `${d} Filter entfernen` : `Domain ${d}`}
+                      title={active ? t(lang, 'collection.domainClear', { domain: d }) : t(lang, 'collection.domainTitle', { domain: d })}
                       aria-pressed={active}
                       onClick={() => setDomainFilter((cur) => (cur === d ? null : d))}
                     >
@@ -1291,8 +1334,8 @@ export default function App() {
             {binderCards.length === 0 && (
               <div className="empty">
                 {binderView === 'owned' && ownedCards.length === 0
-                  ? 'Noch keine Karten. Geh zu Bulk oder Katalog und füge welche hinzu.'
-                  : 'Keine Karten für diese Filter.'}
+                  ? t(lang, 'collection.emptyNone')
+                  : t(lang, 'collection.emptyFilter')}
               </div>
             )}
 
@@ -1314,7 +1357,7 @@ export default function App() {
                       <button
                         type="button"
                         className="name name-link"
-                        title="Auf Cardmarket öffnen"
+                        title={t(lang, 'price.openCm')}
                         disabled={!priceBook?.cards[c.id]?.cmUrl}
                         onClick={() => openCm(priceBook?.cards[c.id])}
                       >{displayName(c)}</button>
@@ -1324,20 +1367,20 @@ export default function App() {
                         if (!pl || (!pl.low && !pl.avg30 && !pl.high && !pl.foil)) return null
                         return (
                           <div className="price">
-                            {pl.low ? <span title="Niedrigster Preis (ab)">ab {pl.low}</span> : <span className="na">ab --</span>}
-                            {pl.high ? <span className="high" title="Höchster Preis">max {pl.high}</span> : null}
-                            {pl.avg30 ? <span className="avg30" title="30-Tage-Durchschnitt">Ø30 {pl.avg30}</span> : null}
-                            {pl.foil ? <span className="foil" title="Foil Low">F {pl.foil}</span> : null}
+                            {pl.low ? <span title={t(lang, 'price.low')}>ab {pl.low}</span> : <span className="na">ab --</span>}
+                            {pl.high ? <span className="high" title={t(lang, 'price.high')}>max {pl.high}</span> : null}
+                            {pl.avg30 ? <span className="avg30" title={t(lang, 'price.avg30')}>Ø30 {pl.avg30}</span> : null}
+                            {pl.foil ? <span className="foil" title={t(lang, 'price.foil')}>F {pl.foil}</span> : null}
                           </div>
                         )
                       })()}
                       <div className="row">
-                        <div className="qty" title="Normal">
+                        <div className="qty" title={t(lang, 'qty.normal')}>
                           <button onClick={() => bump(c.id, 'qty', -1)}>-</button>
                           <b className={o.qty > 0 ? 'ok' : 'muted'}>{o.qty}</b>
                           <button onClick={() => bump(c.id, 'qty', 1)}>+</button>
                         </div>
-                        <div className="qty" title="Foil">
+                        <div className="qty" title={t(lang, 'qty.foil')}>
                           <button onClick={() => bump(c.id, 'foil', -1)}>-</button>
                           <b className={o.foil > 0 ? 'ok' : 'muted'}>{o.foil}F</b>
                           <button onClick={() => bump(c.id, 'foil', 1)}>+</button>
@@ -1356,20 +1399,20 @@ export default function App() {
             <div className="toolbar">
               <input
                 className="search grow"
-                placeholder="Suche Name, Code, Domain..."
+                placeholder={t(lang, 'collection.search')}
                 value={q}
                 onChange={(e) => setQ(e.target.value)}
               />
               <select className="select" style={{ maxWidth: 180 }} value={setFilter} onChange={(e) => setSetFilter(e.target.value)}>
-                <option value="">Alle Sets</option>
+                <option value="">{t(lang, 'catalog.allSets')}</option>
                 {Object.entries(sets).map(([id, name]) => (
                   <option key={id} value={id}>{id} - {name}</option>
                 ))}
               </select>
               <select className="select" style={{ maxWidth: 150 }} value={typeFilter} onChange={(e) => setTypeFilter(e.target.value)}>
-                <option value="">Alle Typen</option>
-                {allTypes.map((t) => (
-                  <option key={t} value={t}>{t}</option>
+                <option value="">{t(lang, 'catalog.allTypes')}</option>
+                {allTypes.map((ty) => (
+                  <option key={ty} value={ty}>{ty}</option>
                 ))}
               </select>
               <div className="domain-row" role="group" aria-label="Domain filter">
@@ -1380,7 +1423,7 @@ export default function App() {
                       key={d}
                       type="button"
                       className={`domain-btn${active ? ' active' : ''}`}
-                      title={active ? `${d} Filter entfernen` : `Domain ${d}`}
+                      title={active ? t(lang, 'collection.domainClear', { domain: d }) : t(lang, 'collection.domainTitle', { domain: d })}
                       aria-pressed={active}
                       onClick={() => setDomainFilter((cur) => (cur === d ? null : d))}
                     >
@@ -1396,11 +1439,11 @@ export default function App() {
                 <input type="checkbox" checked={overOnly} onChange={(e) => setOverOnly(e.target.checked)} /> Overnumbered
               </label>
               <label className="pill">
-                <input type="checkbox" checked={ownedOnly} onChange={(e) => setOwnedOnly(e.target.checked)} /> nur Owned
+                <input type="checkbox" checked={ownedOnly} onChange={(e) => setOwnedOnly(e.target.checked)} /> {t(lang, 'catalog.ownedOnly')}
               </label>
-              <button className="btn" onClick={exportCsv}>CSV Export</button>
+              <button className="btn" onClick={exportCsv}>{t(lang, 'catalog.csvExport')}</button>
               <label className="btn">
-                CSV Import
+                {t(lang, 'catalog.csvImport')}
                 <input
                   type="file"
                   accept=".csv,text/csv"
@@ -1431,7 +1474,7 @@ export default function App() {
                       <button
                         type="button"
                         className="name name-link"
-                        title="Auf Cardmarket öffnen"
+                        title={t(lang, 'price.openCm')}
                         disabled={!priceBook?.cards[c.id]?.cmUrl}
                         onClick={() => openCm(priceBook?.cards[c.id])}
                       >{displayName(c)}</button>
@@ -1441,20 +1484,20 @@ export default function App() {
                         if (!pl || (!pl.low && !pl.avg30 && !pl.high && !pl.foil)) return null
                         return (
                           <div className="price">
-                            {pl.low ? <span title="Niedrigster Preis (ab)">ab {pl.low}</span> : <span className="na">ab --</span>}
-                            {pl.high ? <span className="high" title="Höchster Preis">max {pl.high}</span> : null}
-                            {pl.avg30 ? <span className="avg30" title="30-Tage-Durchschnitt">Ø30 {pl.avg30}</span> : null}
-                            {pl.foil ? <span className="foil" title="Foil Low">F {pl.foil}</span> : null}
+                            {pl.low ? <span title={t(lang, 'price.low')}>ab {pl.low}</span> : <span className="na">ab --</span>}
+                            {pl.high ? <span className="high" title={t(lang, 'price.high')}>max {pl.high}</span> : null}
+                            {pl.avg30 ? <span className="avg30" title={t(lang, 'price.avg30')}>Ø30 {pl.avg30}</span> : null}
+                            {pl.foil ? <span className="foil" title={t(lang, 'price.foil')}>F {pl.foil}</span> : null}
                           </div>
                         )
                       })()}
                       <div className="row">
-                        <div className="qty" title="Normal">
+                        <div className="qty" title={t(lang, 'qty.normal')}>
                           <button onClick={() => bump(c.id, 'qty', -1)}>-</button>
                           <b>{o.qty}</b>
                           <button onClick={() => bump(c.id, 'qty', 1)}>+</button>
                         </div>
-                        <div className="qty" title="Foil">
+                        <div className="qty" title={t(lang, 'qty.foil')}>
                           <button onClick={() => bump(c.id, 'foil', -1)}>-</button>
                           <b className="ok">{o.foil}F</b>
                           <button onClick={() => bump(c.id, 'foil', 1)}>+</button>
@@ -1473,16 +1516,16 @@ export default function App() {
             <section className="panel">
               <div className="toolbar">
                 <div className="grow">
-                  <h2 className="section-title" style={{ margin: 0 }}>Warenkorb</h2>
-                  <p className="help" style={{ margin: '4px 0 0' }}>Karten zum Verkauf — auswählen, Mengen anpassen, dann nur die markierten als verkauft markieren.{saleSelectedCount > 0 ? ` Ausgewählt: ${saleSelectedCount} Karte${saleSelectedCount === 1 ? '' : 'n'} (${saleSelectedCopies} Kopien).` : ''}</p>
+                  <h2 className="section-title" style={{ margin: 0 }}>{t(lang, 'sales.cart')}</h2>
+                  <p className="help" style={{ margin: '4px 0 0' }}>{t(lang, 'sales.help')}{saleSelectedCount > 0 ? t(lang, 'sales.selected', { cards: saleSelectedCount, copies: saleSelectedCopies, cardWord: cardWord(lang, saleSelectedCount), copyWord: copyWord(lang, saleSelectedCopies) }) : ''}</p>
                 </div>
                 <button
                   className="btn primary"
                   disabled={saleSelectedCount === 0}
                   onClick={confirmSale}
-                  title={saleSelectedCount === 0 ? 'Zuerst Karten per Checkbox auswählen' : undefined}
+                  title={saleSelectedCount === 0 ? t(lang, 'sales.pickFirst') : undefined}
                 >
-                  Als verkauft markieren{saleSelectedCount > 0 ? ` (${saleSelectedCount})` : ''}
+                  {t(lang, 'sales.markSold')}{saleSelectedCount > 0 ? ` (${saleSelectedCount})` : ''}
                 </button>
               </div>
               {saleReport && <p className="help">{saleReport}</p>}
@@ -1494,7 +1537,7 @@ export default function App() {
                 onDrop={onSaleCartDrop}
               >
                 {Object.keys(saleList).length === 0 && (
-                  <div className="empty">Warenkorb leer. Rechts owned Karten suchen, ziehen oder Liste einfügen.</div>
+                  <div className="empty">{t(lang, 'sales.emptyCart')}</div>
                 )}
                 {Object.entries(saleList).map(([id, qty]) => {
                   const c = byId.get(id)
@@ -1508,7 +1551,7 @@ export default function App() {
                       onMouseMove={(e) => showCardPreview(e, c.image)}
                       onMouseLeave={hideCardPreview}
                     >
-                      <label className="sale-check" onClick={(e) => e.stopPropagation()} title="Zum Verkauf auswählen">
+                      <label className="sale-check" onClick={(e) => e.stopPropagation()} title={t(lang, 'sales.selectForSale')}>
                         <input
                           type="checkbox"
                           checked={!!saleSelected[id]}
@@ -1528,7 +1571,7 @@ export default function App() {
                       )}
                       <div className="grow">
                         <div className="name">{displayName(c)}</div>
-                        <div className="sub">{c.code} · besitzt {have}</div>
+                        <div className="sub">{c.code} · {t(lang, 'decks.owns', { have })}</div>
                       </div>
                       <div className="qty" onClick={(e) => e.stopPropagation()}>
                         <button type="button" onClick={() => bumpSale(id, -1)}>−</button>
@@ -1546,11 +1589,11 @@ export default function App() {
               </div>
             </section>
             <section className="panel">
-              <h2 style={{ marginTop: 0 }}>Karten hinzufügen</h2>
-              <p className="help">Nur Karten mit Bestand (qty &gt; 0). Menge auf Restbestand begrenzt — Ziehen in den Warenkorb oder +.</p>
+              <h2 style={{ marginTop: 0 }}>{t(lang, 'sales.addTitle')}</h2>
+              <p className="help">{t(lang, 'sales.addHelp')}</p>
               <input
                 className="field"
-                placeholder="Suche in Owned…"
+                placeholder={t(lang, 'sales.searchOwned')}
                 value={saleQ}
                 onChange={(e) => setSaleQ(e.target.value)}
                 style={{ marginBottom: 10 }}
@@ -1594,19 +1637,19 @@ export default function App() {
                         <button
                           type="button"
                           className="name name-link"
-                          title="Auf Cardmarket öffnen"
+                          title={t(lang, 'price.openCm')}
                           disabled={!priceBook?.cards[c.id]?.cmUrl}
                           onClick={(e) => { e.stopPropagation(); openCm(priceBook?.cards[c.id]) }}
                         >{displayName(c)}</button>
-                        <div className="sub">{c.code} · x{have}{room < have ? ` · im Warenkorb ${have - room}` : ''}</div>
+                        <div className="sub">{c.code} · x{have}{room < have ? t(lang, 'sales.inCart', { n: have - room }) : ''}</div>
                         {(() => {
                           const pl = priceLabel(priceBook?.cards[c.id])
                           if (!pl || (!pl.low && !pl.avg30 && !pl.high && !pl.foil)) return null
                           return (
                             <div className="price">
-                              {pl.low ? <span title="Niedrigster Preis (ab)">ab {pl.low}</span> : <span className="na">ab --</span>}
-                              {pl.avg30 ? <span className="avg30" title="30-Tage-Durchschnitt">Ø30 {pl.avg30}</span> : null}
-                              {pl.foil ? <span className="foil" title="Foil Low">F {pl.foil}</span> : null}
+                              {pl.low ? <span title={t(lang, 'price.low')}>ab {pl.low}</span> : <span className="na">ab --</span>}
+                              {pl.avg30 ? <span className="avg30" title={t(lang, 'price.avg30')}>Ø30 {pl.avg30}</span> : null}
+                              {pl.foil ? <span className="foil" title={t(lang, 'price.foil')}>F {pl.foil}</span> : null}
                             </div>
                           )
                         })()}
@@ -1618,7 +1661,7 @@ export default function App() {
                   )
                 })}
                 {ownedCards.length === 0 && (
-                  <div className="empty">Keine owned Karten. Zuerst Sammlung füllen.</div>
+                  <div className="empty">{t(lang, 'sales.noOwned')}</div>
                 )}
                 {ownedCards.length > 0 && ownedCards.filter((c) => {
                   const query = saleQ.trim().toLowerCase()
@@ -1630,10 +1673,10 @@ export default function App() {
                     displayName(c).toLowerCase().includes(query)
                   )
                 }).length === 0 && (
-                  <div className="empty">Keine Treffer für „{saleQ.trim()}“.</div>
+                  <div className="empty">{t(lang, 'sales.noHits', { q: saleQ.trim() })}</div>
                 )}
               </div>
-              <h3 style={{ margin: '0 0 6px', fontSize: 14 }}>Liste einfügen</h3>
+              <h3 style={{ margin: '0 0 6px', fontSize: 14 }}>{t(lang, 'sales.pasteTitle')}</h3>
               <p className="help">Zeilen wie <code>2 Card Name</code> oder Codes (<code>OGN-056</code>). Nur owned.</p>
               <textarea
                 className="field"
@@ -1644,10 +1687,10 @@ export default function App() {
               />
               <div className="toolbar" style={{ marginTop: 10 }}>
                 <button className="btn primary" disabled={!salePaste.trim()} onClick={applySalePaste}>
-                  In Warenkorb
+                  {t(lang, 'sales.toCart')}
                 </button>
                 <button className="btn" disabled={!salePaste.trim()} onClick={() => setSalePaste('')}>
-                  Leeren
+                  {t(lang, 'sales.clear')}
                 </button>
               </div>
             </section>
@@ -1657,9 +1700,9 @@ export default function App() {
                 {tab === 'bulk' && (
           <div className="split">
             <section className="panel">
-              <h2>Karten per Code</h2>
+              <h2>{t(lang, 'bulk.title')}</h2>
               <p className="help">
-                Sammlercodes einfügen: Leerzeichen, Komma oder je Zeile einen Code. Beispiele: <code>OGN-056/298</code>, <code>OGN-56</code>, <code>UNL 131</code>, Alt-Art <code>OGN-066a</code>. Scanner: Codes aus dem Scan hier einfügen (Bilderkennung folgt später).
+                {t(lang, 'bulk.help', { ex1: 'OGN-056/298', ex2: 'OGN-56', ex3: 'UNL 131', ex4: 'OGN-066a' })}
               </p>
               <textarea
                 className="field"
@@ -1669,23 +1712,23 @@ export default function App() {
               />
               <div className="toolbar" style={{ marginTop: 10 }}>
                 <label className="pill">
-                  <input type="checkbox" checked={bulkFoil} onChange={(e) => setBulkFoil(e.target.checked)} /> Als Foil
+                  <input type="checkbox" checked={bulkFoil} onChange={(e) => setBulkFoil(e.target.checked)} /> {t(lang, 'bulk.asFoil')}
                 </label>
-                <button className="btn primary" onClick={() => applyBulk('add')}>+1 je Code</button>
-                <button className="btn" onClick={() => applyBulk('set')}>Auf 1 setzen</button>
-                <button className="btn danger" onClick={() => applyBulk('remove')}>-1 je Code</button>
+                <button className="btn primary" onClick={() => applyBulk('add')}>{t(lang, 'bulk.add1')}</button>
+                <button className="btn" onClick={() => applyBulk('set')}>{t(lang, 'bulk.set1')}</button>
+                <button className="btn danger" onClick={() => applyBulk('remove')}>{t(lang, 'bulk.rem1')}</button>
               </div>
               {bulkReport && <p className="help">{bulkReport}</p>}
             </section>
             <section className="panel">
-              <h2>Übersicht</h2>
-              <p className="help">Sammlung liegt lokal auf diesem PC. CSV Export als Backup nutzen.</p>
+              <h2>{t(lang, 'bulk.overview')}</h2>
+              <p className="help">{t(lang, 'bulk.overviewHelp')}</p>
               <div className="list">
-                <div className="list-item"><span>Unique</span><b>{totals.unique}</b></div>
-                <div className="list-item"><span>Kopien</span><b>{totals.copies}</b></div>
-                <div className="list-item"><span>Katalog</span><b>{totals.catalog}</b></div>
+                <div className="list-item"><span>{t(lang, 'bulk.unique')}</span><b>{totals.unique}</b></div>
+                <div className="list-item"><span>{t(lang, 'bulk.copies')}</span><b>{totals.copies}</b></div>
+                <div className="list-item"><span>{t(lang, 'bulk.catalog')}</span><b>{totals.catalog}</b></div>
                 {collectionValue && (
-                  <div className="list-item"><span>Wert (EUR)</span><b>~{collectionValue.sum.toFixed(2)}</b></div>
+                  <div className="list-item"><span>{t(lang, 'bulk.value')}</span><b>~{collectionValue.sum.toFixed(2)}</b></div>
                 )}
               </div>
             </section>
@@ -1696,12 +1739,12 @@ export default function App() {
           <div className="split deck-split">
             <section className="panel">
               <div className="toolbar">
-                <h2 style={{ margin: 0, flex: 1 }}>Decks</h2>
-                <button className="btn" onClick={() => { setDeckImportOpen((v) => !v); setDeckImportText('') }}>Import</button>
-                <button className="btn primary" onClick={newDeck}>Neues Deck</button>
+                <h2 style={{ margin: 0, flex: 1 }}>{t(lang, 'decks.title')}</h2>
+                <button className="btn" onClick={() => { setDeckImportOpen((v) => !v); setDeckImportText('') }}>{t(lang, 'decks.import')}</button>
+                <button className="btn primary" onClick={newDeck}>{t(lang, 'decks.new')}</button>
               </div>
               <div className="deck-accordion" style={{ marginBottom: 12 }}>
-                {decks.length === 0 && <div className="empty">Noch kein Deck.</div>}
+                {decks.length === 0 && <div className="empty">{t(lang, 'decks.empty')}</div>}
                 {decks.map((d) => {
                   const expanded = d.id === activeDeckId
                   const sums = expanded ? deckPriceSums(d) : null
@@ -1736,14 +1779,14 @@ export default function App() {
                               onChange={(e) => updateDeck((deck) => ({ ...deck, name: e.target.value }))}
                               onClick={(e) => e.stopPropagation()}
                               onKeyDown={(e) => e.stopPropagation()}
-                              aria-label="Deck umbenennen"
+                              aria-label={t(lang, 'decks.rename')}
                             />
                           ) : (
                             <span className="name">{d.name}</span>
                           )}
                           <span className="deck-acc-count">· {deckCount(d)} Karten</span>
                         </div>
-                        {expanded && <span className="pill ok">aktiv</span>}
+                        {expanded && <span className="pill ok">{t(lang, 'decks.active')}</span>}
                       </div>
                       {expanded && (
                         <div className="deck-acc-body">
@@ -1751,8 +1794,8 @@ export default function App() {
                             <button
                               type="button"
                               className="btn icon danger deck-trash"
-                              title="Deck löschen"
-                              aria-label="Deck löschen"
+                              title={t(lang, 'decks.delete')}
+                              aria-label={t(lang, 'decks.delete')}
                               onClick={(e) => {
                                 e.stopPropagation()
                                 setDecks((prev) => prev.filter((x) => x.id !== d.id))
@@ -1766,15 +1809,15 @@ export default function App() {
                           {sums && (
                             <div className="deck-price-sums help">
                               <div>
-                                <b>Gesamt (ab Low):</b>{' '}
+                                <b>{t(lang, 'decks.totalLow')}</b>{' '}
                                 {sums.priced > 0 ? fmtEur(sums.deckLow) : '—'}
-                                {sums.priced > 0 && sums.priced < deckCount(d) ? ' · teilweise ohne Preis' : ''}
+                                {sums.priced > 0 && sums.priced < deckCount(d) ? t(lang, 'decks.partialPrice') : ''}
                               </div>
                               {missCopies > 0 && (
                                 <div>
-                                  <b>Fehlende Kopien:</b>{' '}
+                                  <b>{t(lang, 'decks.missingCopies')}</b>{' '}
                                   {sums.missingPriced > 0 ? fmtEur(sums.missingLow) : '—'}
-                                  {` (${missCopies} Kopien)`}
+                                  {` (${missCopies} ${t(lang, 'bulk.copies')})`}
                                 </div>
                               )}
                             </div>
@@ -1798,7 +1841,7 @@ export default function App() {
                         rows={10}
                       />
                       <div className="toolbar" style={{ marginBottom: 0 }}>
-                        <button className="btn primary" disabled={!deckImportText.trim()} onClick={() => runDeckImport(deckImportText)}>Importieren</button>
+                        <button className="btn primary" disabled={!deckImportText.trim()} onClick={() => runDeckImport(deckImportText)}>{t(lang, 'decks.importBtn')}</button>
                       </div>
                     </div>
                   )}
@@ -1807,21 +1850,19 @@ export default function App() {
                     const under = underOwnedLines(activeDeck)
                     if (!under.length) return null
                     const totalShort = under.reduce((s, x) => s + x.short, 0)
-                    const karteWord = under.length === 1 ? 'Karte' : 'Karten'
-                    const kopieWord = totalShort === 1 ? 'Kopie' : 'Kopien'
                     return (
                       <div className="deck-warn">
                         <div>
-                          <b>Fehlende Kopien in der Sammlung:</b>{' '}
-                          {under.length} {karteWord} ({totalShort} {kopieWord})
+                          <b>{t(lang, 'decks.missingInCollection')}</b>{' '}
+                          {under.length} {cardWord(lang, under.length)} ({totalShort} {copyWord(lang, totalShort)})
                         </div>
                         <ul>
                           {under.slice(0, 12).map((u) => (
                             <li key={u.id}>
-                              {u.name} — benötigt {u.need}, vorhanden {u.have}
+                              {t(lang, 'decks.needHaveLine', { name: u.name, need: u.need, have: u.have })}
                             </li>
                           ))}
-                          {under.length > 12 && <li>… und {under.length - 12} weitere</li>}
+                          {under.length > 12 && <li>{t(lang, 'decks.andMore', { n: under.length - 12 })}</li>}
                         </ul>
                       </div>
                     )
@@ -1829,15 +1870,15 @@ export default function App() {
 
                   {deckMissingReport && deckMissingReport.length > 0 && (
                     <div className="deck-missing">
-                      <b>Import / Fehlende Karten</b>
+                      <b>{t(lang, 'decks.importMissing')}</b>
                       <div className="sub">
-                        {deckMissingReport.filter((r) => r.short > 0).reduce((s, r) => s + r.short, 0)} fehlende Kopien
-                        {deckMissingReport.some((r) => r.need === 0) ? ' · manche Namen nicht gefunden' : ''}
+                        {t(lang, 'decks.missingCopiesCount', { n: deckMissingReport.filter((r) => r.short > 0).reduce((s, r) => s + r.short, 0) })}
+                        {deckMissingReport.some((r) => r.need === 0) ? t(lang, 'decks.namesNotFound') : ''}
                       </div>
                       <ul>
                         {deckMissingReport.slice(0, 16).map((r, i) => (
                           <li key={i}>
-                            {r.need === 0 ? r.name : `${r.name} — benötigt ${r.need}, vorhanden ${r.have}`}
+                            {r.need === 0 ? r.name : t(lang, 'decks.needHaveLine', { name: r.name, need: r.need, have: r.have })}
                           </li>
                         ))}
                       </ul>
@@ -1855,12 +1896,12 @@ export default function App() {
                     const req = requiredDomainsFromDeck(activeDeck.cards, byId)
                     return (
                       <div className="deck-legend-swap" role="status">
-                        <b>Legend entfernt</b>
+                        <b>{t(lang, 'decks.legendRemoved')}</b>
                         {' — '}
                         {req.length > 0
-                          ? <>Nur Legends wählbar, die die aktuellen Deck-Domains abdecken: <b>{req.join(', ')}</b>.</>
-                          : <>Bestehende Karten bleiben — beliebige Legend wählbar.</>}
-                        {' '}Champion/Main/Sideboard/Runes sind für neue Karten gesperrt, bis eine passende Legend gesetzt ist.
+                          ? <>{t(lang, 'decks.legendCover', { domains: req.join(', ') })}</>
+                          : <>{t(lang, 'decks.legendAny')}</>}
+                        {t(lang, 'decks.legendGateExtra')}
                       </div>
                     )
                   })()}
@@ -1916,21 +1957,21 @@ export default function App() {
                                       <button
                                         type="button"
                                         className="name name-link"
-                                        title="Auf Cardmarket öffnen"
+                                        title={t(lang, 'price.openCm')}
                                         disabled={!priceBook?.cards[c.id]?.cmUrl}
                                         onClick={(e) => { e.stopPropagation(); openCm(priceBook?.cards[c.id]) }}
                                       >{displayName(c)}</button>
                                       <div className="sub">
-                                        {c.energy != null ? `E${c.energy} · ` : ''}{c.code} · besitzt {have}
+                                        {c.energy != null ? `E${c.energy} · ` : ''}{c.code} · {t(lang, 'decks.owns', { have })}
                                       </div>
                                       {(() => {
                                         const pl = priceLabel(priceBook?.cards[c.id])
                                         if (!pl || (!pl.low && !pl.avg30 && !pl.high && !pl.foil)) return null
                                         return (
                                           <div className="price">
-                                            {pl.low ? <span title="Niedrigster Preis (ab)">ab {pl.low}</span> : <span className="na">ab --</span>}
-                                            {pl.avg30 ? <span className="avg30" title="30-Tage-Durchschnitt">Ø30 {pl.avg30}</span> : null}
-                                            {pl.foil ? <span className="foil" title="Foil Low">F {pl.foil}</span> : null}
+                                            {pl.low ? <span title={t(lang, 'price.low')}>ab {pl.low}</span> : <span className="na">ab --</span>}
+                                            {pl.avg30 ? <span className="avg30" title={t(lang, 'price.avg30')}>Ø30 {pl.avg30}</span> : null}
+                                            {pl.foil ? <span className="foil" title={t(lang, 'price.foil')}>F {pl.foil}</span> : null}
                                           </div>
                                         )
                                       })()}
@@ -1939,8 +1980,8 @@ export default function App() {
                                       <button
                                         type="button"
                                         className="btn icon danger deck-trash deck-card-trash"
-                                        title={`${SECTION_LABEL[sec]} entfernen`}
-                                        aria-label={`${SECTION_LABEL[sec]} entfernen`}
+                                        title={t(lang, 'decks.removeSection', { section: SECTION_LABEL[sec] })}
+                                        aria-label={t(lang, 'decks.removeSection', { section: SECTION_LABEL[sec] })}
                                         onClick={(e) => {
                                           e.stopPropagation()
                                           removeDeckCard(dc.id, sec)
@@ -1952,7 +1993,7 @@ export default function App() {
                                       <div className="qty" onClick={(e) => e.stopPropagation()}>
                                         <button type="button" onClick={() => bumpDeckCard(dc.id, sec, -1)}>−</button>
                                         <b>{dc.qty}</b>
-                                        <button type="button" disabled={atCap || locked} title={locked ? 'Zuerst eine Legend wählen' : atCap ? `Limit ${cap}` : undefined} onClick={() => bumpDeckCard(dc.id, sec, 1)}>+</button>
+                                        <button type="button" disabled={atCap || locked} title={locked ? t(lang, 'decks.legendLocked') : atCap ? t(lang, 'decks.limit', { cap }) : undefined} onClick={() => bumpDeckCard(dc.id, sec, 1)}>+</button>
                                       </div>
                                     )}
                                   </div>
@@ -1964,18 +2005,18 @@ export default function App() {
                                 type="button"
                                 className="deck-add"
                                 disabled={locked || atCap}
-                                title={locked ? 'Zuerst eine Legend wählen' : atCap ? `Limit ${cap} erreicht` : undefined}
+                                title={locked ? t(lang, 'decks.legendLocked') : atCap ? t(lang, 'decks.limitReached', { cap }) : undefined}
                                 onClick={(e) => {
                                   e.stopPropagation()
                                   if (locked) {
-                                    setDeckNotice('Zuerst eine Legend wählen')
+                                    setDeckNotice(t(lang, 'decks.legendLocked'))
                                     setActiveSection('legend')
                                     return
                                   }
                                   setActiveSection(sec)
                                 }}
                               >
-                                {locked ? 'Zuerst eine Legend wählen' : SECTION_ADD_LABEL[sec]}
+                                {locked ? t(lang, 'decks.legendLocked') : SECTION_ADD_LABEL[sec]}
                               </button>
                             )}
                           </div>
@@ -2032,21 +2073,21 @@ export default function App() {
                                     <button
                                       type="button"
                                       className="name name-link"
-                                      title="Auf Cardmarket öffnen"
+                                      title={t(lang, 'price.openCm')}
                                       disabled={!priceBook?.cards[c.id]?.cmUrl}
                                       onClick={(e) => { e.stopPropagation(); openCm(priceBook?.cards[c.id]) }}
                                     >{displayName(c)}</button>
                                     <div className="sub">
-                                      {c.energy != null ? `E${c.energy} · ` : ''}{c.code} · besitzt {have}
+                                      {c.energy != null ? `E${c.energy} · ` : ''}{c.code} · {t(lang, 'decks.owns', { have })}
                                     </div>
                                     {(() => {
                                       const pl = priceLabel(priceBook?.cards[c.id])
                                       if (!pl || (!pl.low && !pl.avg30 && !pl.high && !pl.foil)) return null
                                       return (
                                         <div className="price">
-                                          {pl.low ? <span title="Niedrigster Preis (ab)">ab {pl.low}</span> : <span className="na">ab --</span>}
-                                          {pl.avg30 ? <span className="avg30" title="30-Tage-Durchschnitt">Ø30 {pl.avg30}</span> : null}
-                                          {pl.foil ? <span className="foil" title="Foil Low">F {pl.foil}</span> : null}
+                                          {pl.low ? <span title={t(lang, 'price.low')}>ab {pl.low}</span> : <span className="na">ab --</span>}
+                                          {pl.avg30 ? <span className="avg30" title={t(lang, 'price.avg30')}>Ø30 {pl.avg30}</span> : null}
+                                          {pl.foil ? <span className="foil" title={t(lang, 'price.foil')}>F {pl.foil}</span> : null}
                                         </div>
                                       )
                                     })()}
@@ -2054,7 +2095,7 @@ export default function App() {
                                   <div className="qty" onClick={(e) => e.stopPropagation()}>
                                     <button type="button" onClick={() => bumpDeckCard(dc.id, sec, -1)}>−</button>
                                     <b>{dc.qty}</b>
-                                    <button type="button" disabled={atCap || locked} title={locked ? 'Zuerst eine Legend wählen' : atCap ? `Limit ${cap}` : undefined} onClick={() => bumpDeckCard(dc.id, sec, 1)}>+</button>
+                                    <button type="button" disabled={atCap || locked} title={locked ? t(lang, 'decks.legendLocked') : atCap ? t(lang, 'decks.limit', { cap }) : undefined} onClick={() => bumpDeckCard(dc.id, sec, 1)}>+</button>
                                   </div>
                                 </div>
                               )
@@ -2064,18 +2105,18 @@ export default function App() {
                             type="button"
                             className="deck-add"
                             disabled={locked || atCap}
-                            title={locked ? 'Zuerst eine Legend wählen' : atCap ? `Limit ${cap} erreicht` : undefined}
+                            title={locked ? t(lang, 'decks.legendLocked') : atCap ? t(lang, 'decks.limitReached', { cap }) : undefined}
                             onClick={(e) => {
                               e.stopPropagation()
                               if (locked) {
-                                setDeckNotice('Zuerst eine Legend wählen')
+                                setDeckNotice(t(lang, 'decks.legendLocked'))
                                 setActiveSection('legend')
                                 return
                               }
                               setActiveSection(sec)
                             }}
                           >
-                            {locked ? 'Zuerst eine Legend wählen' : SECTION_ADD_LABEL[sec]}
+                            {locked ? t(lang, 'decks.legendLocked') : SECTION_ADD_LABEL[sec]}
                           </button>
                         </div>
                       )
@@ -2086,17 +2127,17 @@ export default function App() {
             </section>
 
             <section className="panel">
-              <h2>Karten · {SECTION_LABEL[activeSection]}</h2>
+              <h2>{t(lang, 'decks.cardsTitle', { section: SECTION_LABEL[activeSection] })}</h2>
               <div className="toolbar">
-                <input className="search grow" placeholder="Suche..." value={q} onChange={(e) => setQ(e.target.value)} />
+                <input className="search grow" placeholder={t(lang, 'decks.search')} value={q} onChange={(e) => setQ(e.target.value)} />
                 <label className="pill">
-                  <input type="checkbox" checked={deckOwnedOnly} onChange={(e) => setDeckOwnedOnly(e.target.checked)} /> nur Owned
+                  <input type="checkbox" checked={deckOwnedOnly} onChange={(e) => setDeckOwnedOnly(e.target.checked)} /> {t(lang, 'catalog.ownedOnly')}
                 </label>
               </div>
               <div className="list" style={{ maxHeight: '70vh', overflow: 'auto' }}>
-                {!activeDeck && <div className="empty">Zuerst ein Deck wählen oder anlegen.</div>}
+                {!activeDeck && <div className="empty">{t(lang, 'decks.pickFirst')}</div>}
                 {activeDeck && sectionNeedsLegend(activeSection) && !hasLegend(activeDeck.cards) && (
-                  <div className="empty deck-gate">Zuerst eine Legend wählen</div>
+                  <div className="empty deck-gate">{t(lang, 'decks.legendLocked')}</div>
                 )}
                 {activeDeck && !(sectionNeedsLegend(activeSection) && !hasLegend(activeDeck.cards)) && cards
                   .filter((c) => {
@@ -2145,7 +2186,7 @@ export default function App() {
                         <button
                           type="button"
                           className="name name-link"
-                          title="Auf Cardmarket öffnen"
+                          title={t(lang, 'price.openCm')}
                           disabled={!priceBook?.cards[c.id]?.cmUrl}
                           onClick={(e) => { e.stopPropagation(); openCm(priceBook?.cards[c.id]) }}
                         >{displayName(c)}</button>
@@ -2155,9 +2196,9 @@ export default function App() {
                           if (!pl || (!pl.low && !pl.avg30 && !pl.high && !pl.foil)) return null
                           return (
                             <div className="price">
-                              {pl.low ? <span title="Niedrigster Preis (ab)">ab {pl.low}</span> : <span className="na">ab --</span>}
-                              {pl.avg30 ? <span className="avg30" title="30-Tage-Durchschnitt">Ø30 {pl.avg30}</span> : null}
-                              {pl.foil ? <span className="foil" title="Foil Low">F {pl.foil}</span> : null}
+                              {pl.low ? <span title={t(lang, 'price.low')}>ab {pl.low}</span> : <span className="na">ab --</span>}
+                              {pl.avg30 ? <span className="avg30" title={t(lang, 'price.avg30')}>Ø30 {pl.avg30}</span> : null}
+                              {pl.foil ? <span className="foil" title={t(lang, 'price.foil')}>F {pl.foil}</span> : null}
                             </div>
                           )
                         })()}
@@ -2170,9 +2211,9 @@ export default function App() {
                         }
                         title={
                           sectionNeedsLegend(activeSection) && !hasLegend(activeDeck.cards)
-                            ? 'Zuerst eine Legend wählen'
+                            ? t(lang, 'decks.legendLocked')
                             : sectionCount(activeDeck.cards, activeSection) >= SECTION_CAPS[activeSection]
-                              ? `Limit ${SECTION_CAPS[activeSection]} erreicht`
+                              ? t(lang, 'decks.limitReached', { cap: SECTION_CAPS[activeSection] })
                               : undefined
                         }
                         onClick={() => addToDeck(c.id, activeSection)}
