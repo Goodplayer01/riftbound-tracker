@@ -173,6 +173,7 @@ const de: Record<string, string> = {
 
   'lang.de': 'Deutsch',
   'lang.en': 'English',
+  'lang.label': 'Sprache',
 }
 
 const en: Record<string, string> = {
@@ -326,6 +327,7 @@ const en: Record<string, string> = {
 
   'lang.de': 'Deutsch',
   'lang.en': 'English',
+  'lang.label': 'Language',
 }
 
 export const messages: Record<Lang, Record<string, string>> = { de, en }

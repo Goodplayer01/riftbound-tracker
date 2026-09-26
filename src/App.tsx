@@ -126,6 +126,8 @@ function openCm(p?: PriceEntry | null) {
 export default function App() {
   const [tab, setTab] = useState<Tab>('collection')
   const [lang, setLang] = useState<Lang>(() => loadLang())
+  const [langMenuOpen, setLangMenuOpen] = useState(false)
+  const langMenuRef = useRef<HTMLDivElement | null>(null)
   const [catalog, setCatalog] = useState<Catalog | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [collection, setCollection] = useState<Collection>({})
@@ -242,7 +244,25 @@ export default function App() {
   function setAppLang(next: Lang) {
     setLang(next)
     saveLang(next)
+    setLangMenuOpen(false)
   }
+
+  useEffect(() => {
+    if (!langMenuOpen) return
+    function onDocPointerDown(e: PointerEvent) {
+      const el = langMenuRef.current
+      if (el && !el.contains(e.target as Node)) setLangMenuOpen(false)
+    }
+    function onKey(e: KeyboardEvent) {
+      if (e.key === 'Escape') setLangMenuOpen(false)
+    }
+    document.addEventListener('pointerdown', onDocPointerDown)
+    document.addEventListener('keydown', onKey)
+    return () => {
+      document.removeEventListener('pointerdown', onDocPointerDown)
+      document.removeEventListener('keydown', onKey)
+    }
+  }, [langMenuOpen])
 
   useEffect(() => {
     setCollection(loadCollection())
@@ -1132,23 +1152,45 @@ export default function App() {
               ~{collectionValue.sum.toFixed(2)} EUR
             </span>
           )}
-          <div className="lang-toggle" role="group" aria-label="Language">
+          <div className={`lang-menu${langMenuOpen ? ' open' : ''}`} ref={langMenuRef}>
             <button
               type="button"
-              className={`lang-btn${lang === 'de' ? ' active' : ''}`}
-              title={t(lang, 'lang.de')}
-              aria-label={t(lang, 'lang.de')}
-              aria-pressed={lang === 'de'}
-              onClick={() => setAppLang('de')}
-            >🇩🇪</button>
-            <button
-              type="button"
-              className={`lang-btn${lang === 'en' ? ' active' : ''}`}
-              title={t(lang, 'lang.en')}
-              aria-label={t(lang, 'lang.en')}
-              aria-pressed={lang === 'en'}
-              onClick={() => setAppLang('en')}
-            >🇬🇧</button>
+              className={`lang-trigger${langMenuOpen ? ' open' : ''}`}
+              title={t(lang, 'lang.label')}
+              aria-label={t(lang, 'lang.label')}
+              aria-haspopup="menu"
+              aria-expanded={langMenuOpen}
+              onClick={() => setLangMenuOpen((o) => !o)}
+            >
+              {t(lang, 'lang.label')}
+              <svg className="lang-caret" width="10" height="6" viewBox="0 0 10 6" aria-hidden="true">
+                <path d="M1 1l4 4 4-4" stroke="currentColor" strokeWidth="1.4" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </button>
+            {langMenuOpen && (
+              <div className="lang-dropdown" role="menu" aria-label={t(lang, 'lang.label')}>
+                <button
+                  type="button"
+                  role="menuitemradio"
+                  aria-checked={lang === 'de'}
+                  className={`lang-option${lang === 'de' ? ' active' : ''}`}
+                  onClick={() => setAppLang('de')}
+                >
+                  <img className="lang-flag" src="flags/de.svg" alt="" width={18} height={12} />
+                  <span>{t(lang, 'lang.de')}</span>
+                </button>
+                <button
+                  type="button"
+                  role="menuitemradio"
+                  aria-checked={lang === 'en'}
+                  className={`lang-option${lang === 'en' ? ' active' : ''}`}
+                  onClick={() => setAppLang('en')}
+                >
+                  <img className="lang-flag" src="flags/gb.svg" alt="" width={18} height={12} />
+                  <span>{t(lang, 'lang.en')}</span>
+                </button>
+              </div>
+            )}
           </div>
         </div>
         <div className="chrome no-drag">
