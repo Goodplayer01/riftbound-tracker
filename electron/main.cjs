@@ -68,7 +68,7 @@ async function setupAutoUpdater() {
   if (isDev) return
   try {
     const { autoUpdater } = require('electron-updater')
-    autoUpdater.autoDownload = true
+    autoUpdater.autoDownload = false
     autoUpdater.autoInstallOnAppQuit = true
     autoUpdater.on('checking-for-update', () => {
       mainWindow?.webContents.send('updater', { status: 'checking' })
@@ -78,6 +78,13 @@ async function setupAutoUpdater() {
     })
     autoUpdater.on('update-not-available', (info) => {
       mainWindow?.webContents.send('updater', { status: 'not-available', version: info?.version })
+    })
+    autoUpdater.on('download-progress', (p) => {
+      mainWindow?.webContents.send('updater', {
+        status: 'downloading',
+        percent: Math.round(p.percent || 0),
+        version: p.version,
+      })
     })
     autoUpdater.on('update-downloaded', (info) => {
       mainWindow?.webContents.send('updater', { status: 'downloaded', version: info.version })
@@ -95,8 +102,20 @@ ipcMain.handle('app:getVersion', () => app.getVersion())
 ipcMain.handle('updater:install', () => {
   try {
     const { autoUpdater } = require('electron-updater')
-    autoUpdater.quitAndInstall()
+    // isSilent=true + isForceRunAfter=true → NSIS /S + relaunch
+    autoUpdater.quitAndInstall(true, true)
   } catch {}
+})
+ipcMain.handle('updater:download', async () => {
+  if (isDev) return { ok: false, error: 'dev' }
+  try {
+    const { autoUpdater } = require('electron-updater')
+    await autoUpdater.downloadUpdate()
+    return { ok: true }
+  } catch (e) {
+    mainWindow?.webContents.send('updater', { status: 'error', message: String(e) })
+    return { ok: false, error: String(e) }
+  }
 })
 ipcMain.handle('updater:check', async () => {
   if (isDev) {

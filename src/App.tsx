@@ -148,7 +148,7 @@ export default function App() {
   const [deckMissingReport, setDeckMissingReport] = useState<{ name: string; need: number; have: number; short: number }[] | null>(null)
   const [cardPreview, setCardPreview] = useState<{ src: string; x: number; y: number } | null>(null)
   const [appVersion, setAppVersion] = useState('')
-  const [updateInfo, setUpdateInfo] = useState<{ status: string; version?: string; message?: string } | null>(null)
+  const [updateInfo, setUpdateInfo] = useState<{ status: string; version?: string; message?: string; percent?: number } | null>(null)
   const [isMaximized, setIsMaximized] = useState(false)
   const [priceBook, setPriceBook] = useState<PriceBook | null>(null)
   // null = binder dashboard; 'owned' = all owned; set code = that set binder
@@ -175,7 +175,26 @@ export default function App() {
     return () => { off?.() }
   }, [])
 
-  async function checkUpdates() {
+  async function onVersionClick() {
+    const s = updateInfo?.status
+    if (s === 'downloading' || s === 'checking') return
+    if (s === 'available') {
+      setUpdateInfo({ status: 'downloading', percent: 0, version: updateInfo?.version })
+      try {
+        await window.riftbound?.downloadUpdate?.()
+      } catch (e) {
+        setUpdateInfo({ status: 'error', message: String(e) })
+      }
+      return
+    }
+    if (s === 'downloaded') {
+      try {
+        await window.riftbound?.installUpdate?.()
+      } catch (e) {
+        setUpdateInfo({ status: 'error', message: String(e) })
+      }
+      return
+    }
     setUpdateInfo({ status: 'checking' })
     try {
       await window.riftbound?.checkForUpdates?.()
@@ -193,9 +212,11 @@ export default function App() {
 
   function updateLabel() {
     const s = updateInfo?.status
+    const ver = updateInfo?.version ? `v${updateInfo.version}` : (appVersion ? `v${appVersion}` : 'v?')
     if (s === 'checking') return t(lang, 'update.checking')
-    if (s === 'available') return t(lang, 'update.available', { version: updateInfo?.version || '' })
-    if (s === 'downloaded') return t(lang, 'update.downloaded', { version: updateInfo?.version || '' }).trim()
+    if (s === 'available') return t(lang, 'update.available', { version: ver })
+    if (s === 'downloading') return t(lang, 'update.downloading', { percent: updateInfo?.percent ?? 0 })
+    if (s === 'downloaded') return t(lang, 'update.downloaded')
     if (s === 'not-available') return appVersion ? `v${appVersion}` : 'v?'
     if (s === 'error') return t(lang, 'update.error')
     return appVersion ? `v${appVersion}` : 'v?'
@@ -203,9 +224,11 @@ export default function App() {
 
   function updateTitle() {
     const s = updateInfo?.status
+    const ver = updateInfo?.version ? `v${updateInfo.version}` : (appVersion ? `v${appVersion}` : 'v?')
     if (s === 'checking') return t(lang, 'update.titleChecking')
-    if (s === 'available') return t(lang, 'update.titleAvailable', { version: updateInfo?.version || '' })
-    if (s === 'downloaded') return t(lang, 'update.titleDownloaded', { version: updateInfo?.version || '' })
+    if (s === 'available') return t(lang, 'update.titleAvailable', { version: ver })
+    if (s === 'downloading') return t(lang, 'update.titleDownloading')
+    if (s === 'downloaded') return t(lang, 'update.titleDownloaded')
     if (s === 'not-available') return t(lang, 'update.titleNotAvailable')
     if (s === 'error') return updateInfo?.message || t(lang, 'update.error')
     return t(lang, 'update.titleIdle')
@@ -1122,18 +1145,19 @@ export default function App() {
               onClick={() => setAppLang('en')}
             >🇬🇧</button>
           </div>
-          {updateInfo?.status === 'downloaded' && (
-            <button className="btn small primary" onClick={() => window.riftbound?.installUpdate()}>{t(lang, 'stats.restart')}</button>
-          )}
         </div>
         <div className="chrome no-drag">
           <button
             type="button"
-            className={`version-btn${updateInfo?.status ? ` status-${updateInfo.status}` : ''}`}
+            className={`version-btn${updateInfo?.status ? ` status-${updateInfo.status}` : ' status-not-available'}`}
             title={updateTitle()}
-            onClick={checkUpdates}
+            onClick={onVersionClick}
+            disabled={updateInfo?.status === 'downloading' || updateInfo?.status === 'checking'}
           >
-            {updateLabel()}
+            {updateInfo?.status === 'downloading' && (
+              <span className="dl-bar" style={{ width: `${Math.min(100, Math.max(0, updateInfo.percent ?? 0))}%` }} />
+            )}
+            <span className="dl-label">{updateLabel()}</span>
           </button>
           <button type="button" className="win-btn" title={t(lang, 'win.minimize')} aria-label={t(lang, 'win.minimize')} onClick={() => window.riftbound?.windowMinimize?.()}>
             <svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><path d="M1 5h8" stroke="currentColor" strokeWidth="1.2" fill="none" /></svg>

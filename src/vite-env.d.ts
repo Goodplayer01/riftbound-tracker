@@ -4,6 +4,7 @@ export type UpdaterPayload =
   | { status: 'checking' }
   | { status: 'available'; version: string }
   | { status: 'not-available'; version?: string }
+  | { status: 'downloading'; percent: number; version?: string }
   | { status: 'downloaded'; version: string }
   | { status: 'error'; message: string }
 
@@ -12,6 +13,7 @@ declare global {
     riftbound?: {
       getVersion: () => Promise<string>
       installUpdate: () => Promise<void>
+      downloadUpdate: () => Promise<{ ok: boolean; error?: string }>
       checkForUpdates: () => Promise<{ ok: boolean; dev?: boolean; version?: string; error?: string }>
       onUpdater: (cb: (p: UpdaterPayload) => void) => () => void
       windowMinimize: () => Promise<void>

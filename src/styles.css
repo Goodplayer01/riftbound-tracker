@@ -64,16 +64,29 @@ a { color: var(--accent2); }
   display: flex; align-items: stretch; gap: 2px; margin-left: 4px; flex-shrink: 0;
 }
 .version-btn {
-  border: none; background: transparent; color: var(--muted);
+  position: relative; overflow: hidden;
+  border: none; background: transparent; color: #8fd18f;
   font-size: 12px; padding: 0 10px; border-radius: 6px;
-  letter-spacing: .02em; white-space: nowrap;
+  letter-spacing: .02em; white-space: nowrap; min-width: 64px;
 }
 .version-btn:hover { color: var(--accent2); background: rgba(212,175,55,.08); }
 .version-btn.status-checking { color: var(--warn); }
-.version-btn.status-available,
-.version-btn.status-downloaded { color: var(--accent2); }
+.version-btn.status-available { color: #e8c66a; }
+.version-btn.status-downloading {
+  color: #e8c66a; background: rgba(232,198,106,.08); pointer-events: none;
+}
+.version-btn.status-downloaded {
+  color: #0a0c10; background: #e8c66a; font-weight: 600;
+}
+.version-btn.status-downloaded:hover { background: #f0d478; color: #0a0c10; }
 .version-btn.status-not-available { color: #8fd18f; }
 .version-btn.status-error { color: var(--danger); }
+.version-btn .dl-bar {
+  position: absolute; left: 0; top: 0; bottom: 0;
+  background: rgba(232,198,106,.35); pointer-events: none;
+  transition: width .15s linear;
+}
+.version-btn .dl-label { position: relative; z-index: 1; }
 
 .win-btn {
   width: 42px; height: 32px; border: none; background: transparent;

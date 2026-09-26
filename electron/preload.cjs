@@ -3,6 +3,7 @@ const { contextBridge, ipcRenderer } = require('electron')
 contextBridge.exposeInMainWorld('riftbound', {
   getVersion: () => ipcRenderer.invoke('app:getVersion'),
   installUpdate: () => ipcRenderer.invoke('updater:install'),
+  downloadUpdate: () => ipcRenderer.invoke('updater:download'),
   checkForUpdates: () => ipcRenderer.invoke('updater:check'),
   onUpdater: (cb) => {
     const listener = (_event, payload) => cb(payload)
