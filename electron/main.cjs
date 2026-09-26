@@ -9,6 +9,10 @@ let mainWindow
 const WINDOWED_WIDTH = 1426
 const WINDOWED_HEIGHT = 860
 
+/** Reentrancy guards — Win32 crashes if setSize/setMaximumSize runs while still leaving fullscreen. */
+let leavingFs = false
+let applyingWindowed = false
+
 // Windows taskbar identity — must match package.json build.appId
 if (process.platform === 'win32') {
   app.setAppUserModelId('com.goodplayer01.riftboundtracker')
@@ -33,16 +37,70 @@ function resolveAppIcon() {
   return null
 }
 
+function pushFullscreenState() {
+  if (!mainWindow || mainWindow.isDestroyed()) return
+  try {
+    mainWindow.webContents.send('window:fullscreen', mainWindow.isFullScreen())
+  } catch {}
+}
+
+/**
+ * Restore fixed windowed bounds. Safe to call after leave-full-screen has completed.
+ * No-ops if already applying or if the window is still fullscreen (wait for leave).
+ * Never calls setFullScreen — that belongs only on the enter/exit IPC path.
+ */
 function applyWindowedBounds() {
   if (!mainWindow || mainWindow.isDestroyed()) return
-  mainWindow.setFullScreen(false)
-  if (mainWindow.isMaximized()) mainWindow.unmaximize()
-  mainWindow.setResizable(true)
-  mainWindow.setMinimumSize(WINDOWED_WIDTH, WINDOWED_HEIGHT)
-  mainWindow.setMaximumSize(WINDOWED_WIDTH, WINDOWED_HEIGHT)
-  mainWindow.setSize(WINDOWED_WIDTH, WINDOWED_HEIGHT)
-  mainWindow.setResizable(false)
-  mainWindow.center()
+  if (applyingWindowed) return
+  if (mainWindow.isFullScreen()) return
+
+  applyingWindowed = true
+  try {
+    if (mainWindow.isMaximized()) {
+      try { mainWindow.unmaximize() } catch {}
+    }
+    mainWindow.setResizable(true)
+    // Clear max limits so setSize can shrink from fullscreen display size.
+    mainWindow.setMinimumSize(0, 0)
+    mainWindow.setMaximumSize(0, 0)
+    mainWindow.setSize(WINDOWED_WIDTH, WINDOWED_HEIGHT)
+    mainWindow.setMinimumSize(WINDOWED_WIDTH, WINDOWED_HEIGHT)
+    mainWindow.setMaximumSize(WINDOWED_WIDTH, WINDOWED_HEIGHT)
+    mainWindow.setResizable(false)
+    mainWindow.center()
+  } catch (e) {
+    console.error('applyWindowedBounds failed', e)
+  } finally {
+    applyingWindowed = false
+  }
+}
+
+function enterFullscreen() {
+  if (!mainWindow || mainWindow.isDestroyed()) return
+  if (mainWindow.isFullScreen()) return
+  try {
+    mainWindow.setResizable(true)
+    mainWindow.setMinimumSize(0, 0)
+    mainWindow.setMaximumSize(0, 0)
+    mainWindow.setFullScreen(true)
+  } catch (e) {
+    console.error('enterFullscreen failed', e)
+  }
+}
+
+function exitFullscreen() {
+  if (!mainWindow || mainWindow.isDestroyed()) return
+  if (!mainWindow.isFullScreen()) return
+  if (leavingFs) return
+  leavingFs = true
+  try {
+    // ONLY leave fullscreen here. Bounds restore happens in leave-full-screen
+    // after Win32 has finished the transition (deferred), avoiding the crash.
+    mainWindow.setFullScreen(false)
+  } catch (e) {
+    console.error('exitFullscreen failed', e)
+    leavingFs = false
+  }
 }
 
 function createWindow() {
@@ -85,22 +143,34 @@ function createWindow() {
     return { action: 'deny' }
   })
 
-  const pushFullscreenState = () => {
-    if (!mainWindow || mainWindow.isDestroyed()) return
-    mainWindow.webContents.send('window:fullscreen', mainWindow.isFullScreen())
-  }
-
-  mainWindow.on('enter-full-screen', pushFullscreenState)
-  mainWindow.on('leave-full-screen', () => {
-    // Force fixed windowed size so OS cannot leave a weird intermediate size.
-    applyWindowedBounds()
+  mainWindow.on('enter-full-screen', () => {
+    leavingFs = false
     pushFullscreenState()
   })
+
+  mainWindow.on('leave-full-screen', () => {
+    // Defer restore until Win32 has fully left fullscreen — synchronous
+    // setSize/setMaximumSize during the transition crashes Electron on Windows.
+    leavingFs = true
+    pushFullscreenState()
+    setTimeout(() => {
+      leavingFs = false
+      applyWindowedBounds()
+      pushFullscreenState()
+    }, 50)
+  })
+
   mainWindow.on('maximize', () => {
     // Block OS maximize — only true fullscreen is allowed.
-    if (mainWindow && !mainWindow.isDestroyed() && !mainWindow.isFullScreen()) {
+    // Safe mid-transition: skip if leaving FS or already applying bounds.
+    if (!mainWindow || mainWindow.isDestroyed()) return
+    if (leavingFs || applyingWindowed) return
+    if (mainWindow.isFullScreen()) return
+    try {
       mainWindow.unmaximize()
       applyWindowedBounds()
+    } catch (e) {
+      console.error('maximize-block failed', e)
     }
   })
 }
@@ -179,15 +249,11 @@ ipcMain.handle('window:minimize', () => {
 /** Toggle true fullscreen (Vollbild) ↔ fixed windowed size. Returns isFullScreen. */
 ipcMain.handle('window:toggleFullscreen', () => {
   if (!mainWindow || mainWindow.isDestroyed()) return false
-  if (mainWindow.isFullScreen()) {
-    applyWindowedBounds()
+  if (mainWindow.isFullScreen() || leavingFs) {
+    exitFullscreen()
     return false
   }
-  // Temporarily allow size change for fullscreen transition.
-  mainWindow.setResizable(true)
-  mainWindow.setMaximumSize(0, 0)
-  mainWindow.setMinimumSize(0, 0)
-  mainWindow.setFullScreen(true)
+  enterFullscreen()
   return true
 })
 ipcMain.handle('window:isFullScreen', () => !!mainWindow?.isFullScreen())
