@@ -291,6 +291,19 @@ textarea.field { min-height: 160px; resize: vertical; font-family: ui-monospace,
   gap: 6px;
   transition: border-color .15s, transform .15s, box-shadow .15s;
 }
+.binder-tile-head {
+  display: flex; align-items: flex-start; justify-content: space-between; gap: 10px;
+}
+.binder-tile-meta { min-width: 0; flex: 1; display: grid; gap: 4px; }
+.binder-set-art {
+  flex: 0 0 auto;
+  width: auto; height: auto;
+  max-height: 88px; max-width: 96px;
+  object-fit: contain;
+  border-radius: 8px;
+  pointer-events: none;
+  filter: drop-shadow(0 4px 10px rgba(0,0,0,.45));
+}
 .binder-tile:hover {
   border-color: #e8c66a;
   transform: translateY(-2px);

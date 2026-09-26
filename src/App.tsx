@@ -109,6 +109,10 @@ const DOMAIN_ICON: Record<(typeof DOMAINS)[number], string> = {
   Colorless: publicAsset('domains/colorless.png'),
 }
 
+/** Official Display / box art under public/sets/{CODE}.png (Riot Merch). */
+const SET_ART_IDS = new Set(['OGN', 'OGS', 'SFD', 'UNL', 'VEN', 'ARC', 'RAD', 'WRLD25'])
+
+
 function openCm(p?: PriceEntry | null) {
   const url = cmUrl(p)
   if (!url) return
@@ -1201,11 +1205,24 @@ export default function App() {
             <div className="binder-grid">
               {setProgress.map((s) => (
                 <button key={s.id} type="button" className="binder-tile" onClick={() => { setBinderView(s.id); setBinderRarity(null); setQ(''); setBinderOwnedOnly(false); setBinderMissing(false) }}>
-                  <div className="binder-code">{s.id}</div>
-                  <div className="binder-name">{s.name}</div>
-                  <div className="binder-progress">{s.owned} / {s.total} ({s.pct}%)</div>
-                  <div className="binder-bar"><span style={{ width: `${s.pct}%` }} /></div>
-                  {s.eur != null && <div className="binder-eur">~{s.eur.toFixed(2)} EUR</div>}
+                  <div className="binder-tile-head">
+                    <div className="binder-tile-meta">
+                      <div className="binder-code">{s.id}</div>
+                      <div className="binder-name">{s.name}</div>
+                      <div className="binder-progress">{s.owned} / {s.total} ({s.pct}%)</div>
+                      <div className="binder-bar"><span style={{ width: `${s.pct}%` }} /></div>
+                      {s.eur != null && <div className="binder-eur">~{s.eur.toFixed(2)} EUR</div>}
+                    </div>
+                    {SET_ART_IDS.has(s.id) && (
+                      <img
+                        className="binder-set-art"
+                        src={publicAsset(`sets/${s.id}.png`)}
+                        alt=""
+                        loading="lazy"
+                        onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none' }}
+                      />
+                    )}
+                  </div>
                   <div className="rarity-block">
                     <div className="rarity-heading">{t(lang, 'collection.byRarity')}</div>
                     {(rarityBySet[s.id] || []).map((row) => {
