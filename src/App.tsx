@@ -138,6 +138,9 @@ export default function App() {
   const [typeFilter, setTypeFilter] = useState('')
   const [signedOnly, setSignedOnly] = useState(false)
   const [overOnly, setOverOnly] = useState(false)
+  const [promoFilter, setPromoFilter] = useState<'' | 'promo' | 'no-promo'>('')
+  const [promoMenuOpen, setPromoMenuOpen] = useState(false)
+  const promoMenuRef = useRef<HTMLDivElement | null>(null)
   const [bulkText, setBulkText] = useState('')
   const [bulkFoil, setBulkFoil] = useState(false)
   const [bulkReport, setBulkReport] = useState<string | null>(null)
@@ -248,13 +251,17 @@ export default function App() {
   }
 
   useEffect(() => {
-    if (!langMenuOpen) return
+    if (!langMenuOpen && !promoMenuOpen) return
     function onDocPointerDown(e: PointerEvent) {
-      const el = langMenuRef.current
-      if (el && !el.contains(e.target as Node)) setLangMenuOpen(false)
+      const t = e.target as Node
+      if (langMenuOpen && langMenuRef.current && !langMenuRef.current.contains(t)) setLangMenuOpen(false)
+      if (promoMenuOpen && promoMenuRef.current && !promoMenuRef.current.contains(t)) setPromoMenuOpen(false)
     }
     function onKey(e: KeyboardEvent) {
-      if (e.key === 'Escape') setLangMenuOpen(false)
+      if (e.key === 'Escape') {
+        setLangMenuOpen(false)
+        setPromoMenuOpen(false)
+      }
     }
     document.addEventListener('pointerdown', onDocPointerDown)
     document.addEventListener('keydown', onKey)
@@ -262,7 +269,7 @@ export default function App() {
       document.removeEventListener('pointerdown', onDocPointerDown)
       document.removeEventListener('keydown', onKey)
     }
-  }, [langMenuOpen])
+  }, [langMenuOpen, promoMenuOpen])
 
   useEffect(() => {
     setCollection(loadCollection())
@@ -297,12 +304,19 @@ export default function App() {
     return c.subtitle ? `${c.name}, ${c.subtitle}` : c.name
   }
 
+  function isPromoCard(c: Card) {
+    if ((c.tags || []).includes('promo')) return true
+    return String(c.set || '').endsWith('-NN')
+  }
+
   function matchesFilters(c: Card, query: string) {
     if (setFilter && c.set !== setFilter) return false
     if (typeFilter && !(c.types || []).includes(typeFilter)) return false
     if (domainFilter && !(c.domains || []).includes(domainFilter)) return false
     if (signedOnly && !c.signed) return false
     if (overOnly && !c.overnumbered) return false
+    if (promoFilter === 'promo' && !isPromoCard(c)) return false
+    if (promoFilter === 'no-promo' && isPromoCard(c)) return false
     if (!query) return true
     const hay = [
       c.name,
@@ -355,7 +369,7 @@ export default function App() {
       if (ownedOnly && ownedQty(collection[c.id]) <= 0) return false
       return matchesFilters(c, query)
     })
-  }, [cards, q, setFilter, typeFilter, domainFilter, signedOnly, overOnly, ownedOnly, collection])
+  }, [cards, q, setFilter, typeFilter, domainFilter, signedOnly, overOnly, promoFilter, ownedOnly, collection])
 
   const ownedCards = useMemo(
     () => cards.filter((c) => ownedQty(collection[c.id]) > 0),
@@ -456,6 +470,8 @@ export default function App() {
       if (domainFilter && !(c.domains || []).includes(domainFilter)) return false
       if (signedOnly && !c.signed) return false
       if (overOnly && !c.overnumbered) return false
+      if (promoFilter === 'promo' && !isPromoCard(c)) return false
+      if (promoFilter === 'no-promo' && isPromoCard(c)) return false
       if (!query) return true
       const hay = [
         c.name,
@@ -470,7 +486,7 @@ export default function App() {
       return hay.includes(query)
     })
     return [...list].sort((a, b) => a.cn - b.cn || a.code.localeCompare(b.code))
-  }, [binderView, cards, collection, q, binderOwnedOnly, binderMissing, binderRarity, domainFilter, signedOnly, overOnly])
+  }, [binderView, cards, collection, q, binderOwnedOnly, binderMissing, binderRarity, domainFilter, signedOnly, overOnly, promoFilter])
 
   const rarityBySet = useMemo(() => {
     const out: Record<string, { rarity: string; total: number; owned: number }[]> = {}
@@ -1399,6 +1415,42 @@ export default function App() {
                   )
                 })}
               </div>
+              <div className={`lang-menu${promoMenuOpen ? ' open' : ''}`} ref={promoMenuRef}>
+                <button
+                  type="button"
+                  className={`lang-trigger${promoMenuOpen ? ' open' : ''}${promoFilter ? ' open' : ''}`}
+                  title={t(lang, 'catalog.promo')}
+                  aria-label={t(lang, 'catalog.promo')}
+                  aria-haspopup="menu"
+                  aria-expanded={promoMenuOpen}
+                  onClick={() => setPromoMenuOpen((o) => !o)}
+                >
+                  {t(lang, 'catalog.promo')}
+                  <svg className="lang-caret" width="10" height="6" viewBox="0 0 10 6" aria-hidden="true">
+                    <path d="M1 1l4 4 4-4" stroke="currentColor" strokeWidth="1.4" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </button>
+                {promoMenuOpen && (
+                  <div className="lang-dropdown" role="menu" aria-label={t(lang, 'catalog.promo')} style={{ left: 0, right: 'auto' }}>
+                    {([
+                      ['', 'catalog.promoAll'],
+                      ['promo', 'catalog.promoOnly'],
+                      ['no-promo', 'catalog.promoNone'],
+                    ] as const).map(([val, key]) => (
+                      <button
+                        key={val || 'all'}
+                        type="button"
+                        role="menuitemradio"
+                        aria-checked={promoFilter === val}
+                        className={`lang-option${promoFilter === val ? ' active' : ''}`}
+                        onClick={() => { setPromoFilter(val); setPromoMenuOpen(false) }}
+                      >
+                        <span>{t(lang, key)}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
               <button
                 type="button"
                 className={`chip ${signedOnly ? 'active' : ''}`}
@@ -1515,6 +1567,42 @@ export default function App() {
                     </button>
                   )
                 })}
+              </div>
+              <div className={`lang-menu${promoMenuOpen ? ' open' : ''}`} ref={promoMenuRef}>
+                <button
+                  type="button"
+                  className={`lang-trigger${promoMenuOpen ? ' open' : ''}${promoFilter ? ' open' : ''}`}
+                  title={t(lang, 'catalog.promo')}
+                  aria-label={t(lang, 'catalog.promo')}
+                  aria-haspopup="menu"
+                  aria-expanded={promoMenuOpen}
+                  onClick={() => setPromoMenuOpen((o) => !o)}
+                >
+                  {t(lang, 'catalog.promo')}
+                  <svg className="lang-caret" width="10" height="6" viewBox="0 0 10 6" aria-hidden="true">
+                    <path d="M1 1l4 4 4-4" stroke="currentColor" strokeWidth="1.4" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </button>
+                {promoMenuOpen && (
+                  <div className="lang-dropdown" role="menu" aria-label={t(lang, 'catalog.promo')} style={{ left: 0, right: 'auto' }}>
+                    {([
+                      ['', 'catalog.promoAll'],
+                      ['promo', 'catalog.promoOnly'],
+                      ['no-promo', 'catalog.promoNone'],
+                    ] as const).map(([val, key]) => (
+                      <button
+                        key={val || 'all'}
+                        type="button"
+                        role="menuitemradio"
+                        aria-checked={promoFilter === val}
+                        className={`lang-option${promoFilter === val ? ' active' : ''}`}
+                        onClick={() => { setPromoFilter(val); setPromoMenuOpen(false) }}
+                      >
+                        <span>{t(lang, key)}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
               <label className="pill">
                 <input type="checkbox" checked={signedOnly} onChange={(e) => setSignedOnly(e.target.checked)} /> Signed

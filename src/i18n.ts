@@ -71,6 +71,10 @@ const de: Record<string, string> = {
 
   'catalog.allSets': 'Alle Sets',
   'catalog.allTypes': 'Alle Typen',
+  'catalog.promo': 'Promo',
+  'catalog.promoAll': 'Alle',
+  'catalog.promoOnly': 'Nur Promo',
+  'catalog.promoNone': 'Ohne Promo',
   'catalog.ownedOnly': 'nur Owned',
   'catalog.csvExport': 'CSV Export',
   'catalog.csvImport': 'CSV Import',
@@ -225,6 +229,10 @@ const en: Record<string, string> = {
 
   'catalog.allSets': 'All sets',
   'catalog.allTypes': 'All types',
+  'catalog.promo': 'Promo',
+  'catalog.promoAll': 'All',
+  'catalog.promoOnly': 'Promo only',
+  'catalog.promoNone': 'No promo',
   'catalog.ownedOnly': 'owned only',
   'catalog.csvExport': 'CSV Export',
   'catalog.csvImport': 'CSV Import',
