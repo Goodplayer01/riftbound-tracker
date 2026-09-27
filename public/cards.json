@@ -31640,7 +31640,7 @@
       ],
       "energy": 0,
       "might": 0,
-      "image": "https://cdn.piltoverarchive.com/temporary/1789979814375-tralesfbuth.png",
+      "image": "https://cdn.piltoverarchive.com/temporary/1790378267493-pfhj90kxwq.png",
       "signed": false,
       "overnumbered": false,
       "altArt": false,
@@ -31665,7 +31665,7 @@
       ],
       "energy": 0,
       "might": 0,
-      "image": "https://cdn.piltoverarchive.com/temporary/1790123538009-m48j4jnnxnc.jpg",
+      "image": "https://cdn.piltoverarchive.com/temporary/1790383068965-wnwh5foe5tm.png",
       "signed": false,
       "overnumbered": false,
       "altArt": false,
@@ -31691,7 +31691,887 @@
       ],
       "energy": 6,
       "might": 4,
-      "image": "https://cdn.piltoverarchive.com/temporary/1789889212101-kdohvge938.png",
+      "image": "https://cdn.piltoverarchive.com/temporary/1790378414402-x3sqwypg0an.png",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": false,
+      "tags": []
+    },
+    {
+      "id": "rad-038",
+      "name": "Ahri",
+      "subtitle": "Confident",
+      "code": "RAD-038",
+      "cn": 38,
+      "set": "RAD",
+      "setName": "Radiance",
+      "types": [
+        "Unit"
+      ],
+      "superTypes": [
+        "Champion"
+      ],
+      "rarity": "Rare",
+      "domains": [
+        "Calm"
+      ],
+      "energy": 4,
+      "might": 4,
+      "image": "https://cdn.piltoverarchive.com/temporary/1790379712770-zfsu2x3k36.jpg",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": false,
+      "tags": []
+    },
+    {
+      "id": "rad-038-champion",
+      "name": "Ahri",
+      "subtitle": "Confident",
+      "code": "RAD-038-CHAMPION",
+      "cn": 38,
+      "set": "RAD",
+      "setName": "Radiance",
+      "types": [
+        "Unit"
+      ],
+      "superTypes": [
+        "Champion"
+      ],
+      "rarity": "Rare",
+      "domains": [
+        "Calm"
+      ],
+      "energy": 4,
+      "might": 4,
+      "image": "https://cdn.piltoverarchive.com/temporary/1790379856360-1cbp857fr3y.jpg",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": false,
+      "tags": [
+        "promo"
+      ]
+    },
+    {
+      "id": "rad-038-skirmish",
+      "name": "Ahri",
+      "subtitle": "Confident",
+      "code": "RAD-038-SKIRMISH",
+      "cn": 38,
+      "set": "RAD",
+      "setName": "Radiance",
+      "types": [
+        "Unit"
+      ],
+      "superTypes": [
+        "Champion"
+      ],
+      "rarity": "Rare",
+      "domains": [
+        "Calm"
+      ],
+      "energy": 4,
+      "might": 4,
+      "image": "https://cdn.piltoverarchive.com/temporary/1790379906737-nco9pod88y.jpg",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": false,
+      "tags": [
+        "promo"
+      ]
+    },
+    {
+      "id": "rad-045",
+      "name": "K'Sante",
+      "subtitle": "Dauntless",
+      "code": "RAD-045",
+      "cn": 45,
+      "set": "RAD",
+      "setName": "Radiance",
+      "types": [
+        "Unit"
+      ],
+      "superTypes": [
+        "Champion"
+      ],
+      "rarity": "Epic",
+      "domains": [
+        "Calm"
+      ],
+      "energy": 4,
+      "might": 4,
+      "image": "https://cdn.piltoverarchive.com/temporary/1790461927324-cxfjjqphbfr.png",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": false,
+      "tags": []
+    },
+    {
+      "id": "rad-059",
+      "name": "Supernova",
+      "subtitle": null,
+      "code": "RAD-059",
+      "cn": 59,
+      "set": "RAD",
+      "setName": "Radiance",
+      "types": [
+        "Spell"
+      ],
+      "superTypes": [],
+      "rarity": "Uncommon",
+      "domains": [
+        "Mind"
+      ],
+      "energy": 9,
+      "might": 0,
+      "image": "https://cdn.piltoverarchive.com/temporary/1790376188293-fwdoyt3odqf.png",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": false,
+      "tags": []
+    },
+    {
+      "id": "rad-061a",
+      "name": "Ekko",
+      "subtitle": "Ingenious",
+      "code": "RAD-061a",
+      "cn": 61,
+      "set": "RAD",
+      "setName": "Radiance",
+      "types": [
+        "Unit"
+      ],
+      "superTypes": [
+        "Champion"
+      ],
+      "rarity": "Showcase",
+      "domains": [
+        "Mind"
+      ],
+      "energy": 3,
+      "might": 4,
+      "image": "https://cdn.piltoverarchive.com/temporary/1790464582405-ab9pghy09xg.png",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": true,
+      "tags": [
+        "alt",
+        "showcase"
+      ]
+    },
+    {
+      "id": "rad-063",
+      "name": "Kai'Sa",
+      "subtitle": "Rebel",
+      "code": "RAD-063",
+      "cn": 63,
+      "set": "RAD",
+      "setName": "Radiance",
+      "types": [
+        "Unit"
+      ],
+      "superTypes": [
+        "Champion"
+      ],
+      "rarity": "Rare",
+      "domains": [
+        "Mind"
+      ],
+      "energy": 5,
+      "might": 5,
+      "image": "https://cdn.piltoverarchive.com/temporary/1790383052532-dcsbesjv22e.png",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": false,
+      "tags": []
+    },
+    {
+      "id": "rad-067",
+      "name": "Clocktower Guardian",
+      "subtitle": null,
+      "code": "RAD-067",
+      "cn": 67,
+      "set": "RAD",
+      "setName": "Radiance",
+      "types": [
+        "Unit"
+      ],
+      "superTypes": [],
+      "rarity": "Epic",
+      "domains": [
+        "Mind"
+      ],
+      "energy": 8,
+      "might": 8,
+      "image": "https://cdn.piltoverarchive.com/temporary/1790378359495-4ntt2ldjms.png",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": false,
+      "tags": []
+    },
+    {
+      "id": "rad-069",
+      "name": "Zero Point Inflection",
+      "subtitle": null,
+      "code": "RAD-069",
+      "cn": 69,
+      "set": "RAD",
+      "setName": "Radiance",
+      "types": [
+        "Gear"
+      ],
+      "superTypes": [],
+      "rarity": "Epic",
+      "domains": [
+        "Mind"
+      ],
+      "energy": 9,
+      "might": 0,
+      "image": "https://cdn.piltoverarchive.com/temporary/1790464716131-meqtzyad1wg.png",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": false,
+      "tags": []
+    },
+    {
+      "id": "rad-073",
+      "name": "Pillaged Armory",
+      "subtitle": null,
+      "code": "RAD-073",
+      "cn": 73,
+      "set": "RAD",
+      "setName": "Radiance",
+      "types": [
+        "Gear"
+      ],
+      "superTypes": [],
+      "rarity": "Common",
+      "domains": [
+        "Body"
+      ],
+      "energy": 1,
+      "might": 0,
+      "image": "https://cdn.piltoverarchive.com/temporary/1790377626431-uk80pfhw2yb.png",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": false,
+      "tags": []
+    },
+    {
+      "id": "rad-082",
+      "name": "Primordial Roar",
+      "subtitle": null,
+      "code": "RAD-082",
+      "cn": 82,
+      "set": "RAD",
+      "setName": "Radiance",
+      "types": [
+        "Spell"
+      ],
+      "superTypes": [],
+      "rarity": "Uncommon",
+      "domains": [
+        "Body"
+      ],
+      "energy": 4,
+      "might": 0,
+      "image": "https://cdn.piltoverarchive.com/temporary/1790377761425-mdmzm481n9d.png",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": false,
+      "tags": []
+    },
+    {
+      "id": "rad-086",
+      "name": "K'Sante",
+      "subtitle": "Courageous",
+      "code": "RAD-086",
+      "cn": 86,
+      "set": "RAD",
+      "setName": "Radiance",
+      "types": [
+        "Unit"
+      ],
+      "superTypes": [
+        "Champion"
+      ],
+      "rarity": "Rare",
+      "domains": [
+        "Body"
+      ],
+      "energy": 5,
+      "might": 4,
+      "image": "https://cdn.piltoverarchive.com/temporary/1790464654455-czt57zjivd.png",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": false,
+      "tags": []
+    },
+    {
+      "id": "rad-090",
+      "name": "Evelynn",
+      "subtitle": "Consuming",
+      "code": "RAD-090",
+      "cn": 90,
+      "set": "RAD",
+      "setName": "Radiance",
+      "types": [
+        "Unit"
+      ],
+      "superTypes": [
+        "Champion"
+      ],
+      "rarity": "Epic",
+      "domains": [
+        "Body"
+      ],
+      "energy": 5,
+      "might": 5,
+      "image": "https://cdn.piltoverarchive.com/temporary/1790377891183-mumvf21ebci.png",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": false,
+      "tags": []
+    },
+    {
+      "id": "rad-090a",
+      "name": "Evelynn",
+      "subtitle": "Consuming",
+      "code": "RAD-090a",
+      "cn": 90,
+      "set": "RAD",
+      "setName": "Radiance",
+      "types": [
+        "Unit"
+      ],
+      "superTypes": [
+        "Champion"
+      ],
+      "rarity": "Showcase",
+      "domains": [
+        "Body"
+      ],
+      "energy": 5,
+      "might": 5,
+      "image": "https://cdn.piltoverarchive.com/temporary/1790464373607-ccoxwo96ii.png",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": true,
+      "tags": [
+        "alt",
+        "showcase"
+      ]
+    },
+    {
+      "id": "rad-093",
+      "name": "Disposal Expert",
+      "subtitle": null,
+      "code": "RAD-093",
+      "cn": 93,
+      "set": "RAD",
+      "setName": "Radiance",
+      "types": [
+        "Unit"
+      ],
+      "superTypes": [],
+      "rarity": "Common",
+      "domains": [
+        "Chaos"
+      ],
+      "energy": 4,
+      "might": 3,
+      "image": "https://cdn.piltoverarchive.com/temporary/1790464838616-rbue3sndbnf.png",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": false,
+      "tags": []
+    },
+    {
+      "id": "rad-127",
+      "name": "Rousing Display",
+      "subtitle": null,
+      "code": "RAD-127",
+      "cn": 127,
+      "set": "RAD",
+      "setName": "Radiance",
+      "types": [
+        "Spell"
+      ],
+      "superTypes": [],
+      "rarity": "Uncommon",
+      "domains": [
+        "Order"
+      ],
+      "energy": 5,
+      "might": 0,
+      "image": "https://cdn.piltoverarchive.com/temporary/1790382248467-s2mnm5ylh4b.png",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": false,
+      "tags": []
+    },
+    {
+      "id": "rad-132",
+      "name": "Heimerdinger",
+      "subtitle": "Academy Instructor",
+      "code": "RAD-132",
+      "cn": 132,
+      "set": "RAD",
+      "setName": "Radiance",
+      "types": [
+        "Unit"
+      ],
+      "superTypes": [],
+      "rarity": "Rare",
+      "domains": [
+        "Order"
+      ],
+      "energy": 6,
+      "might": 5,
+      "image": "https://cdn.piltoverarchive.com/temporary/1790383085471-xnn0myp4y9.png",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": false,
+      "tags": []
+    },
+    {
+      "id": "rad-136",
+      "name": "Dockside Lock-Up",
+      "subtitle": null,
+      "code": "RAD-136",
+      "cn": 136,
+      "set": "RAD",
+      "setName": "Radiance",
+      "types": [
+        "Gear"
+      ],
+      "superTypes": [],
+      "rarity": "Epic",
+      "domains": [
+        "Order"
+      ],
+      "energy": 6,
+      "might": 0,
+      "image": "https://cdn.piltoverarchive.com/temporary/1790378783278-fdetlz6upn5.png",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": false,
+      "tags": []
+    },
+    {
+      "id": "rad-141",
+      "name": "Ziggs",
+      "subtitle": "Hexplosives Expert",
+      "code": "RAD-141",
+      "cn": 141,
+      "set": "RAD",
+      "setName": "Radiance",
+      "types": [
+        "Legend"
+      ],
+      "superTypes": [],
+      "rarity": "Rare",
+      "domains": [
+        "Fury",
+        "Chaos"
+      ],
+      "energy": 0,
+      "might": 0,
+      "image": "https://cdn.piltoverarchive.com/temporary/1790377326982-ys5fbelogzq.png",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": false,
+      "tags": []
+    },
+    {
+      "id": "rad-142",
+      "name": "Hexplosive Minefield",
+      "subtitle": null,
+      "code": "RAD-142",
+      "cn": 142,
+      "set": "RAD",
+      "setName": "Radiance",
+      "types": [
+        "Spell"
+      ],
+      "superTypes": [
+        "Signature"
+      ],
+      "rarity": "Epic",
+      "domains": [
+        "Fury",
+        "Chaos"
+      ],
+      "energy": 2,
+      "might": 0,
+      "image": "https://cdn.piltoverarchive.com/temporary/1790377463304-fb5mmzoq4y5.png",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": false,
+      "tags": []
+    },
+    {
+      "id": "rad-145",
+      "name": "Orianna",
+      "subtitle": "Lady of Clockwork",
+      "code": "RAD-145",
+      "cn": 145,
+      "set": "RAD",
+      "setName": "Radiance",
+      "types": [
+        "Legend"
+      ],
+      "superTypes": [],
+      "rarity": "Rare",
+      "domains": [
+        "Calm",
+        "Mind"
+      ],
+      "energy": 0,
+      "might": 0,
+      "image": "https://cdn.piltoverarchive.com/temporary/1790378198933-glwq0aedqq9.png",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": false,
+      "tags": []
+    },
+    {
+      "id": "rad-148",
+      "name": "Ntofo Strikes",
+      "subtitle": null,
+      "code": "RAD-148",
+      "cn": 148,
+      "set": "RAD",
+      "setName": "Radiance",
+      "types": [
+        "Spell"
+      ],
+      "superTypes": [
+        "Signature"
+      ],
+      "rarity": "Epic",
+      "domains": [
+        "Body",
+        "Calm"
+      ],
+      "energy": 2,
+      "might": 0,
+      "image": "https://cdn.piltoverarchive.com/temporary/1790376754916-ciwh9igfv3e.png",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": false,
+      "tags": []
+    },
+    {
+      "id": "rad-169-star",
+      "name": "Ziggs",
+      "subtitle": "Hexplosives Expert",
+      "code": "RAD-169*",
+      "cn": 169,
+      "set": "RAD",
+      "setName": "Radiance",
+      "types": [
+        "Legend"
+      ],
+      "superTypes": [],
+      "rarity": "Showcase",
+      "domains": [
+        "Fury",
+        "Chaos"
+      ],
+      "energy": 0,
+      "might": 0,
+      "image": "https://cdn.piltoverarchive.com/temporary/1790464787974-zurkq8ijt1.png",
+      "signed": true,
+      "overnumbered": true,
+      "altArt": false,
+      "tags": [
+        "signed",
+        "overnumbered",
+        "showcase"
+      ]
+    },
+    {
+      "id": "rad-171-star",
+      "name": "Orianna",
+      "subtitle": "Lady of Clockwork",
+      "code": "RAD-171*",
+      "cn": 171,
+      "set": "RAD",
+      "setName": "Radiance",
+      "types": [
+        "Legend"
+      ],
+      "superTypes": [],
+      "rarity": "Showcase",
+      "domains": [
+        "Calm",
+        "Mind"
+      ],
+      "energy": 0,
+      "might": 0,
+      "image": "https://cdn.piltoverarchive.com/temporary/1790464754504-lhu47k7gb7c.png",
+      "signed": true,
+      "overnumbered": true,
+      "altArt": false,
+      "tags": [
+        "signed",
+        "overnumbered",
+        "showcase"
+      ]
+    },
+    {
+      "id": "rad-172",
+      "name": "K'Sante",
+      "subtitle": "Pride of Nazumah",
+      "code": "RAD-172",
+      "cn": 172,
+      "set": "RAD",
+      "setName": "Radiance",
+      "types": [
+        "Legend"
+      ],
+      "superTypes": [],
+      "rarity": "Showcase",
+      "domains": [
+        "Body",
+        "Calm"
+      ],
+      "energy": 0,
+      "might": 0,
+      "image": "https://cdn.piltoverarchive.com/temporary/1790376086740-yssjudvblv8.webp",
+      "signed": false,
+      "overnumbered": true,
+      "altArt": false,
+      "tags": [
+        "overnumbered",
+        "showcase"
+      ]
+    },
+    {
+      "id": "rad-174-star",
+      "name": "Seraphine",
+      "subtitle": "Starry-Eyed Songstress",
+      "code": "RAD-174*",
+      "cn": 174,
+      "set": "RAD",
+      "setName": "Radiance",
+      "types": [
+        "Legend"
+      ],
+      "superTypes": [],
+      "rarity": "Showcase",
+      "domains": [
+        "Order",
+        "Mind"
+      ],
+      "energy": 0,
+      "might": 0,
+      "image": "https://cdn.piltoverarchive.com/temporary/1790468073459-px7vnw6c15.png",
+      "signed": true,
+      "overnumbered": true,
+      "altArt": false,
+      "tags": [
+        "signed",
+        "overnumbered",
+        "showcase"
+      ]
+    },
+    {
+      "id": "rad-178",
+      "name": "K'Sante",
+      "subtitle": "Courageous",
+      "code": "RAD-178",
+      "cn": 178,
+      "set": "RAD",
+      "setName": "Radiance",
+      "types": [
+        "Unit"
+      ],
+      "superTypes": [
+        "Champion"
+      ],
+      "rarity": "Showcase",
+      "domains": [
+        "Body"
+      ],
+      "energy": 5,
+      "might": 4,
+      "image": "https://cdn.piltoverarchive.com/temporary/1790383648931-3k7ptmqxcc4.png",
+      "signed": false,
+      "overnumbered": true,
+      "altArt": false,
+      "tags": [
+        "overnumbered",
+        "showcase"
+      ]
+    },
+    {
+      "id": "rad-179",
+      "name": "Aphelios",
+      "subtitle": "Exalted",
+      "code": "RAD-179",
+      "cn": 179,
+      "set": "RAD",
+      "setName": "Radiance",
+      "types": [
+        "Unit"
+      ],
+      "superTypes": [
+        "Champion"
+      ],
+      "rarity": "Showcase",
+      "domains": [
+        "Calm"
+      ],
+      "energy": 4,
+      "might": 4,
+      "image": "https://cdn.piltoverarchive.com/temporary/1790383491536-b12n5v0p9o.png",
+      "signed": false,
+      "overnumbered": true,
+      "altArt": false,
+      "tags": [
+        "overnumbered",
+        "showcase"
+      ]
+    },
+    {
+      "id": "rad-180",
+      "name": "Ezreal",
+      "subtitle": "Dashing",
+      "code": "RAD-180",
+      "cn": 180,
+      "set": "RAD",
+      "setName": "Radiance",
+      "types": [
+        "Unit"
+      ],
+      "superTypes": [
+        "Champion"
+      ],
+      "rarity": "Showcase",
+      "domains": [
+        "Mind"
+      ],
+      "energy": 4,
+      "might": 3,
+      "image": "https://cdn.piltoverarchive.com/temporary/1790383426157-ei8b36ic98l.png",
+      "signed": false,
+      "overnumbered": true,
+      "altArt": false,
+      "tags": [
+        "overnumbered",
+        "showcase"
+      ]
+    },
+    {
+      "id": "rad-181",
+      "name": "Yone",
+      "subtitle": "Blademaster",
+      "code": "RAD-181",
+      "cn": 181,
+      "set": "RAD",
+      "setName": "Radiance",
+      "types": [
+        "Unit"
+      ],
+      "superTypes": [
+        "Champion"
+      ],
+      "rarity": "Showcase",
+      "domains": [
+        "Body"
+      ],
+      "energy": 5,
+      "might": 5,
+      "image": "https://cdn.piltoverarchive.com/temporary/1790383351910-k5yyjeqqmur.png",
+      "signed": false,
+      "overnumbered": true,
+      "altArt": false,
+      "tags": [
+        "overnumbered",
+        "showcase"
+      ]
+    },
+    {
+      "id": "rad-182",
+      "name": "Kayn",
+      "subtitle": "Unleashed",
+      "code": "RAD-182",
+      "cn": 182,
+      "set": "RAD",
+      "setName": "Radiance",
+      "types": [
+        "Unit"
+      ],
+      "superTypes": [
+        "Champion"
+      ],
+      "rarity": "Showcase",
+      "domains": [
+        "Chaos"
+      ],
+      "energy": 6,
+      "might": 6,
+      "image": "https://cdn.piltoverarchive.com/temporary/1790383234248-bsqswbgr0wr.png",
+      "signed": false,
+      "overnumbered": true,
+      "altArt": false,
+      "tags": [
+        "overnumbered",
+        "showcase"
+      ]
+    },
+    {
+      "id": "rad-183",
+      "name": "Sett",
+      "subtitle": "Kingpin",
+      "code": "RAD-183",
+      "cn": 183,
+      "set": "RAD",
+      "setName": "Radiance",
+      "types": [
+        "Unit"
+      ],
+      "superTypes": [
+        "Champion"
+      ],
+      "rarity": "Showcase",
+      "domains": [
+        "Order"
+      ],
+      "energy": 4,
+      "might": 5,
+      "image": "https://cdn.piltoverarchive.com/temporary/1790383152909-wkoi7kpq9yk.png",
+      "signed": false,
+      "overnumbered": true,
+      "altArt": false,
+      "tags": [
+        "overnumbered",
+        "showcase"
+      ]
+    },
+    {
+      "id": "rad-t02",
+      "name": "Bomb",
+      "subtitle": null,
+      "code": "RAD-T02",
+      "cn": 2,
+      "set": "RAD",
+      "setName": "Radiance",
+      "types": [
+        "Gear",
+        "Token"
+      ],
+      "superTypes": [
+        "Token"
+      ],
+      "rarity": "Common",
+      "domains": [
+        "Colorless"
+      ],
+      "energy": 0,
+      "might": 0,
+      "image": "https://cdn.piltoverarchive.com/temporary/1790379094995-j8jntogrzbo.png",
       "signed": false,
       "overnumbered": false,
       "altArt": false,
