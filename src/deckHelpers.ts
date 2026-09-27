@@ -55,6 +55,12 @@ const SECTION_HEADER: Record<string, DeckSection> = {
   gefechtsfelder: 'battlefield',
   rune: 'rune',
   runes: 'rune',
+  'rune pool': 'rune',
+  runepool: 'rune',
+  'rune deck': 'rune',
+  runedeck: 'rune',
+  'runen pool': 'rune',
+  runenpool: 'rune',
   runen: 'rune',
   sideboard: 'sideboard',
   side: 'sideboard',
@@ -111,6 +117,13 @@ export function migrateDeck(d: Deck, byId: Map<string, Card>): Deck {
 
 function printScore(c: Card): number {
   let s = 0
+  const id = c.id.toLowerCase()
+  const code = c.code.toLowerCase()
+  const set = c.set.toLowerCase()
+  // Imports should resolve to the ordinary numbered print, not promos or
+  // special-set rows that happen to share the same display name.
+  if (set.endsWith('-nn')) s -= 30
+  if (/(?:-p|-top8|-champion)$/.test(id) || /(?:-p|-top8|-champion)$/.test(code)) s -= 30
   if (c.signed) s -= 20
   if (c.overnumbered) s -= 10
   if (c.altArt) s -= 5
@@ -123,7 +136,7 @@ function norm(s: string) {
 }
 
 /** Prefer base print (non-signed / non-ON / non-alt). */
-export function matchCardByName(cards: Card[], rawName: string): Card | undefined {
+export function matchCardByName(cards: Card[], rawName: string, section?: DeckSection): Card | undefined {
   const cleaned = rawName.trim()
   if (!cleaned) return undefined
   const nClean = norm(cleaned)
@@ -146,7 +159,8 @@ export function matchCardByName(cards: Card[], rawName: string): Card | undefine
     else if (!nRight && cn === nLeft) hit = 80
     else if (nRight && cs === nRight && cn.includes(nLeft)) hit = 70
     else continue
-    scored.push({ c, score: hit + printScore(c) })
+    const sectionBonus = section && cardFitsSection(c, section) ? 60 : 0
+    scored.push({ c, score: hit + sectionBonus + printScore(c) })
   }
   if (!scored.length) return undefined
   scored.sort((a, b) => b.score - a.score)
@@ -178,7 +192,7 @@ export function parseDeckImport(text: string, cards: Card[]): ImportResult {
 
     const m = line.match(/^(\d+)\s*[xX]?\s+(.+)$/) || line.match(/^(\d+)\s+(.+)$/)
     if (!m) {
-      const card = matchCardByName(cards, line)
+      const card = matchCardByName(cards, line, section)
       if (!card) {
         unmatched.push(line)
         lines.push({ section, qty: 1, name: line, unmatched: true })
@@ -193,7 +207,7 @@ export function parseDeckImport(text: string, cards: Card[]): ImportResult {
 
     const qty = Math.max(1, Number(m[1]) || 1)
     const name = m[2].trim()
-    const card = matchCardByName(cards, name)
+    const card = matchCardByName(cards, name, section)
     if (!card) {
       unmatched.push(`${qty} ${name}`)
       lines.push({ section, qty, name, unmatched: true })
