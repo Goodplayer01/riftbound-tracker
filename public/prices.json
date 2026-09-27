@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-23T19:56:16.733Z",
+  "updatedAt": "2026-09-27T16:19:14.389Z",
   "currency": "EUR",
   "source": "tcg-cardmarket-api",
   "cards": {
@@ -10623,60 +10623,6 @@
       "cmId": "884160",
       "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Unleashed/Leblanc-Fragmented-V2-Showcase"
     },
-    "arc-001": {
-      "low": 69.99,
-      "avg30": null,
-      "trend": 0,
-      "foilLow": 69.99,
-      "foilTrend": 80.04,
-      "cmId": "858987",
-      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Origins-Promos/Vi-Destructive"
-    },
-    "arc-002": {
-      "low": 75,
-      "avg30": null,
-      "trend": 0,
-      "foilLow": 75,
-      "foilTrend": 101.61,
-      "cmId": "858988",
-      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Origins-Promos/Caitlyn-Patrolling"
-    },
-    "arc-003": {
-      "low": 48.99,
-      "avg30": 49.9,
-      "trend": 49.9,
-      "foilLow": 48.99,
-      "foilTrend": 71.45,
-      "cmId": "858986",
-      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Origins-Promos/Heimerdinger-Inventor"
-    },
-    "arc-004": {
-      "low": 73.99,
-      "avg30": 45,
-      "trend": 45,
-      "foilLow": 73.99,
-      "foilTrend": 78.83,
-      "cmId": "858989",
-      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Origins-Promos/Warwick-Hunter"
-    },
-    "arc-005": {
-      "low": 222,
-      "avg30": null,
-      "trend": 0,
-      "foilLow": 222,
-      "foilTrend": 291.52,
-      "cmId": "858991",
-      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Origins-Promos/Jinx-Rebel"
-    },
-    "arc-006": {
-      "low": 179.98,
-      "avg30": 76.67,
-      "trend": 94.48,
-      "foilLow": 179.98,
-      "foilTrend": 157.24,
-      "cmId": "858990",
-      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Origins-Promos/Viktor-Leader"
-    },
     "ogn-007b": {
       "low": 1.98,
       "avg30": 3.17,
@@ -10748,42 +10694,6 @@
       "foilTrend": 3.18,
       "cmId": "856122",
       "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Origins-Promos/Order-Rune"
-    },
-    "ogn-263-worlds": {
-      "low": 200,
-      "avg30": null,
-      "trend": 0,
-      "foilLow": 200,
-      "foilTrend": 355.4,
-      "cmId": "862802",
-      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Origins-Promos/Teemo-Swift-Scout"
-    },
-    "ogn-276-worlds": {
-      "low": 27,
-      "avg30": 23.99,
-      "trend": 23.99,
-      "foilLow": 27,
-      "foilTrend": 30.63,
-      "cmId": "865382",
-      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Origins-Promos/Aspirants-Climb"
-    },
-    "ogn-278-worlds": {
-      "low": 27,
-      "avg30": null,
-      "trend": 0,
-      "foilLow": 27,
-      "foilTrend": 24.16,
-      "cmId": "865381",
-      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Origins-Promos/Bandle-Tree"
-    },
-    "ogn-293-worlds": {
-      "low": 24,
-      "avg30": null,
-      "trend": 0,
-      "foilLow": 24,
-      "foilTrend": 24.84,
-      "cmId": "865383",
-      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Origins-Promos/The-Grand-Plaza"
     },
     "ogn-999": {
       "low": 0.02,
@@ -11054,6 +10964,1401 @@
       "foilTrend": 0,
       "cmId": "898153",
       "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Vendetta/Tentacle"
+    },
+    "ogn-193b-regionals": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Origins-Promos/Miss-Fortune-Buccaneer"
+    },
+    "ven-041a": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Vendetta-Promos/Riven-Shattered-V1-Rare"
+    },
+    "rad-038-champion": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Radiance-Promos/Ahri-Confident"
+    },
+    "rad-038-skirmish": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Radiance-Promos/Ahri-Confident"
+    },
+    "ogn-001-p": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Origins-Promos/Blazing-Scorcher"
+    },
+    "ogn-013-p": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Origins-Promos/Pouty-Poro"
+    },
+    "ogn-024-p": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Origins-Promos/Void-Seeker"
+    },
+    "ogn-34-skirmish": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Origins-Promos/Tryndamere-Barbarian"
+    },
+    "ogn-052-p": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Origins-Promos/Stalwart-Poro"
+    },
+    "ogn-055-p": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Origins-Promos/Wielder-of-Water"
+    },
+    "ogn-058-p": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Origins-Promos/Discipline"
+    },
+    "ogn-66-launch": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Origins-Promos/Ahri-Alluring"
+    },
+    "ogn-67-top8": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Origins-Promos/Blitzcrank-Impassive"
+    },
+    "ogn-78-release": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Origins-Promos/Lee-Sin-Ascetic"
+    },
+    "ogn-083-p": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Origins-Promos/Consult-the-Past"
+    },
+    "ogn-092-p": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Origins-Promos/Riptide-Rex"
+    },
+    "ogn-103-p": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Origins-Promos/Ravenbloom-Student"
+    },
+    "ogn-111-judge": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Origins-Promos/Heimerdinger-Inventor"
+    },
+    "ogn-128-p": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Origins-Promos/Challenge"
+    },
+    "ogn-135-p": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Origins-Promos/Pakaa-Cub"
+    },
+    "ogn-137-p": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Origins-Promos/Stormclaw-Ursine"
+    },
+    "ogn-171-p": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Origins-Promos/Mystic-Poro"
+    },
+    "ogn-177-p": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Origins-Promos/Stealthy-Pursuer"
+    },
+    "ogn-183-p": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Origins-Promos/Stacked-Deck"
+    },
+    "ogn-193-regionals": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Origins-Promos/Miss-Fortune-Buccaneer"
+    },
+    "ogn-193a-top8": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Origins-Promos/Miss-Fortune-Buccaneer"
+    },
+    "ogn-197-demo": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Origins-Promos/Teemo-Scout"
+    },
+    "ogn-202-release": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Origins-Promos/Jinx-Rebel"
+    },
+    "ogn-210-p": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Origins-Promos/Daring-Poro"
+    },
+    "ogn-218-p": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Origins-Promos/Vanguard-Captain"
+    },
+    "ogn-229-p": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Origins-Promos/Vengeance"
+    },
+    "ogn-246-release": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Origins-Promos/Viktor-Leader"
+    },
+    "ogn-247-release": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Origins-Promos/Daughter-of-the-Void"
+    },
+    "ogn-249-release": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Origins-Promos/Relentless-Storm"
+    },
+    "ogn-251-release": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Origins-Promos/Loose-Cannon"
+    },
+    "ogn-253-release": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Origins-Promos/Hand-of-Noxus"
+    },
+    "ogn-255-release": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Origins-Promos/Nine-Tailed-Fox"
+    },
+    "ogn-257-release": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Origins-Promos/Blind-Monk"
+    },
+    "ogn-259-release": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Origins-Promos/Unforgiven"
+    },
+    "ogn-261-release": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Origins-Promos/Radiant-Dawn"
+    },
+    "ogn-263-release": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Origins-Promos/Swift-Scout"
+    },
+    "ogn-265-release": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Origins-Promos/Herald-of-the-Arcane"
+    },
+    "ogn-267-release": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Origins-Promos/Bounty-Hunter"
+    },
+    "ogn-269-release": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Origins-Promos/The-Boss"
+    },
+    "ogs-001-p": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Spiritforged-Promos/Annie-Fiery"
+    },
+    "ogs-004-p": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Spiritforged-Promos/Master-Yi-Meditative"
+    },
+    "ogs-006-p": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Spiritforged-Promos/Lux-Illuminated"
+    },
+    "ogs-007-p": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Spiritforged-Promos/Garen-Rugged"
+    },
+    "ogs-009-p": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Spiritforged-Promos/Master-Yi-Honed"
+    },
+    "ogs-010-p": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Spiritforged-Promos/Annie-Stubborn"
+    },
+    "ogs-11-lgs": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Origins-Promos/Flash"
+    },
+    "ogs-013-p": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Spiritforged-Promos/Garen-Commander"
+    },
+    "ogs-014-p": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Spiritforged-Promos/Lux-Crownguard"
+    },
+    "ogs-017-p": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Spiritforged-Promos/Dark-Child-Starter"
+    },
+    "ogs-018-p": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Spiritforged-Promos/Tibbers-Annie"
+    },
+    "ogs-019-p": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Spiritforged-Promos/Wuju-Bladesman-Starter"
+    },
+    "ogs-020-p": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Spiritforged-Promos/Highlander-Yi"
+    },
+    "ogs-021-p": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Spiritforged-Promos/Lady-of-Luminosity-Starter"
+    },
+    "ogs-022-p": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Spiritforged-Promos/Final-Spark-Lux"
+    },
+    "ogs-023-p": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Spiritforged-Promos/Might-of-Demacia-Starter"
+    },
+    "ogs-024-p": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Spiritforged-Promos/Decisive-Strike-Garen"
+    },
+    "sfd-007-p": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Spiritforged-Promos/Gem-Jammer"
+    },
+    "sfd-009-p": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Spiritforged-Promos/Serrated-Dirk"
+    },
+    "sfd-013-p": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Spiritforged-Promos/Blast-Corps-Cadet"
+    },
+    "sfd-22-skirmish": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Spiritforged-Promos/Long-Sword"
+    },
+    "sfd-025-p": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Spiritforged-Promos/Rengar-Pouncing"
+    },
+    "sfd-033-p": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Spiritforged-Promos/Dorans-Shield"
+    },
+    "sfd-037-p": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Spiritforged-Promos/Navori-Scout"
+    },
+    "sfd-048-p": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Spiritforged-Promos/Stellacorn-Herder"
+    },
+    "sfd-51-top8": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Spiritforged-Promos/Guardian-Angel"
+    },
+    "sfd-59-judge": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Spiritforged-Promos/Svellsongur"
+    },
+    "sfd-064-p": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Spiritforged-Promos/Cloth-Armor"
+    },
+    "sfd-067-p": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Spiritforged-Promos/Frostcoat-Cub"
+    },
+    "sfd-076-p": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Spiritforged-Promos/Production-Surge"
+    },
+    "sfd-84-evo": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Spiritforged-Promos/Jayce-Man-of-Progress"
+    },
+    "sfd-86-skirmish": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Spiritforged-Promos/World-Atlas"
+    },
+    "sfd-095-p": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Spiritforged-Promos/Dorans-Blade"
+    },
+    "sfd-098-p": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Spiritforged-Promos/Sea-Monkey"
+    },
+    "sfd-101-p": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Spiritforged-Promos/Fae-Dragon"
+    },
+    "sfd-116a": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Spiritforged-Promos/Yone-Blademaster"
+    },
+    "sfd-118a-regionals": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Spiritforged-Promos/Boneshiver"
+    },
+    "sfd-124-p": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Spiritforged-Promos/Dorans-Ring"
+    },
+    "sfd-130-p": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Spiritforged-Promos/Treasure-Hunter"
+    },
+    "sfd-137-p": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Spiritforged-Promos/Harpoon-Squad"
+    },
+    "sfd-139-top8": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Spiritforged-Promos/Edge-of-Night"
+    },
+    "sfd-153-p": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Spiritforged-Promos/Eye-of-the-Herald"
+    },
+    "sfd-156-p": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Spiritforged-Promos/Laurent-Duelist"
+    },
+    "sfd-167-p": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Spiritforged-Promos/Unsung-Hero"
+    },
+    "sfd-178-top8": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Spiritforged-Promos/Blade-of-the-Ruined-King"
+    },
+    "sfd-178a-champion": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Spiritforged-Promos/Blade-of-the-Ruined-King"
+    },
+    "sfd-195a-lunar": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Spiritforged-Promos/Irelia-Blade-Dancer"
+    },
+    "unl-001-p": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Unleashed-Promos/Arena-Kingpin"
+    },
+    "unl-009-p": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Unleashed-Promos/Upstage-Comedy"
+    },
+    "unl-016-p": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Unleashed-Promos/Scorchclaw"
+    },
+    "unl-036-p": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Unleashed-Promos/Mutated-Mouser"
+    },
+    "unl-039-p": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Unleashed-Promos/Soul-Sword"
+    },
+    "unl-047-p": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Unleashed-Promos/Mosstomper"
+    },
+    "unl-56-skirmish": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Unleashed-Promos/Yuumi-Magical-Cat"
+    },
+    "unl-58-champion": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Unleashed-Promos/Lillia-Protector-of-Dreams"
+    },
+    "unl-58-top8": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Unleashed-Promos/Lillia-Protector-of-Dreams"
+    },
+    "unl-061-p": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Unleashed-Promos/Downstage-Dramatics"
+    },
+    "unl-065-p": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Unleashed-Promos/Icevale-Archer"
+    },
+    "unl-075-p": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Unleashed-Promos/Gustwalker"
+    },
+    "unl-86-skirmish": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Unleashed-Promos/Zilean-Time-Mage"
+    },
+    "unl-87-judge": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Unleashed-Promos/Blue-Sentinel"
+    },
+    "unl-093-p": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Unleashed-Promos/Dragonsoul-Sage"
+    },
+    "unl-100-p": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Unleashed-Promos/Voracious-Gromp"
+    },
+    "unl-107-p": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Unleashed-Promos/Stare-Down"
+    },
+    "unl-120-champion": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Unleashed-Promos/Rengar-Trophy-Hunter"
+    },
+    "unl-120-top8": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Unleashed-Promos/Rengar-Trophy-Hunter"
+    },
+    "unl-125-p": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Unleashed-Promos/Lunar-Boon"
+    },
+    "unl-127-p": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Unleashed-Promos/Mister-Root"
+    },
+    "unl-137-p": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Unleashed-Promos/Sinister-Poro"
+    },
+    "unl-156-p": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Unleashed-Promos/Loyal-Poro"
+    },
+    "unl-160-p": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Unleashed-Promos/Ultrasoft-Poro"
+    },
+    "unl-168-p": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Unleashed-Promos/Undying-Loyalty"
+    },
+    "unl-169a": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Unleashed-Promos/Ashe-Focused"
+    },
+    "unl-178-regionals": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Unleashed-Promos/Poppy-Defender-of-the-Meek"
+    },
+    "unl-178a-regionals": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Unleashed-Promos/Poppy-Defender-of-the-Meek"
+    },
+    "unl-178b-regionals": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Unleashed-Promos/Poppy-Defender-of-the-Meek"
+    },
+    "unl-r01b": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Unleashed-Promos/Fury-Rune"
+    },
+    "unl-r02b": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Unleashed-Promos/Calm-Rune"
+    },
+    "unl-r03b": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Unleashed-Promos/Mind-Rune"
+    },
+    "unl-r04b": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Unleashed-Promos/Body-Rune"
+    },
+    "unl-r05b": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Unleashed-Promos/Chaos-Rune"
+    },
+    "unl-r06b": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Unleashed-Promos/Order-Rune"
+    },
+    "ven-002-p": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Vendetta-Promos/Blade-Twirler"
+    },
+    "ven-004-p": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Vendetta-Promos/Dune-Surfer"
+    },
+    "ven-013-p": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Vendetta-Promos/Shadow-Assassin"
+    },
+    "ven-17-skirmish": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Vendetta-Promos/Morgana-Vindictive"
+    },
+    "ven-026-p": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Vendetta-Promos/Field-Musicians"
+    },
+    "ven-029-p": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Vendetta-Promos/Ol-Poro"
+    },
+    "ven-037-p": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Vendetta-Promos/Tomb-Raider-Barbara"
+    },
+    "ven-41a-gencon": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Vendetta-Promos/Riven-Shattered"
+    },
+    "ven-048-p": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Vendetta-Promos/Cloud-Drake"
+    },
+    "ven-050-p": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Vendetta-Promos/Grumpy-Rockbear"
+    },
+    "ven-058-p": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Vendetta-Promos/Patched-Porobot"
+    },
+    "ven-069b-p": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Vendetta-Promos/Mel-Newly-Awakened"
+    },
+    "ven-071-p": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Vendetta-Promos/Fretful-Feline"
+    },
+    "ven-076-p": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Vendetta-Promos/Repair-Specialist"
+    },
+    "ven-082-p": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Vendetta-Promos/Profiteer"
+    },
+    "ven-097-p": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Vendetta-Promos/Spiderling"
+    },
+    "ven-099-p": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Vendetta-Promos/Tornado-Warrior"
+    },
+    "ven-101-p": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Vendetta-Promos/Gust-Monk"
+    },
+    "ven-109-top8": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Vendetta-Promos/Illaoi-Prophet-of-the-Great-Kraken"
+    },
+    "ven-118-p": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Vendetta-Promos/Horns-of-the-Dragon"
+    },
+    "ven-123-p": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Vendetta-Promos/Soulspinner"
+    },
+    "ven-125-p": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Vendetta-Promos/Hungry-Wolf"
+    },
+    "ven-r01b-p": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Vendetta-Promos/Fury-Rune"
+    },
+    "ven-r02b-p": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Vendetta-Promos/Calm-Rune"
+    },
+    "ven-r03b-p": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Vendetta-Promos/Mind-Rune"
+    },
+    "ven-r04b-p": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Vendetta-Promos/Body-Rune"
+    },
+    "ven-r05b-p": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Vendetta-Promos/Chaos-Rune"
+    },
+    "ven-r06b-p": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Vendetta-Promos/Order-Rune"
+    },
+    "unl-082b-regionals": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "cmUrl": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Unleashed-Promos/Lillia-Fae-Fawn"
     }
   }
 }

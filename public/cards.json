@@ -5,10 +5,8 @@
     "SFD": "Spiritforged",
     "UNL": "Unleashed",
     "VEN": "Vendetta",
-    "ARC": "Arcane Box Set",
     "OGN-NN": "Origins | Nexus Night",
     "UNL-NN": "Unleashed | Nexus Night",
-    "WRLD25": "Worlds Bundle 2025",
     "RAD": "Radiance",
     "SFD-NN": "Spiritforged | Nexus Night",
     "VEN-NN": "Vendetta | Nexus Night"
@@ -31046,293 +31044,6 @@
       ]
     },
     {
-      "id": "arc-001",
-      "name": "Vi",
-      "subtitle": "Destructive",
-      "code": "ARC-001",
-      "cn": 1,
-      "set": "ARC",
-      "setName": "Arcane Box Set",
-      "types": [
-        "Unit"
-      ],
-      "superTypes": [
-        "Champion"
-      ],
-      "rarity": "Showcase",
-      "domains": [
-        "Fury"
-      ],
-      "energy": 2,
-      "might": 3,
-      "image": "https://piltoverarchive.b-cdn.net/temporary/1760416626325-f3zxpz5s8g7.webp",
-      "signed": false,
-      "overnumbered": false,
-      "altArt": false,
-      "tags": [
-        "showcase",
-        "promo"
-      ]
-    },
-    {
-      "id": "arc-002",
-      "name": "Caitlyn",
-      "subtitle": "Patrolling",
-      "code": "ARC-002",
-      "cn": 2,
-      "set": "ARC",
-      "setName": "Arcane Box Set",
-      "types": [
-        "Unit"
-      ],
-      "superTypes": [
-        "Champion"
-      ],
-      "rarity": "Showcase",
-      "domains": [
-        "Calm"
-      ],
-      "energy": 3,
-      "might": 3,
-      "image": "https://piltoverarchive.b-cdn.net/temporary/1760416743034-mjx1r8rnhhi.webp",
-      "signed": false,
-      "overnumbered": false,
-      "altArt": false,
-      "tags": [
-        "showcase",
-        "promo"
-      ]
-    },
-    {
-      "id": "arc-003",
-      "name": "Heimerdinger",
-      "subtitle": "Inventor",
-      "code": "ARC-003",
-      "cn": 3,
-      "set": "ARC",
-      "setName": "Arcane Box Set",
-      "types": [
-        "Unit"
-      ],
-      "superTypes": [
-        "Champion"
-      ],
-      "rarity": "Showcase",
-      "domains": [
-        "Mind"
-      ],
-      "energy": 3,
-      "might": 3,
-      "image": "https://piltoverarchive.b-cdn.net/temporary/1760416827138-ytd8qmfc3v.webp",
-      "signed": false,
-      "overnumbered": false,
-      "altArt": false,
-      "tags": [
-        "showcase",
-        "promo"
-      ]
-    },
-    {
-      "id": "arc-004",
-      "name": "Warwick",
-      "subtitle": "Hunter",
-      "code": "ARC-004",
-      "cn": 4,
-      "set": "ARC",
-      "setName": "Arcane Box Set",
-      "types": [
-        "Unit"
-      ],
-      "superTypes": [
-        "Champion"
-      ],
-      "rarity": "Showcase",
-      "domains": [
-        "Body"
-      ],
-      "energy": 6,
-      "might": 5,
-      "image": "https://piltoverarchive.b-cdn.net/temporary/1760416787235-exutfmhlgxf.webp",
-      "signed": false,
-      "overnumbered": false,
-      "altArt": false,
-      "tags": [
-        "showcase",
-        "promo"
-      ]
-    },
-    {
-      "id": "arc-005",
-      "name": "Jinx",
-      "subtitle": "Rebel",
-      "code": "ARC-005",
-      "cn": 5,
-      "set": "ARC",
-      "setName": "Arcane Box Set",
-      "types": [
-        "Unit"
-      ],
-      "superTypes": [
-        "Champion"
-      ],
-      "rarity": "Showcase",
-      "domains": [
-        "Chaos"
-      ],
-      "energy": 5,
-      "might": 5,
-      "image": "https://piltoverarchive.b-cdn.net/temporary/1760416716990-we9v5u8rbb.webp",
-      "signed": false,
-      "overnumbered": false,
-      "altArt": false,
-      "tags": [
-        "showcase",
-        "promo"
-      ]
-    },
-    {
-      "id": "arc-006",
-      "name": "Viktor",
-      "subtitle": "Leader",
-      "code": "ARC-006",
-      "cn": 6,
-      "set": "ARC",
-      "setName": "Arcane Box Set",
-      "types": [
-        "Unit"
-      ],
-      "superTypes": [
-        "Champion"
-      ],
-      "rarity": "Showcase",
-      "domains": [
-        "Order"
-      ],
-      "energy": 4,
-      "might": 4,
-      "image": "https://piltoverarchive.b-cdn.net/temporary/1760416556879-01whuib9pmfi.webp",
-      "signed": false,
-      "overnumbered": false,
-      "altArt": false,
-      "tags": [
-        "showcase",
-        "promo"
-      ]
-    },
-    {
-      "id": "ogn-263-worlds",
-      "name": "Teemo",
-      "subtitle": "Swift Scout",
-      "code": "OGN-263-WORLDS",
-      "cn": 263,
-      "set": "WRLD25",
-      "setName": "Worlds Bundle 2025",
-      "types": [
-        "Legend"
-      ],
-      "superTypes": [],
-      "rarity": "Showcase",
-      "domains": [
-        "Mind",
-        "Chaos"
-      ],
-      "energy": 0,
-      "might": 0,
-      "image": "https://cdn.piltoverarchive.com/missing/TeemoWorlds.webp",
-      "signed": false,
-      "overnumbered": false,
-      "altArt": false,
-      "tags": [
-        "showcase",
-        "promo",
-        "worlds"
-      ]
-    },
-    {
-      "id": "ogn-276-worlds",
-      "name": "Aspirant's Climb",
-      "subtitle": null,
-      "code": "OGN-276-WORLDS",
-      "cn": 276,
-      "set": "WRLD25",
-      "setName": "Worlds Bundle 2025",
-      "types": [
-        "Battlefield"
-      ],
-      "superTypes": [],
-      "rarity": "Showcase",
-      "domains": [
-        "Colorless"
-      ],
-      "energy": 0,
-      "might": 0,
-      "image": "https://cdn.piltoverarchive.com/missing/AspirantsClimbWorlds.webp",
-      "signed": false,
-      "overnumbered": false,
-      "altArt": false,
-      "tags": [
-        "showcase",
-        "promo",
-        "worlds"
-      ]
-    },
-    {
-      "id": "ogn-278-worlds",
-      "name": "Bandle Tree",
-      "subtitle": null,
-      "code": "OGN-278-WORLDS",
-      "cn": 278,
-      "set": "WRLD25",
-      "setName": "Worlds Bundle 2025",
-      "types": [
-        "Battlefield"
-      ],
-      "superTypes": [],
-      "rarity": "Showcase",
-      "domains": [
-        "Colorless"
-      ],
-      "energy": 0,
-      "might": 0,
-      "image": "https://cdn.piltoverarchive.com/missing/BandleTreeWorlds.webp",
-      "signed": false,
-      "overnumbered": false,
-      "altArt": false,
-      "tags": [
-        "showcase",
-        "promo",
-        "worlds"
-      ]
-    },
-    {
-      "id": "ogn-293-worlds",
-      "name": "The Grand Plaza",
-      "subtitle": null,
-      "code": "OGN-293-WORLDS",
-      "cn": 293,
-      "set": "WRLD25",
-      "setName": "Worlds Bundle 2025",
-      "types": [
-        "Battlefield"
-      ],
-      "superTypes": [],
-      "rarity": "Showcase",
-      "domains": [
-        "Colorless"
-      ],
-      "energy": 0,
-      "might": 0,
-      "image": "https://cdn.piltoverarchive.com/missing/GrandPlazaWorlds.webp",
-      "signed": false,
-      "overnumbered": false,
-      "altArt": false,
-      "tags": [
-        "showcase",
-        "promo",
-        "worlds"
-      ]
-    },
-    {
       "id": "ogn-007b",
       "name": "Fury Rune",
       "subtitle": null,
@@ -36863,6 +36574,35 @@
         "showcase",
         "promo",
         "nexus-night"
+      ]
+    },
+    {
+      "id": "unl-082b-regionals",
+      "name": "Lillia",
+      "subtitle": "Fae Fawn",
+      "code": "UNL-082b-REGIONALS",
+      "cn": 82,
+      "set": "UNL",
+      "setName": "Unleashed",
+      "types": [
+        "Unit"
+      ],
+      "superTypes": [
+        "Champion"
+      ],
+      "rarity": "Showcase",
+      "domains": [
+        "Mind"
+      ],
+      "energy": 3,
+      "might": 3,
+      "image": "https://cdn.piltoverarchive.com/cards/UNL-082.webp",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": false,
+      "tags": [
+        "promo",
+        "regionals"
       ]
     }
   ]

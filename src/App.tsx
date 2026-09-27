@@ -110,7 +110,22 @@ const DOMAIN_ICON: Record<(typeof DOMAINS)[number], string> = {
 }
 
 /** Official Display / box art under public/sets/{CODE}.png (Riot Merch). */
-const SET_ART_IDS = new Set(['OGN', 'OGS', 'SFD', 'UNL', 'VEN', 'ARC', 'RAD', 'WRLD25'])
+const SET_ART_IDS = new Set(['OGN', 'OGS', 'SFD', 'UNL', 'VEN', 'RAD'])
+
+/** Fixed Sammlung binder tile order (no DnD). Unknown sets append after. */
+const BINDER_SET_ORDER = [
+  'OGS',
+  'OGN',
+  'OGN-NN',
+  'SFD',
+  'SFD-NN',
+  'UNL',
+  'UNL-NN',
+  'VEN',
+  'VEN-NN',
+  'RAD',
+] as const
+
 
 
 function openCm(p?: PriceEntry | null) {
@@ -413,7 +428,10 @@ export default function App() {
   }, [collection, priceBook])
 
   const setProgress = useMemo(() => {
-    const order = Object.keys(sets)
+    const known = BINDER_SET_ORDER.filter((id) => id in sets)
+    const knownSet = new Set<string>(known)
+    const rest = Object.keys(sets).filter((id) => !knownSet.has(id))
+    const order = [...known, ...rest]
     const out: { id: string; name: string; total: number; owned: number; pct: number; eur: number | null }[] = []
     for (const id of order) {
       const setCards = cards.filter((c) => c.set === id)
