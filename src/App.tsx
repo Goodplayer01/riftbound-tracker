@@ -28,6 +28,13 @@ import {
   sectionNeedsLegend,
   sectionOf,
 } from './deckHelpers'
+import {
+  OPENING_HAND_SIZE,
+  applyMulligan,
+  dealOpeningHand,
+  drawPoolSize,
+  runeChannelsForSeat,
+} from './handTester'
 
 type Tab = 'collection' | 'catalog' | 'sales' | 'bulk' | 'decks'
 
@@ -189,6 +196,12 @@ export default function App() {
   const [dropFlashSale, setDropFlashSale] = useState(false)
   const [dragRejectSale, setDragRejectSale] = useState(false)
   const [deckNotice, setDeckNotice] = useState<string | null>(null)
+  const [handTesterOpen, setHandTesterOpen] = useState(true)
+  const [goingSecond, setGoingSecond] = useState(false)
+  const [handCards, setHandCards] = useState<string[] | null>(null)
+  const [handLibrary, setHandLibrary] = useState<string[]>([])
+  const [handSelected, setHandSelected] = useState<number[]>([])
+  const [mulliganUsed, setMulliganUsed] = useState(false)
   const dragGhostRef = useRef<HTMLElement | null>(null)
   const dragGhostCleanupRef = useRef<(() => void) | null>(null)
 
@@ -802,10 +815,47 @@ export default function App() {
 
   const activeDeck = decks.find((d) => d.id === activeDeckId) || null
 
+  useEffect(() => {
+    setHandCards(null)
+    setHandLibrary([])
+    setHandSelected([])
+    setMulliganUsed(false)
+  }, [activeDeckId])
+
   function updateDeck(mut: (d: Deck) => Deck) {
     if (!activeDeckId) return
     setDecks((prev) => prev.map((d) => (d.id === activeDeckId ? { ...mut(d), updatedAt: new Date().toISOString() } : d)))
   }
+
+  function dealNewHand() {
+    if (!activeDeck) return
+    const dealt = dealOpeningHand(activeDeck.cards)
+    if (!dealt) return
+    setHandCards(dealt.hand)
+    setHandLibrary(dealt.library)
+    setHandSelected([])
+    setMulliganUsed(false)
+  }
+
+  function toggleHandSelect(index: number) {
+    if (mulliganUsed || !handCards) return
+    setHandSelected((prev) => {
+      if (prev.includes(index)) return prev.filter((i) => i !== index)
+      if (prev.length >= 2) return prev
+      return [...prev, index]
+    })
+  }
+
+  function runMulligan() {
+    if (!handCards || mulliganUsed || handSelected.length < 1 || handSelected.length > 2) return
+    const next = applyMulligan(handCards, handLibrary, handSelected)
+    if (!next) return
+    setHandCards(next.hand)
+    setHandLibrary(next.library)
+    setHandSelected([])
+    setMulliganUsed(true)
+  }
+
 
   function addToDeck(cardId: string, section?: DeckSection) {
     const c = byId.get(cardId)
@@ -2326,6 +2376,123 @@ export default function App() {
                       )
                     })}
                   </div>
+
+                  {(() => {
+                    const poolN = drawPoolSize(activeDeck)
+                    const canTest = poolN >= OPENING_HAND_SIZE
+                    const rune = runeChannelsForSeat(goingSecond)
+                    return (
+                      <div className={`hand-tester${handTesterOpen ? ' expanded' : ''}`}>
+                        <div
+                          className="hand-tester-head"
+                          role="button"
+                          tabIndex={0}
+                          aria-expanded={handTesterOpen}
+                          onClick={() => setHandTesterOpen((v) => !v)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter' || e.key === ' ') {
+                              e.preventDefault()
+                              setHandTesterOpen((v) => !v)
+                            }
+                          }}
+                          title={t(lang, 'hand.toggle')}
+                        >
+                          <span className="hand-tester-chevron" aria-hidden>{handTesterOpen ? '▾' : '▸'}</span>
+                          <span className="hand-tester-title">{t(lang, 'hand.title')}</span>
+                          <span className="pill">{t(lang, 'hand.poolSize', { n: poolN })}</span>
+                        </div>
+                        {handTesterOpen && (
+                          <div className="hand-tester-body">
+                            {!canTest ? (
+                              <div className="hand-empty-msg">{t(lang, 'hand.poolTooSmall')}</div>
+                            ) : (
+                              <>
+                                <div className="hand-tester-controls">
+                                  <div className="hand-seat-toggle" role="group" aria-label={t(lang, 'hand.goingSecond')}>
+                                    <button
+                                      type="button"
+                                      className={!goingSecond ? 'active' : ''}
+                                      onClick={() => setGoingSecond(false)}
+                                    >{t(lang, 'hand.first')}</button>
+                                    <button
+                                      type="button"
+                                      className={goingSecond ? 'active' : ''}
+                                      onClick={() => setGoingSecond(true)}
+                                    >{t(lang, 'hand.second')}</button>
+                                  </div>
+                                  <button type="button" className="btn primary" onClick={dealNewHand}>
+                                    {t(lang, 'hand.new')}
+                                  </button>
+                                  <button
+                                    type="button"
+                                    className="btn"
+                                    disabled={mulliganUsed || handSelected.length < 1 || handSelected.length > 2 || !handCards}
+                                    title={mulliganUsed ? t(lang, 'hand.mulliganDone') : t(lang, 'hand.selectHint')}
+                                    onClick={runMulligan}
+                                  >
+                                    {t(lang, 'hand.mulligan')}
+                                  </button>
+                                  {handCards && !mulliganUsed && (
+                                    <span className="hand-hint">{t(lang, 'hand.selected', { n: handSelected.length })}</span>
+                                  )}
+                                  {mulliganUsed && (
+                                    <span className="hand-hint">{t(lang, 'hand.mulliganDone')}</span>
+                                  )}
+                                </div>
+                                <div className="hand-rune-note">
+                                  <b>{t(lang, 'hand.runeNote', { n: rune.t1 })}</b>
+                                  {' — '}
+                                  {goingSecond ? t(lang, 'hand.runeHintSecond') : t(lang, 'hand.runeHintFirst')}
+                                </div>
+                                {!handCards ? (
+                                  <div className="hand-empty-msg">{t(lang, 'hand.empty')}</div>
+                                ) : (
+                                  <>
+                                    {!mulliganUsed && (
+                                      <div className="hand-hint">{t(lang, 'hand.selectHint')}</div>
+                                    )}
+                                    <div className="hand-grid">
+                                      {handCards.map((id, idx) => {
+                                        const c = byId.get(id)
+                                        const selected = handSelected.includes(idx)
+                                        const name = c ? displayName(c) : id
+                                        return (
+                                          <button
+                                            key={`${id}-${idx}`}
+                                            type="button"
+                                            className={`hand-card${selected ? ' selected' : ''}`}
+                                            disabled={mulliganUsed}
+                                            onClick={() => toggleHandSelect(idx)}
+                                            onMouseEnter={(e) => c?.image && showCardPreview(e, c.image)}
+                                            onMouseMove={(e) => c?.image && showCardPreview(e, c.image)}
+                                            onMouseLeave={hideCardPreview}
+                                            title={name}
+                                          >
+                                            <div
+                                              className="art"
+                                              style={{ backgroundImage: c?.image ? `url(${c.image})` : undefined }}
+                                            />
+                                            <div className="meta">
+                                              <div className="name">{name}</div>
+                                              {c && (
+                                                <div className="sub">
+                                                  {c.energy != null ? `E${c.energy} · ` : ''}{c.code}
+                                                </div>
+                                              )}
+                                            </div>
+                                          </button>
+                                        )
+                                      })}
+                                    </div>
+                                  </>
+                                )}
+                              </>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    )
+                  })()}
                 </>
               )}
             </section>
