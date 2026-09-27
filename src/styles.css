@@ -508,6 +508,13 @@ textarea.field { min-height: 160px; resize: vertical; font-family: ui-monospace,
 .deck-card-row.short .name { color: var(--warn); }
 .deck-import-box { margin-top: 12px; display: grid; gap: 8px; }
 .split.deck-split { grid-template-columns: 1.15fr .85fr; }
+.split.deck-split > .panel:last-child {
+  position: sticky;
+  top: 64px;
+  align-self: start;
+  max-height: calc(100vh - 80px);
+  overflow: auto;
+}
 
 /* Deck list thumbs + floating card preview */
 .deck-thumb {
