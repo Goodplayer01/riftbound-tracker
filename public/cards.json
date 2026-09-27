@@ -24943,6 +24943,35 @@
       "tags": []
     },
     {
+      "id": "ven-r01a",
+      "name": "Fury Rune",
+      "subtitle": null,
+      "code": "VEN-R01A",
+      "cn": 1,
+      "set": "VEN",
+      "setName": "Vendetta",
+      "types": [
+        "Rune"
+      ],
+      "superTypes": [
+        "Basic"
+      ],
+      "rarity": "Showcase",
+      "domains": [
+        "Fury"
+      ],
+      "energy": null,
+      "might": null,
+      "image": "https://static.dotgg.gg/riftbound/cards/VEN-R01a.webp",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": true,
+      "tags": [
+        "alt",
+        "showcase"
+      ]
+    },
+    {
       "id": "ven-sp1-006",
       "name": "Kai'Sa",
       "subtitle": "Survivor",
@@ -25049,6 +25078,35 @@
       "tags": []
     },
     {
+      "id": "ven-r02a",
+      "name": "Calm Rune",
+      "subtitle": null,
+      "code": "VEN-R02A",
+      "cn": 2,
+      "set": "VEN",
+      "setName": "Vendetta",
+      "types": [
+        "Rune"
+      ],
+      "superTypes": [
+        "Basic"
+      ],
+      "rarity": "Showcase",
+      "domains": [
+        "Calm"
+      ],
+      "energy": null,
+      "might": null,
+      "image": "https://static.dotgg.gg/riftbound/cards/VEN-R02a.webp",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": true,
+      "tags": [
+        "alt",
+        "showcase"
+      ]
+    },
+    {
       "id": "ven-sp2-006",
       "name": "Sona",
       "subtitle": "Harmonious",
@@ -25128,6 +25186,35 @@
       "tags": []
     },
     {
+      "id": "ven-r03a",
+      "name": "Mind Rune",
+      "subtitle": null,
+      "code": "VEN-R03A",
+      "cn": 3,
+      "set": "VEN",
+      "setName": "Vendetta",
+      "types": [
+        "Rune"
+      ],
+      "superTypes": [
+        "Basic"
+      ],
+      "rarity": "Showcase",
+      "domains": [
+        "Mind"
+      ],
+      "energy": null,
+      "might": null,
+      "image": "https://static.dotgg.gg/riftbound/cards/VEN-R03a.webp",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": true,
+      "tags": [
+        "alt",
+        "showcase"
+      ]
+    },
+    {
       "id": "ven-sp3-006",
       "name": "Ahri",
       "subtitle": "Inquisitive",
@@ -25205,6 +25292,35 @@
       "overnumbered": false,
       "altArt": false,
       "tags": []
+    },
+    {
+      "id": "ven-r04a",
+      "name": "Body Rune",
+      "subtitle": null,
+      "code": "VEN-R04A",
+      "cn": 4,
+      "set": "VEN",
+      "setName": "Vendetta",
+      "types": [
+        "Rune"
+      ],
+      "superTypes": [
+        "Basic"
+      ],
+      "rarity": "Showcase",
+      "domains": [
+        "Body"
+      ],
+      "energy": null,
+      "might": null,
+      "image": "https://static.dotgg.gg/riftbound/cards/VEN-R04a.webp",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": true,
+      "tags": [
+        "alt",
+        "showcase"
+      ]
     },
     {
       "id": "ven-sp4-006",
@@ -25313,6 +25429,35 @@
       "tags": []
     },
     {
+      "id": "ven-r05a",
+      "name": "Chaos Rune",
+      "subtitle": null,
+      "code": "VEN-R05A",
+      "cn": 5,
+      "set": "VEN",
+      "setName": "Vendetta",
+      "types": [
+        "Rune"
+      ],
+      "superTypes": [
+        "Basic"
+      ],
+      "rarity": "Showcase",
+      "domains": [
+        "Chaos"
+      ],
+      "energy": null,
+      "might": null,
+      "image": "https://static.dotgg.gg/riftbound/cards/VEN-R05a.webp",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": true,
+      "tags": [
+        "alt",
+        "showcase"
+      ]
+    },
+    {
       "id": "ven-sp5-006",
       "name": "Ezreal",
       "subtitle": "Prodigy",
@@ -25417,6 +25562,35 @@
       "overnumbered": false,
       "altArt": false,
       "tags": []
+    },
+    {
+      "id": "ven-r06a",
+      "name": "Order Rune",
+      "subtitle": null,
+      "code": "VEN-R06A",
+      "cn": 6,
+      "set": "VEN",
+      "setName": "Vendetta",
+      "types": [
+        "Rune"
+      ],
+      "superTypes": [
+        "Basic"
+      ],
+      "rarity": "Showcase",
+      "domains": [
+        "Order"
+      ],
+      "energy": null,
+      "might": null,
+      "image": "https://static.dotgg.gg/riftbound/cards/VEN-R06a.webp",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": true,
+      "tags": [
+        "alt",
+        "showcase"
+      ]
     },
     {
       "id": "ven-sp6-006",
@@ -35793,7 +35967,7 @@
       ],
       "energy": 4,
       "might": 4,
-      "image": "https://cdn.piltoverarchive.com/cards/VEN-002.webp",
+      "image": "https://static.dotgg.gg/riftbound/cards/VEN-002-P.webp",
       "signed": false,
       "overnumbered": false,
       "altArt": false,
@@ -35821,7 +35995,7 @@
       ],
       "energy": 3,
       "might": 3,
-      "image": "https://cdn.piltoverarchive.com/cards/VEN-004.webp",
+      "image": "https://static.dotgg.gg/riftbound/cards/VEN-004-P.webp",
       "signed": false,
       "overnumbered": false,
       "altArt": false,
@@ -35849,7 +36023,7 @@
       ],
       "energy": 5,
       "might": 5,
-      "image": "https://cdn.piltoverarchive.com/cards/VEN-013.webp",
+      "image": "https://static.dotgg.gg/riftbound/cards/VEN-013-P.webp",
       "signed": false,
       "overnumbered": false,
       "altArt": false,
@@ -35906,7 +36080,7 @@
       ],
       "energy": 4,
       "might": 3,
-      "image": "https://cdn.piltoverarchive.com/cards/VEN-026.webp",
+      "image": "https://static.dotgg.gg/riftbound/cards/VEN-026-P.webp",
       "signed": false,
       "overnumbered": false,
       "altArt": false,
@@ -35934,7 +36108,7 @@
       ],
       "energy": 2,
       "might": 4,
-      "image": "https://cdn.piltoverarchive.com/cards/VEN-029.webp",
+      "image": "https://static.dotgg.gg/riftbound/cards/VEN-029-P.webp",
       "signed": false,
       "overnumbered": false,
       "altArt": false,
@@ -35962,7 +36136,7 @@
       ],
       "energy": 4,
       "might": 4,
-      "image": "https://cdn.piltoverarchive.com/cards/VEN-037.webp",
+      "image": "https://static.dotgg.gg/riftbound/cards/VEN-037-P.webp",
       "signed": false,
       "overnumbered": false,
       "altArt": false,
@@ -36019,7 +36193,7 @@
       ],
       "energy": 6,
       "might": 5,
-      "image": "https://cdn.piltoverarchive.com/cards/VEN-048.webp",
+      "image": "https://static.dotgg.gg/riftbound/cards/VEN-048-P.webp",
       "signed": false,
       "overnumbered": false,
       "altArt": false,
@@ -36047,7 +36221,7 @@
       ],
       "energy": 4,
       "might": 4,
-      "image": "https://cdn.piltoverarchive.com/cards/VEN-050.webp",
+      "image": "https://static.dotgg.gg/riftbound/cards/VEN-050-P.webp",
       "signed": false,
       "overnumbered": false,
       "altArt": false,
@@ -36075,7 +36249,7 @@
       ],
       "energy": 2,
       "might": 2,
-      "image": "https://cdn.piltoverarchive.com/cards/VEN-058.webp",
+      "image": "https://static.dotgg.gg/riftbound/cards/VEN-058-P.webp",
       "signed": false,
       "overnumbered": false,
       "altArt": false,
@@ -36105,7 +36279,7 @@
       ],
       "energy": 4,
       "might": 4,
-      "image": "https://cdn.piltoverarchive.com/cards/VEN-069.webp",
+      "image": "https://static.dotgg.gg/riftbound/cards/VEN-069B-P.webp",
       "signed": false,
       "overnumbered": false,
       "altArt": false,
@@ -36133,7 +36307,7 @@
       ],
       "energy": 6,
       "might": 5,
-      "image": "https://cdn.piltoverarchive.com/cards/VEN-071.webp",
+      "image": "https://static.dotgg.gg/riftbound/cards/VEN-071-P.webp",
       "signed": false,
       "overnumbered": false,
       "altArt": false,
@@ -36161,7 +36335,7 @@
       ],
       "energy": 3,
       "might": 3,
-      "image": "https://cdn.piltoverarchive.com/cards/VEN-076.webp",
+      "image": "https://static.dotgg.gg/riftbound/cards/VEN-076-P.webp",
       "signed": false,
       "overnumbered": false,
       "altArt": false,
@@ -36189,7 +36363,7 @@
       ],
       "energy": 4,
       "might": 4,
-      "image": "https://cdn.piltoverarchive.com/cards/VEN-082.webp",
+      "image": "https://static.dotgg.gg/riftbound/cards/VEN-082-P.webp",
       "signed": false,
       "overnumbered": false,
       "altArt": false,
@@ -36217,7 +36391,7 @@
       ],
       "energy": 3,
       "might": 1,
-      "image": "https://cdn.piltoverarchive.com/cards/VEN-097.webp",
+      "image": "https://static.dotgg.gg/riftbound/cards/VEN-097-P.webp",
       "signed": false,
       "overnumbered": false,
       "altArt": false,
@@ -36245,7 +36419,7 @@
       ],
       "energy": 3,
       "might": 3,
-      "image": "https://cdn.piltoverarchive.com/cards/VEN-099.webp",
+      "image": "https://static.dotgg.gg/riftbound/cards/VEN-099-P.webp",
       "signed": false,
       "overnumbered": false,
       "altArt": false,
@@ -36273,7 +36447,7 @@
       ],
       "energy": 2,
       "might": 2,
-      "image": "https://cdn.piltoverarchive.com/cards/VEN-101.webp",
+      "image": "https://static.dotgg.gg/riftbound/cards/VEN-101-P.webp",
       "signed": false,
       "overnumbered": false,
       "altArt": false,
@@ -36330,7 +36504,7 @@
       ],
       "energy": 6,
       "might": 6,
-      "image": "https://cdn.piltoverarchive.com/cards/VEN-118.webp",
+      "image": "https://static.dotgg.gg/riftbound/cards/VEN-118-P.webp",
       "signed": false,
       "overnumbered": false,
       "altArt": false,
@@ -36358,7 +36532,7 @@
       ],
       "energy": 3,
       "might": 3,
-      "image": "https://cdn.piltoverarchive.com/cards/VEN-123.webp",
+      "image": "https://static.dotgg.gg/riftbound/cards/VEN-123-P.webp",
       "signed": false,
       "overnumbered": false,
       "altArt": false,
@@ -36386,7 +36560,7 @@
       ],
       "energy": 4,
       "might": 4,
-      "image": "https://cdn.piltoverarchive.com/cards/VEN-125.webp",
+      "image": "https://static.dotgg.gg/riftbound/cards/VEN-125-P.webp",
       "signed": false,
       "overnumbered": false,
       "altArt": false,
@@ -36416,7 +36590,7 @@
       ],
       "energy": null,
       "might": null,
-      "image": "https://cmsassets.rgpub.io/sanity/images/dsfx7636/game_data_live/f95ed6ba0c4d4d357c45bf5bdb1a8e540af1f85f-744x1039.png?accountingTag=RB",
+      "image": "https://static.dotgg.gg/riftbound/cards/VEN-R01B-P.webp",
       "signed": false,
       "overnumbered": false,
       "altArt": false,
@@ -36446,7 +36620,7 @@
       ],
       "energy": null,
       "might": null,
-      "image": "https://cmsassets.rgpub.io/sanity/images/dsfx7636/game_data_live/9b70aa1b334728a3e8beeea0c9154a2d0f79b1eb-744x1039.png?accountingTag=RB",
+      "image": "https://static.dotgg.gg/riftbound/cards/VEN-R02b-P.webp",
       "signed": false,
       "overnumbered": false,
       "altArt": false,
@@ -36476,7 +36650,7 @@
       ],
       "energy": null,
       "might": null,
-      "image": "https://cmsassets.rgpub.io/sanity/images/dsfx7636/game_data_live/33df1c56c6e76f9cb783c19161f16fcdbdc20f98-744x1039.png?accountingTag=RB",
+      "image": "https://static.dotgg.gg/riftbound/cards/VEN-R03b-P.webp",
       "signed": false,
       "overnumbered": false,
       "altArt": false,
@@ -36506,7 +36680,7 @@
       ],
       "energy": null,
       "might": null,
-      "image": "https://cmsassets.rgpub.io/sanity/images/dsfx7636/game_data_live/3313c73c5b31daa482073bfefbf4d2255a89d7d0-744x1039.png?accountingTag=RB",
+      "image": "https://static.dotgg.gg/riftbound/cards/VEN-R04B-P.webp",
       "signed": false,
       "overnumbered": false,
       "altArt": false,
@@ -36536,7 +36710,7 @@
       ],
       "energy": null,
       "might": null,
-      "image": "https://cmsassets.rgpub.io/sanity/images/dsfx7636/game_data_live/3861fc566891a70c21cf3d3075adec716deb7080-744x1039.png?accountingTag=RB",
+      "image": "https://static.dotgg.gg/riftbound/cards/VEN-R05b-P.webp",
       "signed": false,
       "overnumbered": false,
       "altArt": false,
@@ -36566,7 +36740,7 @@
       ],
       "energy": null,
       "might": null,
-      "image": "https://cmsassets.rgpub.io/sanity/images/dsfx7636/game_data_live/71e7d71ebadb81ccad7ca4cb8b3fb85d2f5fd4bf-744x1039.png?accountingTag=RB",
+      "image": "https://static.dotgg.gg/riftbound/cards/VEN-R06b-P.webp",
       "signed": false,
       "overnumbered": false,
       "altArt": false,

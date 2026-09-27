@@ -297,6 +297,14 @@ textarea.field { min-height: 160px; resize: vertical; font-family: ui-monospace,
   background: linear-gradient(180deg, #2a2418, #1a1e28);
   box-shadow: inset 0 0 0 1px rgba(212,175,55,.2);
 }
+.lang-check {
+  width: 13px;
+  height: 13px;
+  margin: 0;
+  flex-shrink: 0;
+  accent-color: #d4af37;
+  pointer-events: none;
+}
 .lang-flag {
   width: 18px;
   height: 12px;

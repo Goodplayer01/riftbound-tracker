@@ -151,11 +151,11 @@ export default function App() {
   const [setFilter, setSetFilter] = useState('')
   const [ownedOnly, setOwnedOnly] = useState(false)
   const [typeFilter, setTypeFilter] = useState('')
-  const [signedOnly, setSignedOnly] = useState(false)
-  const [overOnly, setOverOnly] = useState(false)
-  const [promoFilter, setPromoFilter] = useState<'' | 'promo' | 'no-promo'>('')
-  const [promoMenuOpen, setPromoMenuOpen] = useState(false)
-  const promoMenuRef = useRef<HTMLDivElement | null>(null)
+  const [raritySigned, setRaritySigned] = useState(false)
+  const [rarityOver, setRarityOver] = useState(false)
+  const [rarityPromo, setRarityPromo] = useState(false)
+  const [rarityMenuOpen, setRarityMenuOpen] = useState(false)
+  const rarityMenuRef = useRef<HTMLDivElement | null>(null)
   const [bulkText, setBulkText] = useState('')
   const [bulkFoil, setBulkFoil] = useState(false)
   const [bulkReport, setBulkReport] = useState<string | null>(null)
@@ -266,16 +266,16 @@ export default function App() {
   }
 
   useEffect(() => {
-    if (!langMenuOpen && !promoMenuOpen) return
+    if (!langMenuOpen && !rarityMenuOpen) return
     function onDocPointerDown(e: PointerEvent) {
       const t = e.target as Node
       if (langMenuOpen && langMenuRef.current && !langMenuRef.current.contains(t)) setLangMenuOpen(false)
-      if (promoMenuOpen && promoMenuRef.current && !promoMenuRef.current.contains(t)) setPromoMenuOpen(false)
+      if (rarityMenuOpen && rarityMenuRef.current && !rarityMenuRef.current.contains(t)) setRarityMenuOpen(false)
     }
     function onKey(e: KeyboardEvent) {
       if (e.key === 'Escape') {
         setLangMenuOpen(false)
-        setPromoMenuOpen(false)
+        setRarityMenuOpen(false)
       }
     }
     document.addEventListener('pointerdown', onDocPointerDown)
@@ -284,7 +284,7 @@ export default function App() {
       document.removeEventListener('pointerdown', onDocPointerDown)
       document.removeEventListener('keydown', onKey)
     }
-  }, [langMenuOpen, promoMenuOpen])
+  }, [langMenuOpen, rarityMenuOpen])
 
   useEffect(() => {
     setCollection(loadCollection())
@@ -328,10 +328,13 @@ export default function App() {
     if (setFilter && c.set !== setFilter) return false
     if (typeFilter && !(c.types || []).includes(typeFilter)) return false
     if (domainFilter && !(c.domains || []).includes(domainFilter)) return false
-    if (signedOnly && !c.signed) return false
-    if (overOnly && !c.overnumbered) return false
-    if (promoFilter === 'promo' && !isPromoCard(c)) return false
-    if (promoFilter === 'no-promo' && isPromoCard(c)) return false
+    if (raritySigned || rarityOver || rarityPromo) {
+      const hit =
+        (raritySigned && !!c.signed) ||
+        (rarityOver && !!c.overnumbered) ||
+        (rarityPromo && isPromoCard(c))
+      if (!hit) return false
+    }
     if (!query) return true
     const hay = [
       c.name,
@@ -384,7 +387,7 @@ export default function App() {
       if (ownedOnly && ownedQty(collection[c.id]) <= 0) return false
       return matchesFilters(c, query)
     })
-  }, [cards, q, setFilter, typeFilter, domainFilter, signedOnly, overOnly, promoFilter, ownedOnly, collection])
+  }, [cards, q, setFilter, typeFilter, domainFilter, raritySigned, rarityOver, rarityPromo, ownedOnly, collection])
 
   const ownedCards = useMemo(
     () => cards.filter((c) => ownedQty(collection[c.id]) > 0),
@@ -486,10 +489,13 @@ export default function App() {
       if (binderMissing && n > 0) return false
       if (binderRarity && (c.rarity || 'Other') !== binderRarity) return false
       if (domainFilter && !(c.domains || []).includes(domainFilter)) return false
-      if (signedOnly && !c.signed) return false
-      if (overOnly && !c.overnumbered) return false
-      if (promoFilter === 'promo' && !isPromoCard(c)) return false
-      if (promoFilter === 'no-promo' && isPromoCard(c)) return false
+      if (raritySigned || rarityOver || rarityPromo) {
+        const hit =
+          (raritySigned && !!c.signed) ||
+          (rarityOver && !!c.overnumbered) ||
+          (rarityPromo && isPromoCard(c))
+        if (!hit) return false
+      }
       if (!query) return true
       const hay = [
         c.name,
@@ -504,7 +510,7 @@ export default function App() {
       return hay.includes(query)
     })
     return [...list].sort((a, b) => a.cn - b.cn || a.code.localeCompare(b.code))
-  }, [binderView, cards, collection, q, binderOwnedOnly, binderMissing, binderRarity, domainFilter, signedOnly, overOnly, promoFilter])
+  }, [binderView, cards, collection, q, binderOwnedOnly, binderMissing, binderRarity, domainFilter, raritySigned, rarityOver, rarityPromo])
 
   const rarityBySet = useMemo(() => {
     const out: Record<string, { rarity: string; total: number; owned: number }[]> = {}
@@ -1433,56 +1439,56 @@ export default function App() {
                   )
                 })}
               </div>
-              <div className={`lang-menu${promoMenuOpen ? ' open' : ''}`} ref={promoMenuRef}>
+              <div className={`lang-menu${rarityMenuOpen ? ' open' : ''}`} ref={rarityMenuRef}>
                 <button
                   type="button"
-                  className={`lang-trigger${promoMenuOpen ? ' open' : ''}${promoFilter ? ' open' : ''}`}
-                  title={t(lang, 'catalog.promo')}
-                  aria-label={t(lang, 'catalog.promo')}
+                  className={`lang-trigger${rarityMenuOpen || raritySigned || rarityOver || rarityPromo ? ' open' : ''}`}
+                  title={t(lang, 'filter.rarity')}
+                  aria-label={t(lang, 'filter.rarity')}
                   aria-haspopup="menu"
-                  aria-expanded={promoMenuOpen}
-                  onClick={() => setPromoMenuOpen((o) => !o)}
+                  aria-expanded={rarityMenuOpen}
+                  onClick={() => setRarityMenuOpen((o) => !o)}
                 >
-                  {t(lang, 'catalog.promo')}
+                  {t(lang, 'filter.rarity')}
                   <svg className="lang-caret" width="10" height="6" viewBox="0 0 10 6" aria-hidden="true">
                     <path d="M1 1l4 4 4-4" stroke="currentColor" strokeWidth="1.4" fill="none" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
                 </button>
-                {promoMenuOpen && (
-                  <div className="lang-dropdown" role="menu" aria-label={t(lang, 'catalog.promo')} style={{ left: 0, right: 'auto' }}>
-                    {([
-                      ['', 'catalog.promoAll'],
-                      ['promo', 'catalog.promoOnly'],
-                      ['no-promo', 'catalog.promoNone'],
-                    ] as const).map(([val, key]) => (
-                      <button
-                        key={val || 'all'}
-                        type="button"
-                        role="menuitemradio"
-                        aria-checked={promoFilter === val}
-                        className={`lang-option${promoFilter === val ? ' active' : ''}`}
-                        onClick={() => { setPromoFilter(val); setPromoMenuOpen(false) }}
-                      >
-                        <span>{t(lang, key)}</span>
-                      </button>
-                    ))}
+                {rarityMenuOpen && (
+                  <div className="lang-dropdown" role="menu" aria-label={t(lang, 'filter.rarity')} style={{ left: 0, right: 'auto' }}>
+                    <button
+                      type="button"
+                      role="menuitemcheckbox"
+                      aria-checked={raritySigned}
+                      className={`lang-option${raritySigned ? ' active' : ''}`}
+                      onClick={() => setRaritySigned((v) => !v)}
+                    >
+                      <input type="checkbox" className="lang-check" checked={raritySigned} readOnly tabIndex={-1} />
+                      <span>{t(lang, 'filter.signed')}</span>
+                    </button>
+                    <button
+                      type="button"
+                      role="menuitemcheckbox"
+                      aria-checked={rarityOver}
+                      className={`lang-option${rarityOver ? ' active' : ''}`}
+                      onClick={() => setRarityOver((v) => !v)}
+                    >
+                      <input type="checkbox" className="lang-check" checked={rarityOver} readOnly tabIndex={-1} />
+                      <span>{t(lang, 'filter.overnumbered')}</span>
+                    </button>
+                    <button
+                      type="button"
+                      role="menuitemcheckbox"
+                      aria-checked={rarityPromo}
+                      className={`lang-option${rarityPromo ? ' active' : ''}`}
+                      onClick={() => setRarityPromo((v) => !v)}
+                    >
+                      <input type="checkbox" className="lang-check" checked={rarityPromo} readOnly tabIndex={-1} />
+                      <span>{t(lang, 'filter.promo')}</span>
+                    </button>
                   </div>
                 )}
               </div>
-              <button
-                type="button"
-                className={`chip ${signedOnly ? 'active' : ''}`}
-                onClick={() => setSignedOnly((v) => !v)}
-              >
-                Signed
-              </button>
-              <button
-                type="button"
-                className={`chip ${overOnly ? 'active' : ''}`}
-                onClick={() => setOverOnly((v) => !v)}
-              >
-                Overnumbered
-              </button>
             </div>
 
             {binderCards.length === 0 && (
@@ -1586,48 +1592,56 @@ export default function App() {
                   )
                 })}
               </div>
-              <div className={`lang-menu${promoMenuOpen ? ' open' : ''}`} ref={promoMenuRef}>
+              <div className={`lang-menu${rarityMenuOpen ? ' open' : ''}`} ref={rarityMenuRef}>
                 <button
                   type="button"
-                  className={`lang-trigger${promoMenuOpen ? ' open' : ''}${promoFilter ? ' open' : ''}`}
-                  title={t(lang, 'catalog.promo')}
-                  aria-label={t(lang, 'catalog.promo')}
+                  className={`lang-trigger${rarityMenuOpen || raritySigned || rarityOver || rarityPromo ? ' open' : ''}`}
+                  title={t(lang, 'filter.rarity')}
+                  aria-label={t(lang, 'filter.rarity')}
                   aria-haspopup="menu"
-                  aria-expanded={promoMenuOpen}
-                  onClick={() => setPromoMenuOpen((o) => !o)}
+                  aria-expanded={rarityMenuOpen}
+                  onClick={() => setRarityMenuOpen((o) => !o)}
                 >
-                  {t(lang, 'catalog.promo')}
+                  {t(lang, 'filter.rarity')}
                   <svg className="lang-caret" width="10" height="6" viewBox="0 0 10 6" aria-hidden="true">
                     <path d="M1 1l4 4 4-4" stroke="currentColor" strokeWidth="1.4" fill="none" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
                 </button>
-                {promoMenuOpen && (
-                  <div className="lang-dropdown" role="menu" aria-label={t(lang, 'catalog.promo')} style={{ left: 0, right: 'auto' }}>
-                    {([
-                      ['', 'catalog.promoAll'],
-                      ['promo', 'catalog.promoOnly'],
-                      ['no-promo', 'catalog.promoNone'],
-                    ] as const).map(([val, key]) => (
-                      <button
-                        key={val || 'all'}
-                        type="button"
-                        role="menuitemradio"
-                        aria-checked={promoFilter === val}
-                        className={`lang-option${promoFilter === val ? ' active' : ''}`}
-                        onClick={() => { setPromoFilter(val); setPromoMenuOpen(false) }}
-                      >
-                        <span>{t(lang, key)}</span>
-                      </button>
-                    ))}
+                {rarityMenuOpen && (
+                  <div className="lang-dropdown" role="menu" aria-label={t(lang, 'filter.rarity')} style={{ left: 0, right: 'auto' }}>
+                    <button
+                      type="button"
+                      role="menuitemcheckbox"
+                      aria-checked={raritySigned}
+                      className={`lang-option${raritySigned ? ' active' : ''}`}
+                      onClick={() => setRaritySigned((v) => !v)}
+                    >
+                      <input type="checkbox" className="lang-check" checked={raritySigned} readOnly tabIndex={-1} />
+                      <span>{t(lang, 'filter.signed')}</span>
+                    </button>
+                    <button
+                      type="button"
+                      role="menuitemcheckbox"
+                      aria-checked={rarityOver}
+                      className={`lang-option${rarityOver ? ' active' : ''}`}
+                      onClick={() => setRarityOver((v) => !v)}
+                    >
+                      <input type="checkbox" className="lang-check" checked={rarityOver} readOnly tabIndex={-1} />
+                      <span>{t(lang, 'filter.overnumbered')}</span>
+                    </button>
+                    <button
+                      type="button"
+                      role="menuitemcheckbox"
+                      aria-checked={rarityPromo}
+                      className={`lang-option${rarityPromo ? ' active' : ''}`}
+                      onClick={() => setRarityPromo((v) => !v)}
+                    >
+                      <input type="checkbox" className="lang-check" checked={rarityPromo} readOnly tabIndex={-1} />
+                      <span>{t(lang, 'filter.promo')}</span>
+                    </button>
                   </div>
                 )}
               </div>
-              <label className="pill">
-                <input type="checkbox" checked={signedOnly} onChange={(e) => setSignedOnly(e.target.checked)} /> Signed
-              </label>
-              <label className="pill">
-                <input type="checkbox" checked={overOnly} onChange={(e) => setOverOnly(e.target.checked)} /> Overnumbered
-              </label>
               <label className="pill">
                 <input type="checkbox" checked={ownedOnly} onChange={(e) => setOwnedOnly(e.target.checked)} /> {t(lang, 'catalog.ownedOnly')}
               </label>
