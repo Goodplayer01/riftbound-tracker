@@ -33,7 +33,7 @@ import {
   applyMulligan,
   dealOpeningHand,
   drawPoolSize,
-  runeChannelsForSeat,
+  drawTopCard,
 } from './handTester'
 
 type Tab = 'collection' | 'catalog' | 'sales' | 'bulk' | 'decks'
@@ -197,11 +197,11 @@ export default function App() {
   const [dragRejectSale, setDragRejectSale] = useState(false)
   const [deckNotice, setDeckNotice] = useState<string | null>(null)
   const [handTesterOpen, setHandTesterOpen] = useState(true)
-  const [goingSecond, setGoingSecond] = useState(false)
   const [handCards, setHandCards] = useState<string[] | null>(null)
   const [handLibrary, setHandLibrary] = useState<string[]>([])
   const [handSelected, setHandSelected] = useState<number[]>([])
   const [mulliganUsed, setMulliganUsed] = useState(false)
+  const [handDrawn, setHandDrawn] = useState(false)
   const dragGhostRef = useRef<HTMLElement | null>(null)
   const dragGhostCleanupRef = useRef<(() => void) | null>(null)
 
@@ -820,6 +820,7 @@ export default function App() {
     setHandLibrary([])
     setHandSelected([])
     setMulliganUsed(false)
+    setHandDrawn(false)
   }, [activeDeckId])
 
   function updateDeck(mut: (d: Deck) => Deck) {
@@ -835,6 +836,7 @@ export default function App() {
     setHandLibrary(dealt.library)
     setHandSelected([])
     setMulliganUsed(false)
+    setHandDrawn(false)
   }
 
   function toggleHandSelect(index: number) {
@@ -854,6 +856,15 @@ export default function App() {
     setHandLibrary(next.library)
     setHandSelected([])
     setMulliganUsed(true)
+  }
+
+  function drawTurnOneCard() {
+    if (!handCards || handDrawn) return
+    const next = drawTopCard(handCards, handLibrary)
+    if (!next) return
+    setHandCards(next.hand)
+    setHandLibrary(next.library)
+    setHandDrawn(true)
   }
 
 
@@ -2380,7 +2391,6 @@ export default function App() {
                   {(() => {
                     const poolN = drawPoolSize(activeDeck)
                     const canTest = poolN >= OPENING_HAND_SIZE
-                    const rune = runeChannelsForSeat(goingSecond)
                     return (
                       <div className={`hand-tester${handTesterOpen ? ' expanded' : ''}`}>
                         <div
@@ -2408,18 +2418,6 @@ export default function App() {
                             ) : (
                               <>
                                 <div className="hand-tester-controls">
-                                  <div className="hand-seat-toggle" role="group" aria-label={t(lang, 'hand.goingSecond')}>
-                                    <button
-                                      type="button"
-                                      className={!goingSecond ? 'active' : ''}
-                                      onClick={() => setGoingSecond(false)}
-                                    >{t(lang, 'hand.first')}</button>
-                                    <button
-                                      type="button"
-                                      className={goingSecond ? 'active' : ''}
-                                      onClick={() => setGoingSecond(true)}
-                                    >{t(lang, 'hand.second')}</button>
-                                  </div>
                                   <button type="button" className="btn primary" onClick={dealNewHand}>
                                     {t(lang, 'hand.new')}
                                   </button>
@@ -2438,11 +2436,15 @@ export default function App() {
                                   {mulliganUsed && (
                                     <span className="hand-hint">{t(lang, 'hand.mulliganDone')}</span>
                                   )}
-                                </div>
-                                <div className="hand-rune-note">
-                                  <b>{t(lang, 'hand.runeNote', { n: rune.t1 })}</b>
-                                  {' — '}
-                                  {goingSecond ? t(lang, 'hand.runeHintSecond') : t(lang, 'hand.runeHintFirst')}
+                                  <button
+                                    type="button"
+                                    className="btn"
+                                    disabled={!handCards || handDrawn || handLibrary.length < 1}
+                                    title={handDrawn ? t(lang, 'hand.drawDone') : handLibrary.length < 1 ? t(lang, 'hand.noLibrary') : undefined}
+                                    onClick={drawTurnOneCard}
+                                  >
+                                    {t(lang, 'hand.draw')}
+                                  </button>
                                 </div>
                                 {!handCards ? (
                                   <div className="hand-empty-msg">{t(lang, 'hand.empty')}</div>

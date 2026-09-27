@@ -79,17 +79,18 @@ export function applyMulligan(
     else keep.push(hand[i]!)
   }
 
+  // The library already is the shuffled remainder. Draw replacements from its
+  // top, then put the set-aside cards at the very bottom (randomized only
+  // among themselves), so T1 draws cannot hit mulliganed cards.
   const nextLib = [...library]
   const drawn = nextLib.splice(0, bottomed.length)
-  const bottom = shuffleCopy(bottomed)
-  nextLib.push(...bottom)
+  nextLib.push(...shuffleCopy(bottomed))
 
   return { hand: [...keep, ...drawn], library: nextLib }
 }
 
-/** Informational rune channel counts for T1 (and optional T2–T3 note). */
-export function runeChannelsForSeat(goingSecond: boolean): { t1: number; note: string } {
-  // Both players channel 2 on T1; second player channels +1 extra (3 total).
-  const t1 = goingSecond ? 3 : 2
-  return { t1, note: goingSecond ? '2+1' : '2' }
+/** Draw exactly one card from the top of the remaining library. */
+export function drawTopCard(hand: string[], library: string[]): DealResult | null {
+  if (library.length < 1) return null
+  return { hand: [...hand, library[0]!], library: library.slice(1) }
 }
