@@ -794,11 +794,13 @@ textarea.field { min-height: 160px; resize: vertical; font-family: ui-monospace,
   color: var(--muted);
 }
 .hand-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+  display: flex;
   gap: 10px;
+  align-items: stretch;
 }
 .hand-card {
+  flex: 1 1 0;
+  min-width: 0;
   position: relative;
   border: 2px solid var(--border);
   border-radius: 10px;
