@@ -376,7 +376,7 @@ export default function App() {
       const next = prev.map((d) => {
         const m = migrateDeck(d, byId)
         const s = sanitizeDeckCards(m.cards, byId)
-        const cardsChanged = s.trimmed > 0 || s.domainRemoved > 0 || m !== d
+        const cardsChanged = s.trimmed > 0 || s.copyRemoved > 0 || s.battlefieldRemoved > 0 || s.domainRemoved > 0 || m !== d
         if (cardsChanged) {
           changed = true
           if (d.id === activeDeckId && s.notice) notice = s.notice
@@ -1182,7 +1182,7 @@ export default function App() {
     for (const u of result.unmatched) {
       report.push({ name: t(lang, 'decks.notFoundPrefix', { name: u }), need: 0, have: 0, short: 0 })
     }
-    if (sanitized.trimmed > 0 || sanitized.domainRemoved > 0) {
+    if (sanitized.trimmed > 0 || sanitized.copyRemoved > 0 || sanitized.battlefieldRemoved > 0 || sanitized.domainRemoved > 0) {
       report.unshift({
         name: `Limit/Domain: ${sanitized.notice || t(lang, 'decks.cardsRemoved')}`,
         need: 0,

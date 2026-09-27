@@ -10,6 +10,10 @@ export const SECTION_ORDER: DeckSection[] = [
   'rune',
 ]
 
+const NAME_COPY_SECTIONS: DeckSection[] = ['champion', 'main', 'sideboard']
+const NAME_COPY_LIMIT = 3
+const BATTLEFIELD_NAME_COPY_LIMIT = 1
+
 export const SECTION_CAPS: Record<DeckSection, number> = {
   legend: 1,
   champion: 1,
@@ -293,7 +297,7 @@ export function legendSwapBlockMessage(required: string[]): string {
   return t(lang, 'deck.legendSwapDomains', { domains: required.join(', ') })
 }
 
-export type AddBlockReason = 'type' | 'legend' | 'domain' | 'cap'
+export type AddBlockReason = 'type' | 'legend' | 'domain' | 'cap' | 'copies'
 
 export type CanAddResult = { ok: true } | { ok: false; reason: AddBlockReason; message: string }
 
@@ -331,12 +335,44 @@ export function canAddToSection(
   if (count + qtyToAdd > cap) {
     return { ok: false, reason: 'cap', message: t(lang, 'deck.capReached', { cap, section: SECTION_LABEL[section] }) }
   }
+
+  // The three-copy pool is shared by Champion, Main Deck and Sideboard.
+  // Runes are intentionally excluded: they have their own 12-card cap.
+  if (NAME_COPY_SECTIONS.includes(section)) {
+    const name = norm(card.name)
+    const currentNameQty = deckCards.reduce((sum, dc) => {
+      const dcSection = sectionOf(dc)
+      if (!NAME_COPY_SECTIONS.includes(dcSection)) return sum
+      const c = byId.get(dc.id)
+      return c && norm(c.name) === name ? sum + dc.qty : sum
+    }, 0)
+    if (currentNameQty + qtyToAdd > NAME_COPY_LIMIT) {
+      return { ok: false, reason: 'copies', message: t(lang, 'deck.copyLimit', { name: card.name }) }
+    }
+  }
+
+  // Battlefields have a section cap of three, but only one copy of each
+  // battlefield name is allowed.
+  if (section === 'battlefield') {
+    const name = norm(card.name)
+    const currentNameQty = deckCards.reduce((sum, dc) => {
+      if (sectionOf(dc) !== 'battlefield') return sum
+      const c = byId.get(dc.id)
+      return c && norm(c.name) === name ? sum + dc.qty : sum
+    }, 0)
+    if (currentNameQty + qtyToAdd > BATTLEFIELD_NAME_COPY_LIMIT) {
+      return { ok: false, reason: 'copies', message: t(lang, 'deck.battlefieldCopyLimit', { name: card.name }) }
+    }
+  }
+
   return { ok: true }
 }
 
 export type SanitizeResult = {
   cards: DeckCard[]
   trimmed: number
+  copyRemoved: number
+  battlefieldRemoved: number
   domainRemoved: number
   notice: string | null
 }
@@ -347,6 +383,8 @@ export type SanitizeResult = {
  */
 export function sanitizeDeckCards(deckCards: DeckCard[], byId: Map<string, Card>): SanitizeResult {
   let trimmed = 0
+  let copyRemoved = 0
+  let battlefieldRemoved = 0
   let domainRemoved = 0
 
   // 1) Cap trim per section (preserve order)
@@ -379,12 +417,46 @@ export function sanitizeDeckCards(deckCards: DeckCard[], byId: Map<string, Card>
     }
   }
 
-  // 2) Domain strip for gated sections when a Legend is present
-  const legendDomains = getLegendDomains(capped, byId)
-  let afterDomain = capped
+  // 2) Trim duplicate names across the shared card pool. Keep the existing
+  // order so imported/legacy decks are repaired deterministically.
+  const copyNameQty = new Map<string, number>()
+  const battlefieldNameQty = new Map<string, number>()
+  const nameCapped: DeckCard[] = []
+  for (const dc of capped) {
+    const sec = sectionOf(dc)
+    const limit = NAME_COPY_SECTIONS.includes(sec)
+      ? NAME_COPY_LIMIT
+      : sec === 'battlefield' ? BATTLEFIELD_NAME_COPY_LIMIT : null
+    if (limit == null) {
+      nameCapped.push(dc)
+      continue
+    }
+    const c = byId.get(dc.id)
+    if (!c) {
+      nameCapped.push(dc)
+      continue
+    }
+    const key = norm(c.name)
+    const counts = sec === 'battlefield' ? battlefieldNameQty : copyNameQty
+    const used = counts.get(key) || 0
+    const keep = Math.max(0, Math.min(dc.qty, limit - used))
+    const removed = dc.qty - keep
+    if (removed > 0) {
+      if (sec === 'battlefield') battlefieldRemoved += removed
+      else copyRemoved += removed
+    }
+    if (keep > 0) {
+      nameCapped.push(keep === dc.qty ? dc : { ...dc, qty: keep })
+      counts.set(key, used + keep)
+    }
+  }
+
+  // 3) Domain strip for gated sections when a Legend is present
+  const legendDomains = getLegendDomains(nameCapped, byId)
+  let afterDomain = nameCapped
   if (legendDomains && hasLegend(capped)) {
     afterDomain = []
-    for (const dc of capped) {
+    for (const dc of nameCapped) {
       const sec = sectionOf(dc)
       if (!sectionNeedsLegend(sec)) {
         afterDomain.push(dc)
@@ -404,11 +476,17 @@ export function sanitizeDeckCards(deckCards: DeckCard[], byId: Map<string, Card>
   if (trimmed > 0) {
     parts.push(t(lang, 'deck.sanitizedCap', { n: trimmed, plural: trimmed === 1 ? '' : (lang === 'de' ? 'n' : 's') }))
   }
+  if (copyRemoved > 0) {
+    parts.push(t(lang, 'deck.sanitizedCopies', { n: copyRemoved, plural: copyRemoved === 1 ? '' : (lang === 'de' ? 'n' : 's') }))
+  }
+  if (battlefieldRemoved > 0) {
+    parts.push(t(lang, 'deck.sanitizedBattlefield', { n: battlefieldRemoved, plural: battlefieldRemoved === 1 ? '' : (lang === 'de' ? 'n' : 's') }))
+  }
   if (domainRemoved > 0) {
     parts.push(t(lang, 'deck.sanitizedDomain', { n: domainRemoved, plural: domainRemoved === 1 ? '' : (lang === 'de' ? 'n' : 's') }))
   }
   const notice = parts.length ? parts.join(' · ') + '.' : null
-  return { cards: afterDomain, trimmed, domainRemoved, notice }
+  return { cards: afterDomain, trimmed, copyRemoved, battlefieldRemoved, domainRemoved, notice }
 }
 
 
