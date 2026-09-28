@@ -886,7 +886,7 @@ textarea.field { min-height: 160px; resize: vertical; font-family: ui-monospace,
   font-size: 13px;
 }
 
-/* Ban badge in deck builder rows */
+/* Ban badge next to card names (decks, Sammlung, Katalog) */
 .ban-badge {
   display: inline-flex;
   align-items: center;

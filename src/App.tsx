@@ -1603,13 +1603,16 @@ export default function App() {
                       </div>
                     </div>
                     <div className="meta">
-                      <button
-                        type="button"
-                        className="name name-link"
-                        title={t(lang, 'price.openCm')}
-                        disabled={!priceBook?.cards[c.id]?.cmUrl}
-                        onClick={() => openCm(priceBook?.cards[c.id])}
-                      >{displayName(c)}</button>
+                      <div className="name-with-ban">
+                        <button
+                          type="button"
+                          className="name name-link"
+                          title={t(lang, 'price.openCm')}
+                          disabled={!priceBook?.cards[c.id]?.cmUrl}
+                          onClick={() => openCm(priceBook?.cards[c.id])}
+                        >{displayName(c)}</button>
+                        <BanBadge status={banStatus(c)} lang={lang} />
+                      </div>
                       <div className="sub">{c.code} | {c.set} | {(c.types || []).join('/') || '-'} | {(c.domains || []).join('/') || '-'}</div>
                       {(() => {
                         const pl = priceLabel(priceBook?.cards[c.id])
@@ -1767,13 +1770,16 @@ export default function App() {
                       </div>
                     </div>
                     <div className="meta">
-                      <button
-                        type="button"
-                        className="name name-link"
-                        title={t(lang, 'price.openCm')}
-                        disabled={!priceBook?.cards[c.id]?.cmUrl}
-                        onClick={() => openCm(priceBook?.cards[c.id])}
-                      >{displayName(c)}</button>
+                      <div className="name-with-ban">
+                        <button
+                          type="button"
+                          className="name name-link"
+                          title={t(lang, 'price.openCm')}
+                          disabled={!priceBook?.cards[c.id]?.cmUrl}
+                          onClick={() => openCm(priceBook?.cards[c.id])}
+                        >{displayName(c)}</button>
+                        <BanBadge status={banStatus(c)} lang={lang} />
+                      </div>
                       <div className="sub">{c.code} | {c.set} | {(c.types || []).join('/') || '-'} | {(c.domains || []).join('/') || '-'}</div>
                       {(() => {
                         const pl = priceLabel(priceBook?.cards[c.id])

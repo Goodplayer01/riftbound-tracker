@@ -14,6 +14,7 @@ The app checks GitHub Releases for updates on startup.
 - **Catalog** — full Riftbound card list with domain, rarity, promo / signed / overnumbered filters and “owned only”
 - **Prices** — Cardmarket Low and Avg30 (English products preferred; other languages only when no EN printing exists); deep links to Cardmarket
 - **Deck builder** — Legend, Champion, Main Deck, Battlefields, Runes, Sideboard; drag-and-drop; max 3 copies per card name; ban badges (Standard and 2v2)
+- **Ban badges** — Standard and 2v2-only marks on Sammlung / Katalog tiles and in the deck builder (non-blocking)
 - **Deck import** — paste deck lists (including Rune Pool); missing-copy summary with Cardmarket links; add missing copies to the collection in one click
 - **Hand tester** — opening hand / mulligan for First or Second
 - **Verkauf** — mark cards sold and track sale totals
