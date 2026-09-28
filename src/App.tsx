@@ -2046,7 +2046,23 @@ export default function App() {
                       </div>
                       {expanded && (
                         <div className="deck-acc-body">
-                          <div className="deck-acc-actions">
+                          <div className="deck-acc-summary-row">
+                            {sums && (
+                              <div className="deck-price-sums help">
+                                <div>
+                                  <b>{t(lang, 'decks.totalLow')}</b>{' '}
+                                  {sums.priced > 0 ? fmtEur(sums.deckLow) : '—'}
+                                  {sums.priced > 0 && sums.priced < deckCount(d) ? t(lang, 'decks.partialPrice') : ''}
+                                </div>
+                                {missCopies > 0 && (
+                                  <div>
+                                    <b>{t(lang, 'decks.missingCopies')}</b>{' '}
+                                    {sums.missingPriced > 0 ? fmtEur(sums.missingLow) : '—'}
+                                    {` (${missCopies} ${t(lang, 'bulk.copies')})`}
+                                  </div>
+                                )}
+                              </div>
+                            )}
                             <button
                               type="button"
                               className="btn icon danger deck-trash"
@@ -2061,22 +2077,6 @@ export default function App() {
                               🗑
                             </button>
                           </div>
-                          {sums && (
-                            <div className="deck-price-sums help">
-                              <div>
-                                <b>{t(lang, 'decks.totalLow')}</b>{' '}
-                                {sums.priced > 0 ? fmtEur(sums.deckLow) : '—'}
-                                {sums.priced > 0 && sums.priced < deckCount(d) ? t(lang, 'decks.partialPrice') : ''}
-                              </div>
-                              {missCopies > 0 && (
-                                <div>
-                                  <b>{t(lang, 'decks.missingCopies')}</b>{' '}
-                                  {sums.missingPriced > 0 ? fmtEur(sums.missingLow) : '—'}
-                                  {` (${missCopies} ${t(lang, 'bulk.copies')})`}
-                                </div>
-                              )}
-                            </div>
-                          )}
                         </div>
                       )}
                     </div>

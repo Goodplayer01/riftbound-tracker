@@ -630,8 +630,16 @@ textarea.field { min-height: 160px; resize: vertical; font-family: ui-monospace,
   accent-color: var(--accent);
   cursor: pointer;
 }
+.deck-acc-summary-row {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+}
 .deck-price-sums {
+  flex: 1 1 auto;
+  min-width: 0;
   line-height: 1.45;
+  margin: 0;
 }
 .deck-card-row .price {
   margin-top: 2px;
@@ -661,7 +669,7 @@ textarea.field { min-height: 160px; resize: vertical; font-family: ui-monospace,
   color: var(--muted); font-size: 12px; width: 14px; flex-shrink: 0;
 }
 .deck-acc-body {
-  padding: 10px 12px 12px;
+  padding: 6px 12px 12px;
   display: grid; gap: 8px;
   border-top: 1px solid rgba(44,51,68,.8);
 }
@@ -679,9 +687,6 @@ textarea.field { min-height: 160px; resize: vertical; font-family: ui-monospace,
   color: var(--muted);
   font-size: 13px;
   white-space: nowrap;
-}
-.deck-acc-actions {
-  display: flex; gap: 8px; align-items: center; justify-content: flex-end;
 }
 .deck-card-trash {
   flex-shrink: 0;
