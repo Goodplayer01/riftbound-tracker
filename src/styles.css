@@ -465,12 +465,6 @@ textarea.field { min-height: 160px; resize: vertical; font-family: ui-monospace,
 .deck-warn ul { margin: 6px 0 0; padding-left: 18px; }
 .deck-warn-list { display: grid; gap: 6px; margin-top: 8px; }
 .deck-warn-row { padding: 4px 0; background: transparent; border: none; }
-.deck-missing {
-  margin-bottom: 12px; padding: 10px 12px;
-  border: 1px solid rgba(255,123,138,.35); border-radius: 12px;
-  background: rgba(60,20,28,.45); font-size: 13px;
-}
-.deck-missing .sub { margin-top: 4px; }
 .deck-sections { display: grid; gap: 12px; }
 .deck-sec-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 @media (max-width: 720px) { .deck-sec-row { grid-template-columns: 1fr; } }
@@ -667,10 +661,10 @@ textarea.field { min-height: 160px; resize: vertical; font-family: ui-monospace,
   color: var(--muted); font-size: 12px; width: 14px; flex-shrink: 0;
 }
 .deck-acc-body {
-  padding: 0 12px 12px;
+  /* left = head pad 12 + chevron 14 + gap 10 → flush with name field / divider content */
+  padding: 10px 12px 12px calc(12px + 14px + 10px);
   display: grid; gap: 8px;
   border-top: 1px solid rgba(44,51,68,.8);
-  padding-top: 10px;
 }
 .deck-acc-title {
   display: flex; align-items: center; gap: 8px; min-width: 0; flex-wrap: wrap;

@@ -188,7 +188,6 @@ export default function App() {
   const [activeSection, setActiveSection] = useState<DeckSection>('main')
   const [deckImportText, setDeckImportText] = useState('')
   const [deckImportOpen, setDeckImportOpen] = useState(false)
-  const [deckMissingReport, setDeckMissingReport] = useState<{ name: string; need: number; have: number; short: number }[] | null>(null)
   const [missingExpanded, setMissingExpanded] = useState(false)
   const [cardPreview, setCardPreview] = useState<{ src: string; x: number; y: number } | null>(null)
   const [appVersion, setAppVersion] = useState('')
@@ -822,7 +821,6 @@ export default function App() {
     setDecks((prev) => [d, ...prev])
     setActiveDeckId(d.id)
     setActiveSection('legend')
-    setDeckMissingReport(null)
     setDeckNotice(null)
   }
 
@@ -1181,41 +1179,22 @@ export default function App() {
     return { deckLow, missingLow, priced, missingPriced }
   }
 
-  function missingReportFor(d: Deck) {
-    return underOwnedLines(d).map(({ name, need, have, short }) => ({ name, need, have, short }))
-  }
-
   function runDeckImport(text: string) {
     if (!activeDeckId) return
     const result = parseDeckImport(text, cards)
     const sanitized = sanitizeDeckCards(result.cards, byId)
     updateDeck((d) => ({ ...d, cards: sanitized.cards }))
-    if (sanitized.notice) setDeckNotice(t(lang, 'decks.importAdjusted', { notice: sanitized.notice }))
-    const report = sanitized.cards
-      .map((dc) => {
-        const c = byId.get(dc.id) || cards.find((x) => x.id === dc.id)
-        const have = ownedQty(collection[dc.id])
-        const need = dc.qty
-        return {
-          name: c ? displayCardName(c) : dc.id,
-          need,
-          have,
-          short: Math.max(0, need - have),
-        }
-      })
-      .filter((r) => r.short > 0)
-    for (const u of result.unmatched) {
-      report.push({ name: t(lang, 'decks.notFoundPrefix', { name: u }), need: 0, have: 0, short: 0 })
+    const parts: string[] = []
+    if (sanitized.notice) parts.push(t(lang, 'decks.importAdjusted', { notice: sanitized.notice }))
+    if (result.unmatched.length) {
+      const shown = result.unmatched.slice(0, 8)
+      const names = shown.map((u) => t(lang, 'decks.notFoundPrefix', { name: u })).join('; ')
+      const more = result.unmatched.length > 8
+        ? ` ${t(lang, 'decks.andMore', { n: result.unmatched.length - 8 })}`
+        : ''
+      parts.push(names + more)
     }
-    if (sanitized.trimmed > 0 || sanitized.copyRemoved > 0 || sanitized.battlefieldRemoved > 0 || sanitized.domainRemoved > 0) {
-      report.unshift({
-        name: `Limit/Domain: ${sanitized.notice || t(lang, 'decks.cardsRemoved')}`,
-        need: 0,
-        have: 0,
-        short: 0,
-      })
-    }
-    setDeckMissingReport(report)
+    setDeckNotice(parts.length ? parts.join(' · ') : null)
     setDeckImportOpen(false)
   }
 
@@ -2037,14 +2016,12 @@ export default function App() {
                         tabIndex={0}
                         onClick={() => {
                           setActiveDeckId(d.id)
-                          setDeckMissingReport(missingReportFor(d))
                           if (!expanded) setActiveSection('main')
                         }}
                         onKeyDown={(e) => {
                           if (e.key === 'Enter' || e.key === ' ') {
                             e.preventDefault()
                             setActiveDeckId(d.id)
-                            setDeckMissingReport(missingReportFor(d))
                             if (!expanded) setActiveSection('main')
                           }
                         }}
@@ -2079,7 +2056,6 @@ export default function App() {
                                 e.stopPropagation()
                                 setDecks((prev) => prev.filter((x) => x.id !== d.id))
                                 setActiveDeckId(null)
-                                setDeckMissingReport(null)
                               }}
                             >
                               🗑
@@ -2187,23 +2163,6 @@ export default function App() {
                       </div>
                     )
                   })()}
-
-                  {deckMissingReport && deckMissingReport.length > 0 && (
-                    <div className="deck-missing">
-                      <b>{t(lang, 'decks.importMissing')}</b>
-                      <div className="sub">
-                        {t(lang, 'decks.missingCopiesCount', { n: deckMissingReport.filter((r) => r.short > 0).reduce((s, r) => s + r.short, 0) })}
-                        {deckMissingReport.some((r) => r.need === 0) ? t(lang, 'decks.namesNotFound') : ''}
-                      </div>
-                      <ul>
-                        {deckMissingReport.slice(0, 16).map((r, i) => (
-                          <li key={i}>
-                            {r.need === 0 ? r.name : t(lang, 'decks.needHaveLine', { name: r.name, need: r.need, have: r.have })}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
 
                   {deckNotice && (
                     <div className="deck-notice" role="status">
