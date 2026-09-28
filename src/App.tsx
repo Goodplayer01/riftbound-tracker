@@ -2155,6 +2155,19 @@ export default function App() {
                                       {t(lang, 'decks.needHave', { need: u.need, have: u.have })}
                                     </div>
                                   </div>
+                                  {u.short > 0 && (
+                                    <button
+                                      type="button"
+                                      className="btn small deck-add-collection"
+                                      title={t(lang, 'decks.addToCollection')}
+                                      onClick={(e) => {
+                                        e.stopPropagation()
+                                        bump(u.id, 'qty', u.short)
+                                      }}
+                                    >
+                                      {t(lang, 'decks.addToCollection')}
+                                    </button>
+                                  )}
                                 </div>
                               )
                             })}
@@ -2212,7 +2225,8 @@ export default function App() {
                                 const c = byId.get(dc.id)
                                 if (!c) return null
                                 const have = ownedQty(collection[c.id])
-                                const short = dc.qty > have
+                                const shortQty = Math.max(0, dc.qty - have)
+                                const short = shortQty > 0
                                 return (
                                                                     <div
                                     key={`${dc.id}-${sec}`}
@@ -2258,6 +2272,19 @@ export default function App() {
                                         )
                                       })()}
                                     </div>
+                                    {shortQty > 0 && (
+                                      <button
+                                        type="button"
+                                        className="btn small deck-add-collection"
+                                        title={t(lang, 'decks.addToCollection')}
+                                        onClick={(e) => {
+                                          e.stopPropagation()
+                                          bump(c.id, 'qty', shortQty)
+                                        }}
+                                      >
+                                        {t(lang, 'decks.addToCollection')}
+                                      </button>
+                                    )}
                                     {isSingleSlotSection(sec) ? (
                                       <button
                                         type="button"
@@ -2331,7 +2358,8 @@ export default function App() {
                               const c = byId.get(dc.id)
                               if (!c) return null
                               const have = ownedQty(collection[c.id])
-                              const short = dc.qty > have
+                              const shortQty = Math.max(0, dc.qty - have)
+                              const short = shortQty > 0
                               return (
                                                                 <div
                                   key={`${dc.id}-${sec}`}
@@ -2377,6 +2405,19 @@ export default function App() {
                                       )
                                     })()}
                                   </div>
+                                  {shortQty > 0 && (
+                                    <button
+                                      type="button"
+                                      className="btn small deck-add-collection"
+                                      title={t(lang, 'decks.addToCollection')}
+                                      onClick={(e) => {
+                                        e.stopPropagation()
+                                        bump(c.id, 'qty', shortQty)
+                                      }}
+                                    >
+                                      {t(lang, 'decks.addToCollection')}
+                                    </button>
+                                  )}
                                   <div className="qty" onClick={(e) => e.stopPropagation()}>
                                     <button type="button" onClick={() => bumpDeckCard(dc.id, sec, -1)}>−</button>
                                     <b>{dc.qty}</b>

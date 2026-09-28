@@ -661,8 +661,7 @@ textarea.field { min-height: 160px; resize: vertical; font-family: ui-monospace,
   color: var(--muted); font-size: 12px; width: 14px; flex-shrink: 0;
 }
 .deck-acc-body {
-  /* left = head pad 12 + chevron 14 + gap 10 → flush with name field / divider content */
-  padding: 10px 12px 12px calc(12px + 14px + 10px);
+  padding: 10px 12px 12px;
   display: grid; gap: 8px;
   border-top: 1px solid rgba(44,51,68,.8);
 }
@@ -689,6 +688,19 @@ textarea.field { min-height: 160px; resize: vertical; font-family: ui-monospace,
   padding: 6px 8px;
   min-width: 34px;
   font-size: 14px;
+}
+.deck-add-collection {
+  flex-shrink: 0;
+  white-space: nowrap;
+  padding: 5px 8px;
+  font-size: 12px;
+  border-color: rgba(110,168,255,.4);
+  background: rgba(110,168,255,.1);
+  color: var(--accent-cool);
+}
+.deck-add-collection:hover {
+  border-color: var(--accent-cool);
+  background: rgba(110,168,255,.18);
 }
 .deck-legend-swap {
   margin: 10px 0;
