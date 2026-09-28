@@ -28,6 +28,7 @@ import {
   sectionNeedsLegend,
   sectionOf,
 } from './deckHelpers'
+import { banStatus, type BanStatus } from './banlist'
 import {
   OPENING_HAND_SIZE,
   applyMulligan,
@@ -65,6 +66,17 @@ function subtractOwnedCopies(o: { qty: number; foil: number }, sellQty: number) 
   return { qty, foil, sold, short }
 }
 
+
+
+function BanBadge({ status, lang }: { status: BanStatus; lang: Lang }) {
+  if (!status) return null
+  const key = status === 'banned2v2' ? 'decks.banned2v2' : 'decks.banned'
+  return (
+    <span className={`ban-badge${status === 'banned2v2' ? ' ban-2v2' : ''}`}>
+      {t(lang, key)}
+    </span>
+  )
+}
 
 function cardWord(lang: Lang, n: number) {
   return lang === 'de' ? (n === 1 ? 'Karte' : 'Karten') : (n === 1 ? 'card' : 'cards')
@@ -2262,13 +2274,16 @@ export default function App() {
                                       <div className="deck-thumb deck-thumb-empty" aria-hidden />
                                     )}
                                     <div className="grow">
-                                      <button
-                                        type="button"
-                                        className="name name-link"
-                                        title={t(lang, 'price.openCm')}
-                                        disabled={!priceBook?.cards[c.id]?.cmUrl}
-                                        onClick={(e) => { e.stopPropagation(); openCm(priceBook?.cards[c.id]) }}
-                                      >{displayName(c)}</button>
+                                      <div className="name-with-ban">
+                                        <button
+                                          type="button"
+                                          className="name name-link"
+                                          title={t(lang, 'price.openCm')}
+                                          disabled={!priceBook?.cards[c.id]?.cmUrl}
+                                          onClick={(e) => { e.stopPropagation(); openCm(priceBook?.cards[c.id]) }}
+                                        >{displayName(c)}</button>
+                                        <BanBadge status={banStatus(c)} lang={lang} />
+                                      </div>
                                       <div className="sub">
                                         {c.energy != null ? `E${c.energy} · ` : ''}{c.code} · {t(lang, 'decks.owns', { have })}
                                       </div>
@@ -2378,13 +2393,16 @@ export default function App() {
                                     <div className="deck-thumb deck-thumb-empty" aria-hidden />
                                   )}
                                   <div className="grow">
-                                    <button
-                                      type="button"
-                                      className="name name-link"
-                                      title={t(lang, 'price.openCm')}
-                                      disabled={!priceBook?.cards[c.id]?.cmUrl}
-                                      onClick={(e) => { e.stopPropagation(); openCm(priceBook?.cards[c.id]) }}
-                                    >{displayName(c)}</button>
+                                    <div className="name-with-ban">
+                                      <button
+                                        type="button"
+                                        className="name name-link"
+                                        title={t(lang, 'price.openCm')}
+                                        disabled={!priceBook?.cards[c.id]?.cmUrl}
+                                        onClick={(e) => { e.stopPropagation(); openCm(priceBook?.cards[c.id]) }}
+                                      >{displayName(c)}</button>
+                                      <BanBadge status={banStatus(c)} lang={lang} />
+                                    </div>
                                     <div className="sub">
                                       {c.energy != null ? `E${c.energy} · ` : ''}{c.code} · {t(lang, 'decks.owns', { have })}
                                     </div>
@@ -2599,13 +2617,16 @@ export default function App() {
                         <div className="deck-thumb deck-thumb-empty" aria-hidden />
                       )}
                       <div className="grow">
-                        <button
-                          type="button"
-                          className="name name-link"
-                          title={t(lang, 'price.openCm')}
-                          disabled={!priceBook?.cards[c.id]?.cmUrl}
-                          onClick={(e) => { e.stopPropagation(); openCm(priceBook?.cards[c.id]) }}
-                        >{displayName(c)}</button>
+                        <div className="name-with-ban">
+                          <button
+                            type="button"
+                            className="name name-link"
+                            title={t(lang, 'price.openCm')}
+                            disabled={!priceBook?.cards[c.id]?.cmUrl}
+                            onClick={(e) => { e.stopPropagation(); openCm(priceBook?.cards[c.id]) }}
+                          >{displayName(c)}</button>
+                          <BanBadge status={banStatus(c)} lang={lang} />
+                        </div>
                         <div className="sub">{c.code} · x{ownedQty(collection[c.id])}{c.energy != null ? ` · E${c.energy}` : ''}</div>
                         {(() => {
                           const pl = priceLabel(priceBook?.cards[c.id])

@@ -171,6 +171,8 @@ const de: Record<string, string> = {
   'decks.owns': 'besitzt {have}',
   'decks.unmatchedName': '{name}',
   'decks.needHaveLine': '{name} — benötigt {need}, vorhanden {have}',
+  'decks.banned': 'Gebannt',
+  'decks.banned2v2': 'Gebannt (2v2)',
 
   'hand.title': 'Hand-Tester',
   'hand.toggle': 'Hand-Tester ein-/ausblenden',
@@ -353,6 +355,8 @@ const en: Record<string, string> = {
   'decks.owns': 'owns {have}',
   'decks.unmatchedName': '{name}',
   'decks.needHaveLine': '{name} — need {need}, have {have}',
+  'decks.banned': 'Banned',
+  'decks.banned2v2': 'Banned (2v2)',
 
   'hand.title': 'Hand Tester',
   'hand.toggle': 'Show/hide Hand Tester',

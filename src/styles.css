@@ -874,3 +874,37 @@ textarea.field { min-height: 160px; resize: vertical; font-family: ui-monospace,
   color: var(--warn);
   font-size: 13px;
 }
+
+/* Ban badge in deck builder rows */
+.ban-badge {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 6px;
+  padding: 1px 7px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 650;
+  letter-spacing: .02em;
+  vertical-align: middle;
+  line-height: 1.4;
+  border: 1px solid rgba(255,123,138,.45);
+  background: rgba(255,123,138,.12);
+  color: var(--danger);
+  white-space: nowrap;
+}
+.ban-badge.ban-2v2 {
+  border-color: rgba(255,210,122,.5);
+  background: rgba(255,210,122,.12);
+  color: var(--warn);
+}
+.name-with-ban {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2px 0;
+}
+.name-with-ban .name-link,
+.name-with-ban .name {
+  width: auto;
+  display: inline;
+}
