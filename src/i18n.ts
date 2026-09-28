@@ -68,6 +68,7 @@ const de: Record<string, string> = {
   'collection.emptyFilter': 'Keine Karten für diese Filter.',
   'collection.domainClear': '{domain} Filter entfernen',
   'collection.domainTitle': 'Domain {domain}',
+  'collection.hideNexusNight': 'Nexus Night ausblenden',
 
   'catalog.allSets': 'Alle Sets',
   'catalog.allTypes': 'Alle Typen',
@@ -253,6 +254,7 @@ const en: Record<string, string> = {
   'collection.emptyFilter': 'No cards for these filters.',
   'collection.domainClear': 'Clear {domain} filter',
   'collection.domainTitle': 'Domain {domain}',
+  'collection.hideNexusNight': 'Hide Nexus Night',
 
   'catalog.allSets': 'All sets',
   'catalog.allTypes': 'All types',

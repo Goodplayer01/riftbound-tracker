@@ -157,6 +157,25 @@ function openCm(p?: PriceEntry | null) {
   }
 }
 
+
+const HIDE_NN_KEY = 'riftbound-hide-nexus-night'
+
+function loadHideNexusNight(): boolean {
+  try {
+    return localStorage.getItem(HIDE_NN_KEY) === '1'
+  } catch {
+    return false
+  }
+}
+
+function saveHideNexusNight(v: boolean) {
+  try {
+    localStorage.setItem(HIDE_NN_KEY, v ? '1' : '0')
+  } catch {
+    /* ignore */
+  }
+}
+
 export default function App() {
   const [tab, setTab] = useState<Tab>('collection')
   const [lang, setLang] = useState<Lang>(() => loadLang())
@@ -196,6 +215,7 @@ export default function App() {
   const [priceBook, setPriceBook] = useState<PriceBook | null>(null)
   // null = binder dashboard; 'owned' = all owned; set code = that set binder
   const [binderView, setBinderView] = useState<string | null>(null)
+  const [hideNexusNight, setHideNexusNight] = useState<boolean>(() => loadHideNexusNight())
   const [binderOwnedOnly, setBinderOwnedOnly] = useState(false)
   const [binderMissing, setBinderMissing] = useState(false)
   const [binderRarity, setBinderRarity] = useState<string | null>(null)
@@ -459,7 +479,8 @@ export default function App() {
     const known = BINDER_SET_ORDER.filter((id) => id in sets)
     const knownSet = new Set<string>(known)
     const rest = Object.keys(sets).filter((id) => !knownSet.has(id))
-    const order = [...known, ...rest]
+    let order = [...known, ...rest]
+    if (hideNexusNight) order = order.filter((id) => !String(id).endsWith('-NN'))
     const out: { id: string; name: string; total: number; owned: number; pct: number; eur: number | null }[] = []
     for (const id of order) {
       const setCards = cards.filter((c) => c.set === id)
@@ -497,7 +518,7 @@ export default function App() {
       })
     }
     return out
-  }, [cards, sets, collection, priceBook])
+  }, [cards, sets, collection, priceBook, hideNexusNight])
 
   const binderCards = useMemo(() => {
     if (binderView == null) return [] as Card[]
@@ -1324,6 +1345,19 @@ export default function App() {
                 <h2 className="section-title">{t(lang, 'collection.title')}</h2>
                 <p className="help" style={{ margin: 0 }}>{t(lang, 'collection.help')}</p>
               </div>
+              <button
+                type="button"
+                className={`chip ${hideNexusNight ? 'active' : ''}`}
+                onClick={() => {
+                  setHideNexusNight((v) => {
+                    const next = !v
+                    saveHideNexusNight(next)
+                    return next
+                  })
+                }}
+              >
+                {t(lang, 'collection.hideNexusNight')}
+              </button>
               <button className="btn" onClick={exportCsv}>{t(lang, 'catalog.csvExport')}</button>
               <label className="btn">
                 {t(lang, 'catalog.csvImport')}

@@ -1,8 +1,13 @@
 #!/usr/bin/env python3
-"""Rewrite Cardmarket cmUrl roles and pin the English product market.
+"""Rewrite Cardmarket cmUrl roles with English-first language preference.
 
-Cardmarket article language is distinct from the site's locale. The baked book is
-English-only: language id 1 (English). URLs use the English site locale as well.
+Prefer English site locale (/en/) and languageId=1. If a row somehow lacks an
+English market link, keep the existing URL (fallback) rather than clearing it.
+Article language is distinct from site locale.
+
+German seller filter (sellerCountry=7): NOT applied here. Product Low/Avg30 from
+the bake API are global; MKM Articles can filter live offers by seller country,
+but that needs offer scraping — skipped.
 
 Rules (per set + name + subtitle group):
   - Leave non-versioned singles alone (no -Vn- suffix).
@@ -41,6 +46,8 @@ HARD_OVERRIDES = {
     "ogn-303-star-298": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Origins/Ahri-Nine-Tailed-Fox-V3-Overnumbered",
     "ogn-303-298": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Origins/Ahri-Nine-Tailed-Fox-V2-Overnumbered",
     "ven-197-star-166": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Vendetta/Kennen-Heart-of-the-Tempest-V3-Signed-Showcase",
+    # Bare .../Sabotage has no product; EN Rare is V1-Rare (cmId 847319).
+    "ogn-156-298": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Origins/Sabotage-V1-Rare",
 }
 
 
@@ -138,11 +145,17 @@ def main() -> None:
     if OVERRIDES_PATH.exists():
         overrides.update(json.loads(OVERRIDES_PATH.read_text(encoding="utf-8")))
 
-    # Make the language contract explicit in the baked book. Cardmarket's
-    # article endpoint uses idLanguage=1 for English; preserve the existing
-    # English-only price values while fixing old /de/ site-locale links.
+    # EN-first language preference. Prefer idLanguage=1 /en/ links; keep
+    # existing cmUrl if rewrite is impossible (fallback — do not wipe).
     prices_doc["language"] = CARDMARKET_PRODUCT_LANGUAGE
     prices_doc["languageId"] = CARDMARKET_PRODUCT_LANGUAGE_ID
+    prices_doc["languagePreference"] = "en-first"
+    prices_doc["languageFallback"] = True
+    prices_doc["sellerCountryFilter"] = None
+    prices_doc["sellerCountryNote"] = (
+        "Low/Avg30 are product-level (global). MKM Articles supports "
+        "sellerCountry=7 for DE live offers only; not used in this bake."
+    )
 
     changed = []
     skipped_non_versioned = 0
@@ -152,9 +165,15 @@ def main() -> None:
         url = entry.get("cmUrl")
         if not url:
             continue
-        entry["languageId"] = CARDMARKET_PRODUCT_LANGUAGE_ID
+        # Prefer EN; if url empty somehow, skip rather than inventing.
+        entry["languageId"] = entry.get("languageId") or CARDMARKET_PRODUCT_LANGUAGE_ID
+        if entry.get("languageId") != CARDMARKET_PRODUCT_LANGUAGE_ID:
+            # Non-EN marker kept only when already present and EN unavailable.
+            pass
+        else:
+            entry["languageId"] = CARDMARKET_PRODUCT_LANGUAGE_ID
         english = english_url(url)
-        if english != url:
+        if english and english != url:
             entry["cmUrl"] = english
             changed.append((cid, url, english, "English locale"))
             url = english
@@ -208,6 +227,7 @@ def main() -> None:
         "ogn-303-298": "Ahri-Nine-Tailed-Fox-V2-Overnumbered",
         "ven-197-star-166": "Kennen-Heart-of-the-Tempest-V3-Signed-Showcase",
         "sfd-225-star-221": "Irelia-Fervent-V3-Signed-Showcase",
+        "ogn-156-298": "Sabotage-V1-Rare",
     }
     print("\nVERIFY:")
     ok = True
