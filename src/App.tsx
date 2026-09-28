@@ -2162,7 +2162,7 @@ export default function App() {
                                       title={t(lang, 'decks.addToCollection')}
                                       onClick={(e) => {
                                         e.stopPropagation()
-                                        bump(u.id, 'qty', u.short)
+                                        bump(u.id, 'qty', 1)
                                       }}
                                     >
                                       {t(lang, 'decks.addToCollection')}
@@ -2279,7 +2279,7 @@ export default function App() {
                                         title={t(lang, 'decks.addToCollection')}
                                         onClick={(e) => {
                                           e.stopPropagation()
-                                          bump(c.id, 'qty', shortQty)
+                                          bump(c.id, 'qty', 1)
                                         }}
                                       >
                                         {t(lang, 'decks.addToCollection')}
@@ -2412,7 +2412,7 @@ export default function App() {
                                       title={t(lang, 'decks.addToCollection')}
                                       onClick={(e) => {
                                         e.stopPropagation()
-                                        bump(c.id, 'qty', shortQty)
+                                        bump(c.id, 'qty', 1)
                                       }}
                                     >
                                       {t(lang, 'decks.addToCollection')}
