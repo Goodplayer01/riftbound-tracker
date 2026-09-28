@@ -7,15 +7,17 @@ export const OPENING_HAND_SIZE = 4
 /** Max cards bottomed in a single mulligan. */
 export const MULLIGAN_MAX = 2
 
-/** Sections that form the draw library (Main + Champion only). */
-export const DRAW_POOL_SECTIONS = new Set(['main', 'champion'] as const)
+/** Sections that form the draw library (Main Deck only).
+ * Champion starts face-up on the board and is never in the opening/draw pile.
+ * Legend / Battlefield / Rune / Sideboard stay excluded. */
+export const DRAW_POOL_SECTIONS = new Set(['main'] as const)
 
-/** Expand Main Deck + Champion by qty into a multiset of card ids. */
+/** Expand Main Deck by qty into a multiset of card ids (Champion excluded). */
 export function buildDrawPool(cards: DeckCard[]): string[] {
   const pool: string[] = []
   for (const dc of cards) {
     const sec = sectionOf(dc)
-    if (sec !== 'main' && sec !== 'champion') continue
+    if (sec !== 'main') continue
     const n = Math.max(0, Math.floor(dc.qty) || 0)
     for (let i = 0; i < n; i++) pool.push(dc.id)
   }
