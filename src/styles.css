@@ -463,6 +463,8 @@ textarea.field { min-height: 160px; resize: vertical; font-family: ui-monospace,
 }
 .deck-warn b { color: var(--accent2); }
 .deck-warn ul { margin: 6px 0 0; padding-left: 18px; }
+.deck-warn-list { display: grid; gap: 6px; margin-top: 8px; }
+.deck-warn-row { padding: 4px 0; background: transparent; border: none; }
 .deck-missing {
   margin-bottom: 12px; padding: 10px 12px;
   border: 1px solid rgba(255,123,138,.35); border-radius: 12px;

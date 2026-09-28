@@ -177,6 +177,7 @@ export default function App() {
   const [deckImportText, setDeckImportText] = useState('')
   const [deckImportOpen, setDeckImportOpen] = useState(false)
   const [deckMissingReport, setDeckMissingReport] = useState<{ name: string; need: number; have: number; short: number }[] | null>(null)
+  const [missingExpanded, setMissingExpanded] = useState(false)
   const [cardPreview, setCardPreview] = useState<{ src: string; x: number; y: number } | null>(null)
   const [appVersion, setAppVersion] = useState('')
   const [updateInfo, setUpdateInfo] = useState<{ status: string; version?: string; message?: string; percent?: number } | null>(null)
@@ -821,6 +822,7 @@ export default function App() {
     setHandSelected([])
     setMulliganUsed(false)
     setHandDrawn(false)
+    setMissingExpanded(false)
   }, [activeDeckId])
 
   function updateDeck(mut: (d: Deck) => Deck) {
@@ -2121,14 +2123,55 @@ export default function App() {
                           <b>{t(lang, 'decks.missingInCollection')}</b>{' '}
                           {under.length} {cardWord(lang, under.length)} ({totalShort} {copyWord(lang, totalShort)})
                         </div>
-                        <ul>
-                          {under.slice(0, 12).map((u) => (
-                            <li key={u.id}>
-                              {t(lang, 'decks.needHaveLine', { name: u.name, need: u.need, have: u.have })}
-                            </li>
-                          ))}
-                          {under.length > 12 && <li>{t(lang, 'decks.andMore', { n: under.length - 12 })}</li>}
-                        </ul>
+                        <button
+                          type="button"
+                          className="btn small"
+                          style={{ marginTop: 6 }}
+                          onClick={() => setMissingExpanded((v) => !v)}
+                        >
+                          {t(lang, missingExpanded ? 'decks.hideMissing' : 'decks.showMissing')}
+                        </button>
+                        {missingExpanded && (
+                          <div className="deck-warn-list">
+                            {under.map((u) => {
+                              const img = byId.get(u.id)?.image
+                              const pe = priceBook?.cards[u.id]
+                              return (
+                                <div
+                                  key={u.id}
+                                  className="list-item deck-warn-row"
+                                  onMouseEnter={(e) => showCardPreview(e, img)}
+                                  onMouseMove={(e) => showCardPreview(e, img)}
+                                  onMouseLeave={hideCardPreview}
+                                >
+                                  {img ? (
+                                    <img
+                                      className="deck-thumb"
+                                      src={img}
+                                      alt=""
+                                      loading="lazy"
+                                      onError={(e) => { (e.currentTarget as HTMLImageElement).style.visibility = 'hidden' }}
+                                    />
+                                  ) : (
+                                    <div className="deck-thumb deck-thumb-empty" aria-hidden />
+                                  )}
+                                  <div className="grow">
+                                    <button
+                                      type="button"
+                                      className="name name-link"
+                                      title={t(lang, 'price.openCm')}
+                                      disabled={!pe?.cmUrl}
+                                      onClick={() => openCm(pe)}
+                                    >{u.name}</button>
+                                    <div className="sub">
+                                      {t(lang, 'decks.needHave', { need: u.need, have: u.have })}
+                                    </div>
+                                  </div>
+                                </div>
+                              )
+                            })}
+                          </div>
+                        )}
                       </div>
                     )
                   })()}
