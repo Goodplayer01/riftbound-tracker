@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
-"""Rewrite Cardmarket cmUrl version suffixes from catalog roles (not CM price rank).
+"""Rewrite Cardmarket cmUrl roles and pin the English product market.
+
+Cardmarket article language is distinct from the site's locale. The baked book is
+English-only: language id 1 (English). URLs use the English site locale as well.
 
 Rules (per set + name + subtitle group):
   - Leave non-versioned singles alone (no -Vn- suffix).
@@ -22,6 +25,10 @@ import re
 from collections import defaultdict
 from pathlib import Path
 
+CARDMARKET_SITE_LOCALE = "en"
+CARDMARKET_PRODUCT_LANGUAGE_ID = 1  # Cardmarket: English
+CARDMARKET_PRODUCT_LANGUAGE = "English"
+
 ROOT = Path(__file__).resolve().parents[1]
 CARDS_PATH = ROOT / "public" / "cards.json"
 PRICES_PATH = ROOT / "public" / "prices.json"
@@ -31,9 +38,9 @@ VERSIONED = re.compile(r"^(?P<stem>.+)-V(?P<n>\d+)-(?P<rest>.+)$")
 
 # User-verified CM slugs (full URL). Applied after role bake.
 HARD_OVERRIDES = {
-    "ogn-303-star-298": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Origins/Ahri-Nine-Tailed-Fox-V3-Overnumbered",
-    "ogn-303-298": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Origins/Ahri-Nine-Tailed-Fox-V2-Overnumbered",
-    "ven-197-star-166": "https://www.cardmarket.com/de/Riftbound/Products/Singles/Vendetta/Kennen-Heart-of-the-Tempest-V3-Signed-Showcase",
+    "ogn-303-star-298": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Origins/Ahri-Nine-Tailed-Fox-V3-Overnumbered",
+    "ogn-303-298": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Origins/Ahri-Nine-Tailed-Fox-V2-Overnumbered",
+    "ven-197-star-166": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Vendetta/Kennen-Heart-of-the-Tempest-V3-Signed-Showcase",
 }
 
 
@@ -74,6 +81,17 @@ def suffix_for(c: dict, has_alt: bool, has_base: bool) -> str | None:
 
     # Base print with a versioned URL already
     return f"V1-{rarity}"
+
+
+def english_url(url: str) -> str:
+    """Use Cardmarket's English site locale for an already matched product."""
+    if not url:
+        return url
+    parts = url.rstrip("/").split("/")
+    # https://www.cardmarket.com/{locale}/Riftbound/...
+    if len(parts) > 4 and parts[2].endswith("cardmarket.com"):
+        parts[3] = CARDMARKET_SITE_LOCALE
+    return "/".join(parts)
 
 
 def rewrite_url(url: str, new_suffix: str) -> str | None:
@@ -120,6 +138,12 @@ def main() -> None:
     if OVERRIDES_PATH.exists():
         overrides.update(json.loads(OVERRIDES_PATH.read_text(encoding="utf-8")))
 
+    # Make the language contract explicit in the baked book. Cardmarket's
+    # article endpoint uses idLanguage=1 for English; preserve the existing
+    # English-only price values while fixing old /de/ site-locale links.
+    prices_doc["language"] = CARDMARKET_PRODUCT_LANGUAGE
+    prices_doc["languageId"] = CARDMARKET_PRODUCT_LANGUAGE_ID
+
     changed = []
     skipped_non_versioned = 0
     missing_card = 0
@@ -128,9 +152,15 @@ def main() -> None:
         url = entry.get("cmUrl")
         if not url:
             continue
+        entry["languageId"] = CARDMARKET_PRODUCT_LANGUAGE_ID
+        english = english_url(url)
+        if english != url:
+            entry["cmUrl"] = english
+            changed.append((cid, url, english, "English locale"))
+            url = english
 
         if cid in overrides:
-            new_url = overrides[cid]
+            new_url = english_url(overrides[cid])
             if new_url != url:
                 entry["cmUrl"] = new_url
                 changed.append((cid, url, new_url, "override"))

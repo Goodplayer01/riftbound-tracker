@@ -1557,6 +1557,7 @@ export default function App() {
               {binderCards.map((c) => {
                 const o = collection[c.id] || { qty: 0, foil: 0 }
                 const n = ownedQty(o)
+                const showFoil = !(c.signed || c.overnumbered) || o.foil > 0
                 return (
                   <article key={c.id} className={`card ${n ? 'owned' : 'missing'}${c.signed || c.overnumbered ? ' shimmer' : ''}`}>
                     <div className="art" style={{ backgroundImage: c.image ? `url(${c.image})` : undefined }}>
@@ -1594,11 +1595,13 @@ export default function App() {
                           <b className={o.qty > 0 ? 'ok' : 'muted'}>{o.qty}</b>
                           <button onClick={() => bump(c.id, 'qty', 1)}>+</button>
                         </div>
-                        <div className="qty" title={t(lang, 'qty.foil')}>
-                          <button onClick={() => bump(c.id, 'foil', -1)}>-</button>
-                          <b className={o.foil > 0 ? 'ok' : 'muted'}>{o.foil}F</b>
-                          <button onClick={() => bump(c.id, 'foil', 1)}>+</button>
-                        </div>
+                        {showFoil && (
+                          <div className="qty" title={t(lang, 'qty.foil')}>
+                            <button onClick={() => bump(c.id, 'foil', -1)}>-</button>
+                            <b className={o.foil > 0 ? 'ok' : 'muted'}>{o.foil}F</b>
+                            <button onClick={() => bump(c.id, 'foil', 1)}>+</button>
+                          </div>
+                        )}
                       </div>
                     </div>
                   </article>
@@ -1718,6 +1721,7 @@ export default function App() {
             <div className="grid">
               {filtered.map((c) => {
                 const o = collection[c.id] || { qty: 0, foil: 0 }
+                const showFoil = !(c.signed || c.overnumbered) || o.foil > 0
                 return (
                   <article key={c.id} className={`card ${ownedQty(o) ? 'owned' : ''}${c.signed || c.overnumbered ? ' shimmer' : ''}`}>
                     <div className="art" style={{ backgroundImage: c.image ? `url(${c.image})` : undefined }}>
@@ -1755,11 +1759,13 @@ export default function App() {
                           <b>{o.qty}</b>
                           <button onClick={() => bump(c.id, 'qty', 1)}>+</button>
                         </div>
-                        <div className="qty" title={t(lang, 'qty.foil')}>
-                          <button onClick={() => bump(c.id, 'foil', -1)}>-</button>
-                          <b className="ok">{o.foil}F</b>
-                          <button onClick={() => bump(c.id, 'foil', 1)}>+</button>
-                        </div>
+                        {showFoil && (
+                          <div className="qty" title={t(lang, 'qty.foil')}>
+                            <button onClick={() => bump(c.id, 'foil', -1)}>-</button>
+                            <b className="ok">{o.foil}F</b>
+                            <button onClick={() => bump(c.id, 'foil', 1)}>+</button>
+                          </div>
+                        )}
                       </div>
                     </div>
                   </article>
