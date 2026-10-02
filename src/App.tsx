@@ -29,6 +29,7 @@ import {
   sectionOf,
 } from './deckHelpers'
 import { banStatus, type BanStatus } from './banlist'
+import { STORE_LOCATOR_URL, geocodeQuery, mapsUrl, searchStoresNear, type StoreHit } from './stores'
 import {
   OPENING_HAND_SIZE,
   applyMulligan,
@@ -37,7 +38,7 @@ import {
   drawTopCard,
 } from './handTester'
 
-type Tab = 'collection' | 'catalog' | 'sales' | 'bulk' | 'decks' | 'borrowed'
+type Tab = 'collection' | 'catalog' | 'sales' | 'bulk' | 'decks' | 'borrowed' | 'stores'
 
 function uid() {
   return crypto.randomUUID()
@@ -210,6 +211,12 @@ export default function App() {
   const [borrowImportText, setBorrowImportText] = useState('')
   const [borrowImportOpen, setBorrowImportOpen] = useState(false)
   const [borrowNotice, setBorrowNotice] = useState<string | null>(null)
+  const [storeQuery, setStoreQuery] = useState('Berlin')
+  const [storeMiles, setStoreMiles] = useState(50)
+  const [storeHits, setStoreHits] = useState<StoreHit[]>([])
+  const [storeLabel, setStoreLabel] = useState<string | null>(null)
+  const [storeBusy, setStoreBusy] = useState(false)
+  const [storeError, setStoreError] = useState<string | null>(null)
   const [q, setQ] = useState('')
   const [setFilter, setSetFilter] = useState('')
   const [ownedOnly, setOwnedOnly] = useState(false)
@@ -1333,6 +1340,70 @@ export default function App() {
     setDeckImportOpen(false)
   }
 
+
+  async function runStoreSearchAt(lat: number, lng: number, label: string) {
+    setStoreBusy(true)
+    setStoreError(null)
+    try {
+      const hits = await searchStoresNear(lat, lng, storeMiles)
+      setStoreHits(hits)
+      setStoreLabel(label)
+    } catch (e) {
+      setStoreHits([])
+      setStoreLabel(null)
+      setStoreError(t(lang, 'stores.error', { message: e instanceof Error ? e.message : String(e) }))
+    } finally {
+      setStoreBusy(false)
+    }
+  }
+
+  async function runStoreSearch() {
+    const q = storeQuery.trim()
+    if (!q) {
+      setStoreError(t(lang, 'stores.needQuery'))
+      return
+    }
+    setStoreBusy(true)
+    setStoreError(null)
+    try {
+      const geo = await geocodeQuery(q, 'de')
+      if (!geo) {
+        setStoreHits([])
+        setStoreLabel(null)
+        setStoreError(t(lang, 'stores.geoFail'))
+        return
+      }
+      const hits = await searchStoresNear(geo.lat, geo.lng, storeMiles)
+      setStoreHits(hits)
+      setStoreLabel(geo.label)
+    } catch (e) {
+      setStoreHits([])
+      setStoreLabel(null)
+      setStoreError(t(lang, 'stores.error', { message: e instanceof Error ? e.message : String(e) }))
+    } finally {
+      setStoreBusy(false)
+    }
+  }
+
+  function runStoreGeo() {
+    if (!navigator.geolocation) {
+      setStoreError(t(lang, 'stores.geoDenied'))
+      return
+    }
+    setStoreBusy(true)
+    setStoreError(null)
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        void runStoreSearchAt(pos.coords.latitude, pos.coords.longitude, t(lang, 'stores.geo'))
+      },
+      () => {
+        setStoreBusy(false)
+        setStoreError(t(lang, 'stores.geoDenied'))
+      },
+      { enableHighAccuracy: false, timeout: 12000, maximumAge: 60000 },
+    )
+  }
+
   if (error) return <div className="main err">{t(lang, 'load.error', { message: error })}</div>
   if (!catalog) return <div className="main">{t(lang, 'load.catalog')}</div>
 
@@ -1369,6 +1440,7 @@ export default function App() {
             ['bulk', 'tab.bulk'],
             ['decks', 'tab.decks'],
             ['borrowed', 'tab.borrowed'],
+            ['stores', 'tab.stores'],
           ] as const).map(([id, key]) => (
             <button key={id} className={`tab ${tab === id ? 'active' : ''}`} onClick={() => setTab(id)}>
               {t(lang, key)}
@@ -3001,6 +3073,93 @@ export default function App() {
             </section>
           </div>
         )}
+
+        {tab === 'stores' && (
+          <div className="split">
+            <section className="panel">
+              <div className="toolbar">
+                <h2 style={{ margin: 0, flex: 1 }}>{t(lang, 'stores.title')}</h2>
+                <button
+                  type="button"
+                  className="btn"
+                  onClick={() => {
+                    if (window.riftbound?.openExternal) void window.riftbound.openExternal(STORE_LOCATOR_URL); else window.open(STORE_LOCATOR_URL, '_blank', 'noopener,noreferrer')
+                  }}
+                >{t(lang, 'stores.openOfficial')}</button>
+              </div>
+              <p className="help">{t(lang, 'stores.help')}</p>
+              <div className="toolbar" style={{ flexWrap: 'wrap', gap: 8 }}>
+                <label className="grow" style={{ display: 'grid', gap: 4, minWidth: 180 }}>
+                  <span className="sub">{t(lang, 'stores.query')}</span>
+                  <input
+                    className="field"
+                    value={storeQuery}
+                    onChange={(e) => setStoreQuery(e.target.value)}
+                    onKeyDown={(e) => { if (e.key === 'Enter') void runStoreSearch() }}
+                    placeholder={t(lang, 'stores.queryPh')}
+                  />
+                </label>
+                <label style={{ display: 'grid', gap: 4 }}>
+                  <span className="sub">{t(lang, 'stores.radius')}</span>
+                  <select className="field" value={storeMiles} onChange={(e) => setStoreMiles(Number(e.target.value))}>
+                    {[10, 25, 50, 100].map((n) => (
+                      <option key={n} value={n}>{t(lang, 'stores.miles', { n })}</option>
+                    ))}
+                  </select>
+                </label>
+                <div className="toolbar" style={{ alignSelf: 'end', margin: 0 }}>
+                  <button className="btn primary" disabled={storeBusy} onClick={() => void runStoreSearch()}>
+                    {storeBusy ? t(lang, 'stores.searching') : t(lang, 'stores.search')}
+                  </button>
+                  <button className="btn" disabled={storeBusy} onClick={runStoreGeo}>{t(lang, 'stores.geo')}</button>
+                </div>
+              </div>
+              {storeError && <p className="help" style={{ color: 'var(--danger)' }}>{storeError}</p>}
+              {storeLabel && !storeError && (
+                <p className="help">{t(lang, 'stores.near', { label: storeLabel })} · {t(lang, 'stores.results', { n: storeHits.length })}</p>
+              )}
+              <div className="list" style={{ marginTop: 12 }}>
+                {!storeBusy && storeLabel && storeHits.length === 0 && (
+                  <div className="empty">{t(lang, 'stores.empty')}</div>
+                )}
+                {storeHits.map((h) => (
+                  <div key={h.id} className="list-item" style={{ alignItems: 'flex-start' }}>
+                    <div className="grow">
+                      <div className="name">{h.name}</div>
+                      <div className="sub">{h.address}</div>
+                      <div className="sub" style={{ marginTop: 4 }}>
+                        {h.distanceKm != null ? t(lang, 'stores.distance', { km: h.distanceKm.toFixed(1) }) : '—'}
+                        {h.types.length ? ` · ${h.types.slice(0, 2).join(', ')}` : ''}
+                      </div>
+                      <div className="sub" style={{ marginTop: 4, opacity: 0.85 }}>{t(lang, 'stores.stockUnknown')}</div>
+                    </div>
+                    <div className="toolbar" style={{ margin: 0, flexDirection: 'column', gap: 4 }}>
+                      {h.website && (
+                        <button
+                          type="button"
+                          className="btn small"
+                          onClick={() => {
+                            const url = h.website!.startsWith('http') ? h.website! : `https://${h.website}`
+                            if (window.riftbound?.openExternal) void window.riftbound.openExternal(url); else window.open(url, '_blank', 'noopener,noreferrer')
+                          }}
+                        >{t(lang, 'stores.website')}</button>
+                      )}
+                      <button
+                        type="button"
+                        className="btn small"
+                        onClick={() => {
+                          const url = mapsUrl(h)
+                          if (window.riftbound?.openExternal) void window.riftbound.openExternal(url); else window.open(url, '_blank', 'noopener,noreferrer')
+                        }}
+                      >{t(lang, 'stores.maps')}</button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+          </div>
+        )}
+
       </main>
       {cardPreview && (
         <div

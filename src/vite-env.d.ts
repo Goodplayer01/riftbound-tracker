@@ -22,6 +22,7 @@ declare global {
       onFullscreen: (cb: (isFullScreen: boolean) => void) => () => void
       windowClose: () => Promise<void>
       openExternal: (url: string) => Promise<{ ok: boolean }>
+      fetchJson: (url: string) => Promise<{ ok: boolean; data?: unknown; error?: string }>
     }
   }
 }

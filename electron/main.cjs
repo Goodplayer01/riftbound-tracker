@@ -260,6 +260,42 @@ ipcMain.handle('window:isFullScreen', () => !!mainWindow?.isFullScreen())
 ipcMain.handle('window:close', () => {
   mainWindow?.close()
 })
+
+ipcMain.handle('net:fetchJson', async (_e, url) => {
+  if (typeof url !== 'string' || !/^https:\/\//i.test(url)) {
+    return { ok: false, error: 'invalid url' }
+  }
+  let parsed
+  try {
+    parsed = new URL(url)
+  } catch {
+    return { ok: false, error: 'invalid url' }
+  }
+  const allowed = new Set([
+    'api.riftbound.uvsgames.com',
+    'api.cloudflare.riftbound.uvsgames.com',
+    'nominatim.openstreetmap.org',
+  ])
+  if (!allowed.has(parsed.hostname)) {
+    return { ok: false, error: 'host not allowed' }
+  }
+  try {
+    const res = await fetch(url, {
+      headers: {
+        Accept: 'application/json',
+        'User-Agent': 'DeakrixRiftboundTracker/' + app.getVersion() + ' (store locator)',
+      },
+    })
+    if (!res.ok) {
+      return { ok: false, error: 'HTTP ' + res.status }
+    }
+    const data = await res.json()
+    return { ok: true, data }
+  } catch (e) {
+    return { ok: false, error: String(e) }
+  }
+})
+
 ipcMain.handle('shell:openExternal', async (_e, url) => {
   if (typeof url !== 'string' || !/^https?:\/\//i.test(url)) return { ok: false }
   await shell.openExternal(url)
