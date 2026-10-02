@@ -1846,7 +1846,7 @@ export default function App() {
                   {t(lang, 'collection.missing')}
                 </button>
               )}
-              <div className="domain-row" role="group" aria-label="Domain filter">
+              <div className="domain-row" role="group" aria-label={t(lang, 'collection.domainFilter')}>
                 {DOMAINS.map((d) => {
                   const active = domainFilter === d
                   return (
@@ -2031,7 +2031,7 @@ export default function App() {
                   <option key={ty} value={ty}>{ty}</option>
                 ))}
               </select>
-              <div className="domain-row" role="group" aria-label="Domain filter">
+              <div className="domain-row" role="group" aria-label={t(lang, 'collection.domainFilter')}>
                 {DOMAINS.map((d) => {
                   const active = domainFilter === d
                   return (
@@ -2369,7 +2369,7 @@ export default function App() {
                 )}
               </div>
               <h3 style={{ margin: '0 0 6px', fontSize: 14 }}>{t(lang, 'sales.pasteTitle')}</h3>
-              <p className="help">Zeilen wie <code>2 Card Name</code> oder Codes (<code>OGN-056</code>). Nur owned.</p>
+              <p className="help">{t(lang, 'sales.pasteHelp')}</p>
               <textarea
                 className="field"
                 rows={5}
@@ -2623,7 +2623,7 @@ export default function App() {
                     return (
                       <div className="deck-legend-swap" role="status">
                         <b>{t(lang, 'decks.legendRemoved')}</b>
-                        {' — '}
+                        {': '}
                         {req.length > 0
                           ? <>{t(lang, 'decks.legendCover', { domains: req.join(', ') })}</>
                           : <>{t(lang, 'decks.legendAny')}</>}
