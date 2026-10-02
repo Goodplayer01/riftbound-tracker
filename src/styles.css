@@ -1120,7 +1120,7 @@ textarea.field { min-height: 160px; resize: vertical; font-family: ui-monospace,
 .card-lightbox-inner {
   position: relative;
   display: grid;
-  grid-template-columns: minmax(280px, 420px) minmax(220px, 300px);
+  grid-template-columns: minmax(260px, 400px) minmax(240px, 340px);
   gap: 16px;
   max-width: min(780px, 96vw);
   max-height: min(820px, 94vh);
@@ -1185,6 +1185,8 @@ textarea.field { min-height: 160px; resize: vertical; font-family: ui-monospace,
   min-width: 0;
   padding-top: 4px;
   padding-right: 28px;
+  overflow: auto;
+  max-height: min(780px, 90vh);
 }
 .card-lightbox-title {
   margin: 0;
@@ -1212,4 +1214,94 @@ textarea.field { min-height: 160px; resize: vertical; font-family: ui-monospace,
 .card-lightbox-dl dd {
   margin: 0;
   color: var(--text, #e8ecf4);
+}
+
+/* —— Keyword glossary in card enlarge lightbox —— */
+.card-keywords {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(212, 175, 55, 0.22);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-height: 0;
+  max-height: min(280px, 36vh);
+  overflow: auto;
+}
+.card-keywords-head {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.card-keywords-head strong {
+  font-size: 13px;
+  letter-spacing: 0.02em;
+  color: var(--accent2, #d4af37);
+}
+.card-keywords-hint,
+.card-keywords-source,
+.card-keywords-label {
+  margin: 0;
+  font-size: 11px;
+  line-height: 1.35;
+  color: var(--muted);
+}
+.card-keywords-label.muted {
+  font-style: italic;
+}
+.card-keywords-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.card-keyword {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  background: rgba(12, 14, 20, 0.55);
+  overflow: hidden;
+}
+.card-keyword.on-card {
+  border-color: rgba(212, 175, 55, 0.35);
+  background: rgba(212, 175, 55, 0.07);
+}
+.card-keyword-toggle {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 6px 8px;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  text-align: left;
+  font: inherit;
+}
+.card-keyword-toggle:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
+.card-keyword-name {
+  font-size: 12px;
+  font-weight: 650;
+}
+.card-keyword-chev {
+  color: var(--muted);
+  font-size: 11px;
+}
+.card-keyword-blurb {
+  margin: 0;
+  padding: 0 8px 8px;
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--text, #e8ecf4);
+}
+.card-keywords-browse {
+  align-self: flex-start;
+  margin-top: 2px;
+  padding: 4px 10px !important;
+  font-size: 12px !important;
 }

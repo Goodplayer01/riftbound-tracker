@@ -2,6 +2,15 @@ import { useEffect, useMemo, useRef, useState, type DragEvent as ReactDragEvent,
 import type { BorrowedCard, BorrowedGroup, Card, Catalog, Deck, DeckSection, PriceBook, PriceEntry } from './types'
 import { loadBorrowed, loadCollection, loadDecks, saveBorrowed, saveCollection, saveDecks, type Collection } from './storage'
 import { loadLang, saveLang, t, type Lang } from './i18n'
+import {
+  allKeywordIds,
+  keywordsForCard,
+  keywordBlurb,
+  keywordName,
+  setCardKeywordBook,
+  type CardKeywordBook,
+  type KeywordId,
+} from './keywords'
 import { parseBulkTokens, resolveToken } from './parseBulk'
 import {
   SECTION_ADD_LABEL,
@@ -255,6 +264,8 @@ export default function App() {
   const [missingExpanded, setMissingExpanded] = useState(false)
   const [cardPreview, setCardPreview] = useState<{ src: string; x: number; y: number } | null>(null)
   const [cardLightbox, setCardLightbox] = useState<Card | null>(null)
+  const [kwExpanded, setKwExpanded] = useState<KeywordId | null>(null)
+  const [kwShowAll, setKwShowAll] = useState(false)
   const [appVersion, setAppVersion] = useState('')
   const [updateInfo, setUpdateInfo] = useState<{ status: string; version?: string; message?: string; percent?: number } | null>(null)
   const [isFullScreen, setIsFullScreen] = useState(false)
@@ -398,6 +409,10 @@ export default function App() {
     fetch(new URL('prices.json', window.location.href))
       .then((r) => (r.ok ? r.json() : null))
       .then((data: PriceBook | null) => { if (data) setPriceBook(data) })
+      .catch(() => {})
+    fetch(new URL('card-keywords.json', window.location.href))
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data: CardKeywordBook | null) => { if (data?.byCardId) setCardKeywordBook(data) })
       .catch(() => {})
   }, [])
 
@@ -1529,6 +1544,8 @@ export default function App() {
 
   function openCardLightbox(c: Card) {
     setCardPreview(null)
+    setKwExpanded(null)
+    setKwShowAll(false)
     setCardLightbox(c)
   }
 
@@ -3545,6 +3562,52 @@ export default function App() {
                 <div><dt>{t(lang, 'card.energy')}</dt><dd>{cardLightbox.energy != null ? cardLightbox.energy : '—'}</dd></div>
                 <div><dt>{t(lang, 'card.might')}</dt><dd>{cardLightbox.might != null ? cardLightbox.might : '—'}</dd></div>
               </dl>
+              <div className="card-keywords">
+                <div className="card-keywords-head">
+                  <strong>{t(lang, 'card.keywords')}</strong>
+                  <span className="card-keywords-hint">{t(lang, 'card.keywordsHint')}</span>
+                </div>
+                {(() => {
+                  const onCard = keywordsForCard(cardLightbox)
+                  const browse = allKeywordIds()
+                  return (
+                    <>
+                      {onCard.length > 0 ? (
+                        <p className="card-keywords-label">{t(lang, 'card.keywordsOnCard')}</p>
+                      ) : (
+                        <p className="card-keywords-label muted">{t(lang, 'card.keywordsNone')}</p>
+                      )}
+                      <ul className="card-keywords-list">
+                        {(kwShowAll ? browse : (onCard.length ? onCard : [])).map((id) => {
+                          const open = kwExpanded === id
+                          return (
+                            <li key={id} className={'card-keyword' + (onCard.includes(id) ? ' on-card' : '')}>
+                              <button
+                                type="button"
+                                className="card-keyword-toggle"
+                                aria-expanded={open}
+                                onClick={() => setKwExpanded(open ? null : id)}
+                              >
+                                <span className="card-keyword-name">{keywordName(lang, id)}</span>
+                                <span className="card-keyword-chev">{open ? '▾' : '▸'}</span>
+                              </button>
+                              {open && (
+                                <p className="card-keyword-blurb">{keywordBlurb(lang, id)}</p>
+                              )}
+                            </li>
+                          )
+                        })}
+                      </ul>
+                      <button
+                        type="button"
+                        className="btn card-keywords-browse"
+                        onClick={() => { setKwShowAll((v) => !v); setKwExpanded(null) }}
+                      >{kwShowAll ? t(lang, 'card.keywordsOnCard') : t(lang, 'card.keywordsBrowse')}</button>
+                      <p className="card-keywords-source">{t(lang, 'card.keywordsSource')}</p>
+                    </>
+                  )
+                })()}
+              </div>
               {priceBook?.cards[cardLightbox.id]?.cmUrl && (
                 <button
                   type="button"
