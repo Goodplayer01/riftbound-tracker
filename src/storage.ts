@@ -1,7 +1,8 @@
-import type { Deck, Owned } from './types'
+import type { BorrowedGroup, Deck, Owned } from './types'
 
 const COLLECTION_KEY = 'rb.collection.v1'
 const DECKS_KEY = 'rb.decks.v1'
+const BORROWED_KEY = 'rb.borrowed.v1'
 
 export type Collection = Record<string, Owned>
 
@@ -27,4 +28,16 @@ export function loadDecks(): Deck[] {
 
 export function saveDecks(d: Deck[]) {
   localStorage.setItem(DECKS_KEY, JSON.stringify(d))
+}
+
+export function loadBorrowed(): BorrowedGroup[] {
+  try {
+    return JSON.parse(localStorage.getItem(BORROWED_KEY) || '[]')
+  } catch {
+    return []
+  }
+}
+
+export function saveBorrowed(groups: BorrowedGroup[]) {
+  localStorage.setItem(BORROWED_KEY, JSON.stringify(groups))
 }

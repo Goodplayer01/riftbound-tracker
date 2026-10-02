@@ -51,3 +51,14 @@ export type PriceBook = {
   source: string
   cards: Record<string, PriceEntry>
 }
+
+/** Flat card entry for a lent-out stack (no deck sections). */
+export type BorrowedCard = { id: string; qty: number }
+
+/** Group of cards lent to one borrower (accordion like decks). */
+export type BorrowedGroup = {
+  id: string
+  name: string
+  cards: BorrowedCard[]
+  updatedAt: string
+}

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState, type DragEvent as ReactDragEvent, type MouseEvent as ReactMouseEvent } from 'react'
-import type { Card, Catalog, Deck, DeckSection, PriceBook, PriceEntry } from './types'
-import { loadCollection, loadDecks, saveCollection, saveDecks, type Collection } from './storage'
+import type { BorrowedCard, BorrowedGroup, Card, Catalog, Deck, DeckSection, PriceBook, PriceEntry } from './types'
+import { loadBorrowed, loadCollection, loadDecks, saveBorrowed, saveCollection, saveDecks, type Collection } from './storage'
 import { loadLang, saveLang, t, type Lang } from './i18n'
 import { parseBulkTokens, resolveToken } from './parseBulk'
 import {
@@ -37,7 +37,7 @@ import {
   drawTopCard,
 } from './handTester'
 
-type Tab = 'collection' | 'catalog' | 'sales' | 'bulk' | 'decks'
+type Tab = 'collection' | 'catalog' | 'sales' | 'bulk' | 'decks' | 'borrowed'
 
 function uid() {
   return crypto.randomUUID()
@@ -45,6 +45,26 @@ function uid() {
 
 function ownedQty(o?: { qty: number; foil: number }) {
   return (o?.qty || 0) + (o?.foil || 0)
+}
+
+/** Total lent copies of a card across all borrower groups. */
+function borrowedQtyById(groups: BorrowedGroup[]): Map<string, number> {
+  const m = new Map<string, number>()
+  for (const g of groups) {
+    for (const c of g.cards) {
+      m.set(c.id, (m.get(c.id) || 0) + c.qty)
+    }
+  }
+  return m
+}
+
+/** Flatten deck-import result into a flat id+qty list (merge duplicates). */
+function flattenImportCards(cards: { id: string; qty: number }[]): BorrowedCard[] {
+  const m = new Map<string, number>()
+  for (const c of cards) {
+    m.set(c.id, (m.get(c.id) || 0) + c.qty)
+  }
+  return [...m.entries()].map(([id, qty]) => ({ id, qty }))
 }
 
 /** Reduce non-foil (qty) first, then foil. Never below 0. */
@@ -185,6 +205,11 @@ export default function App() {
   const [error, setError] = useState<string | null>(null)
   const [collection, setCollection] = useState<Collection>({})
   const [decks, setDecks] = useState<Deck[]>([])
+  const [borrowed, setBorrowed] = useState<BorrowedGroup[]>([])
+  const [activeBorrowedId, setActiveBorrowedId] = useState<string | null>(null)
+  const [borrowImportText, setBorrowImportText] = useState('')
+  const [borrowImportOpen, setBorrowImportOpen] = useState(false)
+  const [borrowNotice, setBorrowNotice] = useState<string | null>(null)
   const [q, setQ] = useState('')
   const [setFilter, setSetFilter] = useState('')
   const [ownedOnly, setOwnedOnly] = useState(false)
@@ -336,6 +361,9 @@ export default function App() {
     const d = loadDecks()
     setDecks(d)
     if (d[0]) setActiveDeckId(d[0].id)
+    const b = loadBorrowed()
+    setBorrowed(b)
+    if (b[0]) setActiveBorrowedId(b[0].id)
     fetch(new URL('cards.json', window.location.href))
       .then((r) => {
         if (!r.ok) throw new Error('cards.json fehlt')
@@ -351,6 +379,7 @@ export default function App() {
 
   useEffect(() => saveCollection(collection), [collection])
   useEffect(() => saveDecks(decks), [decks])
+  useEffect(() => saveBorrowed(borrowed), [borrowed])
 
   const cards = catalog?.cards || []
   const sets = catalog?.sets || {}
@@ -846,6 +875,91 @@ export default function App() {
   }
 
   const activeDeck = decks.find((d) => d.id === activeDeckId) || null
+  const activeBorrowed = borrowed.find((g) => g.id === activeBorrowedId) || null
+
+  const borrowedTotals = useMemo(() => borrowedQtyById(borrowed), [borrowed])
+
+  /** Owned copies minus lent-out copies — used for deck missing-copies. */
+  function availableForDecks(id: string) {
+    return Math.max(0, ownedQty(collection[id]) - (borrowedTotals.get(id) || 0))
+  }
+
+  function groupCardCount(g: BorrowedGroup) {
+    return g.cards.reduce((s, c) => s + c.qty, 0)
+  }
+
+  function newBorrowedGroup() {
+    const g: BorrowedGroup = {
+      id: uid(),
+      name: t(lang, 'borrowed.defaultName', { n: borrowed.length + 1 }),
+      cards: [],
+      updatedAt: new Date().toISOString(),
+    }
+    setBorrowed((prev) => [g, ...prev])
+    setActiveBorrowedId(g.id)
+    setBorrowNotice(null)
+    setBorrowImportOpen(false)
+    setBorrowImportText('')
+  }
+
+  function updateBorrowed(mut: (g: BorrowedGroup) => BorrowedGroup) {
+    if (!activeBorrowedId) return
+    setBorrowed((prev) =>
+      prev.map((g) => (g.id === activeBorrowedId ? { ...mut(g), updatedAt: new Date().toISOString() } : g)),
+    )
+  }
+
+  function bumpBorrowedCard(cardId: string, delta: number) {
+    updateBorrowed((g) => {
+      const cards = [...g.cards]
+      const i = cards.findIndex((c) => c.id === cardId)
+      if (i < 0) {
+        if (delta <= 0) return g
+        cards.push({ id: cardId, qty: delta })
+        return { ...g, cards }
+      }
+      const next = cards[i].qty + delta
+      if (next <= 0) {
+        cards.splice(i, 1)
+      } else {
+        cards[i] = { ...cards[i], qty: next }
+      }
+      return { ...g, cards }
+    })
+  }
+
+  function removeBorrowedCard(cardId: string) {
+    updateBorrowed((g) => ({ ...g, cards: g.cards.filter((c) => c.id !== cardId) }))
+  }
+
+  function runBorrowImport(text: string) {
+    if (!activeBorrowedId) return
+    const result = parseDeckImport(text, cards)
+    const flat = flattenImportCards(result.cards)
+    updateBorrowed((g) => {
+      const m = new Map(g.cards.map((c) => [c.id, c.qty]))
+      for (const c of flat) {
+        m.set(c.id, (m.get(c.id) || 0) + c.qty)
+      }
+      return { ...g, cards: [...m.entries()].map(([id, qty]) => ({ id, qty })) }
+    })
+    const copies = flat.reduce((s, c) => s + c.qty, 0)
+    const parts: string[] = [
+      t(lang, 'borrowed.importDone', { cards: flat.length, copies }),
+    ]
+    if (result.unmatched.length) {
+      const shown = result.unmatched.slice(0, 8)
+      const names = shown.map((u) => t(lang, 'decks.notFoundPrefix', { name: u })).join('; ')
+      const more = result.unmatched.length > 8
+        ? ` ${t(lang, 'decks.andMore', { n: result.unmatched.length - 8 })}`
+        : ''
+      parts.push(names + more + t(lang, 'borrowed.namesNotFound'))
+    }
+    setBorrowNotice(parts.join(' · '))
+    setBorrowImportOpen(false)
+    setBorrowImportText('')
+  }
+
 
   useEffect(() => {
     setHandCards(null)
@@ -1168,7 +1282,7 @@ export default function App() {
     const totals = deckTotalQtyById(d.cards)
     const out: { id: string; name: string; need: number; have: number; short: number }[] = []
     for (const [id, need] of totals) {
-      const have = ownedQty(collection[id])
+      const have = availableForDecks(id)
       if (need > have) {
         const c = byId.get(id)
         out.push({ id, name: c ? displayCardName(c) : id, need, have, short: need - have })
@@ -1190,7 +1304,7 @@ export default function App() {
       if (low == null || Number.isNaN(low)) continue
       deckLow += low * need
       priced += need
-      const have = ownedQty(collection[id])
+      const have = availableForDecks(id)
       const short = Math.max(0, need - have)
       if (short > 0) {
         missingLow += low * short
@@ -1254,6 +1368,7 @@ export default function App() {
             ['sales', 'tab.sales'],
             ['bulk', 'tab.bulk'],
             ['decks', 'tab.decks'],
+            ['borrowed', 'tab.borrowed'],
           ] as const).map(([id, key]) => (
             <button key={id} className={`tab ${tab === id ? 'active' : ''}`} onClick={() => setTab(id)}>
               {t(lang, key)}
@@ -2270,7 +2385,7 @@ export default function App() {
                               {cardsIn.map((dc) => {
                                 const c = byId.get(dc.id)
                                 if (!c) return null
-                                const have = ownedQty(collection[c.id])
+                                const have = availableForDecks(c.id)
                                 const shortQty = Math.max(0, dc.qty - have)
                                 const short = shortQty > 0
                                 return (
@@ -2403,7 +2518,7 @@ export default function App() {
                             {cardsIn.map((dc) => {
                               const c = byId.get(dc.id)
                               if (!c) return null
-                              const have = ownedQty(collection[c.id])
+                              const have = availableForDecks(c.id)
                               const shortQty = Math.max(0, dc.qty - have)
                               const short = shortQty > 0
                               return (
@@ -2706,6 +2821,183 @@ export default function App() {
                     </div>
                   ))}
               </div>
+            </section>
+          </div>
+        )}
+
+        {tab === 'borrowed' && (
+          <div className="split">
+            <section className="panel">
+              <div className="toolbar">
+                <h2 style={{ margin: 0, flex: 1 }}>{t(lang, 'borrowed.title')}</h2>
+                <button
+                  className="btn"
+                  disabled={!activeBorrowed}
+                  onClick={() => {
+                    setBorrowImportOpen((v) => !v)
+                    setBorrowImportText('')
+                  }}
+                >{t(lang, 'borrowed.import')}</button>
+                <button className="btn primary" onClick={newBorrowedGroup}>{t(lang, 'borrowed.new')}</button>
+              </div>
+              <p className="help">{t(lang, 'borrowed.help')}</p>
+              <div className="deck-accordion" style={{ marginBottom: 12 }}>
+                {borrowed.length === 0 && <div className="empty">{t(lang, 'borrowed.empty')}</div>}
+                {borrowed.map((g) => {
+                  const expanded = g.id === activeBorrowedId
+                  return (
+                    <div key={g.id} className={`deck-acc-item${expanded ? ' expanded' : ''}${expanded ? ' active' : ''}`}>
+                      <div
+                        className="deck-acc-head"
+                        role="button"
+                        tabIndex={0}
+                        onClick={() => setActiveBorrowedId(g.id)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault()
+                            setActiveBorrowedId(g.id)
+                          }
+                        }}
+                      >
+                        <span className="deck-acc-chevron" aria-hidden>{expanded ? '▾' : '▸'}</span>
+                        <div className="grow deck-acc-title">
+                          {expanded ? (
+                            <input
+                              className="field deck-acc-name-input"
+                              value={g.name}
+                              onChange={(e) => updateBorrowed((group) => ({ ...group, name: e.target.value }))}
+                              onClick={(e) => e.stopPropagation()}
+                              onKeyDown={(e) => e.stopPropagation()}
+                              aria-label={t(lang, 'borrowed.rename')}
+                            />
+                          ) : (
+                            <span className="name">{g.name}</span>
+                          )}
+                          <span className="deck-acc-count">· {t(lang, 'borrowed.cardCount', { n: groupCardCount(g) })}</span>
+                        </div>
+                        {expanded && <span className="pill ok">{t(lang, 'borrowed.active')}</span>}
+                      </div>
+                      {expanded && (
+                        <div className="deck-acc-body">
+                          <div className="deck-acc-summary-row">
+                            <div className="grow" />
+                            <button
+                              type="button"
+                              className="btn icon danger deck-trash"
+                              title={t(lang, 'borrowed.delete')}
+                              aria-label={t(lang, 'borrowed.delete')}
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                setBorrowed((prev) => prev.filter((x) => x.id !== g.id))
+                                setActiveBorrowedId(null)
+                              }}
+                            >
+                              🗑
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
+
+              {activeBorrowed && (
+                <>
+                  {borrowImportOpen && (
+                    <div className="deck-import-box">
+                      <p className="help" style={{ margin: 0 }}>{t(lang, 'borrowed.importHint')}</p>
+                      <textarea
+                        className="field"
+                        placeholder={"Champion:\n1 Rengar, Trophy Hunter\n\nCards:\n1 Darius, Trifarian\n2 Ferrous Forerunner\n\nBattlefields:\n1 Emperor's Dais"}
+                        value={borrowImportText}
+                        onChange={(e) => setBorrowImportText(e.target.value)}
+                        rows={10}
+                      />
+                      <div className="toolbar" style={{ marginBottom: 0 }}>
+                        <button
+                          className="btn primary"
+                          disabled={!borrowImportText.trim()}
+                          onClick={() => runBorrowImport(borrowImportText)}
+                        >{t(lang, 'borrowed.importBtn')}</button>
+                      </div>
+                    </div>
+                  )}
+
+                  {borrowNotice && (
+                    <div className="deck-notice" role="status">
+                      <span>{borrowNotice}</span>
+                      <button type="button" className="btn small" onClick={() => setBorrowNotice(null)}>OK</button>
+                    </div>
+                  )}
+
+                  <div className="list" style={{ marginTop: 12 }}>
+                    {activeBorrowed.cards.length === 0 && (
+                      <div className="empty">{t(lang, 'borrowed.importHint')}</div>
+                    )}
+                    {activeBorrowed.cards.map((bc) => {
+                      const c = byId.get(bc.id)
+                      const have = ownedQty(collection[bc.id])
+                      const avail = availableForDecks(bc.id)
+                      const img = c?.image
+                      return (
+                        <div
+                          key={bc.id}
+                          className="list-item deck-card-row"
+                          onMouseEnter={(e) => showCardPreview(e, img)}
+                          onMouseMove={(e) => showCardPreview(e, img)}
+                          onMouseLeave={hideCardPreview}
+                        >
+                          {img ? (
+                            <img
+                              className="deck-thumb"
+                              src={img}
+                              alt=""
+                              loading="lazy"
+                              onError={(e) => { (e.currentTarget as HTMLImageElement).style.visibility = 'hidden' }}
+                            />
+                          ) : (
+                            <div className="deck-thumb deck-thumb-empty" aria-hidden />
+                          )}
+                          <div className="grow">
+                            <button
+                              type="button"
+                              className="name name-link"
+                              title={t(lang, 'price.openCm')}
+                              disabled={!priceBook?.cards[bc.id]?.cmUrl}
+                              onClick={() => openCm(priceBook?.cards[bc.id])}
+                            >{c ? displayCardName(c) : bc.id}</button>
+                            <div className="sub">
+                              {c ? `${c.code} · ` : ''}{t(lang, 'borrowed.ownedAvail', { have, avail })}
+                            </div>
+                          </div>
+                          <div className="qty" onClick={(e) => e.stopPropagation()}>
+                            <button type="button" onClick={() => bumpBorrowedCard(bc.id, -1)}>−</button>
+                            <b>{bc.qty}</b>
+                            <button type="button" onClick={() => bumpBorrowedCard(bc.id, 1)}>+</button>
+                          </div>
+                          <button
+                            type="button"
+                            className="btn icon danger deck-trash deck-card-trash"
+                            title={t(lang, 'borrowed.removeCard')}
+                            aria-label={t(lang, 'borrowed.removeCard')}
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              removeBorrowedCard(bc.id)
+                            }}
+                          >
+                            🗑
+                          </button>
+                        </div>
+                      )
+                    })}
+                  </div>
+                </>
+              )}
+
+              {!activeBorrowed && borrowed.length > 0 && (
+                <div className="empty">{t(lang, 'borrowed.pickFirst')}</div>
+              )}
             </section>
           </div>
         )}

@@ -49,6 +49,8 @@ const SECTION_HEADER: Record<string, DeckSection> = {
   'main deck': 'main',
   main: 'main',
   hauptdeck: 'main',
+  cards: 'main',
+  karten: 'main',
   battlefield: 'battlefield',
   battlefields: 'battlefield',
   gefechtsfeld: 'battlefield',
