@@ -18,6 +18,19 @@ if (process.platform === 'win32') {
   app.setAppUserModelId('com.goodplayer01.riftboundtracker')
 }
 
+const gotSingleInstanceLock = app.requestSingleInstanceLock()
+if (!gotSingleInstanceLock) {
+  app.quit()
+} else {
+  app.on('second-instance', () => {
+    const win = mainWindow
+    if (!win || win.isDestroyed()) return
+    if (win.isMinimized()) win.restore()
+    if (!win.isVisible()) win.show()
+    win.focus()
+  })
+}
+
 function resolveAppIcon() {
   const candidates = []
   if (app.isPackaged) {
@@ -345,6 +358,10 @@ ipcMain.handle('shell:openExternal', async (_e, url) => {
 })
 
 app.whenReady().then(() => {
+  if (!gotSingleInstanceLock) {
+    app.quit()
+    return
+  }
   createWindow()
   setupAutoUpdater()
   app.on('activate', () => {
