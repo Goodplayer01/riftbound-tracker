@@ -17,6 +17,8 @@ export type Card = {
   overnumbered?: boolean
   altArt?: boolean
   tags?: string[]
+  /** Official EN rules text when baked from Riot gallery; null = unknown / use OCR. */
+  rulesText?: string | null
 }
 
 export type Owned = { qty: number; foil: number }

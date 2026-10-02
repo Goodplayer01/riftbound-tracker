@@ -259,7 +259,8 @@ const de: Record<string, string> = {
 
   'card.enlarge': 'Karte vergrößern',
   'card.enlargeClose': 'Schließen',
-  'card.enlargeHint': 'Effekttext per OCR vom Kartenscan — kann ungenau sein.',
+  'card.enlargeHint': 'Effekttext per OCR vom Kartenscan — bei unsicherem OCR bitte den Scan lesen.',
+  'card.enlargeHintCatalog': 'Effekttext aus dem offiziellen EN-Kartentext (Riot-Galerie).',
   'card.noArt': 'Kein Kartenscan verfügbar.',
   'card.energy': 'Energie',
   'card.might': 'Stärke',
@@ -268,9 +269,11 @@ const de: Record<string, string> = {
   'card.types': 'Typen',
 
   'card.ocrTitle': 'Kartentext (OCR)',
+  'card.rulesTitle': 'Kartentext',
   'card.ocrLoading': 'Text wird erkannt…',
-  'card.ocrEmpty': 'Kein Text erkannt. Bitte den Kartenscan links lesen.',
-  'card.ocrNote': 'Offline OCR vom Art Scan. Symbole und Stilisierungen können fehlerhaft sein.',
+  'card.ocrEmpty': 'Text nicht lesbar — bitte den Kartenscan links verwenden.',
+  'card.ocrNote': 'Fallback-OCR vom Art Scan. Bei Müll/Unsicherheit wird der Scan empfohlen.',
+  'card.rulesNote': 'Offizieller englischer Effekttext (Riot Card Gallery).',
   'card.ocrOpenCm': 'Auf Cardmarket öffnen',
 
   'card.keywords': 'Keywords',
@@ -578,7 +581,8 @@ const en: Record<string, string> = {
 
   'card.enlarge': 'Enlarge card',
   'card.enlargeClose': 'Close',
-  'card.enlargeHint': 'Effect text via OCR from the card scan — may be imperfect.',
+  'card.enlargeHint': 'Effect text via OCR from the card scan — if OCR is unsure, use the scan.',
+  'card.enlargeHintCatalog': 'Effect text from official EN card text (Riot gallery).',
   'card.noArt': 'No card art available.',
   'card.energy': 'Energy',
   'card.might': 'Might',
@@ -587,9 +591,11 @@ const en: Record<string, string> = {
   'card.types': 'Types',
 
   'card.ocrTitle': 'Card text (OCR)',
+  'card.rulesTitle': 'Card text',
   'card.ocrLoading': 'Recognizing text…',
-  'card.ocrEmpty': 'No text recognized. Please read the card scan on the left.',
-  'card.ocrNote': 'Offline OCR from the art scan. Symbols and stylized type may be wrong.',
+  'card.ocrEmpty': "Couldn't read text — use the scan on the left.",
+  'card.ocrNote': 'OCR fallback from the art scan. Junk/low-confidence results are hidden.',
+  'card.rulesNote': 'Official English rules text (Riot card gallery).',
   'card.ocrOpenCm': 'Open on Cardmarket',
 
   'card.keywords': 'Keywords',

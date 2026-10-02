@@ -12,7 +12,7 @@ The app checks GitHub Releases for updates on startup.
 
 - **Collection** — track owned copies (normal + foil) per printing; binder-style overview by set; optional hide for Nexus Night binders; click art to enlarge card scan
 - **Catalog** — full Riftbound card list with domain, rarity, promo / signed / overnumbered filters and “owned only”; enlarge card art to read effects
-- **Card enlarge** — large art scan; offline OCR (tesseract.js) of rules text from the scan (DE/EN note that OCR may be imperfect); optional short keyword help when terms are recognized; clickable name opens Cardmarket when a link exists
+- **Card enlarge** — large art scan; official EN rules text from the Riot gallery when available (OCR fallback only, junk hidden); optional short keyword help; clickable name opens Cardmarket when a link exists
 - **Prices** — Cardmarket Low and Avg30 (English products preferred; other languages only when no EN printing exists); deep links to Cardmarket
 - **Deck builder** — Legend, Champion, Main Deck, Battlefields, Runes, Sideboard; drag-and-drop; max 3 copies per card name; ban badges (Standard and 2v2)
 - **Ban badges** — Standard and 2v2-only marks on Sammlung / Katalog tiles and in the deck builder (non-blocking)

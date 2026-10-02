@@ -269,6 +269,8 @@ export default function App() {
   const [ocrText, setOcrText] = useState<string | null>(null)
   const [ocrLoading, setOcrLoading] = useState(false)
   const [ocrEmpty, setOcrEmpty] = useState(false)
+  /** 'catalog' = baked Riot rulesText; 'ocr' = tesseract fallback */
+  const [rulesSource, setRulesSource] = useState<'catalog' | 'ocr' | null>(null)
   const [appVersion, setAppVersion] = useState('')
   const [updateInfo, setUpdateInfo] = useState<{ status: string; version?: string; message?: string; percent?: number } | null>(null)
   const [isFullScreen, setIsFullScreen] = useState(false)
@@ -1550,6 +1552,25 @@ export default function App() {
       setOcrText(null)
       setOcrLoading(false)
       setOcrEmpty(false)
+      setRulesSource(null)
+      return
+    }
+    const baked = (cardLightbox.rulesText || '').trim()
+    if (baked) {
+      setOcrLoading(false)
+      setOcrText(baked)
+      setOcrEmpty(false)
+      setRulesSource('catalog')
+      return
+    }
+    // Runes / blank official text: don't OCR empty text boxes into gibberish
+    const types = cardLightbox.types || []
+    const runeOnly = types.length > 0 && types.every((t) => t === 'Rune')
+    if (runeOnly) {
+      setOcrLoading(false)
+      setOcrText(null)
+      setOcrEmpty(true)
+      setRulesSource(null)
       return
     }
     let cancelled = false
@@ -1559,8 +1580,10 @@ export default function App() {
       setOcrLoading(false)
       setOcrText(null)
       setOcrEmpty(true)
+      setRulesSource(null)
       return
     }
+    setRulesSource('ocr')
     setOcrLoading(true)
     setOcrText(null)
     setOcrEmpty(false)
@@ -1583,7 +1606,9 @@ export default function App() {
     setKwExpanded(null)
     setOcrText(null)
     setOcrEmpty(false)
-    setOcrLoading(!!c.image)
+    setRulesSource(null)
+    const hasBaked = !!(c.rulesText && c.rulesText.trim())
+    setOcrLoading(!hasBaked && !!c.image)
     setCardLightbox(c)
   }
 
@@ -3601,7 +3626,7 @@ export default function App() {
                 <BanBadge status={banStatus(cardLightbox)} lang={lang} />
               </div>
               <p className="sub">{cardLightbox.code} · {cardLightbox.setName || cardLightbox.set}</p>
-              <p className="help" style={{ marginTop: 4 }}>{t(lang, 'card.enlargeHint')}</p>
+              <p className="help" style={{ marginTop: 4 }}>{t(lang, rulesSource === 'catalog' ? 'card.enlargeHintCatalog' : 'card.enlargeHint')}</p>
               <dl className="card-lightbox-dl">
                 <div><dt>{t(lang, 'card.types')}</dt><dd>{(cardLightbox.types || []).join(', ') || '—'}</dd></div>
                 <div><dt>{t(lang, 'card.domains')}</dt><dd>{(cardLightbox.domains || []).join(', ') || '—'}</dd></div>
@@ -3611,8 +3636,8 @@ export default function App() {
               </dl>
               <div className="card-ocr">
                 <div className="card-ocr-head">
-                  <strong>{t(lang, 'card.ocrTitle')}</strong>
-                  <span className="card-ocr-note">{t(lang, 'card.ocrNote')}</span>
+                  <strong>{t(lang, rulesSource === 'catalog' ? 'card.rulesTitle' : 'card.ocrTitle')}</strong>
+                  <span className="card-ocr-note">{t(lang, rulesSource === 'catalog' ? 'card.rulesNote' : 'card.ocrNote')}</span>
                 </div>
                 {ocrLoading && (
                   <p className="card-ocr-status">{t(lang, 'card.ocrLoading')}</p>
