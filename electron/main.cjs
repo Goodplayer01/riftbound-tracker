@@ -296,6 +296,48 @@ ipcMain.handle('net:fetchJson', async (_e, url) => {
   }
 })
 
+
+ipcMain.handle('net:fetchImageDataUrl', async (_e, url) => {
+  if (typeof url !== 'string' || !/^https:\/\//i.test(url)) {
+    return { ok: false, error: 'invalid url' }
+  }
+  let parsed
+  try {
+    parsed = new URL(url)
+  } catch {
+    return { ok: false, error: 'invalid url' }
+  }
+  const host = parsed.hostname
+  const allowed =
+    host === 'cmsassets.rgpub.io' ||
+    host.endsWith('.rgpub.io') ||
+    host === 'cdn.piltoverarchive.com' ||
+    host.endsWith('.piltoverarchive.com')
+  if (!allowed) {
+    return { ok: false, error: 'host not allowed' }
+  }
+  try {
+    const res = await fetch(url, {
+      headers: {
+        Accept: 'image/*,*/*',
+        'User-Agent': 'DeakrixRiftboundTracker/' + app.getVersion() + ' (card OCR)',
+      },
+    })
+    if (!res.ok) {
+      return { ok: false, error: 'HTTP ' + res.status }
+    }
+    const buf = Buffer.from(await res.arrayBuffer())
+    if (buf.length > 12 * 1024 * 1024) {
+      return { ok: false, error: 'image too large' }
+    }
+    const ctype = (res.headers.get('content-type') || 'image/png').split(';')[0].trim()
+    const mime = ctype.startsWith('image/') ? ctype : 'image/png'
+    return { ok: true, dataUrl: 'data:' + mime + ';base64,' + buf.toString('base64') }
+  } catch (e) {
+    return { ok: false, error: String(e) }
+  }
+})
+
 ipcMain.handle('shell:openExternal', async (_e, url) => {
   if (typeof url !== 'string' || !/^https?:\/\//i.test(url)) return { ok: false }
   await shell.openExternal(url)

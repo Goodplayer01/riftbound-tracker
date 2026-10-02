@@ -3,7 +3,7 @@ import type { BorrowedCard, BorrowedGroup, Card, Catalog, Deck, DeckSection, Pri
 import { loadBorrowed, loadCollection, loadDecks, saveBorrowed, saveCollection, saveDecks, type Collection } from './storage'
 import { loadLang, saveLang, t, type Lang } from './i18n'
 import {
-  allKeywordIds,
+  detectKeywordsInText,
   keywordsForCard,
   keywordBlurb,
   keywordName,
@@ -11,6 +11,7 @@ import {
   type CardKeywordBook,
   type KeywordId,
 } from './keywords'
+import { ocrCardText } from './ocr'
 import { parseBulkTokens, resolveToken } from './parseBulk'
 import {
   SECTION_ADD_LABEL,
@@ -265,7 +266,9 @@ export default function App() {
   const [cardPreview, setCardPreview] = useState<{ src: string; x: number; y: number } | null>(null)
   const [cardLightbox, setCardLightbox] = useState<Card | null>(null)
   const [kwExpanded, setKwExpanded] = useState<KeywordId | null>(null)
-  const [kwShowAll, setKwShowAll] = useState(false)
+  const [ocrText, setOcrText] = useState<string | null>(null)
+  const [ocrLoading, setOcrLoading] = useState(false)
+  const [ocrEmpty, setOcrEmpty] = useState(false)
   const [appVersion, setAppVersion] = useState('')
   const [updateInfo, setUpdateInfo] = useState<{ status: string; version?: string; message?: string; percent?: number } | null>(null)
   const [isFullScreen, setIsFullScreen] = useState(false)
@@ -1542,10 +1545,45 @@ export default function App() {
     return () => window.removeEventListener('keydown', onKey)
   }, [cardLightbox])
 
+  useEffect(() => {
+    if (!cardLightbox) {
+      setOcrText(null)
+      setOcrLoading(false)
+      setOcrEmpty(false)
+      return
+    }
+    let cancelled = false
+    const cardId = cardLightbox.id
+    const image = cardLightbox.image
+    if (!image) {
+      setOcrLoading(false)
+      setOcrText(null)
+      setOcrEmpty(true)
+      return
+    }
+    setOcrLoading(true)
+    setOcrText(null)
+    setOcrEmpty(false)
+    void ocrCardText(cardId, image).then((res) => {
+      if (cancelled) return
+      setOcrLoading(false)
+      setOcrText(res.text || null)
+      setOcrEmpty(res.empty || !res.text)
+    }).catch(() => {
+      if (cancelled) return
+      setOcrLoading(false)
+      setOcrText(null)
+      setOcrEmpty(true)
+    })
+    return () => { cancelled = true }
+  }, [cardLightbox])
+
   function openCardLightbox(c: Card) {
     setCardPreview(null)
     setKwExpanded(null)
-    setKwShowAll(false)
+    setOcrText(null)
+    setOcrEmpty(false)
+    setOcrLoading(!!c.image)
     setCardLightbox(c)
   }
 
@@ -3550,7 +3588,16 @@ export default function App() {
             </div>
             <div className="card-lightbox-meta">
               <div className="name-with-ban">
-                <h2 className="card-lightbox-title">{displayName(cardLightbox)}</h2>
+                {priceBook?.cards[cardLightbox.id]?.cmUrl ? (
+                  <button
+                    type="button"
+                    className="card-lightbox-title card-lightbox-title-link"
+                    onClick={() => openCm(priceBook?.cards[cardLightbox.id])}
+                    title={t(lang, 'card.ocrOpenCm')}
+                  >{displayName(cardLightbox)}</button>
+                ) : (
+                  <h2 className="card-lightbox-title">{displayName(cardLightbox)}</h2>
+                )}
                 <BanBadge status={banStatus(cardLightbox)} lang={lang} />
               </div>
               <p className="sub">{cardLightbox.code} · {cardLightbox.setName || cardLightbox.set}</p>
@@ -3562,52 +3609,60 @@ export default function App() {
                 <div><dt>{t(lang, 'card.energy')}</dt><dd>{cardLightbox.energy != null ? cardLightbox.energy : '—'}</dd></div>
                 <div><dt>{t(lang, 'card.might')}</dt><dd>{cardLightbox.might != null ? cardLightbox.might : '—'}</dd></div>
               </dl>
-              <div className="card-keywords">
-                <div className="card-keywords-head">
-                  <strong>{t(lang, 'card.keywords')}</strong>
-                  <span className="card-keywords-hint">{t(lang, 'card.keywordsHint')}</span>
+              <div className="card-ocr">
+                <div className="card-ocr-head">
+                  <strong>{t(lang, 'card.ocrTitle')}</strong>
+                  <span className="card-ocr-note">{t(lang, 'card.ocrNote')}</span>
                 </div>
-                {(() => {
-                  const onCard = keywordsForCard(cardLightbox)
-                  const browse = allKeywordIds()
-                  return (
-                    <>
-                      {onCard.length > 0 ? (
-                        <p className="card-keywords-label">{t(lang, 'card.keywordsOnCard')}</p>
-                      ) : (
-                        <p className="card-keywords-label muted">{t(lang, 'card.keywordsNone')}</p>
-                      )}
-                      <ul className="card-keywords-list">
-                        {(kwShowAll ? browse : (onCard.length ? onCard : [])).map((id) => {
-                          const open = kwExpanded === id
-                          return (
-                            <li key={id} className={'card-keyword' + (onCard.includes(id) ? ' on-card' : '')}>
-                              <button
-                                type="button"
-                                className="card-keyword-toggle"
-                                aria-expanded={open}
-                                onClick={() => setKwExpanded(open ? null : id)}
-                              >
-                                <span className="card-keyword-name">{keywordName(lang, id)}</span>
-                                <span className="card-keyword-chev">{open ? '▾' : '▸'}</span>
-                              </button>
-                              {open && (
-                                <p className="card-keyword-blurb">{keywordBlurb(lang, id)}</p>
-                              )}
-                            </li>
-                          )
-                        })}
-                      </ul>
-                      <button
-                        type="button"
-                        className="btn card-keywords-browse"
-                        onClick={() => { setKwShowAll((v) => !v); setKwExpanded(null) }}
-                      >{kwShowAll ? t(lang, 'card.keywordsOnCard') : t(lang, 'card.keywordsBrowse')}</button>
-                      <p className="card-keywords-source">{t(lang, 'card.keywordsSource')}</p>
-                    </>
-                  )
-                })()}
+                {ocrLoading && (
+                  <p className="card-ocr-status">{t(lang, 'card.ocrLoading')}</p>
+                )}
+                {!ocrLoading && ocrEmpty && (
+                  <p className="card-ocr-status muted">{t(lang, 'card.ocrEmpty')}</p>
+                )}
+                {!ocrLoading && ocrText && (
+                  <pre className="card-ocr-text">{ocrText}</pre>
+                )}
               </div>
+              {(() => {
+                const fromOcr = ocrText ? detectKeywordsInText(ocrText) : []
+                const fromBook = keywordsForCard(cardLightbox)
+                const merged: KeywordId[] = []
+                const seen = new Set<KeywordId>()
+                for (const id of [...fromOcr, ...fromBook]) {
+                  if (!seen.has(id)) { seen.add(id); merged.push(id) }
+                }
+                if (!merged.length) return null
+                return (
+                  <div className="card-keywords card-keywords-mini">
+                    <div className="card-keywords-head">
+                      <strong>{t(lang, 'card.keywords')}</strong>
+                      <span className="card-keywords-hint">{t(lang, 'card.keywordsHint')}</span>
+                    </div>
+                    <ul className="card-keywords-list">
+                      {merged.map((id) => {
+                        const open = kwExpanded === id
+                        return (
+                          <li key={id} className="card-keyword on-card">
+                            <button
+                              type="button"
+                              className="card-keyword-toggle"
+                              aria-expanded={open}
+                              onClick={() => setKwExpanded(open ? null : id)}
+                            >
+                              <span className="card-keyword-name">{keywordName(lang, id)}</span>
+                              <span className="card-keyword-chev">{open ? '▾' : '▸'}</span>
+                            </button>
+                            {open && (
+                              <p className="card-keyword-blurb">{keywordBlurb(lang, id)}</p>
+                            )}
+                          </li>
+                        )
+                      })}
+                    </ul>
+                  </div>
+                )
+              })()}
               {priceBook?.cards[cardLightbox.id]?.cmUrl && (
                 <button
                   type="button"
@@ -3616,12 +3671,6 @@ export default function App() {
                   onClick={() => openCm(priceBook?.cards[cardLightbox.id])}
                 >{t(lang, 'price.openCm')}</button>
               )}
-              <button
-                type="button"
-                className="btn primary"
-                style={{ marginTop: 8 }}
-                onClick={closeCardLightbox}
-              >{t(lang, 'card.enlargeClose')}</button>
             </div>
           </div>
         </div>

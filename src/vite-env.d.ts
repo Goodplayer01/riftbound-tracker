@@ -23,6 +23,7 @@ declare global {
       windowClose: () => Promise<void>
       openExternal: (url: string) => Promise<{ ok: boolean }>
       fetchJson: (url: string) => Promise<{ ok: boolean; data?: unknown; error?: string }>
+      fetchImageDataUrl: (url: string) => Promise<{ ok: boolean; dataUrl?: string; error?: string }>
     }
   }
 }

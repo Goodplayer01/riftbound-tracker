@@ -21,4 +21,5 @@ contextBridge.exposeInMainWorld('riftbound', {
   windowClose: () => ipcRenderer.invoke('window:close'),
   openExternal: (url) => ipcRenderer.invoke('shell:openExternal', url),
   fetchJson: (url) => ipcRenderer.invoke('net:fetchJson', url),
+  fetchImageDataUrl: (url) => ipcRenderer.invoke('net:fetchImageDataUrl', url),
 })

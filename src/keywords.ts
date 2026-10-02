@@ -151,6 +151,20 @@ function labelsToIds(labels: string[]): KeywordId[] {
   return out
 }
 
+/** Detect keyword ids mentioned in free text (e.g. OCR output). */
+export function detectKeywordsInText(text: string): KeywordId[] {
+  if (!text) return []
+  const found: KeywordId[] = []
+  const seen = new Set<KeywordId>()
+  for (const { id, re } of DETECT_PATTERNS) {
+    if (re.test(text) && !seen.has(id)) {
+      seen.add(id)
+      found.push(id)
+    }
+  }
+  return found
+}
+
 /** Keywords known for this printing (baked map), else empty. */
 export function keywordsForCard(card: Card): KeywordId[] {
   const labels = cardKeywordBook?.byCardId?.[card.id]

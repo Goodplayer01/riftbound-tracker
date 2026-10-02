@@ -259,7 +259,7 @@ const de: Record<string, string> = {
 
   'card.enlarge': 'Karte vergrößern',
   'card.enlargeClose': 'Schließen',
-  'card.enlargeHint': 'Effekttext steht auf dem Kartenscan, hier vergrößert.',
+  'card.enlargeHint': 'Effekttext per OCR vom Kartenscan — kann ungenau sein.',
   'card.noArt': 'Kein Kartenscan verfügbar.',
   'card.energy': 'Energie',
   'card.might': 'Stärke',
@@ -267,10 +267,16 @@ const de: Record<string, string> = {
   'card.domains': 'Domains',
   'card.types': 'Typen',
 
+  'card.ocrTitle': 'Kartentext (OCR)',
+  'card.ocrLoading': 'Text wird erkannt…',
+  'card.ocrEmpty': 'Kein Text erkannt. Bitte den Kartenscan links lesen.',
+  'card.ocrNote': 'Offline OCR vom Art Scan. Symbole und Stilisierungen können fehlerhaft sein.',
+  'card.ocrOpenCm': 'Auf Cardmarket öffnen',
+
   'card.keywords': 'Keywords',
   'card.keywordsOnCard': 'Auf dieser Karte',
   'card.keywordsBrowse': 'Glossar',
-  'card.keywordsHint': 'Offizielle Kurztexte aus Core Rules und Radiance. Keine eigenen Rulings.',
+  'card.keywordsHint': 'Kurzhilfe zu erkannten Keywords (Core Rules / Radiance).',
   'card.keywordsNone': 'Keine bekannten Keywords in der lokalen Kartei. Glossar unten zum Nachschlagen.',
   'card.keywordsSource': 'Quellen: Core Rules 2026-07-16; Show Off / Disarm / Deploy: Radiance Übersicht.',
   'kw.accelerate.name': 'Accelerate',
@@ -572,7 +578,7 @@ const en: Record<string, string> = {
 
   'card.enlarge': 'Enlarge card',
   'card.enlargeClose': 'Close',
-  'card.enlargeHint': 'Effect text is on the card scan, enlarged here.',
+  'card.enlargeHint': 'Effect text via OCR from the card scan — may be imperfect.',
   'card.noArt': 'No card art available.',
   'card.energy': 'Energy',
   'card.might': 'Might',
@@ -580,10 +586,16 @@ const en: Record<string, string> = {
   'card.domains': 'Domains',
   'card.types': 'Types',
 
+  'card.ocrTitle': 'Card text (OCR)',
+  'card.ocrLoading': 'Recognizing text…',
+  'card.ocrEmpty': 'No text recognized. Please read the card scan on the left.',
+  'card.ocrNote': 'Offline OCR from the art scan. Symbols and stylized type may be wrong.',
+  'card.ocrOpenCm': 'Open on Cardmarket',
+
   'card.keywords': 'Keywords',
   'card.keywordsOnCard': 'On this card',
   'card.keywordsBrowse': 'Glossary',
-  'card.keywordsHint': 'Official short text from Core Rules and Radiance. No homemade rulings.',
+  'card.keywordsHint': 'Short help for keywords found in the OCR text (Core Rules / Radiance).',
   'card.keywordsNone': 'No known keywords in the local index for this card. Use the glossary below.',
   'card.keywordsSource': 'Sources: Core Rules 2026-07-16; Show Off / Disarm / Deploy: Radiance overview.',
   'kw.accelerate.name': 'Accelerate',

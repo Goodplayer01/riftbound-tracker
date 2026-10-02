@@ -1194,6 +1194,72 @@ textarea.field { min-height: 160px; resize: vertical; font-family: ui-monospace,
   line-height: 1.25;
   font-weight: 700;
 }
+button.card-lightbox-title-link {
+  display: inline;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--accent2, #d4af37);
+  cursor: pointer;
+  text-align: left;
+  font: inherit;
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.25;
+  text-decoration: underline;
+  text-decoration-color: rgba(212, 175, 55, 0.45);
+  text-underline-offset: 3px;
+}
+button.card-lightbox-title-link:hover {
+  color: #f0d78c;
+  text-decoration-color: rgba(240, 215, 140, 0.85);
+}
+
+/* —— OCR rules text in card enlarge lightbox —— */
+.card-ocr {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(212, 175, 55, 0.22);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-height: 0;
+}
+.card-ocr-head {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.card-ocr-head strong {
+  font-size: 13px;
+  letter-spacing: 0.02em;
+  color: var(--accent2, #d4af37);
+}
+.card-ocr-note,
+.card-ocr-status {
+  margin: 0;
+  font-size: 11px;
+  line-height: 1.35;
+  color: var(--muted);
+}
+.card-ocr-status.muted {
+  font-style: italic;
+}
+.card-ocr-text {
+  margin: 0;
+  padding: 8px 10px;
+  max-height: min(220px, 28vh);
+  overflow: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-family: ui-sans-serif, system-ui, sans-serif;
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: var(--text, #e8ecf4);
+  background: rgba(12, 14, 20, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+}
 .card-lightbox-dl {
   margin: 8px 0 0;
   display: grid;
@@ -1216,7 +1282,7 @@ textarea.field { min-height: 160px; resize: vertical; font-family: ui-monospace,
   color: var(--text, #e8ecf4);
 }
 
-/* —— Keyword glossary in card enlarge lightbox —— */
+/* —— Optional keyword chips (only when OCR/book finds hits) —— */
 .card-keywords {
   margin-top: 10px;
   padding-top: 10px;
@@ -1225,8 +1291,11 @@ textarea.field { min-height: 160px; resize: vertical; font-family: ui-monospace,
   flex-direction: column;
   gap: 6px;
   min-height: 0;
-  max-height: min(280px, 36vh);
+  max-height: min(180px, 24vh);
   overflow: auto;
+}
+.card-keywords-mini {
+  max-height: min(160px, 22vh);
 }
 .card-keywords-head {
   display: flex;
