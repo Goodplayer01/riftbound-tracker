@@ -259,6 +259,9 @@ export default function App() {
   const [dragOverSale, setDragOverSale] = useState(false)
   const [dropFlashSale, setDropFlashSale] = useState(false)
   const [dragRejectSale, setDragRejectSale] = useState(false)
+  const [dragOverBorrow, setDragOverBorrow] = useState(false)
+  const [dropFlashBorrow, setDropFlashBorrow] = useState(false)
+  const [dragRejectBorrow, setDragRejectBorrow] = useState(false)
   const [deckNotice, setDeckNotice] = useState<string | null>(null)
   const [handTesterOpen, setHandTesterOpen] = useState(true)
   const [handCards, setHandCards] = useState<string[] | null>(null)
@@ -916,22 +919,34 @@ export default function App() {
     )
   }
 
+  /** Copies still free to lend (owned minus all borrower groups). */
+  function remainingToLend(id: string) {
+    return Math.max(0, ownedQty(collection[id]) - (borrowedTotals.get(id) || 0))
+  }
+
   function bumpBorrowedCard(cardId: string, delta: number) {
-    updateBorrowed((g) => {
-      const cards = [...g.cards]
-      const i = cards.findIndex((c) => c.id === cardId)
-      if (i < 0) {
-        if (delta <= 0) return g
-        cards.push({ id: cardId, qty: delta })
-        return { ...g, cards }
-      }
-      const next = cards[i].qty + delta
-      if (next <= 0) {
-        cards.splice(i, 1)
-      } else {
-        cards[i] = { ...cards[i], qty: next }
-      }
-      return { ...g, cards }
+    if (!activeBorrowedId) return
+    setBorrowed((prev) => {
+      const owned = ownedQty(collection[cardId])
+      const totals = borrowedQtyById(prev)
+      const room = Math.max(0, owned - (totals.get(cardId) || 0))
+      return prev.map((g) => {
+        if (g.id !== activeBorrowedId) return g
+        const cards = [...g.cards]
+        const i = cards.findIndex((c) => c.id === cardId)
+        if (delta > 0) {
+          const add = Math.min(delta, room)
+          if (add <= 0) return g
+          if (i < 0) cards.push({ id: cardId, qty: add })
+          else cards[i] = { ...cards[i], qty: cards[i].qty + add }
+        } else {
+          if (i < 0) return g
+          const next = cards[i].qty + delta
+          if (next <= 0) cards.splice(i, 1)
+          else cards[i] = { ...cards[i], qty: next }
+        }
+        return { ...g, cards, updatedAt: new Date().toISOString() }
+      })
     })
   }
 
@@ -1116,6 +1131,8 @@ export default function App() {
     setDragRejectSection(null)
     setDragOverSale(false)
     setDragRejectSale(false)
+    setDragOverBorrow(false)
+    setDragRejectBorrow(false)
   }
 
   function onSaleCartDragOver(e: ReactDragEvent) {
@@ -1164,6 +1181,61 @@ export default function App() {
     if (dragOverSale) parts.push('drag-over')
     if (dropFlashSale) parts.push('drop-flash')
     if (dragRejectSale) parts.push('drag-reject')
+    return parts.join(' ')
+  }
+
+  function onBorrowDragOver(e: ReactDragEvent) {
+    const types = Array.from(e.dataTransfer.types || [])
+    const raw = types.includes('text/riftbound-card') || types.includes('text/plain') || !!draggingCardId
+    if (!raw) return
+    e.preventDefault()
+    if (!activeBorrowedId) {
+      e.dataTransfer.dropEffect = 'none'
+      setDragOverBorrow(false)
+      setDragRejectBorrow(true)
+      return
+    }
+    const id = draggingCardId
+    if (id && remainingToLend(id) <= 0) {
+      e.dataTransfer.dropEffect = 'none'
+      setDragOverBorrow(false)
+      setDragRejectBorrow(true)
+      return
+    }
+    e.dataTransfer.dropEffect = 'copy'
+    setDragRejectBorrow(false)
+    setDragOverBorrow(true)
+  }
+
+  function onBorrowDragLeave(e: ReactDragEvent) {
+    const related = e.relatedTarget as Node | null
+    if (related && (e.currentTarget as HTMLElement).contains(related)) return
+    setDragOverBorrow(false)
+    setDragRejectBorrow(false)
+  }
+
+  function onBorrowDrop(e: ReactDragEvent) {
+    e.preventDefault()
+    e.stopPropagation()
+    const cardId = e.dataTransfer.getData('text/riftbound-card') || e.dataTransfer.getData('text/plain')
+    setDragOverBorrow(false)
+    setDragRejectBorrow(false)
+    if (!activeBorrowedId || !cardId) return
+    if (remainingToLend(cardId) <= 0) {
+      setDragRejectBorrow(true)
+      window.setTimeout(() => setDragRejectBorrow(false), 450)
+      return
+    }
+    bumpBorrowedCard(cardId, 1)
+    setDropFlashBorrow(true)
+    window.setTimeout(() => setDropFlashBorrow(false), 380)
+  }
+
+  function borrowDropClass() {
+    const parts = ['list', 'borrow-drop']
+    if (dragOverBorrow) parts.push('drag-over')
+    if (dropFlashBorrow) parts.push('drop-flash')
+    if (dragRejectBorrow) parts.push('drag-reject')
     return parts.join(' ')
   }
 
@@ -2898,7 +2970,7 @@ export default function App() {
         )}
 
         {tab === 'borrowed' && (
-          <div className="split">
+          <div className="split deck-split">
             <section className="panel">
               <div className="toolbar">
                 <h2 style={{ margin: 0, flex: 1 }}>{t(lang, 'borrowed.title')}</h2>
@@ -3003,14 +3075,21 @@ export default function App() {
                     </div>
                   )}
 
-                  <div className="list" style={{ marginTop: 12 }}>
+                  <div
+                    className={borrowDropClass()}
+                    style={{ marginTop: 12 }}
+                    onDragOver={onBorrowDragOver}
+                    onDragLeave={onBorrowDragLeave}
+                    onDrop={onBorrowDrop}
+                  >
                     {activeBorrowed.cards.length === 0 && (
-                      <div className="empty">{t(lang, 'borrowed.importHint')}</div>
+                      <div className="empty">{t(lang, 'borrowed.emptyCards')}</div>
                     )}
                     {activeBorrowed.cards.map((bc) => {
                       const c = byId.get(bc.id)
                       const have = ownedQty(collection[bc.id])
                       const avail = availableForDecks(bc.id)
+                      const room = remainingToLend(bc.id)
                       const img = c?.image
                       return (
                         <div
@@ -3046,7 +3125,12 @@ export default function App() {
                           <div className="qty" onClick={(e) => e.stopPropagation()}>
                             <button type="button" onClick={() => bumpBorrowedCard(bc.id, -1)}>−</button>
                             <b>{bc.qty}</b>
-                            <button type="button" onClick={() => bumpBorrowedCard(bc.id, 1)}>+</button>
+                            <button
+                              type="button"
+                              disabled={room <= 0}
+                              title={room <= 0 ? t(lang, 'borrowed.noAvail') : undefined}
+                              onClick={() => bumpBorrowedCard(bc.id, 1)}
+                            >+</button>
                           </div>
                           <button
                             type="button"
@@ -3070,6 +3154,112 @@ export default function App() {
               {!activeBorrowed && borrowed.length > 0 && (
                 <div className="empty">{t(lang, 'borrowed.pickFirst')}</div>
               )}
+            </section>
+
+            <section className="panel">
+              <h2>{t(lang, 'borrowed.cardsTitle')}</h2>
+              <div className="toolbar">
+                <input
+                  className="search grow"
+                  placeholder={t(lang, 'decks.search')}
+                  value={q}
+                  onChange={(e) => setQ(e.target.value)}
+                />
+                <select
+                  className="select"
+                  style={{ maxWidth: 160 }}
+                  value={setFilter}
+                  onChange={(e) => setSetFilter(e.target.value)}
+                >
+                  <option value="">{t(lang, 'catalog.allSets')}</option>
+                  {Object.entries(sets).map(([id, name]) => (
+                    <option key={id} value={id}>{name}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="list" style={{ maxHeight: '70vh', overflow: 'auto' }}>
+                {!activeBorrowed && <div className="empty">{t(lang, 'borrowed.pickFirst')}</div>}
+                {activeBorrowed && (() => {
+                  const query = q.trim().toLowerCase()
+                  const owned = cards.filter((c) => {
+                    if (ownedQty(collection[c.id]) <= 0) return false
+                    if (remainingToLend(c.id) <= 0) return false
+                    if (setFilter && c.set !== setFilter) return false
+                    if (!query) return true
+                    return (
+                      c.name.toLowerCase().includes(query) ||
+                      (c.subtitle || '').toLowerCase().includes(query) ||
+                      c.code.toLowerCase().includes(query)
+                    )
+                  })
+                  if (owned.length === 0) {
+                    return <div className="empty">{t(lang, 'borrowed.noneOwned')}</div>
+                  }
+                  return owned.slice(0, 120).map((c) => {
+                    const room = remainingToLend(c.id)
+                    const have = ownedQty(collection[c.id])
+                    return (
+                      <div
+                        key={c.id}
+                        className="list-item picker-card"
+                        draggable={!!activeBorrowed && room > 0}
+                        onDragStart={(e) => onPickerDragStart(e, c.id)}
+                        onDragEnd={onPickerDragEnd}
+                        onMouseEnter={(e) => showCardPreview(e, c.image)}
+                        onMouseMove={(e) => showCardPreview(e, c.image)}
+                        onMouseLeave={hideCardPreview}
+                      >
+                        {c.image ? (
+                          <img
+                            className="deck-thumb"
+                            src={c.image}
+                            alt=""
+                            loading="lazy"
+                            onError={(e) => { (e.currentTarget as HTMLImageElement).style.visibility = 'hidden' }}
+                          />
+                        ) : (
+                          <div className="deck-thumb deck-thumb-empty" aria-hidden />
+                        )}
+                        <div className="grow">
+                          <div className="name-with-ban">
+                            <button
+                              type="button"
+                              className="name name-link"
+                              title={t(lang, 'price.openCm')}
+                              disabled={!priceBook?.cards[c.id]?.cmUrl}
+                              onClick={(e) => { e.stopPropagation(); openCm(priceBook?.cards[c.id]) }}
+                            >{displayCardName(c)}</button>
+                            <BanBadge status={banStatus(c)} lang={lang} />
+                          </div>
+                          <div className="sub">
+                            {c.code} · x{have} · {t(lang, 'borrowed.availShort', { n: room })}
+                            {c.energy != null ? ` · E${c.energy}` : ''}
+                          </div>
+                          {(() => {
+                            const pl = priceLabel(priceBook?.cards[c.id])
+                            if (!pl || (!pl.low && !pl.avg30 && !pl.high && !pl.foil)) return null
+                            return (
+                              <div className="price">
+                                {pl.low ? <span title={t(lang, 'price.low')}>ab {pl.low}</span> : <span className="na">ab --</span>}
+                                {pl.avg30 ? <span className="avg30" title={t(lang, 'price.avg30')}>Ø30 {pl.avg30}</span> : null}
+                                {pl.foil ? <span className="foil" title={t(lang, 'price.foil')}>F {pl.foil}</span> : null}
+                              </div>
+                            )
+                          })()}
+                        </div>
+                        <button
+                          className="btn small primary"
+                          disabled={!activeBorrowed || room <= 0}
+                          title={room <= 0 ? t(lang, 'borrowed.noAvail') : undefined}
+                          onClick={() => bumpBorrowedCard(c.id, 1)}
+                        >
+                          {t(lang, 'borrowed.add')}
+                        </button>
+                      </div>
+                    )
+                  })
+                })()}
+              </div>
             </section>
           </div>
         )}

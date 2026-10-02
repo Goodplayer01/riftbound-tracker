@@ -5,8 +5,8 @@ const fs = require('fs')
 const isDev = !app.isPackaged
 let mainWindow
 
-/** Fixed windowed size — measured from Stefan-PC running v0.1.35 (DWM bounds @ 125% DPI → 1426×860 DIP). */
-const WINDOWED_WIDTH = 1426
+/** Fixed windowed size — widened in v0.2.17 so DE tab row (incl. Händler) + stats fit one line @ 125% DPI. */
+const WINDOWED_WIDTH = 1560
 const WINDOWED_HEIGHT = 860
 
 /** Reentrancy guards — Win32 crashes if setSize/setMaximumSize runs while still leaving fullscreen. */
