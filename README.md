@@ -10,8 +10,8 @@ The app checks GitHub Releases for updates on startup.
 
 ## Features
 
-- **Collection** — track owned copies (normal + foil) per printing; binder-style overview by set; optional hide for Nexus Night binders
-- **Catalog** — full Riftbound card list with domain, rarity, promo / signed / overnumbered filters and “owned only”
+- **Collection** — track owned copies (normal + foil) per printing; binder-style overview by set; optional hide for Nexus Night binders; click art to enlarge card scan
+- **Catalog** — full Riftbound card list with domain, rarity, promo / signed / overnumbered filters and “owned only”; enlarge card art to read effects
 - **Prices** — Cardmarket Low and Avg30 (English products preferred; other languages only when no EN printing exists); deep links to Cardmarket
 - **Deck builder** — Legend, Champion, Main Deck, Battlefields, Runes, Sideboard; drag-and-drop; max 3 copies per card name; ban badges (Standard and 2v2)
 - **Ban badges** — Standard and 2v2-only marks on Sammlung / Katalog tiles and in the deck builder (non-blocking)

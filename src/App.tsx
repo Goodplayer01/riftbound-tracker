@@ -254,6 +254,7 @@ export default function App() {
   const [deckImportOpen, setDeckImportOpen] = useState(false)
   const [missingExpanded, setMissingExpanded] = useState(false)
   const [cardPreview, setCardPreview] = useState<{ src: string; x: number; y: number } | null>(null)
+  const [cardLightbox, setCardLightbox] = useState<Card | null>(null)
   const [appVersion, setAppVersion] = useState('')
   const [updateInfo, setUpdateInfo] = useState<{ status: string; version?: string; message?: string; percent?: number } | null>(null)
   const [isFullScreen, setIsFullScreen] = useState(false)
@@ -1517,6 +1518,24 @@ export default function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: only when km changes
   }, [storeKm, storeCenter])
 
+  useEffect(() => {
+    if (!cardLightbox) return
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setCardLightbox(null)
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [cardLightbox])
+
+  function openCardLightbox(c: Card) {
+    setCardPreview(null)
+    setCardLightbox(c)
+  }
+
+  function closeCardLightbox() {
+    setCardLightbox(null)
+  }
+
   if (error) return <div className="main err">{t(lang, 'load.error', { message: error })}</div>
   if (!catalog) return <div className="main">{t(lang, 'load.catalog')}</div>
 
@@ -1894,13 +1913,39 @@ export default function App() {
                 const showFoil = !(c.signed || c.overnumbered) || o.foil > 0
                 return (
                   <article key={c.id} className={`card ${n ? 'owned' : 'missing'}${c.signed || c.overnumbered ? ' shimmer' : ''}`}>
-                    <div className="art" style={{ backgroundImage: c.image ? `url(${c.image})` : undefined }}>
+                    <div
+                      className="art art-zoomable"
+                      style={{ backgroundImage: c.image ? `url(${c.image})` : undefined }}
+                      role="button"
+                      tabIndex={0}
+                      title={t(lang, 'card.enlarge')}
+                      onClick={() => openCardLightbox(c)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault()
+                          openCardLightbox(c)
+                        }
+                      }}
+                    >
                       {n > 0 && <div className="badge">x{n}</div>}
                       <div className="flags">
                         {c.signed ? <span className="flag signed">Signed</span> : null}
                         {c.overnumbered && !c.signed ? <span className="flag over">ON</span> : null}
                         {c.altArt ? <span className="flag alt">Alt</span> : null}
                       </div>
+                      <button
+                        type="button"
+                        className="art-zoom-btn"
+                        title={t(lang, 'card.enlarge')}
+                        aria-label={t(lang, 'card.enlarge')}
+                        onClick={(e) => { e.stopPropagation(); openCardLightbox(c) }}
+                      >
+                        <svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true">
+                          <circle cx="10" cy="10" r="6.5" fill="none" stroke="currentColor" strokeWidth="2" />
+                          <path d="M15 15l6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                          <path d="M8 10h4M10 8v4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                        </svg>
+                      </button>
                     </div>
                     <div className="meta">
                       <div className="name-with-ban">
@@ -2061,13 +2106,39 @@ export default function App() {
                 const showFoil = !(c.signed || c.overnumbered) || o.foil > 0
                 return (
                   <article key={c.id} className={`card ${ownedQty(o) ? 'owned' : ''}${c.signed || c.overnumbered ? ' shimmer' : ''}`}>
-                    <div className="art" style={{ backgroundImage: c.image ? `url(${c.image})` : undefined }}>
+                    <div
+                      className="art art-zoomable"
+                      style={{ backgroundImage: c.image ? `url(${c.image})` : undefined }}
+                      role="button"
+                      tabIndex={0}
+                      title={t(lang, 'card.enlarge')}
+                      onClick={() => openCardLightbox(c)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault()
+                          openCardLightbox(c)
+                        }
+                      }}
+                    >
                       {ownedQty(o) > 0 && <div className="badge">x{ownedQty(o)}</div>}
                       <div className="flags">
                         {c.signed ? <span className="flag signed">Signed</span> : null}
                         {c.overnumbered && !c.signed ? <span className="flag over">ON</span> : null}
                         {c.altArt ? <span className="flag alt">Alt</span> : null}
                       </div>
+                      <button
+                        type="button"
+                        className="art-zoom-btn"
+                        title={t(lang, 'card.enlarge')}
+                        aria-label={t(lang, 'card.enlarge')}
+                        onClick={(e) => { e.stopPropagation(); openCardLightbox(c) }}
+                      >
+                        <svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true">
+                          <circle cx="10" cy="10" r="6.5" fill="none" stroke="currentColor" strokeWidth="2" />
+                          <path d="M15 15l6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                          <path d="M8 10h4M10 8v4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                        </svg>
+                      </button>
                     </div>
                     <div className="meta">
                       <div className="name-with-ban">
@@ -3428,13 +3499,68 @@ export default function App() {
         )}
 
       </main>
-      {cardPreview && (
+      {cardPreview && !cardLightbox && (
         <div
           className="card-float-preview"
           style={{ left: cardPreview.x, top: cardPreview.y }}
           aria-hidden
         >
           <img src={cardPreview.src} alt="" />
+        </div>
+      )}
+      {cardLightbox && (
+        <div
+          className="card-lightbox"
+          role="dialog"
+          aria-modal="true"
+          aria-label={t(lang, 'card.enlarge')}
+          onClick={closeCardLightbox}
+        >
+          <div className="card-lightbox-inner" onClick={(e) => e.stopPropagation()}>
+            <button
+              type="button"
+              className="card-lightbox-close"
+              onClick={closeCardLightbox}
+              title={t(lang, 'card.enlargeClose')}
+              aria-label={t(lang, 'card.enlargeClose')}
+            >×</button>
+            <div className="card-lightbox-art">
+              {cardLightbox.image ? (
+                <img src={cardLightbox.image} alt={displayName(cardLightbox)} />
+              ) : (
+                <div className="card-lightbox-noart">{t(lang, 'card.noArt')}</div>
+              )}
+            </div>
+            <div className="card-lightbox-meta">
+              <div className="name-with-ban">
+                <h2 className="card-lightbox-title">{displayName(cardLightbox)}</h2>
+                <BanBadge status={banStatus(cardLightbox)} lang={lang} />
+              </div>
+              <p className="sub">{cardLightbox.code} · {cardLightbox.setName || cardLightbox.set}</p>
+              <p className="help" style={{ marginTop: 4 }}>{t(lang, 'card.enlargeHint')}</p>
+              <dl className="card-lightbox-dl">
+                <div><dt>{t(lang, 'card.types')}</dt><dd>{(cardLightbox.types || []).join(', ') || '—'}</dd></div>
+                <div><dt>{t(lang, 'card.domains')}</dt><dd>{(cardLightbox.domains || []).join(', ') || '—'}</dd></div>
+                <div><dt>{t(lang, 'card.rarity')}</dt><dd>{cardLightbox.rarity || '—'}</dd></div>
+                <div><dt>{t(lang, 'card.energy')}</dt><dd>{cardLightbox.energy != null ? cardLightbox.energy : '—'}</dd></div>
+                <div><dt>{t(lang, 'card.might')}</dt><dd>{cardLightbox.might != null ? cardLightbox.might : '—'}</dd></div>
+              </dl>
+              {priceBook?.cards[cardLightbox.id]?.cmUrl && (
+                <button
+                  type="button"
+                  className="btn"
+                  style={{ marginTop: 10 }}
+                  onClick={() => openCm(priceBook?.cards[cardLightbox.id])}
+                >{t(lang, 'price.openCm')}</button>
+              )}
+              <button
+                type="button"
+                className="btn primary"
+                style={{ marginTop: 8 }}
+                onClick={closeCardLightbox}
+              >{t(lang, 'card.enlargeClose')}</button>
+            </div>
+          </div>
         </div>
       )}
     </div>

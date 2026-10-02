@@ -257,6 +257,16 @@ const de: Record<string, string> = {
   'deck.sanitizedDomain': '{n} Karte{plural} passen nicht zur Legend-Domain',
   'deck.sanitizedBattlefield': '{n} Battlefield-Karte{plural} über dem Namenslimit entfernt',
 
+  'card.enlarge': 'Karte vergrößern',
+  'card.enlargeClose': 'Schließen',
+  'card.enlargeHint': 'Effekttext steht auf dem Kartenscan — hier vergrößert.',
+  'card.noArt': 'Kein Kartenscan verfügbar.',
+  'card.energy': 'Energie',
+  'card.might': 'Stärke',
+  'card.rarity': 'Seltenheit',
+  'card.domains': 'Domains',
+  'card.types': 'Typen',
+
   'lang.de': 'Deutsch',
   'lang.en': 'English',
   'lang.label': 'Sprache',
@@ -496,6 +506,16 @@ const en: Record<string, string> = {
   'deck.sanitizedCopies': 'removed {n} card{plural} over name limit',
   'deck.sanitizedDomain': '{n} card{plural} do not match Legend domain',
   'deck.sanitizedBattlefield': 'removed {n} Battlefield card{plural} over name limit',
+
+  'card.enlarge': 'Enlarge card',
+  'card.enlargeClose': 'Close',
+  'card.enlargeHint': 'Effect text is on the card scan — enlarged here.',
+  'card.noArt': 'No card art available.',
+  'card.energy': 'Energy',
+  'card.might': 'Might',
+  'card.rarity': 'Rarity',
+  'card.domains': 'Domains',
+  'card.types': 'Types',
 
   'lang.de': 'Deutsch',
   'lang.en': 'English',

@@ -1073,3 +1073,143 @@ textarea.field { min-height: 160px; resize: vertical; font-family: ui-monospace,
   border-bottom-color: #2a3348;
 }
 .leaflet-bar a:hover { background: #243044; }
+
+/* —— Card enlarge lightbox (Sammlung / Katalog) —— */
+.art-zoomable {
+  cursor: zoom-in;
+}
+.art-zoomable:focus-visible {
+  outline: 2px solid rgba(212,175,55,.7);
+  outline-offset: -2px;
+}
+.art-zoom-btn {
+  position: absolute;
+  right: 8px;
+  bottom: 8px;
+  z-index: 3;
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
+  border: 1px solid rgba(212,175,55,.4);
+  background: rgba(10,12,16,.78);
+  color: var(--accent2, #d4af37);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  cursor: pointer;
+  opacity: 0.92;
+  transition: background .12s ease, border-color .12s ease, transform .12s ease;
+}
+.art-zoom-btn:hover {
+  background: rgba(24,28,40,.95);
+  border-color: rgba(212,175,55,.75);
+  transform: scale(1.05);
+}
+.card-lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 12000;
+  background: rgba(4,6,10,.78);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 18px;
+  backdrop-filter: blur(3px);
+}
+.card-lightbox-inner {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(280px, 420px) minmax(220px, 300px);
+  gap: 16px;
+  max-width: min(780px, 96vw);
+  max-height: min(820px, 94vh);
+  background: linear-gradient(180deg, rgba(28,26,22,.98), #12151c);
+  border: 1px solid rgba(212,175,55,.4);
+  border-radius: 16px;
+  box-shadow: 0 24px 64px rgba(0,0,0,.65);
+  padding: 16px;
+  overflow: auto;
+}
+.card-lightbox-close {
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  z-index: 2;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--panel2);
+  color: var(--text, #e8ecf4);
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+}
+.card-lightbox-close:hover {
+  border-color: rgba(212,175,55,.55);
+}
+.card-lightbox-art {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 0;
+}
+.card-lightbox-art img {
+  display: block;
+  width: 100%;
+  max-height: min(760px, 88vh);
+  height: auto;
+  object-fit: contain;
+  border-radius: 12px;
+  border: 1px solid rgba(212,175,55,.25);
+  background: #07090e;
+  box-shadow: 0 8px 28px rgba(0,0,0,.45);
+}
+.card-lightbox-noart {
+  width: 100%;
+  aspect-ratio: 744 / 1039;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--muted);
+  border: 1px dashed var(--border);
+  border-radius: 12px;
+  padding: 16px;
+  text-align: center;
+}
+.card-lightbox-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+  padding-top: 4px;
+  padding-right: 28px;
+}
+.card-lightbox-title {
+  margin: 0;
+  font-size: 18px;
+  line-height: 1.25;
+  font-weight: 700;
+}
+.card-lightbox-dl {
+  margin: 8px 0 0;
+  display: grid;
+  gap: 8px;
+}
+.card-lightbox-dl > div {
+  display: grid;
+  grid-template-columns: 88px 1fr;
+  gap: 8px;
+  align-items: baseline;
+  font-size: 13px;
+}
+.card-lightbox-dl dt {
+  margin: 0;
+  color: var(--muted);
+  font-weight: 500;
+}
+.card-lightbox-dl dd {
+  margin: 0;
+  color: var(--text, #e8ecf4);
+}
