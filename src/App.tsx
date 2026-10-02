@@ -29,7 +29,18 @@ import {
   sectionOf,
 } from './deckHelpers'
 import { banStatus, type BanStatus } from './banlist'
-import { STORE_LOCATOR_URL, geocodeQuery, mapsUrl, searchStoresNear, type StoreHit } from './stores'
+import {
+  STORE_LOCATOR_URL,
+  STORE_RADIUS_KM_DEFAULT,
+  STORE_RADIUS_KM_MAX,
+  STORE_RADIUS_KM_MIN,
+  clampStoreRadiusKm,
+  geocodeQuery,
+  mapsUrl,
+  searchStoresNear,
+  type StoreHit,
+} from './stores'
+import { StoresMap, type MapCenter } from './StoresMap'
 import {
   OPENING_HAND_SIZE,
   applyMulligan,
@@ -212,8 +223,10 @@ export default function App() {
   const [borrowImportOpen, setBorrowImportOpen] = useState(false)
   const [borrowNotice, setBorrowNotice] = useState<string | null>(null)
   const [storeQuery, setStoreQuery] = useState('Berlin')
-  const [storeMiles, setStoreMiles] = useState(50)
+  const [storeKm, setStoreKm] = useState(STORE_RADIUS_KM_DEFAULT)
   const [storeHits, setStoreHits] = useState<StoreHit[]>([])
+  const [storeCenter, setStoreCenter] = useState<MapCenter | null>(null)
+  const [storeFetchedKm, setStoreFetchedKm] = useState(STORE_RADIUS_KM_DEFAULT)
   const [storeLabel, setStoreLabel] = useState<string | null>(null)
   const [storeBusy, setStoreBusy] = useState(false)
   const [storeError, setStoreError] = useState<string | null>(null)
@@ -1413,15 +1426,19 @@ export default function App() {
   }
 
 
-  async function runStoreSearchAt(lat: number, lng: number, label: string) {
+  async function runStoreSearchAt(lat: number, lng: number, label: string, radiusKm = storeKm) {
+    const km = clampStoreRadiusKm(radiusKm)
     setStoreBusy(true)
     setStoreError(null)
     try {
-      const hits = await searchStoresNear(lat, lng, storeMiles)
+      const hits = await searchStoresNear(lat, lng, km)
       setStoreHits(hits)
+      setStoreCenter({ lat, lng })
+      setStoreFetchedKm(km)
       setStoreLabel(label)
     } catch (e) {
       setStoreHits([])
+      setStoreCenter(null)
       setStoreLabel(null)
       setStoreError(t(lang, 'stores.error', { message: e instanceof Error ? e.message : String(e) }))
     } finally {
@@ -1435,21 +1452,26 @@ export default function App() {
       setStoreError(t(lang, 'stores.needQuery'))
       return
     }
+    const km = clampStoreRadiusKm(storeKm)
     setStoreBusy(true)
     setStoreError(null)
     try {
       const geo = await geocodeQuery(q, 'de')
       if (!geo) {
         setStoreHits([])
+        setStoreCenter(null)
         setStoreLabel(null)
         setStoreError(t(lang, 'stores.geoFail'))
         return
       }
-      const hits = await searchStoresNear(geo.lat, geo.lng, storeMiles)
+      const hits = await searchStoresNear(geo.lat, geo.lng, km)
       setStoreHits(hits)
+      setStoreCenter({ lat: geo.lat, lng: geo.lng })
+      setStoreFetchedKm(km)
       setStoreLabel(geo.label)
     } catch (e) {
       setStoreHits([])
+      setStoreCenter(null)
       setStoreLabel(null)
       setStoreError(t(lang, 'stores.error', { message: e instanceof Error ? e.message : String(e) }))
     } finally {
@@ -1475,6 +1497,25 @@ export default function App() {
       { enableHighAccuracy: false, timeout: 12000, maximumAge: 60000 },
     )
   }
+
+  function setStoreKmFromUi(raw: number) {
+    setStoreKm(clampStoreRadiusKm(raw))
+  }
+
+  const visibleStoreHits = storeHits.filter(
+    (h) => h.distanceKm == null || h.distanceKm <= storeKm + 0.05,
+  )
+
+  // After slider/input settles: re-query UVS if radius changed (circle already updates live).
+  useEffect(() => {
+    if (!storeCenter) return
+    if (Math.abs(storeKm - storeFetchedKm) < 0.5) return
+    const handle = window.setTimeout(() => {
+      void runStoreSearchAt(storeCenter.lat, storeCenter.lng, storeLabel || storeQuery.trim() || '…', storeKm)
+    }, 850)
+    return () => window.clearTimeout(handle)
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: only when km changes
+  }, [storeKm, storeCenter])
 
   if (error) return <div className="main err">{t(lang, 'load.error', { message: error })}</div>
   if (!catalog) return <div className="main">{t(lang, 'load.catalog')}</div>
@@ -3265,8 +3306,8 @@ export default function App() {
         )}
 
         {tab === 'stores' && (
-          <div className="split">
-            <section className="panel">
+          <div className="split stores-split">
+            <section className="panel stores-list-panel">
               <div className="toolbar">
                 <h2 style={{ margin: 0, flex: 1 }}>{t(lang, 'stores.title')}</h2>
                 <button
@@ -3278,8 +3319,8 @@ export default function App() {
                 >{t(lang, 'stores.openOfficial')}</button>
               </div>
               <p className="help">{t(lang, 'stores.help')}</p>
-              <div className="toolbar" style={{ flexWrap: 'wrap', gap: 8 }}>
-                <label className="grow" style={{ display: 'grid', gap: 4, minWidth: 180 }}>
+              <div className="toolbar stores-controls" style={{ flexWrap: 'wrap', gap: 8 }}>
+                <label className="grow" style={{ display: 'grid', gap: 4, minWidth: 160 }}>
                   <span className="sub">{t(lang, 'stores.query')}</span>
                   <input
                     className="field"
@@ -3289,13 +3330,35 @@ export default function App() {
                     placeholder={t(lang, 'stores.queryPh')}
                   />
                 </label>
-                <label style={{ display: 'grid', gap: 4 }}>
-                  <span className="sub">{t(lang, 'stores.radius')}</span>
-                  <select className="field" value={storeMiles} onChange={(e) => setStoreMiles(Number(e.target.value))}>
-                    {[10, 25, 50, 100].map((n) => (
-                      <option key={n} value={n}>{t(lang, 'stores.miles', { n })}</option>
-                    ))}
-                  </select>
+                <label className="stores-radius" style={{ display: 'grid', gap: 4, flex: '1 1 220px', minWidth: 200 }}>
+                  <span className="sub">{t(lang, 'stores.radius')} · {t(lang, 'stores.km', { n: storeKm })}</span>
+                  <div className="stores-radius-row">
+                    <input
+                      type="range"
+                      className="stores-km-slider"
+                      min={STORE_RADIUS_KM_MIN}
+                      max={STORE_RADIUS_KM_MAX}
+                      step={1}
+                      value={storeKm}
+                      onChange={(e) => setStoreKmFromUi(Number(e.target.value))}
+                      aria-label={t(lang, 'stores.radius')}
+                    />
+                    <input
+                      type="number"
+                      className="field stores-km-input"
+                      min={STORE_RADIUS_KM_MIN}
+                      max={STORE_RADIUS_KM_MAX}
+                      value={storeKm}
+                      onChange={(e) => {
+                        const n = Number(e.target.value)
+                        if (!Number.isFinite(n)) return
+                        setStoreKmFromUi(n)
+                      }}
+                      onBlur={() => setStoreKmFromUi(storeKm)}
+                      onKeyDown={(e) => { if (e.key === 'Enter') void runStoreSearch() }}
+                    />
+                    <span className="sub stores-km-unit">{t(lang, 'stores.kmUnit')}</span>
+                  </div>
                 </label>
                 <div className="toolbar" style={{ alignSelf: 'end', margin: 0 }}>
                   <button className="btn primary" disabled={storeBusy} onClick={() => void runStoreSearch()}>
@@ -3306,13 +3369,15 @@ export default function App() {
               </div>
               {storeError && <p className="help" style={{ color: 'var(--danger)' }}>{storeError}</p>}
               {storeLabel && !storeError && (
-                <p className="help">{t(lang, 'stores.near', { label: storeLabel })} · {t(lang, 'stores.results', { n: storeHits.length })}</p>
+                <p className="help">{t(lang, 'stores.near', { label: storeLabel })} · {t(lang, 'stores.results', { n: visibleStoreHits.length })}
+                  {storeKm > storeFetchedKm + 0.5 ? ` · ${t(lang, 'stores.enlargeHint')}` : ''}
+                </p>
               )}
-              <div className="list" style={{ marginTop: 12 }}>
-                {!storeBusy && storeLabel && storeHits.length === 0 && (
+              <div className="list stores-results" style={{ marginTop: 12 }}>
+                {!storeBusy && storeLabel && visibleStoreHits.length === 0 && (
                   <div className="empty">{t(lang, 'stores.empty')}</div>
                 )}
-                {storeHits.map((h) => (
+                {visibleStoreHits.map((h) => (
                   <div key={h.id} className="list-item" style={{ alignItems: 'flex-start' }}>
                     <div className="grow">
                       <div className="name">{h.name}</div>
@@ -3346,6 +3411,18 @@ export default function App() {
                   </div>
                 ))}
               </div>
+            </section>
+            <section className="panel stores-map-panel">
+              <div className="toolbar">
+                <h2 style={{ margin: 0, flex: 1 }}>{t(lang, 'stores.mapTitle')}</h2>
+                <span className="sub">{t(lang, 'stores.km', { n: storeKm })}</span>
+              </div>
+              <StoresMap
+                center={storeCenter}
+                radiusKm={storeKm}
+                hits={visibleStoreHits}
+                emptyHint={t(lang, 'stores.mapHint')}
+              />
             </section>
           </div>
         )}

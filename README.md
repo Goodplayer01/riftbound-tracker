@@ -18,6 +18,7 @@ The app checks GitHub Releases for updates on startup.
 - **Deck import** — paste deck lists (including Rune Pool); missing-copy summary with Cardmarket links; add missing copies to the collection in one click
 - **Hand tester** — opening hand / mulligan for First or Second
 - **Verkauf** — mark cards sold and track sale totals
+- **Händler / Stores** — official UVS store locator by city/PLZ or GPS; KM slider + map with radius circle (no live stock)
 - **UI** — German and English; data stays local on your PC (no account, no cloud)
 
 Not a multi-TCG tool. Riftbound only.

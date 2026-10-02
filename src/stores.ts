@@ -5,6 +5,11 @@ export const STORE_LOCATOR_URL = 'https://locator.riftbound.uvsgames.com/find-a-
 const STORES_API = 'https://api.riftbound.uvsgames.com/api/v2/game-stores/'
 const NOMINATIM = 'https://nominatim.openstreetmap.org/search'
 
+/** UI / filter radius limits (km). UVS API still takes miles — we convert. */
+export const STORE_RADIUS_KM_MIN = 1
+export const STORE_RADIUS_KM_MAX = 250
+export const STORE_RADIUS_KM_DEFAULT = 50
+
 export type GeoPoint = { lat: number; lng: number; label: string }
 
 export type StoreHit = {
@@ -70,12 +75,28 @@ function haversineKm(aLat: number, aLng: number, bLat: number, bLng: number) {
   return 2 * R * Math.asin(Math.sqrt(s))
 }
 
+/** Convert km → miles for UVS `num_miles` (ceil so we never undershoot). */
+export function kmToApiMiles(km: number) {
+  const n = Number.isFinite(km) ? km : STORE_RADIUS_KM_DEFAULT
+  return Math.max(1, Math.ceil(n / 1.609344))
+}
+
+export function clampStoreRadiusKm(km: number) {
+  if (!Number.isFinite(km)) return STORE_RADIUS_KM_DEFAULT
+  return Math.min(STORE_RADIUS_KM_MAX, Math.max(STORE_RADIUS_KM_MIN, Math.round(km)))
+}
+
+/**
+ * Search official Riftbound stores near a point.
+ * @param radiusKm user-facing radius in kilometres (converted to miles for the API).
+ */
 export async function searchStoresNear(
   lat: number,
   lng: number,
-  miles = 50,
-  pageSize = 25,
+  radiusKm = STORE_RADIUS_KM_DEFAULT,
+  pageSize = 40,
 ): Promise<StoreHit[]> {
+  const miles = kmToApiMiles(radiusKm)
   const params = new URLSearchParams({
     latitude: String(lat),
     longitude: String(lng),
@@ -122,8 +143,10 @@ export async function searchStoresNear(
       types: s.store_types_pretty || r.store_types_pretty || [],
     })
   }
-  out.sort((a, b) => (a.distanceKm ?? 1e9) - (b.distanceKm ?? 1e9))
-  return out
+  // Keep within the KM radius the user asked for (API is miles-based).
+  const filtered = out.filter((h) => h.distanceKm == null || h.distanceKm <= radiusKm + 0.05)
+  filtered.sort((a, b) => (a.distanceKm ?? 1e9) - (b.distanceKm ?? 1e9))
+  return filtered
 }
 
 export function mapsUrl(hit: StoreHit) {

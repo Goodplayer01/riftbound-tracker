@@ -948,3 +948,128 @@ textarea.field { min-height: 160px; resize: vertical; font-family: ui-monospace,
 .borrow-drop.drag-reject {
   animation: deck-drop-reject .45s ease-out;
 }
+
+
+/* —— Händler / Stores map + KM slider (v0.2.18) —— */
+.split.stores-split {
+  grid-template-columns: 1fr 1fr;
+  align-items: stretch;
+  min-height: 0;
+}
+.stores-list-panel,
+.stores-map-panel {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  max-height: calc(860px - 120px);
+}
+.stores-results {
+  overflow: auto;
+  flex: 1;
+  min-height: 120px;
+  padding-right: 2px;
+}
+.stores-map-panel .stores-map-wrap {
+  flex: 1;
+  min-height: 320px;
+  position: relative;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+  background: #12161f;
+}
+.stores-map {
+  width: 100%;
+  height: 100%;
+  min-height: 320px;
+  background: #12161f;
+}
+.stores-map-empty {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  text-align: center;
+  color: var(--muted);
+  font-size: 13px;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(10,12,16,.15), rgba(10,12,16,.45));
+  z-index: 400;
+}
+.stores-radius-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.stores-km-slider {
+  flex: 1;
+  min-width: 80px;
+  accent-color: var(--accent2, #d4af37);
+  height: 28px;
+  cursor: pointer;
+}
+.stores-km-input {
+  width: 72px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.stores-km-unit {
+  min-width: 22px;
+}
+/* Leaflet markers (divIcon) */
+.stores-marker {
+  background: transparent !important;
+  border: none !important;
+}
+.stores-marker-dot {
+  display: block;
+  width: 14px;
+  height: 14px;
+  margin: 2px;
+  border-radius: 50%;
+  background: #5b8cff;
+  border: 2px solid #e8eefc;
+  box-shadow: 0 1px 4px rgba(0,0,0,.45);
+}
+.stores-marker-pin {
+  display: block;
+  width: 16px;
+  height: 16px;
+  margin: 3px;
+  border-radius: 50%;
+  background: #d4af37;
+  border: 2px solid #fff4cc;
+  box-shadow: 0 0 0 3px rgba(212,175,55,.28), 0 1px 4px rgba(0,0,0,.45);
+}
+.leaflet-container {
+  font: inherit;
+  background: #12161f;
+}
+.leaflet-popup-content-wrapper {
+  background: #1a2030;
+  color: var(--text, #e8ecf4);
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(0,0,0,.4);
+}
+.leaflet-popup-tip {
+  background: #1a2030;
+}
+.leaflet-popup-content {
+  margin: 10px 12px;
+  font-size: 13px;
+  line-height: 1.35;
+}
+.leaflet-control-attribution {
+  background: rgba(18,22,31,.85) !important;
+  color: #8b93a7;
+  font-size: 10px;
+}
+.leaflet-control-attribution a { color: #b7c0d4; }
+.leaflet-bar a {
+  background: #1a2030;
+  color: #e8ecf4;
+  border-bottom-color: #2a3348;
+}
+.leaflet-bar a:hover { background: #243044; }

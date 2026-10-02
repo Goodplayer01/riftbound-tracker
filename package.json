@@ -1,8 +1,8 @@
 {
   "name": "riftbound-tracker",
   "private": true,
-  "version": "0.2.17",
-  "description": "Deakrix Riftbound Tracker \u2014 collection and deck tracker for Windows",
+  "version": "0.2.18",
+  "description": "Deakrix Riftbound Tracker — collection and deck tracker for Windows",
   "author": "Goodplayer01",
   "main": "electron/main.cjs",
   "type": "module",
@@ -16,10 +16,12 @@
   },
   "dependencies": {
     "electron-updater": "^6.6.2",
+    "leaflet": "^1.9.4",
     "react": "^19.1.1",
     "react-dom": "^19.1.1"
   },
   "devDependencies": {
+    "@types/leaflet": "^1.9.22",
     "@types/react": "^19.1.12",
     "@types/react-dom": "^19.1.9",
     "@vitejs/plugin-react": "^5.0.2",
