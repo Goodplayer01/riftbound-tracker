@@ -1440,6 +1440,22 @@ export default function App() {
       >
         <div className="deck-sec-head">
           <span className="deck-sec-title">{SECTION_LABEL[sec]}</span>
+          {count > 0 && (
+            <button
+              type="button"
+              className="btn small deck-trash"
+              style={{ marginLeft: 'auto' }}
+              title={t(lang, 'decks.clearSection')}
+              aria-label={t(lang, 'decks.clearSection')}
+              onClick={(e) => {
+                e.stopPropagation()
+                if (!window.confirm(t(lang, 'decks.clearSectionConfirm', { section: SECTION_LABEL[sec] }))) return
+                clearDeckSection(sec)
+              }}
+            >
+              {t(lang, 'decks.clearSection')}
+            </button>
+          )}
           <span className={`deck-sec-cap${over ? ' over' : ''}`}>{count}/{cap}</span>
         </div>
         <div className="list">
@@ -1575,6 +1591,14 @@ export default function App() {
     const entry = deck.cards.find((x) => x.id === cardId && sectionOf(x) === section)
     if (!entry) return
     bumpDeckCard(cardId, section, -entry.qty)
+  }
+
+  function clearDeckSection(section: DeckSection) {
+    updateDeck((d) => ({ ...d, cards: d.cards.filter((x) => sectionOf(x) !== section) }))
+    if (section === 'legend') {
+      setActiveSection('legend')
+      setDeckNotice(null)
+    }
   }
 
   function deckCount(d: Deck) {

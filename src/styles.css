@@ -715,13 +715,13 @@ textarea.field { min-height: 160px; resize: vertical; font-family: ui-monospace,
   padding: 8px 10px; min-width: 40px; line-height: 1;
   display: inline-flex; align-items: center; justify-content: center;
 }
-.btn.icon.deck-trash {
+.btn.deck-trash {
   color: var(--danger);
   border-color: rgba(255,123,138,.35);
   background: rgba(255,123,138,.08);
-  font-size: 16px;
 }
-.btn.icon.deck-trash:hover {
+.btn.icon.deck-trash { font-size: 16px; }
+.btn.deck-trash:hover {
   border-color: var(--danger);
   background: rgba(255,123,138,.16);
 }
