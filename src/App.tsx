@@ -48,6 +48,7 @@ import {
   geocodeQuery,
   mapsUrl,
   searchStoresNear,
+  websiteUrl,
   type StoreHit,
 } from './stores'
 import { StoresMap, type MapCenter } from './StoresMap'
@@ -1749,6 +1750,11 @@ export default function App() {
     }
   }
 
+  function openStoreLink(url: string) {
+    if (window.riftbound?.openExternal) void window.riftbound.openExternal(url)
+    else window.open(url, '_blank', 'noopener,noreferrer')
+  }
+
   function runStoreGeo() {
     if (!navigator.geolocation) {
       setStoreError(t(lang, 'stores.geoDenied'))
@@ -1990,7 +1996,7 @@ export default function App() {
         </div>
       </header>
 
-      <main className="main">
+      <main className={`main${tab === 'stores' ? ' main-stores' : ''}`}>
         {tab === 'collection' && binderView == null && (
           <>
             <div className="toolbar">
@@ -3226,124 +3232,123 @@ export default function App() {
         )}
 
         {tab === 'stores' && (
-          <div className="split stores-split">
-            <section className="panel stores-list-panel">
-              <div className="toolbar">
-                <h2 style={{ margin: 0, flex: 1 }}>{t(lang, 'stores.title')}</h2>
-                <button
-                  type="button"
-                  className="btn"
-                  onClick={() => {
-                    if (window.riftbound?.openExternal) void window.riftbound.openExternal(STORE_LOCATOR_URL); else window.open(STORE_LOCATOR_URL, '_blank', 'noopener,noreferrer')
-                  }}
-                >{t(lang, 'stores.openOfficial')}</button>
-              </div>
-              <p className="help">{t(lang, 'stores.help')}</p>
-              <div className="toolbar stores-controls" style={{ flexWrap: 'wrap', gap: 8 }}>
-                <label className="grow" style={{ display: 'grid', gap: 4, minWidth: 160 }}>
-                  <span className="sub">{t(lang, 'stores.query')}</span>
-                  <input
-                    className="field"
-                    value={storeQuery}
-                    onChange={(e) => setStoreQuery(e.target.value)}
-                    onKeyDown={(e) => { if (e.key === 'Enter') void runStoreSearch() }}
-                    placeholder={t(lang, 'stores.queryPh')}
-                  />
-                </label>
-                <label className="stores-radius" style={{ display: 'grid', gap: 4, flex: '1 1 220px', minWidth: 200 }}>
-                  <span className="sub">{t(lang, 'stores.radius')} · {t(lang, 'stores.km', { n: storeKm })}</span>
-                  <div className="stores-radius-row">
-                    <input
-                      type="range"
-                      className="stores-km-slider"
-                      min={STORE_RADIUS_KM_MIN}
-                      max={STORE_RADIUS_KM_MAX}
-                      step={1}
-                      value={storeKm}
-                      onChange={(e) => setStoreKmFromUi(Number(e.target.value))}
-                      aria-label={t(lang, 'stores.radius')}
-                    />
-                    <input
-                      type="number"
-                      className="field stores-km-input"
-                      min={STORE_RADIUS_KM_MIN}
-                      max={STORE_RADIUS_KM_MAX}
-                      value={storeKm}
-                      onChange={(e) => {
-                        const n = Number(e.target.value)
-                        if (!Number.isFinite(n)) return
-                        setStoreKmFromUi(n)
-                      }}
-                      onBlur={() => setStoreKmFromUi(storeKm)}
-                      onKeyDown={(e) => { if (e.key === 'Enter') void runStoreSearch() }}
-                    />
-                    <span className="sub stores-km-unit">{t(lang, 'stores.kmUnit')}</span>
-                  </div>
-                </label>
-                <div className="toolbar" style={{ alignSelf: 'end', margin: 0 }}>
-                  <button className="btn primary" disabled={storeBusy} onClick={() => void runStoreSearch()}>
-                    {storeBusy ? t(lang, 'stores.searching') : t(lang, 'stores.search')}
-                  </button>
-                  <button className="btn" disabled={storeBusy} onClick={runStoreGeo}>{t(lang, 'stores.geo')}</button>
-                </div>
-              </div>
-              {storeError && <p className="help" style={{ color: 'var(--danger)' }}>{storeError}</p>}
-              {storeLabel && !storeError && (
-                <p className="help">{t(lang, 'stores.near', { label: storeLabel })} · {t(lang, 'stores.results', { n: visibleStoreHits.length })}
-                  {storeKm > storeFetchedKm + 0.5 ? ` · ${t(lang, 'stores.enlargeHint')}` : ''}
-                </p>
-              )}
-              <div className="list stores-results" style={{ marginTop: 12 }}>
-                {!storeBusy && storeLabel && visibleStoreHits.length === 0 && (
-                  <div className="empty">{t(lang, 'stores.empty')}</div>
-                )}
-                {visibleStoreHits.map((h) => (
-                  <div key={h.id} className="list-item" style={{ alignItems: 'flex-start' }}>
-                    <div className="grow">
-                      <div className="name">{h.name}</div>
-                      <div className="sub">{h.address}</div>
-                      <div className="sub" style={{ marginTop: 4 }}>
-                        {h.distanceKm != null ? t(lang, 'stores.distance', { km: h.distanceKm.toFixed(1) }) : '—'}
-                        {h.types.length ? ` · ${h.types.slice(0, 2).join(', ')}` : ''}
-                      </div>
-                      <div className="sub" style={{ marginTop: 4, opacity: 0.85 }}>{t(lang, 'stores.stockUnknown')}</div>
-                    </div>
-                    <div className="toolbar" style={{ margin: 0, flexDirection: 'column', gap: 4 }}>
-                      {h.website && (
-                        <button
-                          type="button"
-                          className="btn small"
-                          onClick={() => {
-                            const url = h.website!.startsWith('http') ? h.website! : `https://${h.website}`
-                            if (window.riftbound?.openExternal) void window.riftbound.openExternal(url); else window.open(url, '_blank', 'noopener,noreferrer')
-                          }}
-                        >{t(lang, 'stores.website')}</button>
-                      )}
-                      <button
-                        type="button"
-                        className="btn small"
-                        onClick={() => {
-                          const url = mapsUrl(h)
-                          if (window.riftbound?.openExternal) void window.riftbound.openExternal(url); else window.open(url, '_blank', 'noopener,noreferrer')
-                        }}
-                      >{t(lang, 'stores.maps')}</button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </section>
-            <section className="panel stores-map-panel">
-              <div className="toolbar">
-                <h2 style={{ margin: 0, flex: 1 }}>{t(lang, 'stores.mapTitle')}</h2>
-                <span className="sub">{t(lang, 'stores.km', { n: storeKm })}</span>
-              </div>
-              <StoresMap
-                center={storeCenter}
-                radiusKm={storeKm}
-                hits={visibleStoreHits}
-                emptyHint={t(lang, 'stores.mapHint')}
+          <div className="stores-page">
+            <div className="stores-search">
+              <input
+                className="field stores-query"
+                value={storeQuery}
+                onChange={(e) => setStoreQuery(e.target.value)}
+                onKeyDown={(e) => { if (e.key === 'Enter') void runStoreSearch() }}
+                placeholder={t(lang, 'stores.queryPh')}
+                aria-label={t(lang, 'stores.query')}
               />
-            </section>
+              <div className="stores-radius-row" title={t(lang, 'stores.radius')}>
+                <input
+                  type="range"
+                  className="stores-km-slider"
+                  min={STORE_RADIUS_KM_MIN}
+                  max={STORE_RADIUS_KM_MAX}
+                  step={1}
+                  value={storeKm}
+                  onChange={(e) => setStoreKmFromUi(Number(e.target.value))}
+                  aria-label={t(lang, 'stores.radius')}
+                />
+                <input
+                  type="number"
+                  className="field stores-km-input"
+                  min={STORE_RADIUS_KM_MIN}
+                  max={STORE_RADIUS_KM_MAX}
+                  value={storeKm}
+                  onChange={(e) => {
+                    const n = Number(e.target.value)
+                    if (!Number.isFinite(n)) return
+                    setStoreKmFromUi(n)
+                  }}
+                  onBlur={() => setStoreKmFromUi(storeKm)}
+                  onKeyDown={(e) => { if (e.key === 'Enter') void runStoreSearch() }}
+                />
+                <span className="sub stores-km-unit">{t(lang, 'stores.kmUnit')}</span>
+              </div>
+              <button className="btn primary" disabled={storeBusy} onClick={() => void runStoreSearch()}>
+                {storeBusy ? t(lang, 'stores.searching') : t(lang, 'stores.search')}
+              </button>
+              <button className="btn" disabled={storeBusy} onClick={runStoreGeo}>{t(lang, 'stores.geo')}</button>
+              <button
+                type="button"
+                className="btn"
+                onClick={() => openStoreLink(STORE_LOCATOR_URL)}
+              >{t(lang, 'stores.openOfficial')}</button>
+            </div>
+            <p className="help stores-help">{t(lang, 'stores.help')}</p>
+            {storeError && <p className="help" style={{ color: 'var(--danger)' }}>{storeError}</p>}
+            {storeLabel && !storeError && (
+              <p className="help stores-help">{t(lang, 'stores.near', { label: storeLabel })} · {t(lang, 'stores.results', { n: visibleStoreHits.length })}
+                {storeKm > storeFetchedKm + 0.5 ? ` · ${t(lang, 'stores.enlargeHint')}` : ''}
+              </p>
+            )}
+            <div className="stores-body">
+              <section className="panel stores-map-panel">
+                <StoresMap
+                  center={storeCenter}
+                  radiusKm={storeKm}
+                  hits={visibleStoreHits}
+                  emptyHint={t(lang, 'stores.mapHint')}
+                />
+              </section>
+              <section className="panel stores-list-panel">
+                <div className="stores-results">
+                  {!storeLabel && <div className="empty">{t(lang, 'stores.listHint')}</div>}
+                  {!storeBusy && storeLabel && visibleStoreHits.length === 0 && (
+                    <div className="empty">{t(lang, 'stores.empty')}</div>
+                  )}
+                  {visibleStoreHits.map((h) => {
+                    const shown = h.products ? h.products.slice(0, 8) : []
+                    const extra = h.products ? h.products.length - shown.length : 0
+                    return (
+                      <article key={h.id} className="store-card">
+                        <div className="store-card-top">
+                          <div className="name">{h.name}</div>
+                          {h.distanceKm != null && (
+                            <div className="store-dist">{t(lang, 'stores.distance', { km: h.distanceKm.toFixed(1) })}</div>
+                          )}
+                        </div>
+                        {h.address && <div className="store-contact">{h.address}</div>}
+                        {h.phone && <div className="store-contact">{t(lang, 'stores.phone')}: {h.phone}</div>}
+                        {h.email && (
+                          <div className="store-contact">
+                            {t(lang, 'stores.email')}:{' '}
+                            <a href={`mailto:${h.email}`} onClick={(e) => { e.preventDefault(); openStoreLink(`mailto:${h.email}`) }}>{h.email}</a>
+                          </div>
+                        )}
+                        <div className="store-actions">
+                          {h.website && (
+                            <button type="button" className="btn small" onClick={() => openStoreLink(websiteUrl(h.website!))}>
+                              {t(lang, 'stores.website')}
+                            </button>
+                          )}
+                          <button type="button" className="btn small" onClick={() => openStoreLink(mapsUrl(h))}>
+                            {t(lang, 'stores.maps')}
+                          </button>
+                        </div>
+                        {h.products && shown.length > 0 ? (
+                          <ul className="store-stock">
+                            {shown.map((p) => (
+                              <li key={p.name}>
+                                <span className={p.available ? 'ok' : 'no'}>{p.available ? t(lang, 'stores.inStock') : t(lang, 'stores.outOfStock')}</span>
+                                {' · '}{p.name}
+                              </li>
+                            ))}
+                            {extra > 0 && <li className="no">{t(lang, 'stores.more', { n: extra })}</li>}
+                          </ul>
+                        ) : (
+                          <div className="store-unknown">{t(lang, 'stores.stockUnknown')}</div>
+                        )}
+                      </article>
+                    )
+                  })}
+                </div>
+              </section>
+            </div>
           </div>
         )}
 

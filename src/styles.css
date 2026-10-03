@@ -27,7 +27,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 button { cursor: pointer; }
 a { color: var(--accent2); }
 
-.app { min-height: 100%; display: grid; grid-template-rows: auto 1fr; }
+.app { height: 100%; min-height: 0; display: grid; grid-template-rows: auto 1fr; overflow: hidden; }
 
 .top {
   display: flex; gap: 10px; align-items: center; justify-content: space-between;
@@ -127,7 +127,7 @@ a { color: var(--accent2); }
 .win-btn:hover { background: rgba(255,255,255,.08); color: #fff; }
 .win-btn.win-close:hover { background: #c42b2b; color: #fff; }
 
-.main { padding: 18px; max-width: 1560px; width: 100%; margin: 0 auto; }
+.main { padding: 18px; max-width: 1560px; width: 100%; margin: 0 auto; min-height: 0; overflow: auto; }
 .toolbar { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; align-items: center; }
 .grow { flex: 1; min-width: 180px; }
 .search, .select, .field {
@@ -953,38 +953,91 @@ textarea.field { min-height: 160px; resize: vertical; font-family: ui-monospace,
 }
 
 
-/* —— Händler / Stores map + KM slider (v0.2.18) —— */
-.split.stores-split {
-  grid-template-columns: 1fr 1fr;
-  align-items: stretch;
+/* Stores: compact search, map + list fill the rest */
+.main.main-stores {
+  max-width: none;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+.stores-page {
+  flex: 1;
   min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.stores-search {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  padding: 8px 10px;
+  background: linear-gradient(180deg, #1c1810, var(--panel));
+  border: 1px solid var(--border-gold);
+  border-radius: 12px;
+}
+.stores-query { flex: 1 1 180px; min-width: 140px; padding: 8px 10px; }
+.stores-help { margin: 0; }
+.stores-body {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(240px, .9fr) minmax(280px, 1.15fr);
+  gap: 12px;
 }
 .stores-list-panel,
 .stores-map-panel {
   display: flex;
   flex-direction: column;
   min-height: 0;
-  max-height: calc(860px - 120px);
+  overflow: hidden;
+  margin: 0;
+  padding: 0;
+  border-color: var(--border-gold);
 }
 .stores-results {
   overflow: auto;
   flex: 1;
-  min-height: 120px;
-  padding-right: 2px;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px;
 }
-.stores-map-panel .stores-map-wrap {
-  flex: 1;
-  min-height: 320px;
-  position: relative;
+.store-card {
   border: 1px solid var(--border);
   border-radius: 12px;
+  padding: 10px 12px;
+  background: var(--panel2);
+  display: grid;
+  gap: 3px;
+}
+.store-card-top { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; }
+.store-card .name { font-weight: 650; }
+.store-dist { color: var(--accent2); font-size: 12px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.store-contact { color: var(--muted); font-size: 12px; line-height: 1.35; word-break: break-word; }
+.store-contact a { color: var(--accent2); text-decoration: none; }
+.store-actions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
+.store-stock { list-style: none; margin: 6px 0 0; padding: 0; display: grid; gap: 3px; }
+.store-stock li { font-size: 12px; line-height: 1.35; }
+.store-stock .ok { color: #c6e7b0; }
+.store-stock .no { color: var(--muted); }
+.store-unknown { margin-top: 4px; font-size: 12px; color: var(--muted); }
+.stores-map-panel .stores-map-wrap {
+  flex: 1;
+  min-height: 0;
+  height: 100%;
+  position: relative;
+  border: none;
+  border-radius: 0;
   overflow: hidden;
   background: #12161f;
 }
 .stores-map {
   width: 100%;
   height: 100%;
-  min-height: 320px;
+  min-height: 0;
   background: #12161f;
 }
 .stores-map-empty {
@@ -1021,6 +1074,11 @@ textarea.field { min-height: 160px; resize: vertical; font-family: ui-monospace,
 .stores-km-unit {
   min-width: 22px;
 }
+@media (max-width: 960px) {
+  .stores-body { grid-template-columns: 1fr; }
+  .stores-map-panel { min-height: 280px; }
+}
+
 /* Leaflet markers (divIcon) */
 .stores-marker {
   background: transparent !important;

@@ -1,4 +1,7 @@
-/** Official Riftbound retailer lookup via UVS / Spicerack public API (no stock). */
+/** Official Riftbound retailer lookup via UVS / Spicerack public API.
+ *  Contact fields come from that payload. Online stock only from a real
+ *  Shopify suggest.json hit whose title contains "riftbound" (available flag).
+ *  No quantities: the public payload has no inventory count. */
 
 export const RIFTBOUND_GAME_ID = 3
 export const STORE_LOCATOR_URL = 'https://locator.riftbound.uvsgames.com/find-a-store'
@@ -12,6 +15,12 @@ export const STORE_RADIUS_KM_DEFAULT = 50
 
 export type GeoPoint = { lat: number; lng: number; label: string }
 
+/** Real online listing. `available` is the shop's boolean, never a guessed count. */
+export type StoreProduct = {
+  name: string
+  available: boolean
+}
+
 export type StoreHit = {
   id: string
   name: string
@@ -20,10 +29,13 @@ export type StoreHit = {
   country: string
   website: string | null
   phone: string | null
+  email: string | null
   lat: number | null
   lng: number | null
   distanceKm: number | null
   types: string[]
+  /** null = no real source. Non empty = Shopify titles that matched. */
+  products: StoreProduct[] | null
 }
 
 type FetchJson = (url: string) => Promise<{ ok: boolean; data?: unknown; error?: string }>
@@ -34,7 +46,6 @@ async function fetchJson(url: string): Promise<unknown> {
     if (!res.ok) throw new Error(res.error || 'fetch failed')
     return res.data
   }
-  // Dev / browser fallback (may hit CORS)
   const r = await fetch(url, { headers: { Accept: 'application/json' } })
   if (!r.ok) throw new Error(`HTTP ${r.status}`)
   return r.json()
@@ -86,6 +97,94 @@ export function clampStoreRadiusKm(km: number) {
   return Math.min(STORE_RADIUS_KM_MAX, Math.max(STORE_RADIUS_KM_MIN, Math.round(km)))
 }
 
+function textOrNull(v: unknown): string | null {
+  if (typeof v !== 'string') return null
+  const s = v.trim()
+  return s || null
+}
+
+const SKIP_SHOP = /(^|\.)(instagram|facebook|fb|tiktok|linktr)\.[a-z.]+$|^(wa|t)\.me$/i
+
+function shopOrigin(website: string): string | null {
+  try {
+    const u = new URL(/^https?:\/\//i.test(website) ? website : `https://${website}`)
+    if (u.protocol !== 'https:') return null
+    if (SKIP_SHOP.test(u.hostname)) return null
+    return u.origin
+  } catch {
+    return null
+  }
+}
+
+/** Shopify predictive search. null if the shop does not serve that JSON. */
+async function shopifyRiftbound(website: string): Promise<StoreProduct[] | null> {
+  const origin = shopOrigin(website)
+  if (!origin) return null
+  const params = new URLSearchParams({
+    q: 'riftbound',
+    'resources[type]': 'product',
+    'resources[limit]': '10',
+    'resources[options][unavailable_products]': 'last',
+    'resources[options][fields]': 'title',
+  })
+  let data: {
+    resources?: { results?: { products?: Array<{ title?: string; available?: unknown }> } }
+  }
+  try {
+    data = (await fetchJson(`${origin}/search/suggest.json?${params}`)) as typeof data
+  } catch {
+    return null
+  }
+  const products = data?.resources?.results?.products
+  if (!Array.isArray(products)) return null
+  const out: StoreProduct[] = []
+  const seen = new Set<string>()
+  for (const p of products) {
+    const name = textOrNull(p?.title)
+    if (!name || !/riftbound/i.test(name)) continue
+    if (typeof p.available !== 'boolean') continue
+    const key = name.toLowerCase()
+    if (seen.has(key)) continue
+    seen.add(key)
+    out.push({ name, available: p.available })
+  }
+  out.sort((a, b) => Number(b.available) - Number(a.available))
+  return out.length ? out : null
+}
+
+async function withProducts(hits: StoreHit[]): Promise<StoreHit[]> {
+  const out = hits.slice()
+  let cursor = 0
+  const workers = Array.from({ length: Math.min(4, hits.length) }, async () => {
+    while (cursor < hits.length) {
+      const i = cursor++
+      const products = hits[i].website ? await shopifyRiftbound(hits[i].website!) : null
+      if (products) out[i] = { ...hits[i], products }
+    }
+  })
+  await Promise.all(workers)
+  return out
+}
+
+type StoreRow = {
+  id: string
+  store?: {
+    name?: string
+    full_address?: string
+    city?: string
+    country?: string
+    website?: string | null
+    phone_number?: string | null
+    preferred_contact_phone?: string | null
+    email?: string | null
+    preferred_contact_email?: string | null
+    latitude?: number | null
+    longitude?: number | null
+    store_types_pretty?: string[]
+  }
+  store_types_pretty?: string[]
+}
+
 /**
  * Search official Riftbound stores near a point.
  * @param radiusKm user-facing radius in kilometres (converted to miles for the API).
@@ -105,23 +204,7 @@ export async function searchStoresNear(
     page_size: String(pageSize),
     game_id: String(RIFTBOUND_GAME_ID),
   })
-  const data = (await fetchJson(`${STORES_API}?${params}`)) as {
-    results?: Array<{
-      id: string
-      store?: {
-        name?: string
-        full_address?: string
-        city?: string
-        country?: string
-        website?: string | null
-        phone_number?: string | null
-        latitude?: number | null
-        longitude?: number | null
-        store_types_pretty?: string[]
-      }
-      store_types_pretty?: string[]
-    }>
-  }
+  const data = (await fetchJson(`${STORES_API}?${params}`)) as { results?: StoreRow[] }
   const out: StoreHit[] = []
   for (const r of data.results || []) {
     const s = r.store || {}
@@ -131,22 +214,23 @@ export async function searchStoresNear(
       sLat != null && sLng != null ? haversineKm(lat, lng, sLat, sLng) : null
     out.push({
       id: r.id,
-      name: s.name || '—',
+      name: s.name || 'Store',
       address: s.full_address || '',
       city: s.city || '',
       country: s.country || '',
-      website: s.website || null,
-      phone: s.phone_number || null,
+      website: textOrNull(s.website),
+      phone: textOrNull(s.preferred_contact_phone) || textOrNull(s.phone_number),
+      email: textOrNull(s.preferred_contact_email) || textOrNull(s.email),
       lat: sLat,
       lng: sLng,
       distanceKm,
       types: s.store_types_pretty || r.store_types_pretty || [],
+      products: null,
     })
   }
-  // Keep within the KM radius the user asked for (API is miles-based).
   const filtered = out.filter((h) => h.distanceKm == null || h.distanceKm <= radiusKm + 0.05)
   filtered.sort((a, b) => (a.distanceKm ?? 1e9) - (b.distanceKm ?? 1e9))
-  return filtered
+  return withProducts(filtered)
 }
 
 export function mapsUrl(hit: StoreHit) {
@@ -154,6 +238,10 @@ export function mapsUrl(hit: StoreHit) {
     return `https://www.google.com/maps/search/?api=1&query=${hit.lat},${hit.lng}`
   }
   return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(hit.address || hit.name)}`
+}
+
+export function websiteUrl(raw: string) {
+  return /^https?:\/\//i.test(raw) ? raw : `https://${raw}`
 }
 
 /** Unused but kept for typing / future; fetchJson path uses window.riftbound. */

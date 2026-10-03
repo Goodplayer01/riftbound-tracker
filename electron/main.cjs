@@ -274,6 +274,15 @@ ipcMain.handle('window:close', () => {
   mainWindow?.close()
 })
 
+
+function publicShopHost(host) {
+  if (!host || host.includes(':') || !host.includes('.')) return false
+  if (/^\d{1,3}(\.\d{1,3}){3}$/.test(host)) return false
+  const h = host.toLowerCase()
+  if (h === 'localhost' || h.endsWith('.local') || h.endsWith('.internal')) return false
+  return true
+}
+
 ipcMain.handle('net:fetchJson', async (_e, url) => {
   if (typeof url !== 'string' || !/^https:\/\//i.test(url)) {
     return { ok: false, error: 'invalid url' }
@@ -289,7 +298,11 @@ ipcMain.handle('net:fetchJson', async (_e, url) => {
     'api.cloudflare.riftbound.uvsgames.com',
     'nominatim.openstreetmap.org',
   ])
-  if (!allowed.has(parsed.hostname)) {
+  // Shopify predictive search only, and only for the fixed Riftbound query.
+  const shopifySuggest = parsed.pathname === '/search/suggest.json'
+    && parsed.searchParams.get('q') === 'riftbound'
+    && publicShopHost(parsed.hostname)
+  if (!allowed.has(parsed.hostname) && !shopifySuggest) {
     return { ok: false, error: 'host not allowed' }
   }
   try {
@@ -298,6 +311,7 @@ ipcMain.handle('net:fetchJson', async (_e, url) => {
         Accept: 'application/json',
         'User-Agent': 'DeakrixRiftboundTracker/' + app.getVersion() + ' (store locator)',
       },
+      signal: AbortSignal.timeout(12000),
     })
     if (!res.ok) {
       return { ok: false, error: 'HTTP ' + res.status }
