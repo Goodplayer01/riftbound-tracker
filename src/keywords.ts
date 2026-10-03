@@ -12,9 +12,6 @@
  */
 
 import type { Card } from './types'
-import type { Lang } from './i18n'
-import { t } from './i18n'
-
 /** Stable keyword ids used in i18n keys `kw.{id}.name` / `kw.{id}.blurb`. */
 export const KEYWORD_IDS = [
   'accelerate',
@@ -125,10 +122,6 @@ export function setCardKeywordBook(book: CardKeywordBook | null) {
   cardKeywordBook = book
 }
 
-export function getCardKeywordBook() {
-  return cardKeywordBook
-}
-
 function labelsToIds(labels: string[]): KeywordId[] {
   const out: KeywordId[] = []
   const seen = new Set<KeywordId>()
@@ -171,26 +164,5 @@ export function keywordsForCard(card: Card): KeywordId[] {
   if (labels && labels.length) return labelsToIds(labels)
   // Light fallback: whole-word match in name/subtitle/tags (rarely hits keyword names)
   const hay = [card.name, card.subtitle || '', ...(card.tags || []), ...(card.types || [])].join(' ')
-  const found: KeywordId[] = []
-  const seen = new Set<KeywordId>()
-  for (const { id, re } of DETECT_PATTERNS) {
-    if (re.test(hay) && !seen.has(id)) {
-      seen.add(id)
-      found.push(id)
-    }
-  }
-  return found
-}
-
-export function keywordName(lang: Lang, id: KeywordId): string {
-  return t(lang, `kw.${id}.name`)
-}
-
-export function keywordBlurb(lang: Lang, id: KeywordId): string {
-  return t(lang, `kw.${id}.blurb`)
-}
-
-/** Full glossary order for browse-all in lightbox. */
-export function allKeywordIds(): KeywordId[] {
-  return [...KEYWORD_IDS]
+  return detectKeywordsInText(hay)
 }

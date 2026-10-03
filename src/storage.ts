@@ -6,38 +6,38 @@ const BORROWED_KEY = 'rb.borrowed.v1'
 
 export type Collection = Record<string, Owned>
 
-export function loadCollection(): Collection {
+function readJson<T>(key: string, fallback: T): T {
   try {
-    return JSON.parse(localStorage.getItem(COLLECTION_KEY) || '{}')
+    return JSON.parse(localStorage.getItem(key) || JSON.stringify(fallback)) as T
   } catch {
-    return {}
+    return fallback
   }
+}
+
+function writeJson(key: string, value: unknown) {
+  localStorage.setItem(key, JSON.stringify(value))
+}
+
+export function loadCollection(): Collection {
+  return readJson(COLLECTION_KEY, {})
 }
 
 export function saveCollection(c: Collection) {
-  localStorage.setItem(COLLECTION_KEY, JSON.stringify(c))
+  writeJson(COLLECTION_KEY, c)
 }
 
 export function loadDecks(): Deck[] {
-  try {
-    return JSON.parse(localStorage.getItem(DECKS_KEY) || '[]')
-  } catch {
-    return []
-  }
+  return readJson(DECKS_KEY, [])
 }
 
 export function saveDecks(d: Deck[]) {
-  localStorage.setItem(DECKS_KEY, JSON.stringify(d))
+  writeJson(DECKS_KEY, d)
 }
 
 export function loadBorrowed(): BorrowedGroup[] {
-  try {
-    return JSON.parse(localStorage.getItem(BORROWED_KEY) || '[]')
-  } catch {
-    return []
-  }
+  return readJson(BORROWED_KEY, [])
 }
 
 export function saveBorrowed(groups: BorrowedGroup[]) {
-  localStorage.setItem(BORROWED_KEY, JSON.stringify(groups))
+  writeJson(BORROWED_KEY, groups)
 }

@@ -1450,3 +1450,34 @@ button.card-lightbox-title-link:hover {
   line-height: 1.4;
   color: var(--text, #e8ecf4);
 }
+
+.rb-sym {
+  display: inline-block;
+  height: 1.05em;
+  width: 1.05em;
+  vertical-align: -0.18em;
+  object-fit: contain;
+}
+.rb-rune {
+  height: 1.15em;
+  width: 1.15em;
+  vertical-align: -0.22em;
+  border-radius: 2px;
+}
+.rb-energy {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.15em;
+  height: 1.15em;
+  padding: 0 0.18em;
+  margin: 0 0.04em;
+  border: 1.25px solid #d4af37;
+  border-radius: 999px;
+  color: #d4af37;
+  font-size: 0.86em;
+  font-weight: 700;
+  line-height: 1;
+  vertical-align: 0.02em;
+  box-sizing: border-box;
+}
