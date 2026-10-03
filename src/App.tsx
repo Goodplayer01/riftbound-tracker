@@ -1911,7 +1911,7 @@ export default function App() {
           ))}
         </nav>
         <div className="stats no-drag" style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-          <span className="maker-credit">made by Stefan | Goodplayer01</span>
+          <span className="maker-credit">made by Stefan</span>
           <span>{t(lang, 'stats.line', { unique: totals.unique, copies: totals.copies, catalog: totals.catalog })}</span>
           {collectionValue && (
             <span className="value-pill" title={t(lang, 'stats.valueTitle')}>
@@ -1972,6 +1972,8 @@ export default function App() {
             )}
             <span className="dl-label">{updateLabel()}</span>
           </button>
+        </div>
+        <div className="win-controls no-drag">
           <button type="button" className="win-btn" title={t(lang, 'win.minimize')} aria-label={t(lang, 'win.minimize')} onClick={() => window.riftbound?.windowMinimize?.()}>
             <svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><path d="M1 5h8" stroke="currentColor" strokeWidth="1.2" fill="none" /></svg>
           </button>

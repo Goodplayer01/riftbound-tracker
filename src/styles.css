@@ -32,7 +32,8 @@ a { color: var(--accent2); }
 .top {
   display: flex; gap: 10px; align-items: center; justify-content: space-between;
   flex-wrap: nowrap;
-  padding: 8px 8px 8px 14px;
+  /* 138px = 3×46 Windows caption buttons; in-flow credit/stats end before the controls. */
+  padding: 8px 138px 8px 14px;
   border-bottom: 1px solid var(--border-gold);
   background: linear-gradient(180deg, rgba(22,18,12,.94), rgba(12,14,20,.92));
   backdrop-filter: blur(10px); position: sticky; top: 0; z-index: 5;
@@ -82,6 +83,17 @@ a { color: var(--accent2); }
 .chrome {
   display: flex; align-items: stretch; gap: 2px; margin-left: 4px; flex-shrink: 0;
 }
+/* Custom caption buttons pinned top-right so they cannot be pushed by the credit/stats row. */
+.win-controls {
+  position: absolute;
+  top: 0;
+  right: 0;
+  height: 100%;
+  width: 138px;
+  display: flex;
+  align-items: stretch;
+  z-index: 6;
+}
 .version-btn {
   position: relative; overflow: hidden;
   border: none; background: transparent; color: #8fd18f;
@@ -108,9 +120,9 @@ a { color: var(--accent2); }
 .version-btn .dl-label { position: relative; z-index: 1; }
 
 .win-btn {
-  width: 42px; height: 32px; border: none; background: transparent;
+  width: 46px; height: 100%; flex: 1 1 46px; border: none; background: transparent;
   color: #d8d0c0; display: inline-flex; align-items: center; justify-content: center;
-  border-radius: 6px; padding: 0;
+  border-radius: 0; padding: 0;
 }
 .win-btn:hover { background: rgba(255,255,255,.08); color: #fff; }
 .win-btn.win-close:hover { background: #c42b2b; color: #fff; }
