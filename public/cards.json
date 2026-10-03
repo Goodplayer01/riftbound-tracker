@@ -37377,7 +37377,7 @@
         "Evelynn",
         "Demon"
       ],
-      "rulesText": "[Ambush] (You may play me as a [Reaction] to a battlefield where you have units.)\nWhen you play a card from face down, ready me and give me +1 [S] this turn."
+      "rulesText": "[Disarm]\nWhen I hold, if you control a facedown card here, score 1 point."
     },
     {
       "id": "rad-004",
@@ -39028,7 +39028,7 @@
         "Evelynn",
         "Demon"
       ],
-      "rulesText": "[Ambush] (You may play me as a [Reaction] to a battlefield where you have units.)\nWhen you play a card from face down, ready me and give me +1 [S] this turn."
+      "rulesText": "[Disarm] (When I attack, give an enemy unit here -1 [S] this turn.)\nWhen I hold, if you control a facedown card here, score 1 point."
     },
     {
       "id": "rad-109a",
@@ -39058,7 +39058,7 @@
         "Evelynn",
         "Demon"
       ],
-      "rulesText": "[Ambush] (You may play me as a [Reaction] to a battlefield where you have units.)\nWhen you play a card from face down, ready me and give me +1 [S] this turn."
+      "rulesText": "[Disarm]\nWhen I hold, if you control a facedown card here, score 1 point."
     },
     {
       "id": "rad-110",
@@ -40413,7 +40413,7 @@
       "tags": [
         "Evelynn"
       ],
-      "rulesText": "[Ambush] (You may play me as a [Reaction] to a battlefield where you have units.)\nWhen you play a card from face down, ready me and give me +1 [S] this turn."
+      "rulesText": "Once each turn, when you play a card from face down, draw 1. Then, if it's not your turn, discard 1."
     },
     {
       "id": "rad-176",

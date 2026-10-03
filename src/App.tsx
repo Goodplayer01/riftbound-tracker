@@ -2174,29 +2174,7 @@ export default function App() {
         </div>
       </header>
 
-      <main className={`main${tab === 'stores' ? ' main-stores' : ''}`}>
-        {tab === 'collection' && !quickOpen && (
-          <button type="button" className="btn quick-import-toggle" onClick={() => setQuickOpen(true)}>
-            {t(lang, 'collection.quickImport')}
-          </button>
-        )}
-        {tab === 'collection' && quickOpen && (
-          <div className="quick-import">
-            <span className="quick-import-label">{t(lang, 'collection.quickImport')}</span>
-            <button type="button" className={`chip ${quickMode === 'codes' ? 'active' : ''}`} onClick={() => setQuickMode('codes')}>{t(lang, 'collection.quickCodes')}</button>
-            <button type="button" className={`chip ${quickMode === 'list' ? 'active' : ''}`} onClick={() => setQuickMode('list')}>{t(lang, 'collection.quickList')}</button>
-            <textarea
-              className="field"
-              rows={2}
-              value={bulkText}
-              onChange={(e) => setBulkText(e.target.value)}
-              placeholder={t(lang, quickMode === 'codes' ? 'collection.quickPhCodes' : 'collection.quickPhList')}
-            />
-            <button className="btn primary small" disabled={!bulkText.trim()} onClick={runQuickImport}>{t(lang, 'decks.importBtn')}</button>
-            <button type="button" className="btn small" onClick={() => setQuickOpen(false)}>{t(lang, 'decks.exportClose')}</button>
-            {bulkReport && <p className="help">{bulkReport}</p>}
-          </div>
-        )}
+      <main className={`main${tab === 'stores' ? ' main-stores' : ''}${tab === 'collection' && binderView != null ? ' main-binder' : ''}`}>
         {tab === 'collection' && binderView == null && (
           <>
             <div className="toolbar">
@@ -2231,7 +2209,27 @@ export default function App() {
                   }}
                 />
               </label>
+              <button type="button" className="btn" onClick={() => setQuickOpen((v) => !v)}>
+                {t(lang, 'collection.quickImport')}
+              </button>
             </div>
+            {quickOpen && (
+              <div className="quick-import">
+                <span className="quick-import-label">{t(lang, 'collection.quickImport')}</span>
+                <button type="button" className={`chip ${quickMode === 'codes' ? 'active' : ''}`} onClick={() => setQuickMode('codes')}>{t(lang, 'collection.quickCodes')}</button>
+                <button type="button" className={`chip ${quickMode === 'list' ? 'active' : ''}`} onClick={() => setQuickMode('list')}>{t(lang, 'collection.quickList')}</button>
+                <textarea
+                  className="field"
+                  rows={2}
+                  value={bulkText}
+                  onChange={(e) => setBulkText(e.target.value)}
+                  placeholder={t(lang, quickMode === 'codes' ? 'collection.quickPhCodes' : 'collection.quickPhList')}
+                />
+                <button className="btn primary small" disabled={!bulkText.trim()} onClick={runQuickImport}>{t(lang, 'decks.importBtn')}</button>
+                <button type="button" className="btn small" onClick={() => setQuickOpen(false)}>{t(lang, 'decks.exportClose')}</button>
+                {bulkReport && <p className="help">{bulkReport}</p>}
+              </div>
+            )}
             <div className="binder-grid">
               {setProgress.map((s) => (
                 <button key={s.id} type="button" className="binder-tile" onClick={() => { setBinderView(s.id); setBinderRarity(null); setQ(''); setBinderOwnedOnly(false); setBinderMissing(false) }}>
@@ -2303,7 +2301,7 @@ export default function App() {
         )}
 
         {tab === 'collection' && binderView != null && (
-          <>
+          <div className="binder-view">
             <div className="toolbar binder-toolbar">
               <button className="btn" onClick={() => { setBinderView(null); setBinderRarity(null) }}>{t(lang, 'collection.back')}</button>
               <div className="grow">
@@ -2384,6 +2382,7 @@ export default function App() {
               />
             </div>
 
+            <div className="binder-scroll">
             {binderCards.length === 0 && (
               <div className="empty">
                 {binderView === 'owned' && ownedCards.length === 0
@@ -2409,7 +2408,8 @@ export default function App() {
                 )
               })}
             </div>
-          </>
+            </div>
+          </div>
         )}
 
         {tab === 'catalog' && (

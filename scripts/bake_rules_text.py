@@ -27,6 +27,21 @@ MANUAL_RULES: dict[str, str] = {
         "[Deploy] (Play this only to a battlefield. When an opponent holds here, kill this.)\n"
         "[Deathknell]: Deal 2 to an enemy unit here and kill all other Bombs you control here."
     ),
+    "rad-sp3": (
+        "[Disarm]\n"
+        "When I hold, if you control a facedown card here, score 1 point."
+    ),
+    "rad-109a": (
+        "[Disarm]\n"
+        "When I hold, if you control a facedown card here, score 1 point."
+    ),
+    "rad-109": (
+        "[Disarm] (When I attack, give an enemy unit here -1 [S] this turn.)\n"
+        "When I hold, if you control a facedown card here, score 1 point."
+    ),
+    "rad-175": (
+        "Once each turn, when you play a card from face down, draw 1. Then, if it's not your turn, discard 1."
+    ),
 }
 
 
