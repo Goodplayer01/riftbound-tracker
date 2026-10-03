@@ -1086,6 +1086,16 @@ export default function App() {
   const saleSelectedEntries = Object.entries(saleList).filter(([id, q]) => q > 0 && saleSelected[id])
   const saleSelectedCount = saleSelectedEntries.length
   const saleSelectedCopies = saleSelectedEntries.reduce((sum, [, q]) => sum + q, 0)
+  const saleQuery = saleQ.trim().toLowerCase()
+  const saleHits = ownedCards.filter((c) => {
+    if (!saleQuery) return true
+    return (
+      c.name.toLowerCase().includes(saleQuery) ||
+      (c.subtitle || '').toLowerCase().includes(saleQuery) ||
+      c.code.toLowerCase().includes(saleQuery) ||
+      displayName(c).toLowerCase().includes(saleQuery)
+    )
+  }).slice(0, 80)
 
   function applySalePaste() {
     const lines = salePaste.split(/\r?\n/).map((l) => l.trim()).filter(Boolean)
@@ -2487,12 +2497,12 @@ export default function App() {
 
         {tab === 'sales' && (
           <div className="split deck-split">
-            <section className="panel">
+            <section className="panel col-fill">
               <div className="toolbar">
-                <div className="grow">
-                  <h2 className="section-title" style={{ margin: 0 }}>{t(lang, 'sales.cart')}</h2>
-                  <p className="help" style={{ margin: '4px 0 0' }}>{t(lang, 'sales.help')}{saleSelectedCount > 0 ? t(lang, 'sales.selected', { cards: saleSelectedCount, copies: saleSelectedCopies, cardWord: cardWord(lang, saleSelectedCount), copyWord: copyWord(lang, saleSelectedCopies) }) : ''}</p>
-                </div>
+                <h2 style={{ margin: 0, flex: 1 }}>{t(lang, 'sales.cart')}</h2>
+                {saleSelectedCount > 0 && (
+                  <span className="sub">{t(lang, 'sales.selected', { cards: saleSelectedCount, copies: saleSelectedCopies, cardWord: cardWord(lang, saleSelectedCount), copyWord: copyWord(lang, saleSelectedCopies) })}</span>
+                )}
                 <button
                   className="btn primary"
                   disabled={saleSelectedCount === 0}
@@ -2504,8 +2514,7 @@ export default function App() {
               </div>
               {saleReport && <p className="help">{saleReport}</p>}
               <div
-                className={saleCartDropClass()}
-                style={{ maxHeight: '62vh', overflow: 'auto' }}
+                className={`list ${saleCartDropClass()}`}
                 onDragOver={onSaleCartDragOver}
                 onDragLeave={onSaleCartDragLeave}
                 onDrop={onSaleCartDrop}
@@ -2532,7 +2541,7 @@ export default function App() {
                           onChange={() => toggleSaleSelected(id)}
                         />
                       </label>
-                      <DeckThumb src={c.image} />
+                      <DeckThumb src={c.image} onOpen={() => openCardLightbox(c)} openTitle={t(lang, 'card.enlarge')} zoomIcon />
                       <div className="grow">
                         <div className="name">{displayName(c)}</div>
                         <div className="sub">{c.code} · {t(lang, 'decks.owns', { have })}</div>
@@ -2552,27 +2561,17 @@ export default function App() {
                 })}
               </div>
             </section>
-            <section className="panel">
-              <h2 style={{ marginTop: 0 }}>{t(lang, 'sales.addTitle')}</h2>
-              <p className="help">{t(lang, 'sales.addHelp')}</p>
+            <section className="panel col-fill">
+              <h2>{t(lang, 'sales.addTitle')}</h2>
               <input
-                className="field"
+                className="search"
                 placeholder={t(lang, 'sales.searchOwned')}
                 value={saleQ}
                 onChange={(e) => setSaleQ(e.target.value)}
                 style={{ marginBottom: 10 }}
               />
-              <div className="list" style={{ maxHeight: '36vh', overflow: 'auto', marginBottom: 14 }}>
-                {ownedCards.filter((c) => {
-                  const query = saleQ.trim().toLowerCase()
-                  if (!query) return true
-                  return (
-                    c.name.toLowerCase().includes(query) ||
-                    (c.subtitle || '').toLowerCase().includes(query) ||
-                    c.code.toLowerCase().includes(query) ||
-                    displayName(c).toLowerCase().includes(query)
-                  )
-                }).slice(0, 80).map((c) => {
+              <div className="list">
+                {saleHits.map((c) => {
                   const have = ownedQty(collection[c.id])
                   const room = saleRemaining(c.id)
                   return (
@@ -2586,7 +2585,7 @@ export default function App() {
                       onMouseMove={(e) => showCardPreview(e, c.image)}
                       onMouseLeave={hideCardPreview}
                     >
-                      <DeckThumb src={c.image} />
+                      <DeckThumb src={c.image} onOpen={() => openCardLightbox(c)} openTitle={t(lang, 'card.enlarge')} zoomIcon />
                       <div className="grow">
                         <button
                           type="button"
@@ -2607,33 +2606,23 @@ export default function App() {
                 {ownedCards.length === 0 && (
                   <div className="empty">{t(lang, 'sales.noOwned')}</div>
                 )}
-                {ownedCards.length > 0 && ownedCards.filter((c) => {
-                  const query = saleQ.trim().toLowerCase()
-                  if (!query) return true
-                  return (
-                    c.name.toLowerCase().includes(query) ||
-                    (c.subtitle || '').toLowerCase().includes(query) ||
-                    c.code.toLowerCase().includes(query) ||
-                    displayName(c).toLowerCase().includes(query)
-                  )
-                }).length === 0 && (
+                {ownedCards.length > 0 && saleHits.length === 0 && (
                   <div className="empty">{t(lang, 'sales.noHits', { q: saleQ.trim() })}</div>
                 )}
               </div>
-              <h3 style={{ margin: '0 0 6px', fontSize: 14 }}>{t(lang, 'sales.pasteTitle')}</h3>
-              <p className="help">{t(lang, 'sales.pasteHelp')}</p>
-              <textarea
-                className="field"
-                rows={5}
-                value={salePaste}
-                onChange={(e) => setSalePaste(e.target.value)}
-                placeholder={'2 Traveling Merchant\nOGN-056/298\n1 Kennen, Heart of the Tempest'}
-              />
-              <div className="toolbar" style={{ marginTop: 10 }}>
-                <button className="btn primary" disabled={!salePaste.trim()} onClick={applySalePaste}>
+              <div className="quick-import" style={{ margin: '10px 0 0' }}>
+                <span className="quick-import-label">{t(lang, 'sales.pasteTitle')}</span>
+                <textarea
+                  className="field"
+                  rows={2}
+                  value={salePaste}
+                  onChange={(e) => setSalePaste(e.target.value)}
+                  placeholder={t(lang, 'sales.pastePh')}
+                />
+                <button className="btn primary small" disabled={!salePaste.trim()} onClick={applySalePaste}>
                   {t(lang, 'sales.toCart')}
                 </button>
-                <button className="btn" disabled={!salePaste.trim()} onClick={() => setSalePaste('')}>
+                <button className="btn small" disabled={!salePaste.trim()} onClick={() => setSalePaste('')}>
                   {t(lang, 'sales.clear')}
                 </button>
               </div>
@@ -2961,7 +2950,7 @@ export default function App() {
               )}
             </section>
 
-            <section className="panel">
+            <section className="panel col-fill">
               <h2>{t(lang, 'decks.cardsTitle', { section: SECTION_LABEL[activeSection] })}</h2>
               <div className="toolbar">
                 <input className="search grow" placeholder={t(lang, 'decks.search')} value={q} onChange={(e) => setQ(e.target.value)} />
@@ -2969,7 +2958,7 @@ export default function App() {
                   <input type="checkbox" checked={deckOwnedOnly} onChange={(e) => setDeckOwnedOnly(e.target.checked)} /> {t(lang, 'catalog.ownedOnly')}
                 </label>
               </div>
-              <div className="list" style={{ maxHeight: '70vh', overflow: 'auto' }}>
+              <div className="list">
                 {!activeDeck && <div className="empty">{t(lang, 'decks.pickFirst')}</div>}
                 {activeDeck && sectionNeedsLegend(activeSection) && !hasLegend(activeDeck.cards) && (
                   <div className="empty deck-gate">{t(lang, 'decks.legendLocked')}</div>
