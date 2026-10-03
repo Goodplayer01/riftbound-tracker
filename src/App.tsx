@@ -142,6 +142,33 @@ function priceLabel(p?: PriceEntry) {
   return { low, high, avg30, foil, cmId: p.cmId || null, cmUrl: p.cmUrl || null }
 }
 
+function PriceBits({ entry, lang, showHigh = false }: { entry?: PriceEntry; lang: Lang; showHigh?: boolean }) {
+  const pl = priceLabel(entry)
+  if (!pl || (!pl.low && !pl.avg30 && !pl.high && !pl.foil)) return null
+  return (
+    <div className="price">
+      {pl.low ? <span title={t(lang, 'price.low')}>ab {pl.low}</span> : <span className="na">ab --</span>}
+      {showHigh && pl.high ? <span className="high" title={t(lang, 'price.high')}>max {pl.high}</span> : null}
+      {pl.avg30 ? <span className="avg30" title={t(lang, 'price.avg30')}>Ø30 {pl.avg30}</span> : null}
+      {pl.foil ? <span className="foil" title={t(lang, 'price.foil')}>F {pl.foil}</span> : null}
+    </div>
+  )
+}
+
+function DeckThumb({ src }: { src?: string | null }) {
+  return src ? (
+    <img
+      className="deck-thumb"
+      src={src}
+      alt=""
+      loading="lazy"
+      onError={(e) => { (e.currentTarget as HTMLImageElement).style.visibility = 'hidden' }}
+    />
+  ) : (
+    <div className="deck-thumb deck-thumb-empty" aria-hidden />
+  )
+}
+
 function cmUrl(p?: PriceEntry | null) {
   if (!p) return null
   if (p.cmUrl) return p.cmUrl
@@ -199,6 +226,111 @@ function openCm(p?: PriceEntry | null) {
   }
 }
 
+
+function DomainFilterRow({
+  value,
+  onChange,
+  lang,
+}: {
+  value: string | null
+  onChange: (next: string | null) => void
+  lang: Lang
+}) {
+  return (
+    <div className="domain-row" role="group" aria-label={t(lang, 'collection.domainFilter')}>
+      {DOMAINS.map((d) => {
+        const active = value === d
+        return (
+          <button
+            key={d}
+            type="button"
+            className={`domain-btn${active ? ' active' : ''}`}
+            title={active ? t(lang, 'collection.domainClear', { domain: d }) : t(lang, 'collection.domainTitle', { domain: d })}
+            aria-pressed={active}
+            onClick={() => onChange(active ? null : d)}
+          >
+            <img src={DOMAIN_ICON[d]} alt={d} draggable={false} />
+          </button>
+        )
+      })}
+    </div>
+  )
+}
+
+function CardTile({
+  c,
+  o,
+  lang,
+  priceEntry,
+  variant,
+  onOpen,
+  onBump,
+}: {
+  c: Card
+  o: { qty: number; foil: number }
+  lang: Lang
+  priceEntry?: PriceEntry
+  variant: 'binder' | 'catalog'
+  onOpen: (c: Card) => void
+  onBump: (id: string, field: 'qty' | 'foil', delta: number) => void
+}) {
+  const n = ownedQty(o)
+  const showFoil = !(c.signed || c.overnumbered) || o.foil > 0
+  const ownedClass = variant === 'binder' ? (n ? 'owned' : 'missing') : (n ? 'owned' : '')
+  return (
+    <article className={`card ${ownedClass}${c.signed || c.overnumbered ? ' shimmer' : ''}`}>
+      <div
+        className="art art-zoomable"
+        style={{ backgroundImage: c.image ? `url(${c.image})` : undefined }}
+        role="button"
+        tabIndex={0}
+        title={t(lang, 'card.enlarge')}
+        onClick={() => onOpen(c)}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault()
+            onOpen(c)
+          }
+        }}
+      >
+        {n > 0 && <div className="badge">x{n}</div>}
+        <div className="flags">
+          {c.signed ? <span className="flag signed">Signed</span> : null}
+          {c.overnumbered && !c.signed ? <span className="flag over">ON</span> : null}
+          {c.altArt ? <span className="flag alt">Alt</span> : null}
+        </div>
+      </div>
+      <div className="meta">
+        <div className="name-with-ban">
+          <button
+            type="button"
+            className="name name-link"
+            title={t(lang, 'price.openCm')}
+            disabled={!priceEntry?.cmUrl}
+            onClick={() => openCm(priceEntry)}
+          >{displayCardName(c)}</button>
+          <BanBadge status={banStatus(c)} lang={lang} />
+        </div>
+        <div className="sub">{c.code} | {c.set} | {(c.types || []).join('/') || '-'} | {(c.domains || []).join('/') || '-'}</div>
+        <PriceBits entry={priceEntry} lang={lang} showHigh />
+        <div className="row">
+          <div className="qty" title={t(lang, 'qty.normal')}>
+            <button onClick={() => onBump(c.id, 'qty', -1)}>-</button>
+            <b className={variant === 'binder' ? (o.qty > 0 ? 'ok' : 'muted') : undefined}>{o.qty}</b>
+            <button onClick={() => onBump(c.id, 'qty', 1)}>+</button>
+          </div>
+          {showFoil && (
+            <div className="qty" title={t(lang, 'qty.foil')}>
+              <button onClick={() => onBump(c.id, 'foil', -1)}>-</button>
+              <b className={variant === 'binder' ? (o.foil > 0 ? 'ok' : 'muted') : 'ok'}>{o.foil}F</b>
+              <button onClick={() => onBump(c.id, 'foil', 1)}>+</button>
+            </div>
+          )}
+        </div>
+      </div>
+    </article>
+  )
+}
 
 const HIDE_NN_KEY = 'riftbound-hide-nexus-night'
 
@@ -283,14 +415,11 @@ export default function App() {
   const [binderRarity, setBinderRarity] = useState<string | null>(null)
   const [domainFilter, setDomainFilter] = useState<string | null>(null)
   const [dragOverSection, setDragOverSection] = useState<DeckSection | null>(null)
-  const [dropFlashSection, setDropFlashSection] = useState<DeckSection | null>(null)
   const [dragRejectSection, setDragRejectSection] = useState<DeckSection | null>(null)
   const [draggingCardId, setDraggingCardId] = useState<string | null>(null)
   const [dragOverSale, setDragOverSale] = useState(false)
-  const [dropFlashSale, setDropFlashSale] = useState(false)
   const [dragRejectSale, setDragRejectSale] = useState(false)
   const [dragOverBorrow, setDragOverBorrow] = useState(false)
-  const [dropFlashBorrow, setDropFlashBorrow] = useState(false)
   const [dragRejectBorrow, setDragRejectBorrow] = useState(false)
   const [deckNotice, setDeckNotice] = useState<string | null>(null)
   const [handTesterOpen, setHandTesterOpen] = useState(true)
@@ -299,8 +428,6 @@ export default function App() {
   const [handSelected, setHandSelected] = useState<number[]>([])
   const [mulliganUsed, setMulliganUsed] = useState(false)
   const [handDrawn, setHandDrawn] = useState(false)
-  const dragGhostRef = useRef<HTMLElement | null>(null)
-  const dragGhostCleanupRef = useRef<(() => void) | null>(null)
 
   useEffect(() => {
     window.riftbound?.getVersion().then(setAppVersion).catch(() => {})
@@ -1110,56 +1237,15 @@ export default function App() {
     e.dataTransfer.setData('text/plain', cardId)
     e.dataTransfer.effectAllowed = 'copy'
     const row = e.currentTarget as HTMLElement
-    const card = byId.get(cardId)
-    try {
-      clearDragGhost()
-      // Opaque card-art ghost: Chromium dims native setDragImage, so hide it
-      // and follow the cursor with our own fully-opaque element instead.
-      if (card?.image) {
-        const ox = 120
-        const oy = 168
-        const ghost = document.createElement('div')
-        ghost.className = 'card-float-preview card-drag-ghost'
-        ghost.style.position = 'fixed'
-        ghost.style.left = `${e.clientX - ox}px`
-        ghost.style.top = `${e.clientY - oy}px`
-        ghost.style.opacity = '1'
-        const img = document.createElement('img')
-        img.src = card.image
-        img.alt = ''
-        img.draggable = false
-        ghost.appendChild(img)
-        document.body.appendChild(ghost)
-        dragGhostRef.current = ghost
-
-        const blank = document.createElement('canvas')
-        blank.width = 1
-        blank.height = 1
-        e.dataTransfer.setDragImage(blank, 0, 0)
-
-        const move = (ev: DragEvent) => {
-          const g = dragGhostRef.current
-          if (!g) return
-          g.style.left = `${ev.clientX - ox}px`
-          g.style.top = `${ev.clientY - oy}px`
-        }
-        document.addEventListener('dragover', move)
-        dragGhostCleanupRef.current = () => document.removeEventListener('dragover', move)
-      }
-    } catch {}
+    const img = row.querySelector('img.deck-thumb') as HTMLImageElement | null
+    if (img && img.complete && img.naturalWidth > 0) {
+      try { e.dataTransfer.setDragImage(img, img.clientWidth / 2, img.clientHeight / 2) } catch {}
+    }
     row.classList.add('dragging')
-  }
-
-  function clearDragGhost() {
-    dragGhostCleanupRef.current?.()
-    dragGhostCleanupRef.current = null
-    dragGhostRef.current?.remove()
-    dragGhostRef.current = null
   }
 
   function onPickerDragEnd(e: ReactDragEvent) {
     (e.currentTarget as HTMLElement).classList.remove('dragging')
-    clearDragGhost()
     setDraggingCardId(null)
     setDragOverSection(null)
     setDragRejectSection(null)
@@ -1206,14 +1292,11 @@ export default function App() {
       return
     }
     addToSale(cardId, 1)
-    setDropFlashSale(true)
-    window.setTimeout(() => setDropFlashSale(false), 380)
   }
 
   function saleCartDropClass() {
     const parts = ['list', 'sale-cart']
     if (dragOverSale) parts.push('drag-over')
-    if (dropFlashSale) parts.push('drop-flash')
     if (dragRejectSale) parts.push('drag-reject')
     return parts.join(' ')
   }
@@ -1261,14 +1344,11 @@ export default function App() {
       return
     }
     bumpBorrowedCard(cardId, 1)
-    setDropFlashBorrow(true)
-    window.setTimeout(() => setDropFlashBorrow(false), 380)
   }
 
   function borrowDropClass() {
     const parts = ['list', 'borrow-drop']
     if (dragOverBorrow) parts.push('drag-over')
-    if (dropFlashBorrow) parts.push('drop-flash')
     if (dragRejectBorrow) parts.push('drag-reject')
     return parts.join(' ')
   }
@@ -1330,20 +1410,130 @@ export default function App() {
     }
     setActiveSection(sec)
     addToDeck(cardId, sec)
-    setDropFlashSection(sec)
-    window.setTimeout(() => setDropFlashSection((cur) => (cur === sec ? null : cur)), 380)
   }
 
   function sectionDropClass(sec: DeckSection, locked = false, atCap = false) {
     const parts = ['deck-sec']
     if (activeSection === sec) parts.push('active')
     if (dragOverSection === sec) parts.push('drag-over')
-    if (dropFlashSection === sec) parts.push('drop-flash')
     if (dragRejectSection === sec) parts.push('drag-reject')
     if (locked) parts.push('locked')
     if (atCap) parts.push('at-cap')
     return parts.join(' ')
   }
+
+  function renderDeckSection(sec: DeckSection, deck: Deck) {
+    const count = sectionCount(deck.cards, sec)
+    const cap = SECTION_CAPS[sec]
+    const over = count > cap
+    const atCap = count >= cap
+    const locked = sectionNeedsLegend(sec) && !hasLegend(deck.cards)
+    const cardsIn = deck.cards.filter((dc) => sectionOf(dc) === sec)
+    return (
+      <div
+        key={sec}
+        className={sectionDropClass(sec, locked, atCap)}
+        onClick={() => setActiveSection(sec)}
+        onDragOver={(e) => onSectionDragOver(e, sec)}
+        onDragLeave={(e) => onSectionDragLeave(e, sec)}
+        onDrop={(e) => onSectionDrop(e, sec)}
+      >
+        <div className="deck-sec-head">
+          <span className="deck-sec-title">{SECTION_LABEL[sec]}</span>
+          <span className={`deck-sec-cap${over ? ' over' : ''}`}>{count}/{cap}</span>
+        </div>
+        <div className="list">
+          {cardsIn.map((dc) => {
+            const c = byId.get(dc.id)
+            if (!c) return null
+            const have = availableForDecks(c.id)
+            const shortQty = Math.max(0, dc.qty - have)
+            const short = shortQty > 0
+            return (
+              <div
+                key={`${dc.id}-${sec}`}
+                className={`list-item deck-card-row${short ? ' short' : ''}`}
+                onMouseEnter={(e) => showCardPreview(e, c.image)}
+                onMouseMove={(e) => showCardPreview(e, c.image)}
+                onMouseLeave={hideCardPreview}
+              >
+                <DeckThumb src={c.image} />
+                <div className="grow">
+                  <div className="name-with-ban">
+                    <button
+                      type="button"
+                      className="name name-link"
+                      title={t(lang, 'price.openCm')}
+                      disabled={!priceBook?.cards[c.id]?.cmUrl}
+                      onClick={(e) => { e.stopPropagation(); openCm(priceBook?.cards[c.id]) }}
+                    >{displayName(c)}</button>
+                    <BanBadge status={banStatus(c)} lang={lang} />
+                  </div>
+                  <div className="sub">
+                    {c.energy != null ? `E${c.energy} · ` : ''}{c.code} · {t(lang, 'decks.owns', { have })}
+                  </div>
+                  <PriceBits entry={priceBook?.cards[c.id]} lang={lang} />
+                </div>
+                {shortQty > 0 && (
+                  <button
+                    type="button"
+                    className="btn small deck-add-collection"
+                    title={t(lang, 'decks.addToCollection')}
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      bump(c.id, 'qty', 1)
+                    }}
+                  >
+                    {t(lang, 'decks.addToCollection')}
+                  </button>
+                )}
+                {isSingleSlotSection(sec) ? (
+                  <button
+                    type="button"
+                    className="btn icon danger deck-trash deck-card-trash"
+                    title={t(lang, 'decks.removeSection', { section: SECTION_LABEL[sec] })}
+                    aria-label={t(lang, 'decks.removeSection', { section: SECTION_LABEL[sec] })}
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      removeDeckCard(dc.id, sec)
+                    }}
+                  >
+                    🗑
+                  </button>
+                ) : (
+                  <div className="qty" onClick={(e) => e.stopPropagation()}>
+                    <button type="button" onClick={() => bumpDeckCard(dc.id, sec, -1)}>−</button>
+                    <b>{dc.qty}</b>
+                    <button type="button" disabled={atCap || locked} title={locked ? t(lang, 'decks.legendLocked') : atCap ? t(lang, 'decks.limit', { cap }) : undefined} onClick={() => bumpDeckCard(dc.id, sec, 1)}>+</button>
+                  </div>
+                )}
+              </div>
+            )
+          })}
+        </div>
+        {!(isSingleSlotSection(sec) && atCap) && (
+          <button
+            type="button"
+            className="deck-add"
+            disabled={locked || atCap}
+            title={locked ? t(lang, 'decks.legendLocked') : atCap ? t(lang, 'decks.limitReached', { cap }) : undefined}
+            onClick={(e) => {
+              e.stopPropagation()
+              if (locked) {
+                setDeckNotice(t(lang, 'decks.legendLocked'))
+                setActiveSection('legend')
+                return
+              }
+              setActiveSection(sec)
+            }}
+          >
+            {locked ? t(lang, 'decks.legendLocked') : SECTION_ADD_LABEL[sec]}
+          </button>
+        )}
+      </div>
+    )
+  }
+
 
   function bumpDeckCard(cardId: string, section: DeckSection, delta: number) {
     const c = byId.get(cardId)
@@ -1909,23 +2099,7 @@ export default function App() {
                   {t(lang, 'collection.missing')}
                 </button>
               )}
-              <div className="domain-row" role="group" aria-label={t(lang, 'collection.domainFilter')}>
-                {DOMAINS.map((d) => {
-                  const active = domainFilter === d
-                  return (
-                    <button
-                      key={d}
-                      type="button"
-                      className={`domain-btn${active ? ' active' : ''}`}
-                      title={active ? t(lang, 'collection.domainClear', { domain: d }) : t(lang, 'collection.domainTitle', { domain: d })}
-                      aria-pressed={active}
-                      onClick={() => setDomainFilter((cur) => (cur === d ? null : d))}
-                    >
-                      <img src={DOMAIN_ICON[d]} alt={d} draggable={false} />
-                    </button>
-                  )
-                })}
-              </div>
+              <DomainFilterRow value={domainFilter} onChange={setDomainFilter} lang={lang} />
               <div className={`lang-menu${rarityMenuOpen ? ' open' : ''}`} ref={rarityMenuRef}>
                 <button
                   type="button"
@@ -1989,84 +2163,17 @@ export default function App() {
             <div className="grid">
               {binderCards.map((c) => {
                 const o = collection[c.id] || { qty: 0, foil: 0 }
-                const n = ownedQty(o)
-                const showFoil = !(c.signed || c.overnumbered) || o.foil > 0
                 return (
-                  <article key={c.id} className={`card ${n ? 'owned' : 'missing'}${c.signed || c.overnumbered ? ' shimmer' : ''}`}>
-                    <div
-                      className="art art-zoomable"
-                      style={{ backgroundImage: c.image ? `url(${c.image})` : undefined }}
-                      role="button"
-                      tabIndex={0}
-                      title={t(lang, 'card.enlarge')}
-                      onClick={() => openCardLightbox(c)}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter' || e.key === ' ') {
-                          e.preventDefault()
-                          openCardLightbox(c)
-                        }
-                      }}
-                    >
-                      {n > 0 && <div className="badge">x{n}</div>}
-                      <div className="flags">
-                        {c.signed ? <span className="flag signed">Signed</span> : null}
-                        {c.overnumbered && !c.signed ? <span className="flag over">ON</span> : null}
-                        {c.altArt ? <span className="flag alt">Alt</span> : null}
-                      </div>
-                      <button
-                        type="button"
-                        className="art-zoom-btn"
-                        title={t(lang, 'card.enlarge')}
-                        aria-label={t(lang, 'card.enlarge')}
-                        onClick={(e) => { e.stopPropagation(); openCardLightbox(c) }}
-                      >
-                        <svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true">
-                          <circle cx="10" cy="10" r="6.5" fill="none" stroke="currentColor" strokeWidth="2" />
-                          <path d="M15 15l6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-                          <path d="M8 10h4M10 8v4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-                        </svg>
-                      </button>
-                    </div>
-                    <div className="meta">
-                      <div className="name-with-ban">
-                        <button
-                          type="button"
-                          className="name name-link"
-                          title={t(lang, 'price.openCm')}
-                          disabled={!priceBook?.cards[c.id]?.cmUrl}
-                          onClick={() => openCm(priceBook?.cards[c.id])}
-                        >{displayName(c)}</button>
-                        <BanBadge status={banStatus(c)} lang={lang} />
-                      </div>
-                      <div className="sub">{c.code} | {c.set} | {(c.types || []).join('/') || '-'} | {(c.domains || []).join('/') || '-'}</div>
-                      {(() => {
-                        const pl = priceLabel(priceBook?.cards[c.id])
-                        if (!pl || (!pl.low && !pl.avg30 && !pl.high && !pl.foil)) return null
-                        return (
-                          <div className="price">
-                            {pl.low ? <span title={t(lang, 'price.low')}>ab {pl.low}</span> : <span className="na">ab --</span>}
-                            {pl.high ? <span className="high" title={t(lang, 'price.high')}>max {pl.high}</span> : null}
-                            {pl.avg30 ? <span className="avg30" title={t(lang, 'price.avg30')}>Ø30 {pl.avg30}</span> : null}
-                            {pl.foil ? <span className="foil" title={t(lang, 'price.foil')}>F {pl.foil}</span> : null}
-                          </div>
-                        )
-                      })()}
-                      <div className="row">
-                        <div className="qty" title={t(lang, 'qty.normal')}>
-                          <button onClick={() => bump(c.id, 'qty', -1)}>-</button>
-                          <b className={o.qty > 0 ? 'ok' : 'muted'}>{o.qty}</b>
-                          <button onClick={() => bump(c.id, 'qty', 1)}>+</button>
-                        </div>
-                        {showFoil && (
-                          <div className="qty" title={t(lang, 'qty.foil')}>
-                            <button onClick={() => bump(c.id, 'foil', -1)}>-</button>
-                            <b className={o.foil > 0 ? 'ok' : 'muted'}>{o.foil}F</b>
-                            <button onClick={() => bump(c.id, 'foil', 1)}>+</button>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </article>
+                  <CardTile
+                    key={c.id}
+                    c={c}
+                    o={o}
+                    lang={lang}
+                    priceEntry={priceBook?.cards[c.id]}
+                    variant="binder"
+                    onOpen={openCardLightbox}
+                    onBump={bump}
+                  />
                 )
               })}
             </div>
@@ -2094,23 +2201,7 @@ export default function App() {
                   <option key={ty} value={ty}>{ty}</option>
                 ))}
               </select>
-              <div className="domain-row" role="group" aria-label={t(lang, 'collection.domainFilter')}>
-                {DOMAINS.map((d) => {
-                  const active = domainFilter === d
-                  return (
-                    <button
-                      key={d}
-                      type="button"
-                      className={`domain-btn${active ? ' active' : ''}`}
-                      title={active ? t(lang, 'collection.domainClear', { domain: d }) : t(lang, 'collection.domainTitle', { domain: d })}
-                      aria-pressed={active}
-                      onClick={() => setDomainFilter((cur) => (cur === d ? null : d))}
-                    >
-                      <img src={DOMAIN_ICON[d]} alt={d} draggable={false} />
-                    </button>
-                  )
-                })}
-              </div>
+              <DomainFilterRow value={domainFilter} onChange={setDomainFilter} lang={lang} />
               <div className={`lang-menu${rarityMenuOpen ? ' open' : ''}`} ref={rarityMenuRef}>
                 <button
                   type="button"
@@ -2183,83 +2274,17 @@ export default function App() {
             <div className="grid">
               {filtered.map((c) => {
                 const o = collection[c.id] || { qty: 0, foil: 0 }
-                const showFoil = !(c.signed || c.overnumbered) || o.foil > 0
                 return (
-                  <article key={c.id} className={`card ${ownedQty(o) ? 'owned' : ''}${c.signed || c.overnumbered ? ' shimmer' : ''}`}>
-                    <div
-                      className="art art-zoomable"
-                      style={{ backgroundImage: c.image ? `url(${c.image})` : undefined }}
-                      role="button"
-                      tabIndex={0}
-                      title={t(lang, 'card.enlarge')}
-                      onClick={() => openCardLightbox(c)}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter' || e.key === ' ') {
-                          e.preventDefault()
-                          openCardLightbox(c)
-                        }
-                      }}
-                    >
-                      {ownedQty(o) > 0 && <div className="badge">x{ownedQty(o)}</div>}
-                      <div className="flags">
-                        {c.signed ? <span className="flag signed">Signed</span> : null}
-                        {c.overnumbered && !c.signed ? <span className="flag over">ON</span> : null}
-                        {c.altArt ? <span className="flag alt">Alt</span> : null}
-                      </div>
-                      <button
-                        type="button"
-                        className="art-zoom-btn"
-                        title={t(lang, 'card.enlarge')}
-                        aria-label={t(lang, 'card.enlarge')}
-                        onClick={(e) => { e.stopPropagation(); openCardLightbox(c) }}
-                      >
-                        <svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true">
-                          <circle cx="10" cy="10" r="6.5" fill="none" stroke="currentColor" strokeWidth="2" />
-                          <path d="M15 15l6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-                          <path d="M8 10h4M10 8v4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-                        </svg>
-                      </button>
-                    </div>
-                    <div className="meta">
-                      <div className="name-with-ban">
-                        <button
-                          type="button"
-                          className="name name-link"
-                          title={t(lang, 'price.openCm')}
-                          disabled={!priceBook?.cards[c.id]?.cmUrl}
-                          onClick={() => openCm(priceBook?.cards[c.id])}
-                        >{displayName(c)}</button>
-                        <BanBadge status={banStatus(c)} lang={lang} />
-                      </div>
-                      <div className="sub">{c.code} | {c.set} | {(c.types || []).join('/') || '-'} | {(c.domains || []).join('/') || '-'}</div>
-                      {(() => {
-                        const pl = priceLabel(priceBook?.cards[c.id])
-                        if (!pl || (!pl.low && !pl.avg30 && !pl.high && !pl.foil)) return null
-                        return (
-                          <div className="price">
-                            {pl.low ? <span title={t(lang, 'price.low')}>ab {pl.low}</span> : <span className="na">ab --</span>}
-                            {pl.high ? <span className="high" title={t(lang, 'price.high')}>max {pl.high}</span> : null}
-                            {pl.avg30 ? <span className="avg30" title={t(lang, 'price.avg30')}>Ø30 {pl.avg30}</span> : null}
-                            {pl.foil ? <span className="foil" title={t(lang, 'price.foil')}>F {pl.foil}</span> : null}
-                          </div>
-                        )
-                      })()}
-                      <div className="row">
-                        <div className="qty" title={t(lang, 'qty.normal')}>
-                          <button onClick={() => bump(c.id, 'qty', -1)}>-</button>
-                          <b>{o.qty}</b>
-                          <button onClick={() => bump(c.id, 'qty', 1)}>+</button>
-                        </div>
-                        {showFoil && (
-                          <div className="qty" title={t(lang, 'qty.foil')}>
-                            <button onClick={() => bump(c.id, 'foil', -1)}>-</button>
-                            <b className="ok">{o.foil}F</b>
-                            <button onClick={() => bump(c.id, 'foil', 1)}>+</button>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </article>
+                  <CardTile
+                    key={c.id}
+                    c={c}
+                    o={o}
+                    lang={lang}
+                    priceEntry={priceBook?.cards[c.id]}
+                    variant="catalog"
+                    onOpen={openCardLightbox}
+                    onBump={bump}
+                  />
                 )
               })}
             </div>
@@ -2313,17 +2338,7 @@ export default function App() {
                           onChange={() => toggleSaleSelected(id)}
                         />
                       </label>
-                      {c.image ? (
-                        <img
-                          className="deck-thumb"
-                          src={c.image}
-                          alt=""
-                          loading="lazy"
-                          onError={(e) => { (e.currentTarget as HTMLImageElement).style.visibility = 'hidden' }}
-                        />
-                      ) : (
-                        <div className="deck-thumb deck-thumb-empty" aria-hidden />
-                      )}
+                      <DeckThumb src={c.image} />
                       <div className="grow">
                         <div className="name">{displayName(c)}</div>
                         <div className="sub">{c.code} · {t(lang, 'decks.owns', { have })}</div>
@@ -2377,17 +2392,7 @@ export default function App() {
                       onMouseMove={(e) => showCardPreview(e, c.image)}
                       onMouseLeave={hideCardPreview}
                     >
-                      {c.image ? (
-                        <img
-                          className="deck-thumb"
-                          src={c.image}
-                          alt=""
-                          loading="lazy"
-                          onError={(e) => { (e.currentTarget as HTMLImageElement).style.visibility = 'hidden' }}
-                        />
-                      ) : (
-                        <div className="deck-thumb deck-thumb-empty" aria-hidden />
-                      )}
+                      <DeckThumb src={c.image} />
                       <div className="grow">
                         <button
                           type="button"
@@ -2397,17 +2402,7 @@ export default function App() {
                           onClick={(e) => { e.stopPropagation(); openCm(priceBook?.cards[c.id]) }}
                         >{displayName(c)}</button>
                         <div className="sub">{c.code} · x{have}{room < have ? t(lang, 'sales.inCart', { n: have - room }) : ''}</div>
-                        {(() => {
-                          const pl = priceLabel(priceBook?.cards[c.id])
-                          if (!pl || (!pl.low && !pl.avg30 && !pl.high && !pl.foil)) return null
-                          return (
-                            <div className="price">
-                              {pl.low ? <span title={t(lang, 'price.low')}>ab {pl.low}</span> : <span className="na">ab --</span>}
-                              {pl.avg30 ? <span className="avg30" title={t(lang, 'price.avg30')}>Ø30 {pl.avg30}</span> : null}
-                              {pl.foil ? <span className="foil" title={t(lang, 'price.foil')}>F {pl.foil}</span> : null}
-                            </div>
-                          )
-                        })()}
+                        <PriceBits entry={priceBook?.cards[c.id]} lang={lang} />
                       </div>
                       <button className="btn small primary" disabled={room <= 0} onClick={() => addToSale(c.id, 1)}>
                         +
@@ -2697,279 +2692,29 @@ export default function App() {
 
                   <div className="deck-sections">
                     <div className="deck-sec-row">
-                      {(['legend', 'champion'] as DeckSection[]).map((sec) => {
-                        const count = sectionCount(activeDeck.cards, sec)
-                        const cap = SECTION_CAPS[sec]
-                        const over = count > cap
-                        const atCap = count >= cap
-                        const locked = sectionNeedsLegend(sec) && !hasLegend(activeDeck.cards)
-                        const cardsIn = activeDeck.cards.filter((dc) => sectionOf(dc) === sec)
-                        return (
-                          <div
-                            key={sec}
-                            className={sectionDropClass(sec, locked, atCap)}
-                            onClick={() => setActiveSection(sec)}
-                            onDragOver={(e) => onSectionDragOver(e, sec)}
-                            onDragLeave={(e) => onSectionDragLeave(e, sec)}
-                            onDrop={(e) => onSectionDrop(e, sec)}
-                          >
-                            <div className="deck-sec-head">
-                              <span className="deck-sec-title">{SECTION_LABEL[sec]}</span>
-                              <span className={`deck-sec-cap${over ? ' over' : ''}`}>{count}/{cap}</span>
-                            </div>
-                            <div className="list">
-                              {cardsIn.map((dc) => {
-                                const c = byId.get(dc.id)
-                                if (!c) return null
-                                const have = availableForDecks(c.id)
-                                const shortQty = Math.max(0, dc.qty - have)
-                                const short = shortQty > 0
-                                return (
-                                                                    <div
-                                    key={`${dc.id}-${sec}`}
-                                    className={`list-item deck-card-row${short ? ' short' : ''}`}
-                                    onMouseEnter={(e) => showCardPreview(e, c.image)}
-                                    onMouseMove={(e) => showCardPreview(e, c.image)}
-                                    onMouseLeave={hideCardPreview}
-                                  >
-                                    {c.image ? (
-                                      <img
-                                        className="deck-thumb"
-                                        src={c.image}
-                                        alt=""
-                                        loading="lazy"
-                                        onError={(e) => { (e.currentTarget as HTMLImageElement).style.visibility = 'hidden' }}
-                                      />
-                                    ) : (
-                                      <div className="deck-thumb deck-thumb-empty" aria-hidden />
-                                    )}
-                                    <div className="grow">
-                                      <div className="name-with-ban">
-                                        <button
-                                          type="button"
-                                          className="name name-link"
-                                          title={t(lang, 'price.openCm')}
-                                          disabled={!priceBook?.cards[c.id]?.cmUrl}
-                                          onClick={(e) => { e.stopPropagation(); openCm(priceBook?.cards[c.id]) }}
-                                        >{displayName(c)}</button>
-                                        <BanBadge status={banStatus(c)} lang={lang} />
-                                      </div>
-                                      <div className="sub">
-                                        {c.energy != null ? `E${c.energy} · ` : ''}{c.code} · {t(lang, 'decks.owns', { have })}
-                                      </div>
-                                      {(() => {
-                                        const pl = priceLabel(priceBook?.cards[c.id])
-                                        if (!pl || (!pl.low && !pl.avg30 && !pl.high && !pl.foil)) return null
-                                        return (
-                                          <div className="price">
-                                            {pl.low ? <span title={t(lang, 'price.low')}>ab {pl.low}</span> : <span className="na">ab --</span>}
-                                            {pl.avg30 ? <span className="avg30" title={t(lang, 'price.avg30')}>Ø30 {pl.avg30}</span> : null}
-                                            {pl.foil ? <span className="foil" title={t(lang, 'price.foil')}>F {pl.foil}</span> : null}
-                                          </div>
-                                        )
-                                      })()}
-                                    </div>
-                                    {shortQty > 0 && (
-                                      <button
-                                        type="button"
-                                        className="btn small deck-add-collection"
-                                        title={t(lang, 'decks.addToCollection')}
-                                        onClick={(e) => {
-                                          e.stopPropagation()
-                                          bump(c.id, 'qty', 1)
-                                        }}
-                                      >
-                                        {t(lang, 'decks.addToCollection')}
-                                      </button>
-                                    )}
-                                    {isSingleSlotSection(sec) ? (
-                                      <button
-                                        type="button"
-                                        className="btn icon danger deck-trash deck-card-trash"
-                                        title={t(lang, 'decks.removeSection', { section: SECTION_LABEL[sec] })}
-                                        aria-label={t(lang, 'decks.removeSection', { section: SECTION_LABEL[sec] })}
-                                        onClick={(e) => {
-                                          e.stopPropagation()
-                                          removeDeckCard(dc.id, sec)
-                                        }}
-                                      >
-                                        🗑
-                                      </button>
-                                    ) : (
-                                      <div className="qty" onClick={(e) => e.stopPropagation()}>
-                                        <button type="button" onClick={() => bumpDeckCard(dc.id, sec, -1)}>−</button>
-                                        <b>{dc.qty}</b>
-                                        <button type="button" disabled={atCap || locked} title={locked ? t(lang, 'decks.legendLocked') : atCap ? t(lang, 'decks.limit', { cap }) : undefined} onClick={() => bumpDeckCard(dc.id, sec, 1)}>+</button>
-                                      </div>
-                                    )}
-                                  </div>
-                                )
-                              })}
-                            </div>
-                            {!(isSingleSlotSection(sec) && atCap) && (
-                              <button
-                                type="button"
-                                className="deck-add"
-                                disabled={locked || atCap}
-                                title={locked ? t(lang, 'decks.legendLocked') : atCap ? t(lang, 'decks.limitReached', { cap }) : undefined}
-                                onClick={(e) => {
-                                  e.stopPropagation()
-                                  if (locked) {
-                                    setDeckNotice(t(lang, 'decks.legendLocked'))
-                                    setActiveSection('legend')
-                                    return
-                                  }
-                                  setActiveSection(sec)
-                                }}
-                              >
-                                {locked ? t(lang, 'decks.legendLocked') : SECTION_ADD_LABEL[sec]}
-                              </button>
-                            )}
-                          </div>
-                        )
-                      })}
+                      {(['legend', 'champion'] as DeckSection[]).map((sec) => renderDeckSection(sec, activeDeck))}
                     </div>
 
-                    {SECTION_ORDER.filter((s) => s !== 'legend' && s !== 'champion').map((sec) => {
-                      const count = sectionCount(activeDeck.cards, sec)
-                      const cap = SECTION_CAPS[sec]
-                      const over = count > cap
-                      const atCap = count >= cap
-                      const locked = sectionNeedsLegend(sec) && !hasLegend(activeDeck.cards)
-                      const cardsIn = activeDeck.cards.filter((dc) => sectionOf(dc) === sec)
-                      return (
-                        <div
-                          key={sec}
-                          className={sectionDropClass(sec, locked, atCap)}
-                          onClick={() => setActiveSection(sec)}
-                          onDragOver={(e) => onSectionDragOver(e, sec)}
-                          onDragLeave={(e) => onSectionDragLeave(e, sec)}
-                          onDrop={(e) => onSectionDrop(e, sec)}
-                        >
-                          <div className="deck-sec-head">
-                            <span className="deck-sec-title">{SECTION_LABEL[sec]}</span>
-                            <span className={`deck-sec-cap${over ? ' over' : ''}`}>{count}/{cap}</span>
-                          </div>
-                          <div className="list">
-                            {cardsIn.map((dc) => {
-                              const c = byId.get(dc.id)
-                              if (!c) return null
-                              const have = availableForDecks(c.id)
-                              const shortQty = Math.max(0, dc.qty - have)
-                              const short = shortQty > 0
-                              return (
-                                                                <div
-                                  key={`${dc.id}-${sec}`}
-                                  className={`list-item deck-card-row${short ? ' short' : ''}`}
-                                  onMouseEnter={(e) => showCardPreview(e, c.image)}
-                                  onMouseMove={(e) => showCardPreview(e, c.image)}
-                                  onMouseLeave={hideCardPreview}
-                                >
-                                  {c.image ? (
-                                    <img
-                                      className="deck-thumb"
-                                      src={c.image}
-                                      alt=""
-                                      loading="lazy"
-                                      onError={(e) => { (e.currentTarget as HTMLImageElement).style.visibility = 'hidden' }}
-                                    />
-                                  ) : (
-                                    <div className="deck-thumb deck-thumb-empty" aria-hidden />
-                                  )}
-                                  <div className="grow">
-                                    <div className="name-with-ban">
-                                      <button
-                                        type="button"
-                                        className="name name-link"
-                                        title={t(lang, 'price.openCm')}
-                                        disabled={!priceBook?.cards[c.id]?.cmUrl}
-                                        onClick={(e) => { e.stopPropagation(); openCm(priceBook?.cards[c.id]) }}
-                                      >{displayName(c)}</button>
-                                      <BanBadge status={banStatus(c)} lang={lang} />
-                                    </div>
-                                    <div className="sub">
-                                      {c.energy != null ? `E${c.energy} · ` : ''}{c.code} · {t(lang, 'decks.owns', { have })}
-                                    </div>
-                                    {(() => {
-                                      const pl = priceLabel(priceBook?.cards[c.id])
-                                      if (!pl || (!pl.low && !pl.avg30 && !pl.high && !pl.foil)) return null
-                                      return (
-                                        <div className="price">
-                                          {pl.low ? <span title={t(lang, 'price.low')}>ab {pl.low}</span> : <span className="na">ab --</span>}
-                                          {pl.avg30 ? <span className="avg30" title={t(lang, 'price.avg30')}>Ø30 {pl.avg30}</span> : null}
-                                          {pl.foil ? <span className="foil" title={t(lang, 'price.foil')}>F {pl.foil}</span> : null}
-                                        </div>
-                                      )
-                                    })()}
-                                  </div>
-                                  {shortQty > 0 && (
-                                    <button
-                                      type="button"
-                                      className="btn small deck-add-collection"
-                                      title={t(lang, 'decks.addToCollection')}
-                                      onClick={(e) => {
-                                        e.stopPropagation()
-                                        bump(c.id, 'qty', 1)
-                                      }}
-                                    >
-                                      {t(lang, 'decks.addToCollection')}
-                                    </button>
-                                  )}
-                                  <div className="qty" onClick={(e) => e.stopPropagation()}>
-                                    <button type="button" onClick={() => bumpDeckCard(dc.id, sec, -1)}>−</button>
-                                    <b>{dc.qty}</b>
-                                    <button type="button" disabled={atCap || locked} title={locked ? t(lang, 'decks.legendLocked') : atCap ? t(lang, 'decks.limit', { cap }) : undefined} onClick={() => bumpDeckCard(dc.id, sec, 1)}>+</button>
-                                  </div>
-                                </div>
-                              )
-                            })}
-                          </div>
-                          <button
-                            type="button"
-                            className="deck-add"
-                            disabled={locked || atCap}
-                            title={locked ? t(lang, 'decks.legendLocked') : atCap ? t(lang, 'decks.limitReached', { cap }) : undefined}
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              if (locked) {
-                                setDeckNotice(t(lang, 'decks.legendLocked'))
-                                setActiveSection('legend')
-                                return
-                              }
-                              setActiveSection(sec)
-                            }}
-                          >
-                            {locked ? t(lang, 'decks.legendLocked') : SECTION_ADD_LABEL[sec]}
-                          </button>
-                        </div>
-                      )
-                    })}
+                    {SECTION_ORDER.filter((s) => s !== 'legend' && s !== 'champion').map((sec) => renderDeckSection(sec, activeDeck))}
                   </div>
 
                   {(() => {
                     const poolN = drawPoolSize(activeDeck)
                     const canTest = poolN >= OPENING_HAND_SIZE
                     return (
-                      <div className={`hand-tester${handTesterOpen ? ' expanded' : ''}`}>
-                        <div
+                      <details
+                        className="hand-tester"
+                        open={handTesterOpen}
+                        onToggle={(e) => setHandTesterOpen(e.currentTarget.open)}
+                      >
+                        <summary
                           className="hand-tester-head"
-                          role="button"
-                          tabIndex={0}
-                          aria-expanded={handTesterOpen}
-                          onClick={() => setHandTesterOpen((v) => !v)}
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter' || e.key === ' ') {
-                              e.preventDefault()
-                              setHandTesterOpen((v) => !v)
-                            }
-                          }}
                           title={t(lang, 'hand.toggle')}
                         >
-                          <span className="hand-tester-chevron" aria-hidden>{handTesterOpen ? '▾' : '▸'}</span>
+                          <span className="hand-tester-chevron" aria-hidden />
                           <span className="hand-tester-title">{t(lang, 'hand.title')}</span>
                           <span className="pill">{t(lang, 'hand.poolSize', { n: poolN })}</span>
-                        </div>
-                        {handTesterOpen && (
+                        </summary>
                           <div className="hand-tester-body">
                             {!canTest ? (
                               <div className="hand-empty-msg">{t(lang, 'hand.poolTooSmall')}</div>
@@ -3049,8 +2794,7 @@ export default function App() {
                               </>
                             )}
                           </div>
-                        )}
-                      </div>
+                      </details>
                     )
                   })()}
                 </>
@@ -3102,17 +2846,7 @@ export default function App() {
                       onMouseMove={(e) => showCardPreview(e, c.image)}
                       onMouseLeave={hideCardPreview}
                     >
-                      {c.image ? (
-                        <img
-                          className="deck-thumb"
-                          src={c.image}
-                          alt=""
-                          loading="lazy"
-                          onError={(e) => { (e.currentTarget as HTMLImageElement).style.visibility = 'hidden' }}
-                        />
-                      ) : (
-                        <div className="deck-thumb deck-thumb-empty" aria-hidden />
-                      )}
+                      <DeckThumb src={c.image} />
                       <div className="grow">
                         <div className="name-with-ban">
                           <button
@@ -3125,17 +2859,7 @@ export default function App() {
                           <BanBadge status={banStatus(c)} lang={lang} />
                         </div>
                         <div className="sub">{c.code} · x{ownedQty(collection[c.id])}{c.energy != null ? ` · E${c.energy}` : ''}</div>
-                        {(() => {
-                          const pl = priceLabel(priceBook?.cards[c.id])
-                          if (!pl || (!pl.low && !pl.avg30 && !pl.high && !pl.foil)) return null
-                          return (
-                            <div className="price">
-                              {pl.low ? <span title={t(lang, 'price.low')}>ab {pl.low}</span> : <span className="na">ab --</span>}
-                              {pl.avg30 ? <span className="avg30" title={t(lang, 'price.avg30')}>Ø30 {pl.avg30}</span> : null}
-                              {pl.foil ? <span className="foil" title={t(lang, 'price.foil')}>F {pl.foil}</span> : null}
-                            </div>
-                          )
-                        })()}
+                        <PriceBits entry={priceBook?.cards[c.id]} lang={lang} />
                       </div>
                       <button
                         className="btn small primary"
@@ -3401,17 +3125,7 @@ export default function App() {
                         onMouseMove={(e) => showCardPreview(e, c.image)}
                         onMouseLeave={hideCardPreview}
                       >
-                        {c.image ? (
-                          <img
-                            className="deck-thumb"
-                            src={c.image}
-                            alt=""
-                            loading="lazy"
-                            onError={(e) => { (e.currentTarget as HTMLImageElement).style.visibility = 'hidden' }}
-                          />
-                        ) : (
-                          <div className="deck-thumb deck-thumb-empty" aria-hidden />
-                        )}
+                        <DeckThumb src={c.image} />
                         <div className="grow">
                           <div className="name-with-ban">
                             <button
@@ -3427,17 +3141,7 @@ export default function App() {
                             {c.code} · x{have} · {t(lang, 'borrowed.availShort', { n: room })}
                             {c.energy != null ? ` · E${c.energy}` : ''}
                           </div>
-                          {(() => {
-                            const pl = priceLabel(priceBook?.cards[c.id])
-                            if (!pl || (!pl.low && !pl.avg30 && !pl.high && !pl.foil)) return null
-                            return (
-                              <div className="price">
-                                {pl.low ? <span title={t(lang, 'price.low')}>ab {pl.low}</span> : <span className="na">ab --</span>}
-                                {pl.avg30 ? <span className="avg30" title={t(lang, 'price.avg30')}>Ø30 {pl.avg30}</span> : null}
-                                {pl.foil ? <span className="foil" title={t(lang, 'price.foil')}>F {pl.foil}</span> : null}
-                              </div>
-                            )
-                          })()}
+                          <PriceBits entry={priceBook?.cards[c.id]} lang={lang} />
                         </div>
                         <button
                           className="btn small primary"

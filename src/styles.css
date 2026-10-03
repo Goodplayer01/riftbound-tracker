@@ -555,13 +555,6 @@ textarea.field { min-height: 160px; resize: vertical; font-family: ui-monospace,
   height: auto;
   vertical-align: top;
 }
-.card-drag-ghost {
-  opacity: 1;
-  -webkit-opacity: 1;
-  transform: rotate(2deg) scale(0.98);
-  pointer-events: none;
-  z-index: 10000;
-}
 
 
 /* Drag-and-drop: picker → deck sections */
@@ -585,17 +578,10 @@ textarea.field { min-height: 160px; resize: vertical; font-family: ui-monospace,
   transform: scale(1.01);
   background: rgba(212,175,55,.07);
 }
-.deck-sec.drop-flash {
-  animation: deck-drop-settle .38s ease-out;
-}
 .deck-sec.drag-reject {
   border-color: rgba(255,123,138,.75);
   box-shadow: inset 0 0 0 1px rgba(255,123,138,.25), 0 0 12px rgba(255,123,138,.2);
   animation: deck-drop-reject .45s ease-out;
-}
-@keyframes deck-drop-settle {
-  0% { transform: scale(1.03); box-shadow: 0 0 22px rgba(212,175,55,.45); }
-  100% { transform: scale(1); }
 }
 @keyframes deck-drop-reject {
   0%, 100% { transform: translateX(0); }
@@ -619,9 +605,6 @@ textarea.field { min-height: 160px; resize: vertical; font-family: ui-monospace,
     0 0 18px rgba(212,175,55,.28);
   transform: scale(1.01);
   background: rgba(212,175,55,.07);
-}
-.sale-cart.drop-flash {
-  animation: deck-drop-settle .38s ease-out;
 }
 .sale-cart.drag-reject {
   border-color: rgba(255,123,138,.75);
@@ -796,8 +779,10 @@ textarea.field { min-height: 160px; resize: vertical; font-family: ui-monospace,
   cursor: pointer;
   user-select: none;
   border-bottom: 1px solid transparent;
+  list-style: none;
 }
-.hand-tester.expanded .hand-tester-head {
+.hand-tester-head::-webkit-details-marker { display: none; }
+.hand-tester[open] .hand-tester-head {
   border-bottom-color: var(--border);
   background: rgba(212,175,55,.05);
 }
@@ -809,6 +794,8 @@ textarea.field { min-height: 160px; resize: vertical; font-family: ui-monospace,
   flex: 1;
 }
 .hand-tester-chevron { color: var(--muted); font-size: 12px; }
+.hand-tester-chevron::before { content: '▸'; }
+.hand-tester[open] .hand-tester-chevron::before { content: '▾'; }
 .hand-tester-body { padding: 12px; display: grid; gap: 10px; }
 .hand-tester-controls {
   display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
@@ -887,15 +874,6 @@ textarea.field { min-height: 160px; resize: vertical; font-family: ui-monospace,
   color: var(--muted);
   font-size: 13px;
 }
-.hand-pool-warn {
-  margin-top: 12px;
-  padding: 10px 12px;
-  border-radius: 10px;
-  border: 1px dashed rgba(255,210,122,.4);
-  background: rgba(255,210,122,.06);
-  color: var(--warn);
-  font-size: 13px;
-}
 
 /* Ban badge next to card names (decks, Sammlung, Katalog) */
 .ban-badge {
@@ -941,9 +919,6 @@ textarea.field { min-height: 160px; resize: vertical; font-family: ui-monospace,
   border: 1px dashed var(--border-gold);
   background: rgba(212,175,55,.06);
   box-shadow: inset 0 0 0 1px rgba(212,175,55,.2);
-}
-.borrow-drop.drop-flash {
-  animation: deck-drop-settle .38s ease-out;
 }
 .borrow-drop.drag-reject {
   animation: deck-drop-reject .45s ease-out;
@@ -1081,30 +1056,6 @@ textarea.field { min-height: 160px; resize: vertical; font-family: ui-monospace,
 .art-zoomable:focus-visible {
   outline: 2px solid rgba(212,175,55,.7);
   outline-offset: -2px;
-}
-.art-zoom-btn {
-  position: absolute;
-  right: 8px;
-  bottom: 8px;
-  z-index: 3;
-  width: 30px;
-  height: 30px;
-  border-radius: 9px;
-  border: 1px solid rgba(212,175,55,.4);
-  background: rgba(10,12,16,.78);
-  color: var(--accent2, #d4af37);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0;
-  cursor: pointer;
-  opacity: 0.92;
-  transition: background .12s ease, border-color .12s ease, transform .12s ease;
-}
-.art-zoom-btn:hover {
-  background: rgba(24,28,40,.95);
-  border-color: rgba(212,175,55,.75);
-  transform: scale(1.05);
 }
 .card-lightbox {
   position: fixed;
@@ -1308,15 +1259,11 @@ button.card-lightbox-title-link:hover {
   color: var(--accent2, #d4af37);
 }
 .card-keywords-hint,
-.card-keywords-source,
-.card-keywords-label {
+.card-keywords-source {
   margin: 0;
   font-size: 11px;
   line-height: 1.35;
   color: var(--muted);
-}
-.card-keywords-label.muted {
-  font-style: italic;
 }
 .card-keywords-list {
   list-style: none;
@@ -1367,10 +1314,4 @@ button.card-lightbox-title-link:hover {
   font-size: 12px;
   line-height: 1.4;
   color: var(--text, #e8ecf4);
-}
-.card-keywords-browse {
-  align-self: flex-start;
-  margin-top: 2px;
-  padding: 4px 10px !important;
-  font-size: 12px !important;
 }
