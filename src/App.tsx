@@ -60,7 +60,7 @@ import {
   drawTopCard,
 } from './handTester'
 
-type Tab = 'collection' | 'catalog' | 'sales' | 'bulk' | 'decks' | 'borrowed' | 'stores'
+type Tab = 'collection' | 'catalog' | 'sales' | 'decks' | 'borrowed' | 'stores'
 
 function uid() {
   return crypto.randomUUID()
@@ -415,7 +415,7 @@ export default function App() {
   const [rarityMenuOpen, setRarityMenuOpen] = useState(false)
   const rarityMenuRef = useRef<HTMLDivElement | null>(null)
   const [bulkText, setBulkText] = useState('')
-  const [bulkFoil, setBulkFoil] = useState(false)
+  const [quickMode, setQuickMode] = useState<'codes' | 'list'>('codes')
   const [bulkReport, setBulkReport] = useState<string | null>(null)
   const [saleList, setSaleList] = useState<Record<string, number>>({})
   const [saleSelected, setSaleSelected] = useState<Record<string, boolean>>({})
@@ -834,44 +834,60 @@ export default function App() {
     })
   }
 
-  function applyBulk(mode: 'add' | 'set' | 'remove') {
-    const tokens = parseBulkTokens(bulkText)
-    let ok = 0
-    let miss = 0
-    const missing: string[] = []
+  function addCollectionQty(entries: { id: string; qty: number }[]) {
+    if (!entries.length) return
     setCollection((prev) => {
       const next = { ...prev }
-      for (const token of tokens) {
-        const card = resolveToken(token, cards)
-        if (!card) {
-          miss += 1
-          missing.push(token)
-          continue
-        }
-        ok += 1
-        const cur = next[card.id] || { qty: 0, foil: 0 }
-        const field = bulkFoil ? 'foil' : 'qty'
-        if (mode === 'remove') {
-          const v = { ...cur, [field]: Math.max(0, cur[field] - 1) }
-          if (v.qty === 0 && v.foil === 0) delete next[card.id]
-          else next[card.id] = v
-        } else if (mode === 'set') {
-          next[card.id] = bulkFoil ? { qty: cur.qty, foil: 1 } : { qty: 1, foil: cur.foil }
-        } else {
-          next[card.id] = { ...cur, [field]: cur[field] + 1 }
-        }
+      for (const { id, qty } of entries) {
+        if (qty <= 0) continue
+        const cur = next[id] || { qty: 0, foil: 0 }
+        next[id] = { ...cur, qty: cur.qty + qty }
       }
       return next
     })
-    setBulkReport(
-      t(lang, 'bulk.found', { ok }) +
-        (miss
-          ? t(lang, 'bulk.missing', {
-              miss,
-              list: `${missing.slice(0, 12).join(', ')}${missing.length > 12 ? '...' : ''}`,
-            })
-          : ''),
-    )
+  }
+
+  function runQuickImport() {
+    const text = bulkText.trim()
+    if (!text) return
+    if (quickMode === 'codes') {
+      const tokens = parseBulkTokens(text)
+      const missing: string[] = []
+      const tally = new Map<string, number>()
+      for (const token of tokens) {
+        const card = resolveToken(token, cards)
+        if (!card) {
+          missing.push(token)
+          continue
+        }
+        tally.set(card.id, (tally.get(card.id) || 0) + 1)
+      }
+      addCollectionQty([...tally.entries()].map(([id, qty]) => ({ id, qty })))
+      setBulkReport(
+        t(lang, 'bulk.found', { ok: tokens.length - missing.length }) +
+          (missing.length
+            ? t(lang, 'bulk.missing', {
+                miss: missing.length,
+                list: `${missing.slice(0, 12).join(', ')}${missing.length > 12 ? '...' : ''}`,
+              })
+            : ''),
+      )
+      return
+    }
+    const result = parseDeckImport(text, cards)
+    const flat = flattenImportCards(result.cards)
+    addCollectionQty(flat)
+    const copies = flat.reduce((sum, c) => sum + c.qty, 0)
+    const parts = [t(lang, 'borrowed.importDone', { cards: flat.length, copies })]
+    if (result.unmatched.length) {
+      const shown = result.unmatched.slice(0, 8)
+      const names = shown.map((u) => t(lang, 'decks.notFoundPrefix', { name: u })).join('; ')
+      const more = result.unmatched.length > 8
+        ? ` ${t(lang, 'decks.andMore', { n: result.unmatched.length - 8 })}`
+        : ''
+      parts.push(names + more)
+    }
+    setBulkReport(parts.join(' · '))
   }
 
   function saleRemaining(id: string) {
@@ -1906,7 +1922,6 @@ export default function App() {
             ['collection', 'tab.collection'],
             ['catalog', 'tab.catalog'],
             ['sales', 'tab.sales'],
-            ['bulk', 'tab.bulk'],
             ['decks', 'tab.decks'],
             ['borrowed', 'tab.borrowed'],
             ['stores', 'tab.stores'],
@@ -1997,6 +2012,22 @@ export default function App() {
       </header>
 
       <main className={`main${tab === 'stores' ? ' main-stores' : ''}`}>
+        {tab === 'collection' && (
+          <div className="quick-import">
+            <span className="quick-import-label">{t(lang, 'collection.quickImport')}</span>
+            <button type="button" className={`chip ${quickMode === 'codes' ? 'active' : ''}`} onClick={() => setQuickMode('codes')}>{t(lang, 'collection.quickCodes')}</button>
+            <button type="button" className={`chip ${quickMode === 'list' ? 'active' : ''}`} onClick={() => setQuickMode('list')}>{t(lang, 'collection.quickList')}</button>
+            <textarea
+              className="field"
+              rows={2}
+              value={bulkText}
+              onChange={(e) => setBulkText(e.target.value)}
+              placeholder={t(lang, quickMode === 'codes' ? 'collection.quickPhCodes' : 'collection.quickPhList')}
+            />
+            <button className="btn primary small" disabled={!bulkText.trim()} onClick={runQuickImport}>{t(lang, 'decks.importBtn')}</button>
+            {bulkReport && <p className="help">{bulkReport}</p>}
+          </div>
+        )}
         {tab === 'collection' && binderView == null && (
           <>
             <div className="toolbar">
@@ -2512,44 +2543,6 @@ export default function App() {
                 <button className="btn" disabled={!salePaste.trim()} onClick={() => setSalePaste('')}>
                   {t(lang, 'sales.clear')}
                 </button>
-              </div>
-            </section>
-          </div>
-        )}
-
-                {tab === 'bulk' && (
-          <div className="split">
-            <section className="panel">
-              <h2>{t(lang, 'bulk.title')}</h2>
-              <p className="help">
-                {t(lang, 'bulk.help', { ex1: 'OGN-056/298', ex2: 'OGN-56', ex3: 'UNL 131', ex4: 'OGN-066a' })}
-              </p>
-              <textarea
-                className="field"
-                value={bulkText}
-                onChange={(e) => setBulkText(e.target.value)}
-                placeholder={'OGN-001/298\nOGN-056/298\nSFD-12\nUNL 131'}
-              />
-              <div className="toolbar" style={{ marginTop: 10 }}>
-                <label className="pill">
-                  <input type="checkbox" checked={bulkFoil} onChange={(e) => setBulkFoil(e.target.checked)} /> {t(lang, 'bulk.asFoil')}
-                </label>
-                <button className="btn primary" onClick={() => applyBulk('add')}>{t(lang, 'bulk.add1')}</button>
-                <button className="btn" onClick={() => applyBulk('set')}>{t(lang, 'bulk.set1')}</button>
-                <button className="btn danger" onClick={() => applyBulk('remove')}>{t(lang, 'bulk.rem1')}</button>
-              </div>
-              {bulkReport && <p className="help">{bulkReport}</p>}
-            </section>
-            <section className="panel">
-              <h2>{t(lang, 'bulk.overview')}</h2>
-              <p className="help">{t(lang, 'bulk.overviewHelp')}</p>
-              <div className="list">
-                <div className="list-item"><span>{t(lang, 'bulk.unique')}</span><b>{totals.unique}</b></div>
-                <div className="list-item"><span>{t(lang, 'bulk.copies')}</span><b>{totals.copies}</b></div>
-                <div className="list-item"><span>{t(lang, 'bulk.catalog')}</span><b>{totals.catalog}</b></div>
-                {collectionValue && (
-                  <div className="list-item"><span>{t(lang, 'bulk.value')}</span><b>~{collectionValue.sum.toFixed(2)}</b></div>
-                )}
               </div>
             </section>
           </div>

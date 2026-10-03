@@ -439,6 +439,18 @@ textarea.field { min-height: 160px; resize: vertical; font-family: ui-monospace,
   box-shadow: inset 0 0 0 1px rgba(212,175,55,.25);
 }
 
+.quick-import {
+  display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
+  margin-bottom: 12px; padding: 8px 10px;
+  border: 1px solid var(--border); border-radius: 12px; background: var(--panel);
+}
+.quick-import-label { font-size: 13px; font-weight: 650; white-space: nowrap; }
+.quick-import textarea.field {
+  flex: 1 1 240px; width: auto; min-height: 0; height: 52px;
+  padding: 6px 8px; margin: 0;
+}
+.quick-import .help { flex: 1 1 100%; margin: 0; }
+
 /* Piltover-style foil shimmer for Signed / Overnumbered */
 .card.shimmer { border-color: rgba(212,175,55,.55); }
 .card.shimmer .art::after {
