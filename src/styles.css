@@ -452,6 +452,7 @@ textarea.field { min-height: 160px; resize: vertical; font-family: ui-monospace,
   padding: 6px 8px; margin: 0;
 }
 .quick-import .help { flex: 1 1 100%; margin: 0; }
+.quick-import-toggle { margin: 0 0 12px; }
 
 /* Piltover-style foil shimmer for Signed / Overnumbered */
 .card.shimmer { border-color: rgba(212,175,55,.55); }
@@ -579,6 +580,13 @@ textarea.field { min-height: 160px; resize: vertical; font-family: ui-monospace,
   background: rgba(255,255,255,.04);
   border-style: dashed;
 }
+.deck-thumb-wrap {
+  position: relative;
+  flex: 0 0 auto;
+  width: 34px;
+  height: 48px;
+}
+.deck-thumb-wrap .deck-thumb { width: 100%; height: 100%; }
 .list-item .grow { min-width: 0; }
 .card-float-preview {
   position: fixed;
@@ -784,8 +792,7 @@ textarea.field { min-height: 160px; resize: vertical; font-family: ui-monospace,
   opacity: .72;
   border-style: dashed;
 }
-.deck-sec.locked .deck-add,
-.deck-sec.at-cap .deck-add {
+.deck-sec.locked .deck-add {
   cursor: not-allowed;
   opacity: .65;
 }
@@ -1156,6 +1163,34 @@ textarea.field { min-height: 160px; resize: vertical; font-family: ui-monospace,
 .art-zoomable:focus-visible {
   outline: 2px solid rgba(212,175,55,.7);
   outline-offset: -2px;
+}
+.art-zoom-btn {
+  position: absolute;
+  right: 8px;
+  bottom: 8px;
+  z-index: 3;
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
+  border: 1px solid rgba(212,175,55,.4);
+  background: rgba(10,12,16,.78);
+  color: var(--accent2, #d4af37);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  cursor: pointer;
+}
+.art-zoom-btn:hover {
+  background: rgba(24,28,40,.95);
+  border-color: rgba(212,175,55,.75);
+}
+.art-zoom-btn.tiny {
+  right: 1px;
+  bottom: 1px;
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
 }
 .card-lightbox {
   position: fixed;

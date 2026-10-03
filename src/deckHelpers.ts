@@ -6,8 +6,8 @@ export const SECTION_ORDER: DeckSection[] = [
   'champion',
   'main',
   'battlefield',
-  'sideboard',
   'rune',
+  'sideboard',
 ]
 
 const NAME_COPY_SECTIONS: DeckSection[] = ['champion', 'main', 'sideboard']

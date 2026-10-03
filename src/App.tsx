@@ -156,7 +156,25 @@ function PriceBits({ entry, lang, showHigh = false }: { entry?: PriceEntry; lang
   )
 }
 
-function DeckThumb({ src, onOpen, openTitle }: { src?: string | null; onOpen?: () => void; openTitle?: string }) {
+function ZoomMark({ title, onOpen, tiny }: { title: string; onOpen: () => void; tiny?: boolean }) {
+  return (
+    <button
+      type="button"
+      className={`art-zoom-btn${tiny ? ' tiny' : ''}`}
+      title={title}
+      aria-label={title}
+      onClick={(e) => { e.stopPropagation(); onOpen() }}
+    >
+      <svg width={tiny ? 10 : 14} height={tiny ? 10 : 14} viewBox="0 0 24 24" aria-hidden="true">
+        <circle cx="10" cy="10" r="6.5" fill="none" stroke="currentColor" strokeWidth="2" />
+        <path d="M15 15l6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+        <path d="M8 10h4M10 8v4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+      </svg>
+    </button>
+  )
+}
+
+function DeckThumb({ src, onOpen, openTitle, zoomIcon }: { src?: string | null; onOpen?: () => void; openTitle?: string; zoomIcon?: boolean }) {
   const zoom = onOpen ? ' art-zoomable' : ''
   const open = onOpen
     ? {
@@ -166,7 +184,7 @@ function DeckThumb({ src, onOpen, openTitle }: { src?: string | null; onOpen?: (
         onClick: (e: ReactMouseEvent) => { e.stopPropagation(); onOpen() },
       }
     : {}
-  return src ? (
+  const node = src ? (
     <img
       className={`deck-thumb${zoom}`}
       src={src}
@@ -177,6 +195,13 @@ function DeckThumb({ src, onOpen, openTitle }: { src?: string | null; onOpen?: (
     />
   ) : (
     <div className={`deck-thumb deck-thumb-empty${zoom}`} {...(onOpen ? open : { 'aria-hidden': true as const })} />
+  )
+  if (!onOpen || !zoomIcon || !openTitle) return node
+  return (
+    <span className="deck-thumb-wrap">
+      {node}
+      <ZoomMark title={openTitle} onOpen={onOpen} tiny />
+    </span>
   )
 }
 
@@ -332,6 +357,7 @@ function CardTile({
           {c.overnumbered && !c.signed ? <span className="flag over">ON</span> : null}
           {c.altArt ? <span className="flag alt">Alt</span> : null}
         </div>
+        <ZoomMark title={t(lang, 'card.enlarge')} onOpen={() => onOpen(c)} />
       </div>
       <div className="meta">
         <div className="name-with-ban">
@@ -415,6 +441,7 @@ export default function App() {
   const [rarityMenuOpen, setRarityMenuOpen] = useState(false)
   const rarityMenuRef = useRef<HTMLDivElement | null>(null)
   const [bulkText, setBulkText] = useState('')
+  const [quickOpen, setQuickOpen] = useState(false)
   const [quickMode, setQuickMode] = useState<'codes' | 'list'>('codes')
   const [bulkReport, setBulkReport] = useState<string | null>(null)
   const [saleList, setSaleList] = useState<Record<string, number>>({})
@@ -1467,13 +1494,12 @@ export default function App() {
     addToDeck(cardId, sec)
   }
 
-  function sectionDropClass(sec: DeckSection, locked = false, atCap = false) {
+  function sectionDropClass(sec: DeckSection, locked = false) {
     const parts = ['deck-sec']
     if (activeSection === sec) parts.push('active')
     if (dragOverSection === sec) parts.push('drag-over')
     if (dragRejectSection === sec) parts.push('drag-reject')
     if (locked) parts.push('locked')
-    if (atCap) parts.push('at-cap')
     return parts.join(' ')
   }
 
@@ -1487,7 +1513,7 @@ export default function App() {
     return (
       <div
         key={sec}
-        className={sectionDropClass(sec, locked, atCap)}
+        className={sectionDropClass(sec, locked)}
         onClick={() => setActiveSection(sec)}
         onDragOver={(e) => onSectionDragOver(e, sec)}
         onDragLeave={(e) => onSectionDragLeave(e, sec)}
@@ -1527,7 +1553,7 @@ export default function App() {
                 onMouseMove={(e) => showCardPreview(e, c.image)}
                 onMouseLeave={hideCardPreview}
               >
-                <DeckThumb src={c.image} />
+                <DeckThumb src={c.image} onOpen={() => openCardLightbox(c)} openTitle={t(lang, 'card.enlarge')} zoomIcon />
                 <div className="grow">
                   <div className="name-with-ban">
                     <button
@@ -1581,12 +1607,12 @@ export default function App() {
             )
           })}
         </div>
-        {!(isSingleSlotSection(sec) && atCap) && (
+        {!atCap && (
           <button
             type="button"
             className="deck-add"
-            disabled={locked || atCap}
-            title={locked ? t(lang, 'decks.legendLocked') : atCap ? t(lang, 'decks.limitReached', { cap }) : undefined}
+            disabled={locked}
+            title={locked ? t(lang, 'decks.legendLocked') : undefined}
             onClick={(e) => {
               e.stopPropagation()
               if (locked) {
@@ -2046,7 +2072,12 @@ export default function App() {
       </header>
 
       <main className={`main${tab === 'stores' ? ' main-stores' : ''}`}>
-        {tab === 'collection' && (
+        {tab === 'collection' && !quickOpen && (
+          <button type="button" className="btn quick-import-toggle" onClick={() => setQuickOpen(true)}>
+            {t(lang, 'collection.quickImport')}
+          </button>
+        )}
+        {tab === 'collection' && quickOpen && (
           <div className="quick-import">
             <span className="quick-import-label">{t(lang, 'collection.quickImport')}</span>
             <button type="button" className={`chip ${quickMode === 'codes' ? 'active' : ''}`} onClick={() => setQuickMode('codes')}>{t(lang, 'collection.quickCodes')}</button>
@@ -2059,6 +2090,7 @@ export default function App() {
               placeholder={t(lang, quickMode === 'codes' ? 'collection.quickPhCodes' : 'collection.quickPhList')}
             />
             <button className="btn primary small" disabled={!bulkText.trim()} onClick={runQuickImport}>{t(lang, 'decks.importBtn')}</button>
+            <button type="button" className="btn small" onClick={() => setQuickOpen(false)}>{t(lang, 'decks.exportClose')}</button>
             {bulkReport && <p className="help">{bulkReport}</p>}
           </div>
         )}
