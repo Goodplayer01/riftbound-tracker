@@ -127,6 +127,11 @@ const de: Record<string, string> = {
 
   'decks.title': 'Decks',
   'decks.import': 'Import',
+  'decks.export': 'Export',
+  'decks.exportTitle': 'Deckliste',
+  'decks.copy': 'Kopieren',
+  'decks.copied': 'Kopiert',
+  'decks.exportClose': 'Schließen',
   'decks.new': 'Neues Deck',
   'decks.empty': 'Noch kein Deck.',
   'decks.rename': 'Deck umbenennen',
@@ -435,6 +440,11 @@ const en: Record<string, string> = {
 
   'decks.title': 'Decks',
   'decks.import': 'Import',
+  'decks.export': 'Export',
+  'decks.exportTitle': 'Deck list',
+  'decks.copy': 'Copy',
+  'decks.copied': 'Copied',
+  'decks.exportClose': 'Close',
   'decks.new': 'New deck',
   'decks.empty': 'No decks yet.',
   'decks.rename': 'Rename deck',

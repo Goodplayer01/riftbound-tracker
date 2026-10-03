@@ -427,6 +427,8 @@ export default function App() {
   const [activeSection, setActiveSection] = useState<DeckSection>('main')
   const [deckImportText, setDeckImportText] = useState('')
   const [deckImportOpen, setDeckImportOpen] = useState(false)
+  const [deckExportText, setDeckExportText] = useState<string | null>(null)
+  const [deckExportCopied, setDeckExportCopied] = useState(false)
   const [missingExpanded, setMissingExpanded] = useState(false)
   const [cardPreview, setCardPreview] = useState<{ src: string; x: number; y: number } | null>(null)
   const [cardLightbox, setCardLightbox] = useState<Card | null>(null)
@@ -1693,6 +1695,37 @@ export default function App() {
     return { deckLow, missingLow, priced, missingPriced }
   }
 
+  function formatDeckList(d: Deck) {
+    const lines: string[] = []
+    for (const sec of SECTION_ORDER) {
+      const rows = d.cards.filter((c) => sectionOf(c) === sec)
+      if (!rows.length) continue
+      lines.push(`${SECTION_LABEL[sec]}:`)
+      for (const row of rows) {
+        const card = byId.get(row.id)
+        lines.push(`${row.qty} ${card ? displayCardName(card) : row.id}`)
+      }
+      lines.push('')
+    }
+    return lines.join('\n').trim()
+  }
+
+  function openDeckExport() {
+    if (!activeDeck) return
+    setDeckExportCopied(false)
+    setDeckExportText(formatDeckList(activeDeck))
+  }
+
+  async function copyDeckExport() {
+    if (!deckExportText) return
+    try {
+      await navigator.clipboard.writeText(deckExportText)
+      setDeckExportCopied(true)
+    } catch {
+      setDeckExportCopied(false)
+    }
+  }
+
   function runDeckImport(text: string) {
     if (!activeDeckId) return
     const result = parseDeckImport(text, cards)
@@ -1810,15 +1843,16 @@ export default function App() {
   }, [storeKm, storeCenter])
 
   useEffect(() => {
-    if (!cardLightbox && !clearSec) return
+    if (!cardLightbox && !clearSec && deckExportText == null) return
     const onKey = (e: KeyboardEvent) => {
       if (e.key !== 'Escape') return
-      if (clearSec) setClearSec(null)
+      if (deckExportText != null) setDeckExportText(null)
+      else if (clearSec) setClearSec(null)
       else setCardLightbox(null)
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [cardLightbox, clearSec])
+  }, [cardLightbox, clearSec, deckExportText])
 
   useEffect(() => {
     if (!cardLightbox) {
@@ -2553,6 +2587,7 @@ export default function App() {
             <section className="panel">
               <div className="toolbar">
                 <h2 style={{ margin: 0, flex: 1 }}>{t(lang, 'decks.title')}</h2>
+                <button className="btn" disabled={!activeDeck} onClick={openDeckExport}>{t(lang, 'decks.export')}</button>
                 <button className="btn" onClick={() => { setDeckImportOpen((v) => !v); setDeckImportText('') }}>{t(lang, 'decks.import')}</button>
                 <button className="btn primary" onClick={newDeck}>{t(lang, 'decks.new')}</button>
               </div>
@@ -2563,6 +2598,8 @@ export default function App() {
                   const sums = expanded ? deckPriceSums(d) : null
                   const under = expanded ? underOwnedLines(d) : []
                   const missCopies = under.reduce((acc, x) => acc + x.short, 0)
+                  const legendId = d.cards.find((c) => sectionOf(c) === 'legend')?.id
+                  const legendImg = legendId ? byId.get(legendId)?.image : undefined
                   return (
                     <div key={d.id} className={`deck-acc-item${expanded ? ' expanded' : ''}${expanded ? ' active' : ''}`}>
                       <div
@@ -2582,6 +2619,7 @@ export default function App() {
                         }}
                       >
                         <span className="deck-acc-chevron" aria-hidden>{expanded ? '▾' : '▸'}</span>
+                        {legendImg && <DeckThumb src={legendImg} />}
                         <div className="grow deck-acc-title">
                           {expanded ? (
                             <input
@@ -3346,6 +3384,26 @@ export default function App() {
         )}
 
       </main>
+      {deckExportText != null && (
+        <div
+          className="card-lightbox"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="deck-export-title"
+          onClick={() => setDeckExportText(null)}
+        >
+          <div className="panel confirm-box deck-export-box" onClick={(e) => e.stopPropagation()}>
+            <h2 id="deck-export-title">{t(lang, 'decks.exportTitle')}</h2>
+            <textarea className="field" readOnly rows={12} value={deckExportText} onFocus={(e) => e.currentTarget.select()} />
+            <div className="confirm-actions">
+              <button type="button" className="btn small" onClick={() => setDeckExportText(null)}>{t(lang, 'decks.exportClose')}</button>
+              <button type="button" className="btn small primary" onClick={() => void copyDeckExport()}>
+                {deckExportCopied ? t(lang, 'decks.copied') : t(lang, 'decks.copy')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       {clearSec && (
         <div
           className="card-lightbox"
