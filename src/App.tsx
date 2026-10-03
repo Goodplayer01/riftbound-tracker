@@ -155,18 +155,50 @@ function PriceBits({ entry, lang, showHigh = false }: { entry?: PriceEntry; lang
   )
 }
 
-function DeckThumb({ src }: { src?: string | null }) {
+function DeckThumb({ src, onOpen, openTitle }: { src?: string | null; onOpen?: () => void; openTitle?: string }) {
+  const zoom = onOpen ? ' art-zoomable' : ''
+  const open = onOpen
+    ? {
+        role: 'button' as const,
+        title: openTitle,
+        'aria-label': openTitle,
+        onClick: (e: ReactMouseEvent) => { e.stopPropagation(); onOpen() },
+      }
+    : {}
   return src ? (
     <img
-      className="deck-thumb"
+      className={`deck-thumb${zoom}`}
       src={src}
       alt=""
       loading="lazy"
       onError={(e) => { (e.currentTarget as HTMLImageElement).style.visibility = 'hidden' }}
+      {...open}
     />
   ) : (
-    <div className="deck-thumb deck-thumb-empty" aria-hidden />
+    <div className={`deck-thumb deck-thumb-empty${zoom}`} {...(onOpen ? open : { 'aria-hidden': true as const })} />
   )
+}
+
+/** Champion name printed on legend art, taken from the Cardmarket slug (Rengar-Pridestalker). */
+function legendIdentityByName(cards: Card[], book: PriceBook | null) {
+  const m = new Map<string, string>()
+  if (!book) return m
+  for (const c of cards) {
+    if (!(c.types || []).includes('Legend')) continue
+    const url = book.cards[c.id]?.cmUrl
+    if (!url) continue
+    const slug = decodeURIComponent(url.split('?')[0].split('/').pop() || '').toLowerCase().replace(/['’.]/g, '')
+    const nameSlug = c.name.toLowerCase().replace(/['’.]/g, '').replace(/\s+/g, '-')
+    const idx = slug.indexOf(nameSlug)
+    if (idx <= 0) continue
+    const prefix = slug.slice(0, idx).replace(/-+$/, '').replace(/-/g, ' ').trim()
+    if (!prefix) continue
+    const key = c.name.toLowerCase()
+    const prev = m.get(key)
+    if (!prev) m.set(key, prefix)
+    else if (!prev.split(' ').includes(prefix) && prev !== prefix) m.set(key, `${prev} ${prefix}`)
+  }
+  return m
 }
 
 function cmUrl(p?: PriceEntry | null) {
@@ -397,6 +429,7 @@ export default function App() {
   const [missingExpanded, setMissingExpanded] = useState(false)
   const [cardPreview, setCardPreview] = useState<{ src: string; x: number; y: number } | null>(null)
   const [cardLightbox, setCardLightbox] = useState<Card | null>(null)
+  const [clearSec, setClearSec] = useState<DeckSection | null>(null)
   const [kwExpanded, setKwExpanded] = useState<KeywordId | null>(null)
   const [ocrText, setOcrText] = useState<string | null>(null)
   const [ocrLoading, setOcrLoading] = useState(false)
@@ -554,6 +587,7 @@ export default function App() {
 
   const cards = catalog?.cards || []
   const sets = catalog?.sets || {}
+  const legendIds = useMemo(() => legendIdentityByName(cards, priceBook), [cards, priceBook])
   const allTypes = useMemo(() => {
     const s = new Set<string>()
     for (const c of cards) for (const t of c.types || []) if (t) s.add(t)
@@ -590,6 +624,7 @@ export default function App() {
       ...(c.types || []),
       c.rarity || '',
       ...(c.tags || []),
+      legendIds.get(c.name.toLowerCase()) || '',
     ].join(' ').toLowerCase()
     return hay.includes(query)
   }
@@ -632,7 +667,7 @@ export default function App() {
       if (ownedOnly && ownedQty(collection[c.id]) <= 0) return false
       return matchesFilters(c, query)
     })
-  }, [cards, q, setFilter, typeFilter, domainFilter, raritySigned, rarityOver, rarityPromo, ownedOnly, collection])
+  }, [cards, q, setFilter, typeFilter, domainFilter, raritySigned, rarityOver, rarityPromo, ownedOnly, collection, legendIds])
 
   const ownedCards = useMemo(
     () => cards.filter((c) => ownedQty(collection[c.id]) > 0),
@@ -752,11 +787,12 @@ export default function App() {
         ...(c.types || []),
         c.rarity || '',
         ...(c.tags || []),
+        legendIds.get(c.name.toLowerCase()) || '',
       ].join(' ').toLowerCase()
       return hay.includes(query)
     })
     return [...list].sort((a, b) => a.cn - b.cn || a.code.localeCompare(b.code))
-  }, [binderView, cards, collection, q, binderOwnedOnly, binderMissing, binderRarity, domainFilter, raritySigned, rarityOver, rarityPromo])
+  }, [binderView, cards, collection, q, binderOwnedOnly, binderMissing, binderRarity, domainFilter, raritySigned, rarityOver, rarityPromo, legendIds])
 
   const rarityBySet = useMemo(() => {
     const out: Record<string, { rarity: string; total: number; owned: number }[]> = {}
@@ -1440,7 +1476,7 @@ export default function App() {
       >
         <div className="deck-sec-head">
           <span className="deck-sec-title">{SECTION_LABEL[sec]}</span>
-          {count > 0 && (
+          {count > 0 && sec !== 'legend' && sec !== 'champion' && (
             <button
               type="button"
               className="btn small deck-trash"
@@ -1449,8 +1485,7 @@ export default function App() {
               aria-label={t(lang, 'decks.clearSection')}
               onClick={(e) => {
                 e.stopPropagation()
-                if (!window.confirm(t(lang, 'decks.clearSectionConfirm', { section: SECTION_LABEL[sec] }))) return
-                clearDeckSection(sec)
+                setClearSec(sec)
               }}
             >
               {t(lang, 'decks.clearSection')}
@@ -1753,13 +1788,15 @@ export default function App() {
   }, [storeKm, storeCenter])
 
   useEffect(() => {
-    if (!cardLightbox) return
+    if (!cardLightbox && !clearSec) return
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setCardLightbox(null)
+      if (e.key !== 'Escape') return
+      if (clearSec) setClearSec(null)
+      else setCardLightbox(null)
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [cardLightbox])
+  }, [cardLightbox, clearSec])
 
   useEffect(() => {
     if (!cardLightbox) {
@@ -1874,6 +1911,7 @@ export default function App() {
           ))}
         </nav>
         <div className="stats no-drag" style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+          <span className="maker-credit">made by Stefan | Goodplayer01</span>
           <span>{t(lang, 'stats.line', { unique: totals.unique, copies: totals.copies, catalog: totals.catalog })}</span>
           {collectionValue && (
             <span className="value-pill" title={t(lang, 'stats.valueTitle')}>
@@ -2855,7 +2893,8 @@ export default function App() {
                     return (
                       c.name.toLowerCase().includes(query) ||
                       (c.subtitle || '').toLowerCase().includes(query) ||
-                      c.code.toLowerCase().includes(query)
+                      c.code.toLowerCase().includes(query) ||
+                      (legendIds.get(c.name.toLowerCase()) || '').includes(query)
                     )
                   })
                   .slice(0, 100)
@@ -2870,7 +2909,7 @@ export default function App() {
                       onMouseMove={(e) => showCardPreview(e, c.image)}
                       onMouseLeave={hideCardPreview}
                     >
-                      <DeckThumb src={c.image} />
+                      <DeckThumb src={c.image} onOpen={() => openCardLightbox(c)} openTitle={t(lang, 'card.enlarge')} />
                       <div className="grow">
                         <div className="name-with-ban">
                           <button
@@ -3307,6 +3346,32 @@ export default function App() {
         )}
 
       </main>
+      {clearSec && (
+        <div
+          className="card-lightbox"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="clear-sec-title"
+          onClick={() => setClearSec(null)}
+        >
+          <div className="panel confirm-box" onClick={(e) => e.stopPropagation()}>
+            <h2 id="clear-sec-title">Deakrix Riftbound Tracker</h2>
+            <p className="help" style={{ margin: 0 }}>{t(lang, 'decks.clearSectionConfirm', { section: SECTION_LABEL[clearSec] })}</p>
+            <div className="confirm-actions">
+              <button type="button" className="btn small" onClick={() => setClearSec(null)}>{t(lang, 'decks.clearCancel')}</button>
+              <button
+                type="button"
+                className="btn small deck-trash"
+                onClick={() => {
+                  const sec = clearSec
+                  setClearSec(null)
+                  clearDeckSection(sec)
+                }}
+              >{t(lang, 'decks.clearConfirm')}</button>
+            </div>
+          </div>
+        </div>
+      )}
       {cardPreview && !cardLightbox && (
         <div
           className="card-float-preview"
