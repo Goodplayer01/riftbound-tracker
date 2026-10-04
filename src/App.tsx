@@ -2468,7 +2468,7 @@ export default function App() {
   return (
     <div className="app">
       <header className="top titlebar">
-        <div className="brand"><img className="brand-dante" src={publicAsset('dante.svg')} alt="Dante" />Deakrix <span>Riftbound Tracker</span></div>
+        <div className="brand"><img className="brand-dante" src={publicAsset('dante.png')} alt="Dante" />Deakrix <span>Riftbound Tracker</span></div>
         <nav className="tabs no-drag">
           {([
             ['collection', 'tab.collection'],
