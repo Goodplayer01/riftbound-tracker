@@ -621,6 +621,7 @@ export default function App() {
   const [missingExpanded, setMissingExpanded] = useState(false)
   const [cardPreview, setCardPreview] = useState<{ src: string; x: number; y: number } | null>(null)
   const [cardLightbox, setCardLightbox] = useState<Card | null>(null)
+  const [bfTurn, setBfTurn] = useState(false)
   const [clearSec, setClearSec] = useState<DeckSection | null>(null)
   const [deckUndoOn, setDeckUndoOn] = useState(false)
   const [deckConfirm, setDeckConfirm] = useState<null | { kind: 'all' } | { kind: 'one'; id: string; name: string } | { kind: 'borrow'; id: string; name: string }>(null)
@@ -2212,6 +2213,7 @@ export default function App() {
     setOcrText(null)
     setOcrEmpty(false)
     setRulesSource(null)
+    setBfTurn(false)
     const hasBaked = !!(c.rulesText && c.rulesText.trim())
     setOcrLoading(!hasBaked && !!c.image)
     setCardLightbox(c)
@@ -3777,7 +3779,18 @@ export default function App() {
             >×</button>
             <div className="card-lightbox-art">
               {cardLightbox.image ? (
-                <img src={cardLightbox.image} alt={displayName(cardLightbox)} />
+                <img
+                  src={cardLightbox.image}
+                  alt={displayName(cardLightbox)}
+                  className={bfTurn ? 'bf-on' : undefined}
+                  onLoad={(e) => {
+                    const im = e.currentTarget
+                    const types = cardLightbox.types || []
+                    const supers = cardLightbox.superTypes || []
+                    const bf = types.includes('Battlefield') || supers.includes('Battlefield')
+                    setBfTurn(bf && im.naturalHeight > im.naturalWidth)
+                  }}
+                />
               ) : (
                 <div className="card-lightbox-noart">{t(lang, 'card.noArt')}</div>
               )}

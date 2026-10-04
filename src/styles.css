@@ -1370,6 +1370,29 @@ textarea.field { min-height: 160px; resize: vertical; font-family: ui-monospace,
   background: #07090e;
   box-shadow: 0 8px 28px rgba(0,0,0,.45);
 }
+/* Portrait BF files store the landscape card on its side. 90deg clockwise
+   lays the title flat. Landscape files already read horizontal, so no turn. */
+.card-lightbox-inner:has(img.bf-on) {
+  grid-template-columns: minmax(280px, 640px) minmax(220px, 320px);
+  max-width: min(1000px, 96vw);
+}
+.card-lightbox-art:has(img.bf-on) {
+  width: min(640px, 58vw);
+  aspect-ratio: 1039 / 744;
+  container-type: inline-size;
+  position: relative;
+}
+.card-lightbox-art img.bf-on {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: auto;
+  height: 100cqw;
+  max-height: none;
+  max-width: none;
+  object-fit: fill;
+  transform: translate(-50%, -50%) rotate(90deg);
+}
 .card-lightbox-noart {
   width: 100%;
   aspect-ratio: 744 / 1039;
