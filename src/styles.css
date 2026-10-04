@@ -56,8 +56,9 @@ a { color: var(--accent2); }
 .brand span { color: var(--accent2); }
 .brand-dante {
   width: 28px; height: 28px; border-radius: 50%;
-  object-fit: cover; object-position: center;
+  object-fit: contain; object-position: center;
   flex: 0 0 auto; display: block;
+  background: #1a1408;
   box-shadow: 0 0 0 1px rgba(212,175,55,.65);
 }
 .tabs {
@@ -1127,6 +1128,13 @@ textarea.field { min-height: 160px; resize: vertical; font-family: ui-monospace,
 .store-stock li { font-size: 12px; line-height: 1.35; }
 .store-stock .ok { color: #c6e7b0; }
 .store-stock .no { color: var(--muted); }
+.store-stock-more {
+  border: none; background: none; padding: 0;
+  color: var(--accent2); font: inherit; font-size: 12px;
+  cursor: pointer; text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.store-stock-more:hover { color: var(--text); }
 .store-unknown { margin-top: 4px; font-size: 12px; color: var(--muted); }
 .stores-map-panel .stores-map-wrap {
   flex: 1;

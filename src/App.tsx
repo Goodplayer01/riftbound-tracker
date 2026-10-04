@@ -585,6 +585,8 @@ export default function App() {
   const [storeError, setStoreError] = useState<string | null>(null)
   const [storeAllGermany, setStoreAllGermany] = useState(false)
   const [storeStockOnly, setStoreStockOnly] = useState(false)
+  /** Store ids whose stock list is expanded past the collapsed preview. */
+  const [storeStockOpen, setStoreStockOpen] = useState<Record<string, boolean>>({})
   const [q, setQ] = useState('')
   const [setFilter, setSetFilter] = useState('')
   const [ownedOnly, setOwnedOnly] = useState(false)
@@ -1973,9 +1975,24 @@ export default function App() {
     setStoreBusy(true)
     setStoreError(null)
     try {
-      const hits = await searchStoresInGermany()
+      // Radius stays ignored; typed city (if any) is only the distance sort origin.
+      let sortOrigin: { lat: number; lng: number } | undefined
+      const q = storeQuery.trim()
+      if (q) {
+        const geo = await geocodeQuery(q, 'de')
+        if (!geo) {
+          setStoreHits([])
+          setStoreCenter(null)
+          setStoreLabel(null)
+          setStoreError(t(lang, 'stores.geoFail'))
+          return
+        }
+        sortOrigin = { lat: geo.lat, lng: geo.lng }
+      }
+      const hits = await searchStoresInGermany(sortOrigin)
       setStoreHits(hits)
-      setStoreCenter(GERMANY_CENTER)
+      setStoreStockOpen({})
+      setStoreCenter(sortOrigin ?? GERMANY_CENTER)
       setStoreFetchedKm(storeKm)
       setStoreLabel(t(lang, 'stores.allGermany'))
     } catch (e) {
@@ -1996,6 +2013,7 @@ export default function App() {
     try {
       const hits = await searchStoresNear(lat, lng, km)
       setStoreHits(hits)
+      setStoreStockOpen({})
       setStoreCenter({ lat, lng })
       setStoreFetchedKm(km)
       setStoreLabel(label)
@@ -2030,6 +2048,7 @@ export default function App() {
       }
       const hits = await searchStoresNear(geo.lat, geo.lng, km)
       setStoreHits(hits)
+      setStoreStockOpen({})
       setStoreCenter({ lat: geo.lat, lng: geo.lng })
       setStoreFetchedKm(km)
       setStoreLabel(geo.label)
@@ -2046,25 +2065,6 @@ export default function App() {
   function openStoreLink(url: string) {
     if (window.riftbound?.openExternal) void window.riftbound.openExternal(url)
     else window.open(url, '_blank', 'noopener,noreferrer')
-  }
-
-  function runStoreGeo() {
-    if (!navigator.geolocation) {
-      setStoreError(t(lang, 'stores.geoDenied'))
-      return
-    }
-    setStoreBusy(true)
-    setStoreError(null)
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        void runStoreSearchAt(pos.coords.latitude, pos.coords.longitude, t(lang, 'stores.geo'))
-      },
-      () => {
-        setStoreBusy(false)
-        setStoreError(t(lang, 'stores.geoDenied'))
-      },
-      { enableHighAccuracy: false, timeout: 12000, maximumAge: 60000 },
-    )
   }
 
   function setStoreKmFromUi(raw: number) {
@@ -2424,7 +2424,7 @@ export default function App() {
   return (
     <div className="app">
       <header className="top titlebar">
-        <div className="brand"><img className="brand-dante" src="/dante.svg" alt="Dante" />Deakrix <span>Riftbound Tracker</span></div>
+        <div className="brand"><img className="brand-dante" src={publicAsset('dante.svg')} alt="Dante" />Deakrix <span>Riftbound Tracker</span></div>
         <nav className="tabs no-drag">
           {([
             ['collection', 'tab.collection'],
@@ -3511,7 +3511,6 @@ export default function App() {
               <button className="btn primary" disabled={storeBusy} onClick={() => void runStoreSearch()}>
                 {storeBusy ? t(lang, 'stores.searching') : t(lang, 'stores.search')}
               </button>
-              <button className="btn" disabled={storeBusy} onClick={runStoreGeo}>{t(lang, 'stores.geo')}</button>
               <button
                 type="button"
                 className="btn"
@@ -3542,8 +3541,13 @@ export default function App() {
                     <div className="empty">{storeStockOnly ? t(lang, 'stores.emptyStock') : storeAllGermany ? t(lang, 'stores.emptyGermany') : t(lang, 'stores.empty')}</div>
                   )}
                   {visibleStoreHits.map((h) => {
-                    const shown = h.products ? h.products.slice(0, 8) : []
-                    const extra = h.products ? h.products.length - shown.length : 0
+                    const STOCK_PREVIEW = 4
+                    const products = h.products
+                    const open = !!storeStockOpen[h.id]
+                    const shown = products
+                      ? (open ? products : products.slice(0, STOCK_PREVIEW))
+                      : []
+                    const canToggle = !!products && products.length > STOCK_PREVIEW
                     return (
                       <article key={h.id} className="store-card">
                         <div className="store-card-top">
@@ -3570,7 +3574,7 @@ export default function App() {
                             {t(lang, 'stores.maps')}
                           </button>
                         </div>
-                        {h.products && shown.length > 0 ? (
+                        {products && shown.length > 0 ? (
                           <ul className="store-stock">
                             {shown.map((p) => (
                               <li key={p.name}>
@@ -3578,7 +3582,17 @@ export default function App() {
                                 {' · '}{p.name}
                               </li>
                             ))}
-                            {extra > 0 && <li className="no">{t(lang, 'stores.more', { n: extra })}</li>}
+                            {canToggle && (
+                              <li>
+                                <button
+                                  type="button"
+                                  className="store-stock-more"
+                                  onClick={() => setStoreStockOpen((prev) => ({ ...prev, [h.id]: !open }))}
+                                >
+                                  {open ? t(lang, 'stores.showLess') : t(lang, 'stores.showMore')}
+                                </button>
+                              </li>
+                            )}
                           </ul>
                         ) : (
                           <div className="store-unknown">{t(lang, 'stores.stockUnknown')}</div>

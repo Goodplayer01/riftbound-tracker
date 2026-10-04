@@ -253,17 +253,24 @@ export async function searchStoresNear(
   return withProducts(filtered)
 }
 
-/** Every official store whose country is Germany. Ignores the UI radius. */
-export async function searchStoresInGermany(): Promise<StoreHit[]> {
-  const { lat, lng } = GERMANY_CENTER
+/**
+ * Every official store whose country is Germany. Ignores the UI radius.
+ * Distances and sort use `sortOrigin` when given (typed city), else Germany center.
+ */
+export async function searchStoresInGermany(
+  sortOrigin?: { lat: number; lng: number },
+): Promise<StoreHit[]> {
+  const cover = GERMANY_CENTER
+  const originLat = sortOrigin?.lat ?? cover.lat
+  const originLng = sortOrigin?.lng ?? cover.lng
   const out: StoreHit[] = []
   const seen = new Set<string>()
   let page = 1
   for (let guard = 0; guard < 40; guard++) {
-    const data = await fetchStorePage(lat, lng, GERMANY_COVER_KM, page, 100)
+    const data = await fetchStorePage(cover.lat, cover.lng, GERMANY_COVER_KM, page, 100)
     const results = data.results || []
     for (const r of results) {
-      const hit = rowToHit(r, lat, lng)
+      const hit = rowToHit(r, originLat, originLng)
       if (!isGermanCountry(hit.country) || seen.has(hit.id)) continue
       seen.add(hit.id)
       out.push(hit)
