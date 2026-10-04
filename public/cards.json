@@ -37211,6 +37211,33 @@
       "rulesText": "[Deploy] (Play this only to a battlefield. When an opponent holds here, kill this.)\nFriendly units here have [Assault]. (+1 [S] while they're attackers.)"
     },
     {
+      "id": "rad-r02",
+      "name": "Calm Rune",
+      "subtitle": null,
+      "code": "RAD-R02",
+      "cn": 2,
+      "set": "RAD",
+      "setName": "Radiance",
+      "types": [
+        "Rune"
+      ],
+      "superTypes": [
+        "Basic"
+      ],
+      "rarity": "Common",
+      "domains": [
+        "Calm"
+      ],
+      "energy": 0,
+      "might": 0,
+      "image": "https://cmsassets.rgpub.io/sanity/images/dsfx7636/game_data_live/34661f9fff9e12addbfa320a88b794fcffd6652f-744x1039.png?accountingTag=RB",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": false,
+      "tags": [],
+      "rulesText": "[NO TEXT]"
+    },
+    {
       "id": "rad-r02a",
       "name": "Calm Rune",
       "subtitle": null,
@@ -37323,6 +37350,33 @@
       "rulesText": "When you play me, deal 1 to each of up to 2 units."
     },
     {
+      "id": "rad-r03",
+      "name": "Mind Rune",
+      "subtitle": null,
+      "code": "RAD-R03",
+      "cn": 3,
+      "set": "RAD",
+      "setName": "Radiance",
+      "types": [
+        "Rune"
+      ],
+      "superTypes": [
+        "Basic"
+      ],
+      "rarity": "Common",
+      "domains": [
+        "Mind"
+      ],
+      "energy": 0,
+      "might": 0,
+      "image": "https://cmsassets.rgpub.io/sanity/images/dsfx7636/game_data_live/10804d84483e8813a6b5277e4527ac148bbabdd0-744x1039.png?accountingTag=RB",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": false,
+      "tags": [],
+      "rulesText": "[NO TEXT]"
+    },
+    {
       "id": "rad-r03a",
       "name": "Mind Rune",
       "subtitle": null,
@@ -37405,6 +37459,33 @@
       "rulesText": null
     },
     {
+      "id": "rad-r04",
+      "name": "Body Rune",
+      "subtitle": null,
+      "code": "RAD-R04",
+      "cn": 4,
+      "set": "RAD",
+      "setName": "Radiance",
+      "types": [
+        "Rune"
+      ],
+      "superTypes": [
+        "Basic"
+      ],
+      "rarity": "Common",
+      "domains": [
+        "Body"
+      ],
+      "energy": 0,
+      "might": 0,
+      "image": "https://cmsassets.rgpub.io/sanity/images/dsfx7636/game_data_live/6d78f8e8cf237cc19a8546184501d4be97df29fd-744x1039.png?accountingTag=RB",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": false,
+      "tags": [],
+      "rulesText": "[NO TEXT]"
+    },
+    {
       "id": "rad-r04a",
       "name": "Body Rune",
       "subtitle": null,
@@ -37460,6 +37541,85 @@
         "The Void"
       ],
       "rulesText": "[Disarm]\nWhile I'm in a showdown, your spells have [Reaction]."
+    },
+    {
+      "id": "rad-005",
+      "name": "Lingering Animus",
+      "subtitle": null,
+      "code": "RAD-005",
+      "cn": 5,
+      "set": "RAD",
+      "setName": "Radiance",
+      "types": [
+        "Unit"
+      ],
+      "superTypes": [],
+      "rarity": "Common",
+      "domains": [
+        "Fury"
+      ],
+      "energy": 2,
+      "might": 2,
+      "image": "https://cmsassets.rgpub.io/sanity/images/dsfx7636/game_data_live/5453008d27b3bb4f00941cb5a0d9ca52e4eb0245-744x1039.png?accountingTag=RB",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": false,
+      "tags": [],
+      "rulesText": "I enter ready if a friendly unit or gear died this turn."
+    },
+    {
+      "id": "rad-r05",
+      "name": "Chaos Rune",
+      "subtitle": null,
+      "code": "RAD-R05",
+      "cn": 5,
+      "set": "RAD",
+      "setName": "Radiance",
+      "types": [
+        "Rune"
+      ],
+      "superTypes": [
+        "Basic"
+      ],
+      "rarity": "Common",
+      "domains": [
+        "Chaos"
+      ],
+      "energy": 0,
+      "might": 0,
+      "image": "https://cmsassets.rgpub.io/sanity/images/dsfx7636/game_data_live/f420625850dc43c96e29b6d85b6581c7ccb6126c-744x1039.png?accountingTag=RB",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": false,
+      "tags": [],
+      "rulesText": "[NO TEXT]"
+    },
+    {
+      "id": "rad-r05a",
+      "name": "Chaos Rune",
+      "subtitle": null,
+      "code": "RAD-R05a",
+      "cn": 5,
+      "set": "RAD",
+      "setName": "Radiance",
+      "types": [
+        "Rune"
+      ],
+      "superTypes": [
+        "Basic"
+      ],
+      "rarity": "Showcase",
+      "domains": [
+        "Chaos"
+      ],
+      "energy": 0,
+      "might": 0,
+      "image": "https://cdn.piltoverarchive.com/cards/RAD-R05a.webp",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": true,
+      "tags": [],
+      "rulesText": "[NO TEXT]"
     },
     {
       "id": "rad-sp5",
@@ -37736,6 +37896,33 @@
       "altArt": false,
       "tags": [],
       "rulesText": null
+    },
+    {
+      "id": "rad-026",
+      "name": "Entrenched Boar",
+      "subtitle": null,
+      "code": "RAD-026",
+      "cn": 26,
+      "set": "RAD",
+      "setName": "Radiance",
+      "types": [
+        "Unit"
+      ],
+      "superTypes": [],
+      "rarity": "Common",
+      "domains": [
+        "Calm"
+      ],
+      "energy": 2,
+      "might": 2,
+      "image": "https://cdn.piltoverarchive.com/cards/RAD-026.webp",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": false,
+      "tags": [
+        "Freljord"
+      ],
+      "rulesText": "You may have me enter ready. If you do, I can't move this turn."
     },
     {
       "id": "rad-027",
@@ -38194,6 +38381,31 @@
       "rulesText": null
     },
     {
+      "id": "rad-058",
+      "name": "Riptide Mage",
+      "subtitle": null,
+      "code": "RAD-058",
+      "cn": 58,
+      "set": "RAD",
+      "setName": "Radiance",
+      "types": [
+        "Unit"
+      ],
+      "superTypes": [],
+      "rarity": "Uncommon",
+      "domains": [
+        "Mind"
+      ],
+      "energy": 4,
+      "might": 3,
+      "image": "https://cdn.piltoverarchive.com/cards/RAD-058.webp",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": false,
+      "tags": [],
+      "rulesText": "[Accelerate] (You may pay [1][Mind] as an additional cost to have me enter ready.)\nWhen you play me, give an enemy unit -3 [S] this turn."
+    },
+    {
       "id": "rad-059",
       "name": "Supernova",
       "subtitle": null,
@@ -38463,6 +38675,34 @@
         "Equipment"
       ],
       "rulesText": null
+    },
+    {
+      "id": "rad-072",
+      "name": "Overloaded Traveler",
+      "subtitle": null,
+      "code": "RAD-072",
+      "cn": 72,
+      "set": "RAD",
+      "setName": "Radiance",
+      "types": [
+        "Unit"
+      ],
+      "superTypes": [],
+      "rarity": "Common",
+      "domains": [
+        "Body"
+      ],
+      "energy": 2,
+      "might": 2,
+      "image": "https://cdn.piltoverarchive.com/cards/RAD-072.webp",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": false,
+      "tags": [
+        "Bandle City",
+        "Yordle"
+      ],
+      "rulesText": "While there's a friendly gear with [Deploy] at my battlefield, I have +1 [S]."
     },
     {
       "id": "rad-073",
@@ -38818,6 +39058,36 @@
       "rulesText": null
     },
     {
+      "id": "rad-091a",
+      "name": "Jarvan IV",
+      "subtitle": "Martial Paragon",
+      "code": "RAD-091a",
+      "cn": 91,
+      "set": "RAD",
+      "setName": "Radiance",
+      "types": [
+        "Unit"
+      ],
+      "superTypes": [
+        "Champion"
+      ],
+      "rarity": "Showcase",
+      "domains": [
+        "Body"
+      ],
+      "energy": 4,
+      "might": 4,
+      "image": "https://cdn.piltoverarchive.com/cards/RAD-091a.webp",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": true,
+      "tags": [
+        "Demacia",
+        "Jarvan IV"
+      ],
+      "rulesText": "Your gear with [Deploy] have [Action].\nWhen I conquer, if there is a friendly gear with [Deploy] here, channel 1 rune exhausted."
+    },
+    {
       "id": "rad-093",
       "name": "Disposal Expert",
       "subtitle": null,
@@ -38919,6 +39189,31 @@
       "altArt": false,
       "tags": [],
       "rulesText": null
+    },
+    {
+      "id": "rad-098",
+      "name": "Siren's Song",
+      "subtitle": null,
+      "code": "RAD-098",
+      "cn": 98,
+      "set": "RAD",
+      "setName": "Radiance",
+      "types": [
+        "Spell"
+      ],
+      "superTypes": [],
+      "rarity": "Common",
+      "domains": [
+        "Chaos"
+      ],
+      "energy": 2,
+      "might": 0,
+      "image": "https://cdn.piltoverarchive.com/cards/RAD-098.webp",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": false,
+      "tags": [],
+      "rulesText": "[Reaction] (Play any time, even before spells and abilities resolve.)\nMove an enemy unit that moved this turn."
     },
     {
       "id": "rad-105",
@@ -39169,6 +39464,31 @@
       "rulesText": null
     },
     {
+      "id": "rad-118",
+      "name": "Herald of the Emperor",
+      "subtitle": null,
+      "code": "RAD-118",
+      "cn": 118,
+      "set": "RAD",
+      "setName": "Radiance",
+      "types": [
+        "Unit"
+      ],
+      "superTypes": [],
+      "rarity": "Common",
+      "domains": [
+        "Order"
+      ],
+      "energy": 5,
+      "might": 3,
+      "image": "https://cdn.piltoverarchive.com/cards/RAD-118.webp",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": false,
+      "tags": [],
+      "rulesText": "When you play me, choose a friendly unit. Its base Might becomes 5 this turn."
+    },
+    {
       "id": "rad-119",
       "name": "Hunting Dog",
       "subtitle": null,
@@ -39302,6 +39622,31 @@
         "Demacia"
       ],
       "rulesText": null
+    },
+    {
+      "id": "rad-129",
+      "name": "Trifarian Captain",
+      "subtitle": null,
+      "code": "RAD-129",
+      "cn": 129,
+      "set": "RAD",
+      "setName": "Radiance",
+      "types": [
+        "Unit"
+      ],
+      "superTypes": [],
+      "rarity": "Uncommon",
+      "domains": [
+        "Order"
+      ],
+      "energy": 2,
+      "might": 1,
+      "image": "https://cdn.piltoverarchive.com/cards/RAD-129.webp",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": false,
+      "tags": [],
+      "rulesText": "When you play me, look at the top 4 cards of your Main Deck. You may reveal from among them a unit or gear with Energy cost no more than [3] and with Power cost no more than [A] and draw it. Recycle the rest."
     },
     {
       "id": "rad-130",
@@ -39807,6 +40152,34 @@
       "rulesText": null
     },
     {
+      "id": "rad-153",
+      "name": "Evelynn",
+      "subtitle": "Agony's Embrace",
+      "code": "RAD-153",
+      "cn": 153,
+      "set": "RAD",
+      "setName": "Radiance",
+      "types": [
+        "Legend"
+      ],
+      "superTypes": [],
+      "rarity": "Rare",
+      "domains": [
+        "Body",
+        "Chaos"
+      ],
+      "energy": 0,
+      "might": 0,
+      "image": "https://cdn.piltoverarchive.com/cards/RAD-153.webp",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": false,
+      "tags": [
+        "Evelynn"
+      ],
+      "rulesText": "Once each turn, when you play a card from face down, draw 1. Then, if it's not your turn, discard 1."
+    },
+    {
       "id": "rad-155",
       "name": "Jarvan IV",
       "subtitle": "Exemplar of Demacia",
@@ -40155,6 +40528,35 @@
         "Ekko"
       ],
       "rulesText": "As an additional cost to play me, return a friendly unit to its owner's hand.\n[Ganking] (I can move from battlefield to battlefield.)"
+    },
+    {
+      "id": "rad-169",
+      "name": "Ziggs",
+      "subtitle": "Hexplosives Expert",
+      "code": "RAD-169",
+      "cn": 169,
+      "set": "RAD",
+      "setName": "Radiance",
+      "types": [
+        "Legend"
+      ],
+      "superTypes": [],
+      "rarity": "Showcase",
+      "domains": [
+        "Fury",
+        "Chaos"
+      ],
+      "energy": 0,
+      "might": 0,
+      "image": "https://cdn.piltoverarchive.com/cards/RAD-169.webp",
+      "signed": false,
+      "overnumbered": true,
+      "altArt": false,
+      "tags": [
+        "Yordle",
+        "Ziggs"
+      ],
+      "rulesText": "[1][A], [T]: Play a Bomb gear token to a battlefield."
     },
     {
       "id": "rad-169-star",

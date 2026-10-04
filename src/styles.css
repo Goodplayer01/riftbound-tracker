@@ -54,6 +54,11 @@ a { color: var(--accent2); }
   white-space: nowrap; flex-shrink: 0;
 }
 .brand span { color: var(--accent2); }
+.brand-dante {
+  width: 26px; height: 26px; border-radius: 50%;
+  flex: 0 0 auto; display: block;
+  box-shadow: 0 0 0 1px rgba(212,175,55,.65);
+}
 .tabs {
   display: flex; gap: 5px; flex-wrap: nowrap;
   flex: 1 1 auto; min-width: 0;
@@ -537,7 +542,7 @@ textarea.field { min-height: 160px; resize: vertical; font-family: ui-monospace,
 .deck-warn-list { display: grid; gap: 6px; margin-top: 8px; }
 .deck-warn-row { padding: 4px 0; background: transparent; border: none; }
 .deck-sections { display: grid; gap: 12px; }
-.deck-sec-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.deck-sec-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; align-items: start; }
 @media (max-width: 720px) { .deck-sec-row { grid-template-columns: 1fr; } }
 .deck-sec {
   border: 1px solid var(--border); border-radius: 12px; padding: 10px 12px;
@@ -571,6 +576,21 @@ textarea.field { min-height: 160px; resize: vertical; font-family: ui-monospace,
   border-color: var(--border-gold); color: var(--accent2);
   background: rgba(212,175,55,.05);
 }
+.deck-card-row { align-items: center; }
+.deck-card-row .grow { flex: 1 1 auto; }
+.deck-sec-row .deck-card-row { min-height: 72px; }
+.deck-card-row .name-with-ban { min-width: 0; flex-wrap: nowrap; align-items: flex-start; }
+.deck-card-row .name-with-ban .name-link {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  white-space: normal;
+  width: auto;
+  flex: 1 1 auto;
+  min-width: 0;
+  line-height: 1.25;
+}
 .deck-card-row.short .name { color: var(--warn); }
 .deck-import-box { margin-top: 12px; display: grid; gap: 8px; }
 .split.deck-split {
@@ -590,6 +610,12 @@ textarea.field { min-height: 160px; resize: vertical; font-family: ui-monospace,
   min-height: 0;
   overflow: auto;
 }
+.deck-list-panel {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.deck-list-panel > .toolbar { flex-shrink: 0; }
 .split.deck-split > .panel.col-fill {
   display: flex;
   flex-direction: column;
@@ -730,7 +756,16 @@ textarea.field { min-height: 160px; resize: vertical; font-family: ui-monospace,
 }
 
 /* Deck list accordion */
-.deck-accordion { display: grid; gap: 8px; }
+.deck-accordion {
+  display: grid; gap: 8px; align-content: start;
+  overflow: auto; min-height: 0; flex: 1 1 auto;
+}
+.deck-drag {
+  cursor: grab; color: var(--muted); flex: 0 0 auto;
+  user-select: none; font-size: 16px; line-height: 1; padding: 2px 0;
+}
+.deck-drag:active { cursor: grabbing; }
+.deck-acc-item.drag-over { outline: 1px solid rgba(212,175,55,.8); }
 .deck-acc-item {
   border: 1px solid var(--border);
   border-radius: 12px;

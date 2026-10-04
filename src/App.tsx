@@ -37,6 +37,7 @@ import {
   sectionOf,
 } from './deckHelpers'
 import { banStatus, type BanStatus } from './banlist'
+import { cardMatchesDomains, moveDeck } from './domainMatch.ts'
 import {
   STORE_LOCATOR_URL,
   STORE_RADIUS_KM_DEFAULT,
@@ -420,14 +421,14 @@ function DomainFilterRow({
   onChange,
   lang,
 }: {
-  value: string | null
-  onChange: (next: string | null) => void
+  value: string[]
+  onChange: (next: string[]) => void
   lang: Lang
 }) {
   return (
     <div className="domain-row" role="group" aria-label={t(lang, 'collection.domainFilter')}>
       {DOMAINS.map((d) => {
-        const active = value === d
+        const active = value.includes(d)
         return (
           <button
             key={d}
@@ -435,7 +436,7 @@ function DomainFilterRow({
             className={`domain-btn${active ? ' active' : ''}`}
             title={active ? t(lang, 'collection.domainClear', { domain: d }) : t(lang, 'collection.domainTitle', { domain: d })}
             aria-pressed={active}
-            onClick={() => onChange(active ? null : d)}
+            onClick={() => onChange(active ? value.filter((x) => x !== d) : [...value, d])}
           >
             <img src={DOMAIN_ICON[d]} alt={d} draggable={false} />
           </button>
@@ -606,7 +607,7 @@ export default function App() {
   const [binderOwnedOnly, setBinderOwnedOnly] = useState(false)
   const [binderMissing, setBinderMissing] = useState(false)
   const [binderRarity, setBinderRarity] = useState<string | null>(null)
-  const [domainFilter, setDomainFilter] = useState<string | null>(null)
+  const [domainFilter, setDomainFilter] = useState<string[]>([])
   const [dragOverSection, setDragOverSection] = useState<DeckSection | null>(null)
   const [dragRejectSection, setDragRejectSection] = useState<DeckSection | null>(null)
   const [draggingCardId, setDraggingCardId] = useState<string | null>(null)
@@ -615,6 +616,8 @@ export default function App() {
   const [dragOverBorrow, setDragOverBorrow] = useState(false)
   const [dragRejectBorrow, setDragRejectBorrow] = useState(false)
   const [deckNotice, setDeckNotice] = useState<string | null>(null)
+  const [deckDragOverId, setDeckDragOverId] = useState<string | null>(null)
+  const deckDragged = useRef(false)
   const [handTesterOpen, setHandTesterOpen] = useState(true)
   const [handCards, setHandCards] = useState<string[] | null>(null)
   const [handLibrary, setHandLibrary] = useState<string[]>([])
@@ -779,7 +782,7 @@ export default function App() {
 
   /** Domain, signed/over/promo, and search haystack. Set and type stay catalog-only. */
   function matchesSharedFilters(c: Card, query: string) {
-    if (domainFilter && !(c.domains || []).includes(domainFilter)) return false
+    if (!cardMatchesDomains(c.domains, domainFilter)) return false
     if (raritySigned || rarityOver || rarityPromo) {
       const hit =
         (raritySigned && !!c.signed) ||
@@ -2086,10 +2089,237 @@ export default function App() {
     setCardPreview(null)
   }
 
+  function renderOpenDeck() {
+    if (!activeDeck) return null
+    return (
+      <>
+                  {deckImportOpen && (
+                    <div className="deck-import-box">
+                      <textarea
+                        className="field"
+                        placeholder={"Legend:\n1 Kennen, Heart of the Tempest\nChampion:\n1 Kennen, Storm of Shuriken\nMainDeck:\n3 Traveling Merchant\n..."}
+                        value={deckImportText}
+                        onChange={(e) => setDeckImportText(e.target.value)}
+                        rows={10}
+                      />
+                      <div className="toolbar" style={{ marginBottom: 0 }}>
+                        <button className="btn primary" disabled={!deckImportText.trim()} onClick={() => runDeckImport(deckImportText)}>{t(lang, 'decks.importBtn')}</button>
+                      </div>
+                    </div>
+                  )}
+
+                  {(() => {
+                    const under = underOwnedLines(activeDeck)
+                    if (!under.length) return null
+                    const totalShort = under.reduce((s, x) => s + x.short, 0)
+                    return (
+                      <div className="deck-warn">
+                        <div>
+                          <b>{t(lang, 'decks.missingInCollection')}</b>{' '}
+                          {under.length} {cardWord(lang, under.length)} ({totalShort} {copyWord(lang, totalShort)})
+                        </div>
+                        <button
+                          type="button"
+                          className="btn small"
+                          style={{ marginTop: 6 }}
+                          onClick={() => setMissingExpanded((v) => !v)}
+                        >
+                          {t(lang, missingExpanded ? 'decks.hideMissing' : 'decks.showMissing')}
+                        </button>
+                        {missingExpanded && (
+                          <div className="deck-warn-list">
+                            {under.map((u) => {
+                              const img = byId.get(u.id)?.image
+                              const pe = priceBook?.cards[u.id]
+                              return (
+                                <div
+                                  key={u.id}
+                                  className="list-item deck-warn-row"
+                                  onMouseEnter={(e) => showCardPreview(e, img)}
+                                  onMouseMove={(e) => showCardPreview(e, img)}
+                                  onMouseLeave={hideCardPreview}
+                                >
+                                  {img ? (
+                                    <img
+                                      className="deck-thumb"
+                                      src={img}
+                                      alt=""
+                                      loading="lazy"
+                                      onError={(e) => { (e.currentTarget as HTMLImageElement).style.visibility = 'hidden' }}
+                                    />
+                                  ) : (
+                                    <div className="deck-thumb deck-thumb-empty" aria-hidden />
+                                  )}
+                                  <div className="grow">
+                                    <button
+                                      type="button"
+                                      className="name name-link"
+                                      title={t(lang, 'price.openCm')}
+                                      disabled={!pe?.cmUrl}
+                                      onClick={() => openCm(pe)}
+                                    >{u.name}</button>
+                                    <div className="sub">
+                                      {t(lang, 'decks.needHave', { need: u.need, have: u.have })}
+                                    </div>
+                                  </div>
+                                  {u.short > 0 && (
+                                    <button
+                                      type="button"
+                                      className="btn small deck-add-collection"
+                                      title={t(lang, 'decks.addToCollection')}
+                                      onClick={(e) => {
+                                        e.stopPropagation()
+                                        bump(u.id, 'qty', 1)
+                                      }}
+                                    >
+                                      {t(lang, 'decks.addToCollection')}
+                                    </button>
+                                  )}
+                                </div>
+                              )
+                            })}
+                          </div>
+                        )}
+                      </div>
+                    )
+                  })()}
+
+                  {deckNotice && (
+                    <div className="deck-notice" role="status">
+                      <span>{deckNotice}</span>
+                      <button type="button" className="btn small" onClick={() => setDeckNotice(null)}>OK</button>
+                    </div>
+                  )}
+
+                  {isLegendSwapState(activeDeck.cards) && (() => {
+                    const req = requiredDomainsFromDeck(activeDeck.cards, byId)
+                    return (
+                      <div className="deck-legend-swap" role="status">
+                        <b>{t(lang, 'decks.legendRemoved')}</b>
+                        {': '}
+                        {req.length > 0
+                          ? <>{t(lang, 'decks.legendCover', { domains: req.join(', ') })}</>
+                          : <>{t(lang, 'decks.legendAny')}</>}
+                        {t(lang, 'decks.legendGateExtra')}
+                      </div>
+                    )
+                  })()}
+
+                  <div className="deck-sections">
+                    <div className="deck-sec-row">
+                      {(['legend', 'champion'] as DeckSection[]).map((sec) => renderDeckSection(sec, activeDeck))}
+                    </div>
+
+                    {SECTION_ORDER.filter((s) => s !== 'legend' && s !== 'champion').map((sec) => renderDeckSection(sec, activeDeck))}
+                  </div>
+
+                  {(() => {
+                    const poolN = drawPoolSize(activeDeck)
+                    const canTest = poolN >= OPENING_HAND_SIZE
+                    return (
+                      <details
+                        className="hand-tester"
+                        open={handTesterOpen}
+                        onToggle={(e) => setHandTesterOpen(e.currentTarget.open)}
+                      >
+                        <summary
+                          className="hand-tester-head"
+                          title={t(lang, 'hand.toggle')}
+                        >
+                          <span className="hand-tester-chevron" aria-hidden />
+                          <span className="hand-tester-title">{t(lang, 'hand.title')}</span>
+                          <span className="pill">{t(lang, 'hand.poolSize', { n: poolN })}</span>
+                        </summary>
+                          <div className="hand-tester-body">
+                            {!canTest ? (
+                              <div className="hand-empty-msg">{t(lang, 'hand.poolTooSmall')}</div>
+                            ) : (
+                              <>
+                                <div className="hand-tester-controls">
+                                  <button type="button" className="btn primary" onClick={dealNewHand}>
+                                    {t(lang, 'hand.new')}
+                                  </button>
+                                  <button
+                                    type="button"
+                                    className="btn"
+                                    disabled={mulliganUsed || handSelected.length < 1 || handSelected.length > 2 || !handCards}
+                                    title={mulliganUsed ? t(lang, 'hand.mulliganDone') : t(lang, 'hand.selectHint')}
+                                    onClick={runMulligan}
+                                  >
+                                    {t(lang, 'hand.mulligan')}
+                                  </button>
+                                  {handCards && !mulliganUsed && (
+                                    <span className="hand-hint">{t(lang, 'hand.selected', { n: handSelected.length })}</span>
+                                  )}
+                                  {mulliganUsed && (
+                                    <span className="hand-hint">{t(lang, 'hand.mulliganDone')}</span>
+                                  )}
+                                  <button
+                                    type="button"
+                                    className="btn"
+                                    disabled={!handCards || handDrawn || handLibrary.length < 1}
+                                    title={handDrawn ? t(lang, 'hand.drawDone') : handLibrary.length < 1 ? t(lang, 'hand.noLibrary') : undefined}
+                                    onClick={drawTurnOneCard}
+                                  >
+                                    {t(lang, 'hand.draw')}
+                                  </button>
+                                </div>
+                                {!handCards ? (
+                                  <div className="hand-empty-msg">{t(lang, 'hand.empty')}</div>
+                                ) : (
+                                  <>
+                                    {!mulliganUsed && (
+                                      <div className="hand-hint">{t(lang, 'hand.selectHint')}</div>
+                                    )}
+                                    <div className="hand-grid">
+                                      {handCards.map((id, idx) => {
+                                        const c = byId.get(id)
+                                        const selected = handSelected.includes(idx)
+                                        const name = c ? displayName(c) : id
+                                        return (
+                                          <button
+                                            key={`${id}-${idx}`}
+                                            type="button"
+                                            className={`hand-card${selected ? ' selected' : ''}`}
+                                            disabled={mulliganUsed}
+                                            onClick={() => toggleHandSelect(idx)}
+                                            onMouseEnter={(e) => c?.image && showCardPreview(e, c.image)}
+                                            onMouseMove={(e) => c?.image && showCardPreview(e, c.image)}
+                                            onMouseLeave={hideCardPreview}
+                                            title={name}
+                                          >
+                                            <div
+                                              className="art"
+                                              style={{ backgroundImage: c?.image ? `url(${c.image})` : undefined }}
+                                            />
+                                            <div className="meta">
+                                              <div className="name">{name}</div>
+                                              {c && (
+                                                <div className="sub">
+                                                  {c.energy != null ? `E${c.energy} · ` : ''}{c.code}
+                                                </div>
+                                              )}
+                                            </div>
+                                          </button>
+                                        )
+                                      })}
+                                    </div>
+                                  </>
+                                )}
+                              </>
+                            )}
+                          </div>
+                      </details>
+                    )
+                  })()}
+      </>
+    )
+  }
+
   return (
     <div className="app">
       <header className="top titlebar">
-        <div className="brand">Deakrix <span>Riftbound Tracker</span></div>
+        <div className="brand"><img className="brand-dante" src="/dante.svg" alt="Dante" />Deakrix <span>Riftbound Tracker</span></div>
         <nav className="tabs no-drag">
           {([
             ['collection', 'tab.collection'],
@@ -2632,7 +2862,7 @@ export default function App() {
 
         {tab === 'decks' && (
           <div className="split deck-split">
-            <section className="panel">
+            <section className="panel deck-list-panel">
               <div className="toolbar">
                 <h2 style={{ margin: 0, flex: 1 }}>{t(lang, 'decks.title')}</h2>
                 <button className="btn" disabled={!activeDeck} onClick={openDeckExport}>{t(lang, 'decks.export')}</button>
@@ -2649,23 +2879,67 @@ export default function App() {
                   const legendId = d.cards.find((c) => sectionOf(c) === 'legend')?.id
                   const legendImg = legendId ? byId.get(legendId)?.image : undefined
                   return (
-                    <div key={d.id} className={`deck-acc-item${expanded ? ' expanded' : ''}${expanded ? ' active' : ''}`}>
+                    <div
+                      key={d.id}
+                      className={`deck-acc-item${expanded ? ' expanded active' : ''}${deckDragOverId === d.id ? ' drag-over' : ''}`}
+                      onDragOver={(e) => {
+                        if (!e.dataTransfer.types.includes('text/riftbound-deck')) return
+                        e.preventDefault()
+                        e.dataTransfer.dropEffect = 'move'
+                        if (deckDragOverId !== d.id) setDeckDragOverId(d.id)
+                      }}
+                      onDragLeave={(e) => {
+                        const related = e.relatedTarget as Node | null
+                        if (related && (e.currentTarget as HTMLElement).contains(related)) return
+                        setDeckDragOverId((cur) => (cur === d.id ? null : cur))
+                      }}
+                      onDrop={(e) => {
+                        const from = e.dataTransfer.getData('text/riftbound-deck')
+                        if (!from) return
+                        e.preventDefault()
+                        e.stopPropagation()
+                        setDeckDragOverId(null)
+                        setDecks((prev) => moveDeck(prev, from, d.id))
+                      }}
+                    >
                       <div
                         className="deck-acc-head"
                         role="button"
                         tabIndex={0}
                         onClick={() => {
-                          setActiveDeckId(d.id)
-                          if (!expanded) setActiveSection('main')
+                          if (deckDragged.current) return
+                          if (expanded) setActiveDeckId(null)
+                          else {
+                            setActiveDeckId(d.id)
+                            setActiveSection('main')
+                          }
                         }}
                         onKeyDown={(e) => {
-                          if (e.key === 'Enter' || e.key === ' ') {
-                            e.preventDefault()
+                          if (e.key !== 'Enter' && e.key !== ' ') return
+                          e.preventDefault()
+                          if (expanded) setActiveDeckId(null)
+                          else {
                             setActiveDeckId(d.id)
-                            if (!expanded) setActiveSection('main')
+                            setActiveSection('main')
                           }
                         }}
                       >
+                        <span
+                          className="deck-drag"
+                          draggable
+                          title={t(lang, 'decks.reorder')}
+                          aria-label={t(lang, 'decks.reorder')}
+                          onClick={(e) => e.stopPropagation()}
+                          onDragStart={(e) => {
+                            deckDragged.current = true
+                            e.dataTransfer.setData('text/riftbound-deck', d.id)
+                            e.dataTransfer.effectAllowed = 'move'
+                          }}
+                          onDragEnd={() => {
+                            setDeckDragOverId(null)
+                            window.setTimeout(() => { deckDragged.current = false }, 0)
+                          }}
+                        >⠿</span>
                         <span className="deck-acc-chevron" aria-hidden>{expanded ? '▾' : '▸'}</span>
                         {legendImg && <DeckThumb src={legendImg} />}
                         <div className="grow deck-acc-title">
@@ -2718,6 +2992,7 @@ export default function App() {
                               🗑
                             </button>
                           </div>
+                          {renderOpenDeck()}
                         </div>
                       )}
                     </div>
@@ -2725,229 +3000,6 @@ export default function App() {
                 })}
               </div>
 
-              {activeDeck && (
-                <>
-                  {deckImportOpen && (
-                    <div className="deck-import-box">
-                      <textarea
-                        className="field"
-                        placeholder={"Legend:\n1 Kennen, Heart of the Tempest\nChampion:\n1 Kennen, Storm of Shuriken\nMainDeck:\n3 Traveling Merchant\n..."}
-                        value={deckImportText}
-                        onChange={(e) => setDeckImportText(e.target.value)}
-                        rows={10}
-                      />
-                      <div className="toolbar" style={{ marginBottom: 0 }}>
-                        <button className="btn primary" disabled={!deckImportText.trim()} onClick={() => runDeckImport(deckImportText)}>{t(lang, 'decks.importBtn')}</button>
-                      </div>
-                    </div>
-                  )}
-
-                  {(() => {
-                    const under = underOwnedLines(activeDeck)
-                    if (!under.length) return null
-                    const totalShort = under.reduce((s, x) => s + x.short, 0)
-                    return (
-                      <div className="deck-warn">
-                        <div>
-                          <b>{t(lang, 'decks.missingInCollection')}</b>{' '}
-                          {under.length} {cardWord(lang, under.length)} ({totalShort} {copyWord(lang, totalShort)})
-                        </div>
-                        <button
-                          type="button"
-                          className="btn small"
-                          style={{ marginTop: 6 }}
-                          onClick={() => setMissingExpanded((v) => !v)}
-                        >
-                          {t(lang, missingExpanded ? 'decks.hideMissing' : 'decks.showMissing')}
-                        </button>
-                        {missingExpanded && (
-                          <div className="deck-warn-list">
-                            {under.map((u) => {
-                              const img = byId.get(u.id)?.image
-                              const pe = priceBook?.cards[u.id]
-                              return (
-                                <div
-                                  key={u.id}
-                                  className="list-item deck-warn-row"
-                                  onMouseEnter={(e) => showCardPreview(e, img)}
-                                  onMouseMove={(e) => showCardPreview(e, img)}
-                                  onMouseLeave={hideCardPreview}
-                                >
-                                  {img ? (
-                                    <img
-                                      className="deck-thumb"
-                                      src={img}
-                                      alt=""
-                                      loading="lazy"
-                                      onError={(e) => { (e.currentTarget as HTMLImageElement).style.visibility = 'hidden' }}
-                                    />
-                                  ) : (
-                                    <div className="deck-thumb deck-thumb-empty" aria-hidden />
-                                  )}
-                                  <div className="grow">
-                                    <button
-                                      type="button"
-                                      className="name name-link"
-                                      title={t(lang, 'price.openCm')}
-                                      disabled={!pe?.cmUrl}
-                                      onClick={() => openCm(pe)}
-                                    >{u.name}</button>
-                                    <div className="sub">
-                                      {t(lang, 'decks.needHave', { need: u.need, have: u.have })}
-                                    </div>
-                                  </div>
-                                  {u.short > 0 && (
-                                    <button
-                                      type="button"
-                                      className="btn small deck-add-collection"
-                                      title={t(lang, 'decks.addToCollection')}
-                                      onClick={(e) => {
-                                        e.stopPropagation()
-                                        bump(u.id, 'qty', 1)
-                                      }}
-                                    >
-                                      {t(lang, 'decks.addToCollection')}
-                                    </button>
-                                  )}
-                                </div>
-                              )
-                            })}
-                          </div>
-                        )}
-                      </div>
-                    )
-                  })()}
-
-                  {deckNotice && (
-                    <div className="deck-notice" role="status">
-                      <span>{deckNotice}</span>
-                      <button type="button" className="btn small" onClick={() => setDeckNotice(null)}>OK</button>
-                    </div>
-                  )}
-
-                  {isLegendSwapState(activeDeck.cards) && (() => {
-                    const req = requiredDomainsFromDeck(activeDeck.cards, byId)
-                    return (
-                      <div className="deck-legend-swap" role="status">
-                        <b>{t(lang, 'decks.legendRemoved')}</b>
-                        {': '}
-                        {req.length > 0
-                          ? <>{t(lang, 'decks.legendCover', { domains: req.join(', ') })}</>
-                          : <>{t(lang, 'decks.legendAny')}</>}
-                        {t(lang, 'decks.legendGateExtra')}
-                      </div>
-                    )
-                  })()}
-
-                  <div className="deck-sections">
-                    <div className="deck-sec-row">
-                      {(['legend', 'champion'] as DeckSection[]).map((sec) => renderDeckSection(sec, activeDeck))}
-                    </div>
-
-                    {SECTION_ORDER.filter((s) => s !== 'legend' && s !== 'champion').map((sec) => renderDeckSection(sec, activeDeck))}
-                  </div>
-
-                  {(() => {
-                    const poolN = drawPoolSize(activeDeck)
-                    const canTest = poolN >= OPENING_HAND_SIZE
-                    return (
-                      <details
-                        className="hand-tester"
-                        open={handTesterOpen}
-                        onToggle={(e) => setHandTesterOpen(e.currentTarget.open)}
-                      >
-                        <summary
-                          className="hand-tester-head"
-                          title={t(lang, 'hand.toggle')}
-                        >
-                          <span className="hand-tester-chevron" aria-hidden />
-                          <span className="hand-tester-title">{t(lang, 'hand.title')}</span>
-                          <span className="pill">{t(lang, 'hand.poolSize', { n: poolN })}</span>
-                        </summary>
-                          <div className="hand-tester-body">
-                            {!canTest ? (
-                              <div className="hand-empty-msg">{t(lang, 'hand.poolTooSmall')}</div>
-                            ) : (
-                              <>
-                                <div className="hand-tester-controls">
-                                  <button type="button" className="btn primary" onClick={dealNewHand}>
-                                    {t(lang, 'hand.new')}
-                                  </button>
-                                  <button
-                                    type="button"
-                                    className="btn"
-                                    disabled={mulliganUsed || handSelected.length < 1 || handSelected.length > 2 || !handCards}
-                                    title={mulliganUsed ? t(lang, 'hand.mulliganDone') : t(lang, 'hand.selectHint')}
-                                    onClick={runMulligan}
-                                  >
-                                    {t(lang, 'hand.mulligan')}
-                                  </button>
-                                  {handCards && !mulliganUsed && (
-                                    <span className="hand-hint">{t(lang, 'hand.selected', { n: handSelected.length })}</span>
-                                  )}
-                                  {mulliganUsed && (
-                                    <span className="hand-hint">{t(lang, 'hand.mulliganDone')}</span>
-                                  )}
-                                  <button
-                                    type="button"
-                                    className="btn"
-                                    disabled={!handCards || handDrawn || handLibrary.length < 1}
-                                    title={handDrawn ? t(lang, 'hand.drawDone') : handLibrary.length < 1 ? t(lang, 'hand.noLibrary') : undefined}
-                                    onClick={drawTurnOneCard}
-                                  >
-                                    {t(lang, 'hand.draw')}
-                                  </button>
-                                </div>
-                                {!handCards ? (
-                                  <div className="hand-empty-msg">{t(lang, 'hand.empty')}</div>
-                                ) : (
-                                  <>
-                                    {!mulliganUsed && (
-                                      <div className="hand-hint">{t(lang, 'hand.selectHint')}</div>
-                                    )}
-                                    <div className="hand-grid">
-                                      {handCards.map((id, idx) => {
-                                        const c = byId.get(id)
-                                        const selected = handSelected.includes(idx)
-                                        const name = c ? displayName(c) : id
-                                        return (
-                                          <button
-                                            key={`${id}-${idx}`}
-                                            type="button"
-                                            className={`hand-card${selected ? ' selected' : ''}`}
-                                            disabled={mulliganUsed}
-                                            onClick={() => toggleHandSelect(idx)}
-                                            onMouseEnter={(e) => c?.image && showCardPreview(e, c.image)}
-                                            onMouseMove={(e) => c?.image && showCardPreview(e, c.image)}
-                                            onMouseLeave={hideCardPreview}
-                                            title={name}
-                                          >
-                                            <div
-                                              className="art"
-                                              style={{ backgroundImage: c?.image ? `url(${c.image})` : undefined }}
-                                            />
-                                            <div className="meta">
-                                              <div className="name">{name}</div>
-                                              {c && (
-                                                <div className="sub">
-                                                  {c.energy != null ? `E${c.energy} · ` : ''}{c.code}
-                                                </div>
-                                              )}
-                                            </div>
-                                          </button>
-                                        )
-                                      })}
-                                    </div>
-                                  </>
-                                )}
-                              </>
-                            )}
-                          </div>
-                      </details>
-                    )
-                  })()}
-                </>
-              )}
             </section>
 
             <section className="panel col-fill">
