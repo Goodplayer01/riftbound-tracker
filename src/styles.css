@@ -55,7 +55,8 @@ a { color: var(--accent2); }
 }
 .brand span { color: var(--accent2); }
 .brand-dante {
-  width: 26px; height: 26px; border-radius: 50%;
+  width: 28px; height: 28px; border-radius: 50%;
+  object-fit: cover; object-position: center;
   flex: 0 0 auto; display: block;
   box-shadow: 0 0 0 1px rgba(212,175,55,.65);
 }
@@ -282,6 +283,8 @@ textarea.field { min-height: 160px; resize: vertical; font-family: ui-monospace,
 .rar-epic .rarity-count, .rar-epic .rarity-label { color: #e0893a; }
 .rar-showcase .rarity-track span { background: #e8c66a; }
 .rar-showcase .rarity-count, .rar-showcase .rarity-label { color: #e8c66a; }
+.rar-ultimate-rare .rarity-track span { background: linear-gradient(90deg, #e8c66a, #d7b4ff); }
+.rar-ultimate-rare .rarity-count, .rar-ultimate-rare .rarity-label { color: #e4c8ff; }
 .value-pill {
   border: 1px solid var(--border-gold); background: rgba(42,36,24,.7);
   border-radius: 999px; padding: 4px 10px; font-size: 12px; color: var(--warn);
@@ -763,8 +766,14 @@ textarea.field { min-height: 160px; resize: vertical; font-family: ui-monospace,
 .deck-drag {
   cursor: grab; color: var(--muted); flex: 0 0 auto;
   user-select: none; font-size: 16px; line-height: 1; padding: 2px 0;
+  touch-action: none;
 }
 .deck-drag:active { cursor: grabbing; }
+.deck-acc-item.is-lifted {
+  position: relative;
+  z-index: 4;
+  box-shadow: 0 12px 28px rgba(0,0,0,.5);
+}
 .deck-acc-item.drag-over { outline: 1px solid rgba(212,175,55,.8); }
 .deck-acc-item {
   border: 1px solid var(--border);

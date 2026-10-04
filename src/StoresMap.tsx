@@ -10,6 +10,8 @@ type Props = {
   radiusKm: number
   hits: StoreHit[]
   emptyHint: string
+  /** Fit markers and skip the radius circle (Ganz Deutschland). */
+  fitHits?: boolean
 }
 
 const DE_CENTER: [number, number] = [51.1657, 10.4515]
@@ -33,7 +35,7 @@ function centerDivIcon() {
   })
 }
 
-export function StoresMap({ center, radiusKm, hits, emptyHint }: Props) {
+export function StoresMap({ center, radiusKm, hits, emptyHint, fitHits = false }: Props) {
   const containerRef = useRef<HTMLDivElement | null>(null)
   const mapRef = useRef<L.Map | null>(null)
   const circleRef = useRef<L.Circle | null>(null)
@@ -119,8 +121,10 @@ export function StoresMap({ center, radiusKm, hits, emptyHint }: Props) {
       centerMarkerRef.current.setLatLng([lat, lng])
     }
 
+    const placed: L.LatLngTuple[] = []
     for (const h of hits) {
       if (h.lat == null || h.lng == null) continue
+      placed.push([h.lat, h.lng])
       const m = L.marker([h.lat, h.lng], { icon: storeDivIcon() })
       const dist =
         h.distanceKm != null ? `${h.distanceKm.toFixed(1)} km` : ''
@@ -129,6 +133,32 @@ export function StoresMap({ center, radiusKm, hits, emptyHint }: Props) {
           (dist ? `<br/><span style="opacity:.8">${escapeHtml(dist)}</span>` : ''),
       )
       layer.addLayer(m)
+    }
+
+    if (fitHits) {
+      if (circleRef.current) {
+        map.removeLayer(circleRef.current)
+        circleRef.current = null
+      }
+      if (centerMarkerRef.current) {
+        map.removeLayer(centerMarkerRef.current)
+        centerMarkerRef.current = null
+      }
+      const fitKey = `hits:${placed.map((pt) => pt.join(',')).join('|')}`
+      if (fitKey !== lastFitKey.current) {
+        lastFitKey.current = fitKey
+        if (placed.length) {
+          try {
+            map.fitBounds(L.latLngBounds(placed), { padding: [28, 28], maxZoom: 8 })
+          } catch {
+            map.setView(DE_CENTER, DE_ZOOM)
+          }
+        } else {
+          map.setView(DE_CENTER, DE_ZOOM)
+        }
+      }
+      map.invalidateSize({ animate: false })
+      return
     }
 
     // Fit to circle when center changes or radius jumps a lot; avoid fighting live drag.
@@ -149,7 +179,7 @@ export function StoresMap({ center, radiusKm, hits, emptyHint }: Props) {
     }
 
     map.invalidateSize({ animate: false })
-  }, [center, radiusKm, hits])
+  }, [center, radiusKm, hits, fitHits])
 
   return (
     <div className="stores-map-wrap">

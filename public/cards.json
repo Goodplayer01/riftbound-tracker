@@ -40399,6 +40399,31 @@
       "rulesText": "Champion units here have +1 [S]."
     },
     {
+      "id": "rad-164-ur",
+      "name": "Packed Amphitheater",
+      "subtitle": null,
+      "code": "RAD-164",
+      "cn": 164,
+      "set": "RAD",
+      "setName": "Radiance",
+      "types": [
+        "Battlefield"
+      ],
+      "superTypes": [],
+      "rarity": "Ultimate Rare",
+      "domains": [],
+      "energy": 0,
+      "might": 0,
+      "image": "https://cdn.piltoverarchive.com/cards/RAD-164.webp",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": false,
+      "tags": [
+        "ultimate"
+      ],
+      "rulesText": "Champion units here have +1 [S]."
+    },
+    {
       "id": "rad-165",
       "name": "Rakelstake",
       "subtitle": null,

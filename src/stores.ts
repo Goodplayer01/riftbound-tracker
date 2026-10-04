@@ -185,6 +185,57 @@ type StoreRow = {
   store_types_pretty?: string[]
 }
 
+/** Geographic center of Germany. Cover radius reaches the borders, not the slider. */
+export const GERMANY_CENTER = { lat: 51.1657, lng: 10.4515 }
+const GERMANY_COVER_KM = 650
+
+export function isGermanCountry(country: string) {
+  const c = country.trim().toUpperCase()
+  return c === 'DE' || c === 'DEU' || c === 'GERMANY' || c === 'DEUTSCHLAND'
+}
+
+/** True only when Shopify returned a Riftbound title with available === true. */
+export function storeReportsStock(hit: StoreHit) {
+  return !!hit.products?.some((p) => p.available === true)
+}
+
+function rowToHit(r: StoreRow, originLat: number, originLng: number): StoreHit {
+  const s = r.store || {}
+  const sLat = s.latitude ?? null
+  const sLng = s.longitude ?? null
+  const distanceKm =
+    sLat != null && sLng != null ? haversineKm(originLat, originLng, sLat, sLng) : null
+  return {
+    id: r.id,
+    name: s.name || 'Store',
+    address: s.full_address || '',
+    city: s.city || '',
+    country: s.country || '',
+    website: textOrNull(s.website),
+    phone: textOrNull(s.preferred_contact_phone) || textOrNull(s.phone_number),
+    email: textOrNull(s.preferred_contact_email) || textOrNull(s.email),
+    lat: sLat,
+    lng: sLng,
+    distanceKm,
+    types: s.store_types_pretty || r.store_types_pretty || [],
+    products: null,
+  }
+}
+
+type StorePage = { results?: StoreRow[]; next_page_number?: number | null }
+
+async function fetchStorePage(lat: number, lng: number, radiusKm: number, page: number, pageSize: number) {
+  const params = new URLSearchParams({
+    latitude: String(lat),
+    longitude: String(lng),
+    num_miles: String(kmToApiMiles(radiusKm)),
+    page: String(page),
+    page_size: String(pageSize),
+    game_id: String(RIFTBOUND_GAME_ID),
+  })
+  return (await fetchJson(`${STORES_API}?${params}`)) as StorePage
+}
+
 /**
  * Search official Riftbound stores near a point.
  * @param radiusKm user-facing radius in kilometres (converted to miles for the API).
@@ -195,42 +246,34 @@ export async function searchStoresNear(
   radiusKm = STORE_RADIUS_KM_DEFAULT,
   pageSize = 40,
 ): Promise<StoreHit[]> {
-  const miles = kmToApiMiles(radiusKm)
-  const params = new URLSearchParams({
-    latitude: String(lat),
-    longitude: String(lng),
-    num_miles: String(miles),
-    page: '1',
-    page_size: String(pageSize),
-    game_id: String(RIFTBOUND_GAME_ID),
-  })
-  const data = (await fetchJson(`${STORES_API}?${params}`)) as { results?: StoreRow[] }
-  const out: StoreHit[] = []
-  for (const r of data.results || []) {
-    const s = r.store || {}
-    const sLat = s.latitude ?? null
-    const sLng = s.longitude ?? null
-    const distanceKm =
-      sLat != null && sLng != null ? haversineKm(lat, lng, sLat, sLng) : null
-    out.push({
-      id: r.id,
-      name: s.name || 'Store',
-      address: s.full_address || '',
-      city: s.city || '',
-      country: s.country || '',
-      website: textOrNull(s.website),
-      phone: textOrNull(s.preferred_contact_phone) || textOrNull(s.phone_number),
-      email: textOrNull(s.preferred_contact_email) || textOrNull(s.email),
-      lat: sLat,
-      lng: sLng,
-      distanceKm,
-      types: s.store_types_pretty || r.store_types_pretty || [],
-      products: null,
-    })
-  }
+  const data = await fetchStorePage(lat, lng, radiusKm, 1, pageSize)
+  const out = (data.results || []).map((r) => rowToHit(r, lat, lng))
   const filtered = out.filter((h) => h.distanceKm == null || h.distanceKm <= radiusKm + 0.05)
   filtered.sort((a, b) => (a.distanceKm ?? 1e9) - (b.distanceKm ?? 1e9))
   return withProducts(filtered)
+}
+
+/** Every official store whose country is Germany. Ignores the UI radius. */
+export async function searchStoresInGermany(): Promise<StoreHit[]> {
+  const { lat, lng } = GERMANY_CENTER
+  const out: StoreHit[] = []
+  const seen = new Set<string>()
+  let page = 1
+  for (let guard = 0; guard < 40; guard++) {
+    const data = await fetchStorePage(lat, lng, GERMANY_COVER_KM, page, 100)
+    const results = data.results || []
+    for (const r of results) {
+      const hit = rowToHit(r, lat, lng)
+      if (!isGermanCountry(hit.country) || seen.has(hit.id)) continue
+      seen.add(hit.id)
+      out.push(hit)
+    }
+    const next = data.next_page_number
+    if (!next || next === page || results.length === 0) break
+    page = next
+  }
+  out.sort((a, b) => (a.distanceKm ?? 1e9) - (b.distanceKm ?? 1e9))
+  return withProducts(out)
 }
 
 export function mapsUrl(hit: StoreHit) {

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type DragEvent as ReactDragEvent, type MouseEvent as ReactMouseEvent, type ReactNode, type RefObject } from 'react'
+import { useEffect, useMemo, useRef, useState, type DragEvent as ReactDragEvent, type MouseEvent as ReactMouseEvent, type PointerEvent as ReactPointerEvent, type ReactNode, type RefObject } from 'react'
 import type { BorrowedCard, BorrowedGroup, Card, Catalog, Deck, DeckSection, PriceBook, PriceEntry } from './types'
 import { loadBorrowed, loadCollection, loadDecks, saveBorrowed, saveCollection, saveDecks, type Collection } from './storage'
 import { loadLang, saveLang, t, type Lang } from './i18n'
@@ -44,9 +44,12 @@ import {
   STORE_RADIUS_KM_MAX,
   STORE_RADIUS_KM_MIN,
   clampStoreRadiusKm,
+  GERMANY_CENTER,
   geocodeQuery,
   mapsUrl,
+  searchStoresInGermany,
   searchStoresNear,
+  storeReportsStock,
   websiteUrl,
   type StoreHit,
 } from './stores'
@@ -226,7 +229,11 @@ function legendIdentityByName(cards: Card[], book: PriceBook | null) {
   return m
 }
 
-const RARITY_ORDER = ['Common', 'Uncommon', 'Rare', 'Epic', 'Showcase'] as const
+const RARITY_ORDER = ['Common', 'Uncommon', 'Rare', 'Epic', 'Showcase', 'Ultimate Rare'] as const
+
+function raritySlug(rarity: string) {
+  return 'rar-' + rarity.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
+}
 
 const DOMAINS = ['Fury', 'Calm', 'Mind', 'Body', 'Chaos', 'Order', 'Colorless'] as const
 
@@ -349,6 +356,8 @@ function RarityMenu({
   setOver,
   promo,
   setPromo,
+  ultimate,
+  setUltimate,
   menuRef,
 }: {
   lang: Lang
@@ -360,13 +369,15 @@ function RarityMenu({
   setOver: (next: boolean | ((v: boolean) => boolean)) => void
   promo: boolean
   setPromo: (next: boolean | ((v: boolean) => boolean)) => void
+  ultimate: boolean
+  setUltimate: (next: boolean | ((v: boolean) => boolean)) => void
   menuRef: RefObject<HTMLDivElement | null>
 }) {
   return (
     <div className={`lang-menu${open ? ' open' : ''}`} ref={menuRef}>
       <button
         type="button"
-        className={`lang-trigger${open || signed || over || promo ? ' open' : ''}`}
+        className={`lang-trigger${open || signed || over || promo || ultimate ? ' open' : ''}`}
         title={t(lang, 'filter.rarity')}
         aria-label={t(lang, 'filter.rarity')}
         aria-haspopup="menu"
@@ -409,6 +420,16 @@ function RarityMenu({
           >
             <input type="checkbox" className="lang-check" checked={promo} readOnly tabIndex={-1} />
             <span>{t(lang, 'filter.promo')}</span>
+          </button>
+          <button
+            type="button"
+            role="menuitemcheckbox"
+            aria-checked={ultimate}
+            className={`lang-option${ultimate ? ' active' : ''}`}
+            onClick={() => setUltimate((v) => !v)}
+          >
+            <input type="checkbox" className="lang-check" checked={ultimate} readOnly tabIndex={-1} />
+            <span>{t(lang, 'filter.ultimate')}</span>
           </button>
         </div>
       )}
@@ -562,6 +583,8 @@ export default function App() {
   const [storeLabel, setStoreLabel] = useState<string | null>(null)
   const [storeBusy, setStoreBusy] = useState(false)
   const [storeError, setStoreError] = useState<string | null>(null)
+  const [storeAllGermany, setStoreAllGermany] = useState(false)
+  const [storeStockOnly, setStoreStockOnly] = useState(false)
   const [q, setQ] = useState('')
   const [setFilter, setSetFilter] = useState('')
   const [ownedOnly, setOwnedOnly] = useState(false)
@@ -569,6 +592,7 @@ export default function App() {
   const [raritySigned, setRaritySigned] = useState(false)
   const [rarityOver, setRarityOver] = useState(false)
   const [rarityPromo, setRarityPromo] = useState(false)
+  const [rarityUltimate, setRarityUltimate] = useState(false)
   const [rarityMenuOpen, setRarityMenuOpen] = useState(false)
   const rarityMenuRef = useRef<HTMLDivElement | null>(null)
   const [bulkText, setBulkText] = useState('')
@@ -618,6 +642,62 @@ export default function App() {
   const [deckNotice, setDeckNotice] = useState<string | null>(null)
   const [deckDragOverId, setDeckDragOverId] = useState<string | null>(null)
   const deckDragged = useRef(false)
+
+  function onDeckReorderPointerDown(e: ReactPointerEvent<HTMLSpanElement>, id: string) {
+    if (e.button !== 0) return
+    e.preventDefault()
+    e.stopPropagation()
+    const row = e.currentTarget.closest('.deck-acc-item') as HTMLElement | null
+    const list = e.currentTarget.closest('.deck-accordion') as HTMLElement | null
+    if (!row || !list) return
+    deckDragged.current = true
+    const pointerId = e.pointerId
+    const startY = e.clientY
+    let dy = 0
+    let overId: string | null = null
+    row.classList.add('is-lifted')
+    const move = (ev: PointerEvent) => {
+      if (ev.pointerId !== pointerId) return
+      const acc = list.getBoundingClientRect()
+      const rect = row.getBoundingClientRect()
+      const naturalTop = rect.top - dy
+      const h = rect.height
+      let next = ev.clientY - startY
+      const min = acc.top - naturalTop
+      const max = acc.bottom - (naturalTop + h)
+      next = max < min ? min : Math.min(max, Math.max(min, next))
+      dy = next
+      row.style.transform = `translateY(${dy}px)`
+      const mid = naturalTop + dy + h / 2
+      overId = null
+      for (const el of list.querySelectorAll<HTMLElement>('.deck-acc-item')) {
+        if (el === row) continue
+        const r = el.getBoundingClientRect()
+        if (mid >= r.top && mid <= r.bottom) {
+          overId = el.getAttribute('data-deck-id')
+          break
+        }
+      }
+      setDeckDragOverId(overId)
+    }
+    const end = (ev: PointerEvent) => {
+      if (ev.pointerId !== pointerId) return
+      window.removeEventListener('pointermove', move)
+      window.removeEventListener('pointerup', end)
+      window.removeEventListener('pointercancel', end)
+      row.style.transform = ''
+      row.classList.remove('is-lifted')
+      setDeckDragOverId(null)
+      if (overId && overId !== id && Math.abs(dy) > 4) {
+        const target = overId
+        setDecks((prev) => moveDeck(prev, id, target))
+      }
+      window.setTimeout(() => { deckDragged.current = false }, 0)
+    }
+    window.addEventListener('pointermove', move)
+    window.addEventListener('pointerup', end)
+    window.addEventListener('pointercancel', end)
+  }
   const [handTesterOpen, setHandTesterOpen] = useState(true)
   const [handCards, setHandCards] = useState<string[] | null>(null)
   const [handLibrary, setHandLibrary] = useState<string[]>([])
@@ -783,11 +863,12 @@ export default function App() {
   /** Domain, signed/over/promo, and search haystack. Set and type stay catalog-only. */
   function matchesSharedFilters(c: Card, query: string) {
     if (!cardMatchesDomains(c.domains, domainFilter)) return false
-    if (raritySigned || rarityOver || rarityPromo) {
+    if (raritySigned || rarityOver || rarityPromo || rarityUltimate) {
       const hit =
         (raritySigned && !!c.signed) ||
         (rarityOver && !!c.overnumbered) ||
-        (rarityPromo && isPromoCard(c))
+        (rarityPromo && isPromoCard(c)) ||
+        (rarityUltimate && c.rarity === 'Ultimate Rare')
       if (!hit) return false
     }
     if (!query) return true
@@ -838,7 +919,7 @@ export default function App() {
       if (ownedOnly && ownedQty(collection[c.id]) <= 0) return false
       return matchesFilters(c, query)
     })
-  }, [cards, q, setFilter, typeFilter, domainFilter, raritySigned, rarityOver, rarityPromo, ownedOnly, collection, legendIds])
+  }, [cards, q, setFilter, typeFilter, domainFilter, raritySigned, rarityOver, rarityPromo, rarityUltimate, ownedOnly, collection, legendIds])
 
   const ownedCards = useMemo(
     () => cards.filter((c) => ownedQty(collection[c.id]) > 0),
@@ -928,7 +1009,7 @@ export default function App() {
       return matchesSharedFilters(c, query)
     })
     return [...list].sort((a, b) => a.cn - b.cn || a.code.localeCompare(b.code))
-  }, [binderView, cards, collection, q, binderOwnedOnly, binderMissing, binderRarity, domainFilter, raritySigned, rarityOver, rarityPromo, legendIds])
+  }, [binderView, cards, collection, q, binderOwnedOnly, binderMissing, binderRarity, domainFilter, raritySigned, rarityOver, rarityPromo, rarityUltimate, legendIds])
 
   const rarityBySet = useMemo(() => {
     const out: Record<string, { rarity: string; total: number; owned: number }[]> = {}
@@ -1888,7 +1969,27 @@ export default function App() {
   }
 
 
+  async function runGermanySearch() {
+    setStoreBusy(true)
+    setStoreError(null)
+    try {
+      const hits = await searchStoresInGermany()
+      setStoreHits(hits)
+      setStoreCenter(GERMANY_CENTER)
+      setStoreFetchedKm(storeKm)
+      setStoreLabel(t(lang, 'stores.allGermany'))
+    } catch (e) {
+      setStoreHits([])
+      setStoreCenter(null)
+      setStoreLabel(null)
+      setStoreError(t(lang, 'stores.error', { message: e instanceof Error ? e.message : String(e) }))
+    } finally {
+      setStoreBusy(false)
+    }
+  }
+
   async function runStoreSearchAt(lat: number, lng: number, label: string, radiusKm = storeKm) {
+    if (storeAllGermany) return runGermanySearch()
     const km = clampStoreRadiusKm(radiusKm)
     setStoreBusy(true)
     setStoreError(null)
@@ -1909,6 +2010,7 @@ export default function App() {
   }
 
   async function runStoreSearch() {
+    if (storeAllGermany) return runGermanySearch()
     const q = storeQuery.trim()
     if (!q) {
       setStoreError(t(lang, 'stores.needQuery'))
@@ -1969,12 +2071,15 @@ export default function App() {
     setStoreKm(clampStoreRadiusKm(raw))
   }
 
-  const visibleStoreHits = storeHits.filter(
-    (h) => h.distanceKm == null || h.distanceKm <= storeKm + 0.05,
-  )
+  const visibleStoreHits = storeHits.filter((h) => {
+    if (!storeAllGermany && h.distanceKm != null && h.distanceKm > storeKm + 0.05) return false
+    if (storeStockOnly && !storeReportsStock(h)) return false
+    return true
+  })
 
   // After slider/input settles: re-query UVS if radius changed (circle already updates live).
   useEffect(() => {
+    if (storeAllGermany) return
     if (!storeCenter) return
     if (Math.abs(storeKm - storeFetchedKm) < 0.5) return
     const handle = window.setTimeout(() => {
@@ -1982,7 +2087,7 @@ export default function App() {
     }, 850)
     return () => window.clearTimeout(handle)
     // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: only when km changes
-  }, [storeKm, storeCenter])
+  }, [storeKm, storeCenter, storeAllGermany])
 
   useEffect(() => {
     if (!cardLightbox && !clearSec && deckExportText == null) return
@@ -2501,7 +2606,7 @@ export default function App() {
                           role="button"
                           tabIndex={0}
                           title={t(lang, 'collection.filterRarity', { rarity: row.rarity })}
-                          className={`rarity-row rar-${row.rarity.toLowerCase()}`}
+                          className={`rarity-row ${raritySlug(row.rarity)}`}
                           onClick={(e) => {
                             e.stopPropagation()
                             setBinderView(s.id)
@@ -2565,7 +2670,7 @@ export default function App() {
                           role="button"
                           tabIndex={0}
                           title={active ? t(lang, 'collection.clearFilter') : t(lang, 'collection.filterRarity', { rarity: row.rarity })}
-                          className={`rarity-row rar-${row.rarity.toLowerCase()}${active ? ' active' : ''}`}
+                          className={`rarity-row ${raritySlug(row.rarity)}${active ? ' active' : ''}`}
                           onClick={() => setBinderRarity((cur) => (cur === row.rarity ? null : row.rarity))}
                           onKeyDown={(e) => {
                             if (e.key !== 'Enter' && e.key !== ' ') return
@@ -2618,6 +2723,8 @@ export default function App() {
                 setOver={setRarityOver}
                 promo={rarityPromo}
                 setPromo={setRarityPromo}
+                ultimate={rarityUltimate}
+                setUltimate={setRarityUltimate}
                 menuRef={rarityMenuRef}
               />
             </div>
@@ -2684,6 +2791,8 @@ export default function App() {
                 setOver={setRarityOver}
                 promo={rarityPromo}
                 setPromo={setRarityPromo}
+                ultimate={rarityUltimate}
+                setUltimate={setRarityUltimate}
                 menuRef={rarityMenuRef}
               />
               <label className="pill">
@@ -2881,26 +2990,8 @@ export default function App() {
                   return (
                     <div
                       key={d.id}
+                      data-deck-id={d.id}
                       className={`deck-acc-item${expanded ? ' expanded active' : ''}${deckDragOverId === d.id ? ' drag-over' : ''}`}
-                      onDragOver={(e) => {
-                        if (!e.dataTransfer.types.includes('text/riftbound-deck')) return
-                        e.preventDefault()
-                        e.dataTransfer.dropEffect = 'move'
-                        if (deckDragOverId !== d.id) setDeckDragOverId(d.id)
-                      }}
-                      onDragLeave={(e) => {
-                        const related = e.relatedTarget as Node | null
-                        if (related && (e.currentTarget as HTMLElement).contains(related)) return
-                        setDeckDragOverId((cur) => (cur === d.id ? null : cur))
-                      }}
-                      onDrop={(e) => {
-                        const from = e.dataTransfer.getData('text/riftbound-deck')
-                        if (!from) return
-                        e.preventDefault()
-                        e.stopPropagation()
-                        setDeckDragOverId(null)
-                        setDecks((prev) => moveDeck(prev, from, d.id))
-                      }}
                     >
                       <div
                         className="deck-acc-head"
@@ -2926,19 +3017,10 @@ export default function App() {
                       >
                         <span
                           className="deck-drag"
-                          draggable
                           title={t(lang, 'decks.reorder')}
                           aria-label={t(lang, 'decks.reorder')}
                           onClick={(e) => e.stopPropagation()}
-                          onDragStart={(e) => {
-                            deckDragged.current = true
-                            e.dataTransfer.setData('text/riftbound-deck', d.id)
-                            e.dataTransfer.effectAllowed = 'move'
-                          }}
-                          onDragEnd={() => {
-                            setDeckDragOverId(null)
-                            window.setTimeout(() => { deckDragged.current = false }, 0)
-                          }}
+                          onPointerDown={(e) => onDeckReorderPointerDown(e, d.id)}
                         >⠿</span>
                         <span className="deck-acc-chevron" aria-hidden>{expanded ? '▾' : '▸'}</span>
                         {legendImg && <DeckThumb src={legendImg} />}
@@ -3381,6 +3463,7 @@ export default function App() {
                   max={STORE_RADIUS_KM_MAX}
                   step={1}
                   value={storeKm}
+                  disabled={storeAllGermany}
                   onChange={(e) => setStoreKmFromUi(Number(e.target.value))}
                   aria-label={t(lang, 'stores.radius')}
                 />
@@ -3390,6 +3473,7 @@ export default function App() {
                   min={STORE_RADIUS_KM_MIN}
                   max={STORE_RADIUS_KM_MAX}
                   value={storeKm}
+                  disabled={storeAllGermany}
                   onChange={(e) => {
                     const n = Number(e.target.value)
                     if (!Number.isFinite(n)) return
@@ -3400,6 +3484,30 @@ export default function App() {
                 />
                 <span className="sub stores-km-unit">{t(lang, 'stores.kmUnit')}</span>
               </div>
+              <button
+                type="button"
+                className={`btn${storeAllGermany ? ' primary' : ''}`}
+                aria-pressed={storeAllGermany}
+                disabled={storeBusy}
+                onClick={() => {
+                  if (storeAllGermany) {
+                    setStoreAllGermany(false)
+                    setStoreHits([])
+                    setStoreCenter(null)
+                    setStoreLabel(null)
+                    return
+                  }
+                  setStoreAllGermany(true)
+                  void runGermanySearch()
+                }}
+              >{t(lang, 'stores.allGermany')}</button>
+              <button
+                type="button"
+                className={`btn${storeStockOnly ? ' primary' : ''}`}
+                aria-pressed={storeStockOnly}
+                title={t(lang, 'stores.stockOnlyHint')}
+                onClick={() => setStoreStockOnly((v) => !v)}
+              >{t(lang, 'stores.stockOnly')}</button>
               <button className="btn primary" disabled={storeBusy} onClick={() => void runStoreSearch()}>
                 {storeBusy ? t(lang, 'stores.searching') : t(lang, 'stores.search')}
               </button>
@@ -3413,8 +3521,8 @@ export default function App() {
             <p className="help stores-help">{t(lang, 'stores.help')}</p>
             {storeError && <p className="help" style={{ color: 'var(--danger)' }}>{storeError}</p>}
             {storeLabel && !storeError && (
-              <p className="help stores-help">{t(lang, 'stores.near', { label: storeLabel })} · {t(lang, 'stores.results', { n: visibleStoreHits.length })}
-                {storeKm > storeFetchedKm + 0.5 ? ` · ${t(lang, 'stores.enlargeHint')}` : ''}
+              <p className="help stores-help">{storeAllGermany ? t(lang, 'stores.allGermany') : t(lang, 'stores.near', { label: storeLabel })} · {t(lang, 'stores.results', { n: visibleStoreHits.length })}
+                {!storeAllGermany && storeKm > storeFetchedKm + 0.5 ? ` · ${t(lang, 'stores.enlargeHint')}` : ''}
               </p>
             )}
             <div className="stores-body">
@@ -3423,6 +3531,7 @@ export default function App() {
                   center={storeCenter}
                   radiusKm={storeKm}
                   hits={visibleStoreHits}
+                  fitHits={storeAllGermany}
                   emptyHint={t(lang, 'stores.mapHint')}
                 />
               </section>
@@ -3430,7 +3539,7 @@ export default function App() {
                 <div className="stores-results">
                   {!storeLabel && <div className="empty">{t(lang, 'stores.listHint')}</div>}
                   {!storeBusy && storeLabel && visibleStoreHits.length === 0 && (
-                    <div className="empty">{t(lang, 'stores.empty')}</div>
+                    <div className="empty">{storeStockOnly ? t(lang, 'stores.emptyStock') : storeAllGermany ? t(lang, 'stores.emptyGermany') : t(lang, 'stores.empty')}</div>
                   )}
                   {visibleStoreHits.map((h) => {
                     const shown = h.products ? h.products.slice(0, 8) : []
