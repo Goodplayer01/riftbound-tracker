@@ -621,6 +621,11 @@ textarea.field { min-height: 160px; resize: vertical; font-family: ui-monospace,
   min-height: 0;
 }
 .deck-list-panel > .toolbar { flex-shrink: 0; }
+.deck-list-count {
+  color: var(--muted);
+  font-size: 13px;
+  white-space: nowrap;
+}
 .split.deck-split > .panel.col-fill {
   display: flex;
   flex-direction: column;

@@ -545,6 +545,9 @@ function CardTile({
 
 const HIDE_NN_KEY = 'riftbound-hide-nexus-night'
 
+/** Last list wiped by delete all. Module scope: gone when the app process exits. */
+let deckListUndo: Deck[] | null = null
+
 function loadHideNexusNight(): boolean {
   try {
     return localStorage.getItem(HIDE_NN_KEY) === '1'
@@ -617,6 +620,8 @@ export default function App() {
   const [cardPreview, setCardPreview] = useState<{ src: string; x: number; y: number } | null>(null)
   const [cardLightbox, setCardLightbox] = useState<Card | null>(null)
   const [clearSec, setClearSec] = useState<DeckSection | null>(null)
+  const [deckUndoOn, setDeckUndoOn] = useState(false)
+  const [deckConfirm, setDeckConfirm] = useState<null | { kind: 'all' } | { kind: 'one'; id: string; name: string }>(null)
   const [kwExpanded, setKwExpanded] = useState<KeywordId | null>(null)
   const [ocrText, setOcrText] = useState<string | null>(null)
   const [ocrLoading, setOcrLoading] = useState(false)
@@ -643,6 +648,31 @@ export default function App() {
   const [dragRejectBorrow, setDragRejectBorrow] = useState(false)
   const [deckNotice, setDeckNotice] = useState<string | null>(null)
   const deckDragged = useRef(false)
+
+  function restoreDecks() {
+    const saved = deckListUndo
+    if (!saved) return
+    deckListUndo = null
+    setDeckUndoOn(false)
+    setDecks(saved)
+    setActiveDeckId(saved[0]?.id ?? null)
+  }
+
+  function applyDeckConfirm() {
+    const pending = deckConfirm
+    setDeckConfirm(null)
+    if (!pending) return
+    if (pending.kind === 'all') {
+      if (decks.length === 0) return
+      deckListUndo = decks.slice()
+      setDeckUndoOn(true)
+      setDecks([])
+      setActiveDeckId(null)
+      return
+    }
+    setDecks((prev) => prev.filter((x) => x.id !== pending.id))
+    setActiveDeckId((id) => (id === pending.id ? null : id))
+  }
 
   function onDeckReorderPointerDown(e: ReactPointerEvent<HTMLSpanElement>, id: string) {
     if (e.button !== 0) return
@@ -2987,7 +3017,15 @@ export default function App() {
           <div className="split deck-split">
             <section className="panel deck-list-panel">
               <div className="toolbar">
-                <h2 style={{ margin: 0, flex: 1 }}>{t(lang, 'decks.title')}</h2>
+                <h2 style={{ margin: 0 }}>{t(lang, 'decks.title')}</h2>
+                <span className="deck-list-count">{t(lang, 'decks.count', { n: decks.length })}</span>
+                <span style={{ flex: 1 }} />
+                {deckUndoOn && (
+                  <button type="button" className="btn" onClick={restoreDecks}>{t(lang, 'decks.restore')}</button>
+                )}
+                <button type="button" className="btn deck-trash" disabled={decks.length === 0} onClick={() => setDeckConfirm({ kind: 'all' })}>
+                  {t(lang, 'decks.deleteAll')}
+                </button>
                 <button className="btn" disabled={!activeDeck} onClick={openDeckExport}>{t(lang, 'decks.export')}</button>
                 <button className="btn" onClick={() => { setDeckImportOpen((v) => !v); setDeckImportText('') }}>{t(lang, 'decks.import')}</button>
                 <button className="btn primary" onClick={newDeck}>{t(lang, 'decks.new')}</button>
@@ -3054,6 +3092,21 @@ export default function App() {
                           <span className="deck-acc-count">· {deckCount(d)} Karten</span>
                         </div>
                         {expanded && <span className="pill ok">{t(lang, 'decks.active')}</span>}
+                        {!expanded && (
+                          <button
+                            type="button"
+                            className="btn icon danger deck-trash"
+                            title={t(lang, 'decks.delete')}
+                            aria-label={t(lang, 'decks.delete')}
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              setDeckConfirm({ kind: 'one', id: d.id, name: d.name })
+                            }}
+                            onKeyDown={(e) => e.stopPropagation()}
+                          >
+                            🗑
+                          </button>
+                        )}
                       </div>
                       {expanded && (
                         <div className="deck-acc-body">
@@ -3081,8 +3134,7 @@ export default function App() {
                               aria-label={t(lang, 'decks.delete')}
                               onClick={(e) => {
                                 e.stopPropagation()
-                                setDecks((prev) => prev.filter((x) => x.id !== d.id))
-                                setActiveDeckId(null)
+                                setDeckConfirm({ kind: 'one', id: d.id, name: d.name })
                               }}
                             >
                               🗑
@@ -3637,6 +3689,28 @@ export default function App() {
               <button type="button" className="btn small primary" onClick={() => void copyDeckExport()}>
                 {deckExportCopied ? t(lang, 'decks.copied') : t(lang, 'decks.copy')}
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {deckConfirm && (
+        <div
+          className="card-lightbox"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="deck-del-title"
+          onClick={() => setDeckConfirm(null)}
+        >
+          <div className="panel confirm-box" onClick={(e) => e.stopPropagation()}>
+            <h2 id="deck-del-title">Deakrix Riftbound Tracker</h2>
+            <p className="help" style={{ margin: 0 }}>
+              {deckConfirm.kind === 'all'
+                ? t(lang, 'decks.deleteAllConfirm')
+                : t(lang, 'decks.deleteOneConfirm', { name: deckConfirm.name })}
+            </p>
+            <div className="confirm-actions">
+              <button type="button" className="btn small" onClick={() => setDeckConfirm(null)}>{t(lang, 'decks.clearCancel')}</button>
+              <button type="button" className="btn small deck-trash" onClick={applyDeckConfirm}>{t(lang, 'decks.clearConfirm')}</button>
             </div>
           </div>
         </div>
