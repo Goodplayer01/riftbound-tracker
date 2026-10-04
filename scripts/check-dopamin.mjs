@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs'
 import { createJiti } from 'jiti'
 
 const jiti = createJiti(import.meta.url)
-const { rollPack, boosterSets } = jiti('../src/dopamin.ts')
+const { rollPack, boosterSets, pullChance } = jiti('../src/dopamin.ts')
 const cards = JSON.parse(readFileSync(new URL('../public/cards.json', import.meta.url))).cards
 
 function assert(cond, msg) {
@@ -34,6 +34,7 @@ for (const id of sets) {
     const highs = pack.filter((s) => s.role === 'high')
     assert(commons.length === 7 && uncommons.length === 3 && foils.length === 1 && tokens.length === 1 && highs.length === 2, id + ' slots')
     assert(new Set(commons.map((s) => s.card.id)).size === 7, id + ' common dup')
+    assert(pack.map((s) => s.role).join(',') === 'common,common,common,common,common,common,common,uncommon,uncommon,uncommon,token,foil,high,high', id + ' order')
     assert(new Set(uncommons.map((s) => s.card.id)).size === 3, id + ' unc dup')
     for (const s of commons) {
       assert(!s.foil && s.card.rarity === 'Common', id + ' common foil/rarity')
@@ -133,5 +134,38 @@ const stripped = cards.map((c) => {
 })
 assert(!boosterSets(stripped).some((s) => s.id === 'VEN'), 'empty token pool skips set')
 assert(!boosterSets(cards).some((s) => s.id === 'OGS' || s.id.endsWith('-NN')), 'no proving grounds or nexus')
+
+
+const ORDER = 'common,common,common,common,common,common,common,uncommon,uncommon,uncommon,token,foil,high,high'
+const near = (a, b) => Math.abs(a - b) < 1e-12
+const sfd = rollPack(cards, 'SFD', () => 0.4)
+assert(sfd.map((s) => s.role).join(',') === ORDER, 'sfd order')
+assert(near(pullChance(cards, 'SFD', sfd[0]), 7 / 60), 'sfd common ' + pullChance(cards, 'SFD', sfd[0]))
+assert(near(pullChance(cards, 'SFD', sfd[7]), 3 / 63), 'sfd unc')
+assert(near(pullChance(cards, 'SFD', sfd[10]), 1 / 9), 'sfd token')
+assert(near(pullChance(cards, 'SFD', sfd[11]), 1 / (60 + 63)), 'sfd foil')
+assert(near(pullChance(cards, 'SFD', sfd[12]), 2 / 60), 'sfd rare')
+const unl = rollPack(cards, 'UNL', () => 0.4)
+assert(near(pullChance(cards, 'UNL', unl[12]), 2 / 60), 'unl rare')
+assert(near(pullChance(cards, 'VEN', rollPack(cards, 'VEN', () => 0.4)[0]), 7 / 48), 'ven common')
+assert(near(pullChance(cards, 'VEN', rollPack(cards, 'VEN', () => 0.4)[12]), 2 / 45), 'ven rare')
+const ognOff = rollPack(cards, 'OGN', atEpic)
+assert(ognOff[12].card.rarity === 'Rare' && ognOff[13].card.rarity === 'Rare', 'ogn highs are rares')
+assert(near(pullChance(cards, 'OGN', ognOff[0]), 7 / 78), 'ogn common')
+assert(near(pullChance(cards, 'OGN', ognOff[7]), 3 / 84), 'ogn unc')
+assert(near(pullChance(cards, 'OGN', ognOff[10]), 1 / 11), 'ogn token')
+assert(near(pullChance(cards, 'OGN', ognOff[11]), 1 / (78 + 84)), 'ogn foil')
+assert(near(pullChance(cards, 'OGN', ognOff[12]), 1.75 / 84), 'ogn rare')
+const ognOn = rollPack(cards, 'OGN', justUnderEpic)
+assert(ognOn[12].card.rarity === 'Epic' && ognOn[13].card.rarity === 'Rare', 'ogn epic first high')
+assert(near(pullChance(cards, 'OGN', ognOn[12]), (1 / 4) / 30), 'ogn epic chance')
+const radOn = rollPack(cards, 'RAD', justUnderUr)
+assert(radOn[13].card.id === 'rad-164-ur' && radOn[12].card.rarity === 'Rare', 'rad ur last')
+assert(pullChance(cards, 'RAD', radOn[13]) === 0.00025, 'rad ur chance')
+assert(near(pullChance(cards, 'RAD', radOn[12]), (2 - 0.00025) / 24), 'rad rare')
+assert(near(pullChance(cards, 'RAD', radOn[0]), 7 / 24), 'rad common')
+const radOff = rollPack(cards, 'RAD', atUr)
+assert(radOff[12].card.rarity === 'Rare' && radOff[13].card.rarity === 'Rare', 'rad no ur')
+assert(!rollPack(cards, 'SFD', justUnderEpic).some((s) => s.card.rarity === 'Epic'), 'sfd no invented epic')
 
 console.log('ok', hits)

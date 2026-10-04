@@ -2485,7 +2485,7 @@ export default function App() {
             </button>
           ))}
         </nav>
-        <div className="stats no-drag" style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+        <div className="stats no-drag" style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
           <span className="maker-credit">made by Stefan</span>
           <span>{t(lang, 'stats.line', { unique: totals.unique, copies: totals.copies, catalog: totals.catalog })}</span>
           {collectionValue && (
@@ -2565,7 +2565,7 @@ export default function App() {
         </div>
       </header>
 
-      <main className={`main${tab === 'stores' ? ' main-stores' : ''}${tab === 'collection' && binderView != null ? ' main-binder' : ''}`}>
+      <main className={`main${tab === 'stores' ? ' main-stores' : ''}${tab === 'collection' && binderView != null ? ' main-binder' : ''}${tab === 'dopamin' ? ' main-dopamin' : ''}`}>
         {tab === 'collection' && binderView == null && (
           <>
             <div className="toolbar">
@@ -3674,7 +3674,7 @@ export default function App() {
           </div>
         )}
 
-        {tab === 'dopamin' && catalog && <Dopamin cards={catalog.cards} lang={lang} />}
+        {tab === 'dopamin' && catalog && <Dopamin cards={catalog.cards} lang={lang} prices={priceBook} />}
 
       </main>
       {deckExportText != null && (

@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import type { Card } from './types'
+import type { Card, PriceBook } from './types'
 import { t, type Lang } from './i18n'
 import { displayCardName } from './deckHelpers'
-import { boosterSets, rollPack, type PackSlot } from './dopamin'
+import { boosterSets, pullChance, rollPack, type PackSlot } from './dopamin'
 
 type Face = 'down' | 'hold' | 'up'
 type Phase = 'sealed' | 'tear' | 'open'
@@ -14,6 +14,18 @@ const HOLD: Record<string, number> = {
   'Ultimate Rare': 1200,
 }
 
+const PACK_IMG: Record<string, string> = {
+  OGN: 'packs/ogn.jpg',
+  SFD: 'packs/sfd.jpg',
+  UNL: 'packs/unl.jpg',
+  VEN: 'packs/ven.jpg',
+  RAD: 'packs/rad.jpg',
+}
+
+function publicAsset(rel: string) {
+  return new URL(rel, window.location.href).href
+}
+
 function holdKind(r: string | null): '' | 'rare' | 'epic' | 'show' | 'ur' {
   if (r === 'Rare') return 'rare'
   if (r === 'Epic') return 'epic'
@@ -22,12 +34,27 @@ function holdKind(r: string | null): '' | 'rare' | 'epic' | 'show' | 'ur' {
   return ''
 }
 
-export function Dopamin({ cards, lang }: { cards: Card[]; lang: Lang }) {
+function fmtChance(p: number) {
+  const pct = p * 100
+  const text = pct >= 0.1 ? pct.toFixed(1) : pct.toFixed(3).replace(/0+$/, '')
+  return `${text}%`
+}
+
+function slotPrice(slot: PackSlot, prices: PriceBook | null) {
+  const p = prices?.cards[slot.card.id]
+  if (!p) return null
+  const n = slot.foil ? (p.foilLow ?? p.foilTrend) : p.low
+  if (n == null || Number.isNaN(n)) return null
+  return `${n.toFixed(2)} EUR`
+}
+
+export function Dopamin({ cards, lang, prices }: { cards: Card[]; lang: Lang; prices: PriceBook | null }) {
   const sets = useMemo(() => boosterSets(cards), [cards])
   const [setId, setSetId] = useState<string | null>(null)
   const [phase, setPhase] = useState<Phase>('sealed')
   const [pack, setPack] = useState<PackSlot[] | null>(null)
-  const [face, setFace] = useState<Face[]>([])
+  const [idx, setIdx] = useState(0)
+  const [face, setFace] = useState<Face>('down')
   const gen = useRef(0)
   const opening = useRef(false)
   const lock = useRef(false)
@@ -48,7 +75,8 @@ export function Dopamin({ cards, lang }: { cards: Card[]; lang: Lang }) {
     lock.current = false
     clearTimers()
     setPack(null)
-    setFace([])
+    setIdx(0)
+    setFace('down')
     setPhase('sealed')
   }
 
@@ -59,39 +87,59 @@ export function Dopamin({ cards, lang }: { cards: Card[]; lang: Lang }) {
     opening.current = true
     const g = ++gen.current
     setPack(slots)
-    setFace(slots.map(() => 'down'))
+    setIdx(0)
+    setFace('down')
     setPhase('tear')
     const slow = window.matchMedia('(prefers-reduced-motion: reduce)').matches
     const id = window.setTimeout(() => {
       if (gen.current !== g) return
       opening.current = false
       setPhase('open')
-    }, slow ? 0 : 860)
+    }, slow ? 0 : 420)
     timers.current.push(id)
   }
 
-  function flip(i: number) {
-    if (phase !== 'open' || !pack) return
-    if (lock.current || face[i] !== 'down' || face.some((x) => x === 'hold')) return
-    const kind = holdKind(pack[i].card.rarity)
-    const slow = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    if (!kind || slow) {
-      setFace((prev) => prev.map((x, j) => (j === i ? 'up' : x)))
-      return
-    }
-    lock.current = true
-    setFace((prev) => prev.map((x, j) => (j === i ? 'hold' : x)))
+  function reveal() {
+    if (lock.current || phase !== 'open' || !pack) return
+    const at = face === 'up' ? idx + 1 : idx
+    if (at >= pack.length) return
+    const slot = pack[at]
     const g = gen.current
-    const id = window.setTimeout(() => {
+    const finishUp = () => {
       if (gen.current !== g) return
       lock.current = false
-      setFace((prev) => prev.map((x, j) => (j === i && x === 'hold' ? 'up' : x)))
-    }, HOLD[pack[i].card.rarity || ''] || 620)
-    timers.current.push(id)
+      setFace('up')
+    }
+    const start = () => {
+      if (gen.current !== g) return
+      const kind = holdKind(slot.card.rarity)
+      const slow = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+      if (!kind || slow) {
+        finishUp()
+        return
+      }
+      setFace('hold')
+      const id = window.setTimeout(finishUp, HOLD[slot.card.rarity || ''] || 620)
+      timers.current.push(id)
+    }
+    lock.current = true
+    if (face === 'up') {
+      setIdx(at)
+      setFace('down')
+      const id = window.setTimeout(start, 40)
+      timers.current.push(id)
+      return
+    }
+    start()
   }
 
   const chosen = sets.find((s) => s.id === setId) || null
-  const done = phase === 'open' && face.length > 0 && face.every((x) => x === 'up')
+  const slot = pack ? pack[idx] : null
+  const up = face === 'up' && !!slot
+  const done = phase === 'open' && !!pack && idx === pack.length - 1 && face === 'up'
+  const kind = slot ? holdKind(slot.card.rarity) : ''
+  const price = up && slot ? slotPrice(slot, prices) : null
+  const chance = up && slot && setId ? pullChance(cards, setId, slot) : null
 
   if (!chosen) {
     return (
@@ -109,49 +157,40 @@ export function Dopamin({ cards, lang }: { cards: Card[]; lang: Lang }) {
     )
   }
 
+  const art = PACK_IMG[chosen.id]
+
   return (
     <div className="dopamin">
-      {phase !== 'open' && (
+      {phase !== 'open' && art && (
         <button
           type="button"
           className={`dop-pack${phase === 'tear' ? ' tear' : ''}`}
-          style={{ ['--pack' as string]: chosen.tint }}
           aria-label={t(lang, 'dopamin.open')}
-          onPointerDown={() => openPack()}
           onClick={() => openPack()}
-          onDragStart={(e) => e.preventDefault()}
         >
-          <span className="dop-half top">
-            <span className="dop-pack-label">
-              <b>{chosen.name}</b>
-              <span>{t(lang, 'dopamin.open')}</span>
-            </span>
-          </span>
-          <span className="dop-half bot" />
+          <img src={publicAsset(art)} alt="" draggable={false} />
         </button>
       )}
-      {phase === 'open' && pack && (
-        <div className="dop-board">
-          {pack.map((slot, i) => {
-            const up = face[i] === 'up'
-            const kind = holdKind(slot.card.rarity)
-            const name = displayCardName(slot.card)
-            return (
-              <div key={i} className={`dop-slot${face[i] === 'hold' ? ` hold hold-${kind}` : ''}`} style={{ ['--tilt' as string]: `${(i % 7 - 3) * 4}deg` }}>
-                <button type="button" className="dop-flip" onClick={() => flip(i)} aria-label={up ? name : undefined}>
-                  <span className={`dop-inner${kind && face[i] !== 'down' ? ' rareflip' : ''}${up ? ' up' : ''}`}>
-                    <span className="dop-back" />
-                    <span className="dop-face">
-                      <span className={`card dop-face-inner${slot.foil ? ' shimmer' : ''}`}>
-                        <span className="art" style={{ backgroundImage: slot.card.image ? `url(${slot.card.image})` : undefined }} />
-                      </span>
-                    </span>
-                  </span>
-                  <span className="dop-name">{up ? name : ''}</span>
-                </button>
-              </div>
-            )
-          })}
+      {phase === 'open' && pack && slot && (
+        <div className="dop-one">
+          <div className="dop-count">{idx + 1} / {pack.length}</div>
+          <button type="button" className={`dop-flip${face === 'hold' ? ` hold hold-${kind}` : ''}${up && kind ? ` glow glow-${kind}` : ''}`} onClick={reveal} aria-label={up ? displayCardName(slot.card) : t(lang, 'dopamin.open')}>
+            <span className={`dop-inner${kind && face !== 'down' ? ' rareflip' : ''}${up ? ' up' : ''}`}>
+              <span className="dop-back" />
+              <span className="dop-face">
+                <span className={`card dop-face-inner${slot.foil ? ' shimmer' : ''}`}>
+                  <span className="art" style={{ backgroundImage: slot.card.image ? `url(${slot.card.image})` : undefined }} />
+                </span>
+              </span>
+            </span>
+          </button>
+          {up && (
+            <div className="dop-meta">
+              <div className="dop-name">{displayCardName(slot.card)}</div>
+              {price ? <div className="dop-price">{price}</div> : null}
+              {chance != null ? <div className="dop-chance">{t(lang, 'dopamin.chance')} {fmtChance(chance)}</div> : null}
+            </div>
+          )}
         </div>
       )}
       {done && (

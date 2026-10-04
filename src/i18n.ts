@@ -35,6 +35,7 @@ const de: Record<string, string> = {
   'dopamin.again': 'Nochmal',
   'dopamin.back': 'Zurück',
   'dopamin.empty': 'Keine Sets',
+  'dopamin.chance': 'Chance',
 
   'stats.line': '{unique} Unique | {copies} Kopien | {catalog} im Katalog',
   'stats.valueTitle': 'Schätzung: Besitz × ab + Foil × Foil ab (EUR, Cardmarket)',
@@ -360,6 +361,7 @@ const en: Record<string, string> = {
   'dopamin.again': 'Again',
   'dopamin.back': 'Back',
   'dopamin.empty': 'No sets',
+  'dopamin.chance': 'Chance',
 
   'stats.line': '{unique} Unique | {copies} Copies | {catalog} in catalogue',
   'stats.valueTitle': 'Estimate: owned × low + foil × foil low (EUR, Cardmarket)',
