@@ -177,8 +177,9 @@ function ZoomMark({ title, onOpen, tiny }: { title: string; onOpen: () => void; 
   )
 }
 
-function DeckThumb({ src, onOpen, openTitle, zoomIcon }: { src?: string | null; onOpen?: () => void; openTitle?: string; zoomIcon?: boolean }) {
+function DeckThumb({ src, onOpen, openTitle, zoomIcon, lg }: { src?: string | null; onOpen?: () => void; openTitle?: string; zoomIcon?: boolean; lg?: boolean }) {
   const zoom = onOpen ? ' art-zoomable' : ''
+  const size = lg ? ' deck-thumb-lg' : ''
   const open = onOpen
     ? {
         role: 'button' as const,
@@ -189,7 +190,7 @@ function DeckThumb({ src, onOpen, openTitle, zoomIcon }: { src?: string | null; 
     : {}
   const node = src ? (
     <img
-      className={`deck-thumb${zoom}`}
+      className={`deck-thumb${size}${zoom}`}
       src={src}
       alt=""
       loading="lazy"
@@ -197,11 +198,11 @@ function DeckThumb({ src, onOpen, openTitle, zoomIcon }: { src?: string | null; 
       {...open}
     />
   ) : (
-    <div className={`deck-thumb deck-thumb-empty${zoom}`} {...(onOpen ? open : { 'aria-hidden': true as const })} />
+    <div className={`deck-thumb deck-thumb-empty${size}${zoom}`} {...(onOpen ? open : { 'aria-hidden': true as const })} />
   )
   if (!onOpen || !zoomIcon || !openTitle) return node
   return (
-    <span className="deck-thumb-wrap">
+    <span className={`deck-thumb-wrap${size}`}>
       {node}
       <ZoomMark title={openTitle} onOpen={onOpen} tiny />
     </span>
@@ -622,7 +623,7 @@ export default function App() {
   const [cardLightbox, setCardLightbox] = useState<Card | null>(null)
   const [clearSec, setClearSec] = useState<DeckSection | null>(null)
   const [deckUndoOn, setDeckUndoOn] = useState(false)
-  const [deckConfirm, setDeckConfirm] = useState<null | { kind: 'all' } | { kind: 'one'; id: string; name: string }>(null)
+  const [deckConfirm, setDeckConfirm] = useState<null | { kind: 'all' } | { kind: 'one'; id: string; name: string } | { kind: 'borrow'; id: string; name: string }>(null)
   const [kwExpanded, setKwExpanded] = useState<KeywordId | null>(null)
   const [ocrText, setOcrText] = useState<string | null>(null)
   const [ocrLoading, setOcrLoading] = useState(false)
@@ -669,6 +670,11 @@ export default function App() {
       setDeckUndoOn(true)
       setDecks([])
       setActiveDeckId(null)
+      return
+    }
+    if (pending.kind === 'borrow') {
+      setBorrowed((prev) => prev.filter((x) => x.id !== pending.id))
+      setActiveBorrowedId(null)
       return
     }
     setDecks((prev) => prev.filter((x) => x.id !== pending.id))
@@ -2758,7 +2764,6 @@ export default function App() {
                   {t(lang, 'collection.missing')}
                 </button>
               )}
-              <DomainFilterRow value={domainFilter} onChange={setDomainFilter} lang={lang} />
               <RarityMenu
                 lang={lang}
                 open={rarityMenuOpen}
@@ -2773,6 +2778,7 @@ export default function App() {
                 setUltimate={setRarityUltimate}
                 menuRef={rarityMenuRef}
               />
+              <DomainFilterRow value={domainFilter} onChange={setDomainFilter} lang={lang} />
             </div>
 
             <div className="binder-scroll">
@@ -2826,7 +2832,6 @@ export default function App() {
                   <option key={ty} value={ty}>{ty}</option>
                 ))}
               </select>
-              <DomainFilterRow value={domainFilter} onChange={setDomainFilter} lang={lang} />
               <RarityMenu
                 lang={lang}
                 open={rarityMenuOpen}
@@ -2844,6 +2849,7 @@ export default function App() {
               <label className="pill">
                 <input type="checkbox" checked={ownedOnly} onChange={(e) => setOwnedOnly(e.target.checked)} /> {t(lang, 'catalog.ownedOnly')}
               </label>
+              <DomainFilterRow value={domainFilter} onChange={setDomainFilter} lang={lang} />
               <button className="btn" onClick={exportCsv}>{t(lang, 'catalog.csvExport')}</button>
               <label className="btn">
                 {t(lang, 'catalog.csvImport')}
@@ -3077,7 +3083,7 @@ export default function App() {
                           onPointerDown={(e) => onDeckReorderPointerDown(e, d.id)}
                         >⠿</span>
                         <span className="deck-acc-chevron" aria-hidden>{expanded ? '▾' : '▸'}</span>
-                        {legendImg && <DeckThumb src={legendImg} />}
+                        {legendImg && <DeckThumb src={legendImg} lg={!expanded} />}
                         <div className="grow deck-acc-title">
                           {expanded ? (
                             <input
@@ -3300,8 +3306,7 @@ export default function App() {
                               aria-label={t(lang, 'borrowed.delete')}
                               onClick={(e) => {
                                 e.stopPropagation()
-                                setBorrowed((prev) => prev.filter((x) => x.id !== g.id))
-                                setActiveBorrowedId(null)
+                                setDeckConfirm({ kind: 'borrow', id: g.id, name: g.name })
                               }}
                             >
                               🗑
@@ -3706,11 +3711,12 @@ export default function App() {
           onClick={() => setDeckConfirm(null)}
         >
           <div className="panel confirm-box" onClick={(e) => e.stopPropagation()}>
-            <h2 id="deck-del-title">Deakrix Riftbound Tracker</h2>
-            <p className="help" style={{ margin: 0 }}>
+            <p id="deck-del-title" className="help" style={{ margin: 0 }}>
               {deckConfirm.kind === 'all'
                 ? t(lang, 'decks.deleteAllConfirm')
-                : t(lang, 'decks.deleteOneConfirm', { name: deckConfirm.name })}
+                : deckConfirm.kind === 'borrow'
+                  ? t(lang, 'borrowed.deleteConfirm', { name: deckConfirm.name })
+                  : t(lang, 'decks.deleteOneConfirm', { name: deckConfirm.name })}
             </p>
             <div className="confirm-actions">
               <button type="button" className="btn small" onClick={() => setDeckConfirm(null)}>{t(lang, 'decks.clearCancel')}</button>
@@ -3728,8 +3734,7 @@ export default function App() {
           onClick={() => setClearSec(null)}
         >
           <div className="panel confirm-box" onClick={(e) => e.stopPropagation()}>
-            <h2 id="clear-sec-title">Deakrix Riftbound Tracker</h2>
-            <p className="help" style={{ margin: 0 }}>{t(lang, 'decks.clearSectionConfirm', { section: SECTION_LABEL[clearSec] })}</p>
+            <p id="clear-sec-title" className="help" style={{ margin: 0 }}>{t(lang, 'decks.clearSectionConfirm', { section: SECTION_LABEL[clearSec] })}</p>
             <div className="confirm-actions">
               <button type="button" className="btn small" onClick={() => setClearSec(null)}>{t(lang, 'decks.clearCancel')}</button>
               <button

@@ -552,9 +552,9 @@ textarea.field { min-height: 160px; resize: vertical; font-family: ui-monospace,
 .deck-warn-list { display: grid; gap: 6px; margin-top: 8px; }
 .deck-warn-row { padding: 4px 0; background: transparent; border: none; }
 .deck-sections { display: grid; gap: 12px; }
-.deck-sec-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; align-items: start; }
-@media (max-width: 720px) { .deck-sec-row { grid-template-columns: 1fr; } }
+.deck-sec-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 460px), 1fr)); gap: 12px; align-items: start; }
 .deck-sec {
+  min-width: 0;
   border: 1px solid var(--border); border-radius: 12px; padding: 10px 12px;
   background: rgba(0,0,0,.18); cursor: pointer;
 }
@@ -586,8 +586,13 @@ textarea.field { min-height: 160px; resize: vertical; font-family: ui-monospace,
   border-color: var(--border-gold); color: var(--accent2);
   background: rgba(212,175,55,.05);
 }
-.deck-card-row { align-items: center; }
-.deck-card-row .grow { flex: 1 1 auto; }
+.deck-card-row {
+  display: grid;
+  grid-template-columns: auto minmax(9rem, 1fr) auto auto;
+  align-items: center;
+  justify-content: stretch;
+}
+.deck-card-row .grow { min-width: 9rem; }
 .deck-sec-row .deck-card-row { min-height: 72px; }
 .deck-card-row .name-with-ban { min-width: 0; flex-wrap: nowrap; align-items: flex-start; }
 .deck-card-row .name-with-ban .name-link {
@@ -668,6 +673,8 @@ textarea.field { min-height: 160px; resize: vertical; font-family: ui-monospace,
   height: 48px;
 }
 .deck-thumb-wrap .deck-thumb { width: 100%; height: 100%; }
+.deck-thumb.deck-thumb-lg,
+.deck-thumb-wrap.deck-thumb-lg { width: 68px; height: 96px; }
 .list-item .grow { min-width: 0; }
 .card-float-preview {
   position: fixed;
@@ -692,7 +699,9 @@ textarea.field { min-height: 160px; resize: vertical; font-family: ui-monospace,
 .picker-card {
   cursor: grab;
   user-select: none;
+  min-height: 102px;
 }
+.picker-card .deck-thumb { width: 51px; height: 72px; }
 .picker-card:active { cursor: grabbing; }
 .picker-card.dragging {
   opacity: 0.45;
