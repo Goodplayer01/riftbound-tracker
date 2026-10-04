@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState, type DragEvent as ReactDragEvent,
 import type { BorrowedCard, BorrowedGroup, Card, Catalog, Deck, DeckSection, PriceBook, PriceEntry } from './types'
 import { loadBorrowed, loadCollection, loadDecks, saveBorrowed, saveCollection, saveDecks, type Collection } from './storage'
 import { loadLang, saveLang, t, type Lang } from './i18n'
+import { Dopamin } from './Dopamin'
 import {
   detectKeywordsInText,
   keywordsForCard,
@@ -62,7 +63,7 @@ import {
   drawTopCard,
 } from './handTester'
 
-type Tab = 'collection' | 'catalog' | 'sales' | 'decks' | 'borrowed' | 'stores'
+type Tab = 'collection' | 'catalog' | 'sales' | 'decks' | 'borrowed' | 'stores' | 'dopamin'
 
 function uid() {
   return crypto.randomUUID()
@@ -2477,6 +2478,7 @@ export default function App() {
             ['decks', 'tab.decks'],
             ['borrowed', 'tab.borrowed'],
             ['stores', 'tab.stores'],
+            ['dopamin', 'tab.dopamin'],
           ] as const).map(([id, key]) => (
             <button key={id} className={`tab ${tab === id ? 'active' : ''}`} onClick={() => setTab(id)}>
               {t(lang, key)}
@@ -3671,6 +3673,8 @@ export default function App() {
             </div>
           </div>
         )}
+
+        {tab === 'dopamin' && catalog && <Dopamin cards={catalog.cards} lang={lang} />}
 
       </main>
       {deckExportText != null && (
