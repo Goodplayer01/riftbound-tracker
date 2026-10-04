@@ -614,10 +614,11 @@ textarea.field { min-height: 160px; resize: vertical; font-family: ui-monospace,
   min-height: 0;
   overflow: auto;
 }
-.deck-list-panel {
+.split.deck-split > .panel.deck-list-panel {
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  min-height: 0;
 }
 .deck-list-panel > .toolbar { flex-shrink: 0; }
 .split.deck-split > .panel.col-fill {
@@ -762,6 +763,7 @@ textarea.field { min-height: 160px; resize: vertical; font-family: ui-monospace,
 /* Deck list accordion */
 .deck-accordion {
   display: grid; gap: 8px; align-content: start;
+  grid-auto-rows: max-content;
   overflow: auto; min-height: 0; flex: 1 1 auto;
 }
 .deck-drag {
@@ -775,7 +777,6 @@ textarea.field { min-height: 160px; resize: vertical; font-family: ui-monospace,
   z-index: 4;
   box-shadow: 0 12px 28px rgba(0,0,0,.5);
 }
-.deck-acc-item.drag-over { outline: 1px solid rgba(212,175,55,.8); }
 .deck-acc-item {
   border: 1px solid var(--border);
   border-radius: 12px;

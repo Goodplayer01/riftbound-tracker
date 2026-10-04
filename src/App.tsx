@@ -37,7 +37,7 @@ import {
   sectionOf,
 } from './deckHelpers'
 import { banStatus, type BanStatus } from './banlist'
-import { cardMatchesDomains, moveDeck } from './domainMatch.ts'
+import { cardMatchesDomains, deckDropIndex, moveDeckTo } from './domainMatch.ts'
 import {
   STORE_LOCATOR_URL,
   STORE_RADIUS_KM_DEFAULT,
@@ -642,7 +642,6 @@ export default function App() {
   const [dragOverBorrow, setDragOverBorrow] = useState(false)
   const [dragRejectBorrow, setDragRejectBorrow] = useState(false)
   const [deckNotice, setDeckNotice] = useState<string | null>(null)
-  const [deckDragOverId, setDeckDragOverId] = useState<string | null>(null)
   const deckDragged = useRef(false)
 
   function onDeckReorderPointerDown(e: ReactPointerEvent<HTMLSpanElement>, id: string) {
@@ -652,54 +651,69 @@ export default function App() {
     const row = e.currentTarget.closest('.deck-acc-item') as HTMLElement | null
     const list = e.currentTarget.closest('.deck-accordion') as HTMLElement | null
     if (!row || !list) return
+    const items = [...list.querySelectorAll<HTMLElement>('.deck-acc-item')]
+    const from = items.indexOf(row)
+    if (from < 0) return
     deckDragged.current = true
     const pointerId = e.pointerId
-    const startY = e.clientY
-    let dy = 0
-    let overId: string | null = null
+    const origin = list.getBoundingClientRect()
+    const grab = e.clientY - row.getBoundingClientRect().top
+    const slots = items.map((el) => {
+      const r = el.getBoundingClientRect()
+      return { el, top: r.top - origin.top + list.scrollTop, height: r.height }
+    })
+    let to = from
     row.classList.add('is-lifted')
+    const shiftOthers = () => {
+      const gap = slots.length > 1 ? slots[1].top - slots[0].top - slots[0].height : 0
+      const order = slots.map((_, i) => i)
+      const [moved] = order.splice(from, 1)
+      order.splice(to, 0, moved)
+      let cursor = slots[0].top
+      const target = new Array<number>(slots.length)
+      for (const idx of order) {
+        target[idx] = cursor
+        cursor += slots[idx].height + gap
+      }
+      for (let i = 0; i < slots.length; i++) {
+        if (i === from) continue
+        const delta = target[i] - slots[i].top
+        slots[i].el.style.transform = delta ? `translateY(${delta}px)` : ''
+      }
+    }
     const move = (ev: PointerEvent) => {
       if (ev.pointerId !== pointerId) return
       const acc = list.getBoundingClientRect()
-      const rect = row.getBoundingClientRect()
-      const naturalTop = rect.top - dy
-      const h = rect.height
-      let next = ev.clientY - startY
-      const min = acc.top - naturalTop
-      const max = acc.bottom - (naturalTop + h)
-      next = max < min ? min : Math.min(max, Math.max(min, next))
-      dy = next
-      row.style.transform = `translateY(${dy}px)`
-      const mid = naturalTop + dy + h / 2
-      overId = null
-      for (const el of list.querySelectorAll<HTMLElement>('.deck-acc-item')) {
-        if (el === row) continue
-        const r = el.getBoundingClientRect()
-        if (mid >= r.top && mid <= r.bottom) {
-          overId = el.getAttribute('data-deck-id')
-          break
-        }
-      }
-      setDeckDragOverId(overId)
+      const h = slots[from].height
+      const naturalTop = slots[from].top - list.scrollTop + acc.top
+      let visualTop = ev.clientY - grab
+      const minTop = acc.top
+      const maxTop = acc.bottom - h
+      visualTop = maxTop < minTop ? minTop : Math.min(maxTop, Math.max(minTop, visualTop))
+      row.style.transform = `translateY(${visualTop - naturalTop}px)`
+      const contentY = ev.clientY - acc.top + list.scrollTop
+      const atStart = list.scrollTop <= 1
+      const atEnd = list.scrollTop + list.clientHeight >= list.scrollHeight - 1
+      if (atStart && ev.clientY <= acc.top + 24) to = 0
+      else if (atEnd && ev.clientY >= acc.bottom - 24) to = items.length - 1
+      else to = deckDropIndex(contentY, slots, from)
+      shiftOthers()
     }
     const end = (ev: PointerEvent) => {
       if (ev.pointerId !== pointerId) return
       window.removeEventListener('pointermove', move)
       window.removeEventListener('pointerup', end)
       window.removeEventListener('pointercancel', end)
-      row.style.transform = ''
+      for (const s of slots) s.el.style.transform = ''
       row.classList.remove('is-lifted')
-      setDeckDragOverId(null)
-      if (overId && overId !== id && Math.abs(dy) > 4) {
-        const target = overId
-        setDecks((prev) => moveDeck(prev, id, target))
-      }
+      if (to !== from) setDecks((prev) => moveDeckTo(prev, id, to))
       window.setTimeout(() => { deckDragged.current = false }, 0)
     }
     window.addEventListener('pointermove', move)
     window.addEventListener('pointerup', end)
     window.addEventListener('pointercancel', end)
   }
+
   const [handTesterOpen, setHandTesterOpen] = useState(true)
   const [handCards, setHandCards] = useState<string[] | null>(null)
   const [handLibrary, setHandLibrary] = useState<string[]>([])
@@ -2991,7 +3005,7 @@ export default function App() {
                     <div
                       key={d.id}
                       data-deck-id={d.id}
-                      className={`deck-acc-item${expanded ? ' expanded active' : ''}${deckDragOverId === d.id ? ' drag-over' : ''}`}
+                      className={`deck-acc-item${expanded ? ' expanded active' : ''}`}
                     >
                       <div
                         className="deck-acc-head"
