@@ -36,6 +36,7 @@ const de: Record<string, string> = {
   'dopamin.back': 'Zurück',
   'dopamin.empty': 'Keine Sets',
   'dopamin.chance': 'Chance',
+  'dopamin.packs': 'Packs: {n}',
 
   'stats.line': '{unique} Unique | {copies} Kopien | {catalog} im Katalog',
   'stats.valueTitle': 'Schätzung: Besitz × ab + Foil × Foil ab (EUR, Cardmarket)',
@@ -182,6 +183,8 @@ const de: Record<string, string> = {
   'decks.banned2v2': 'Gebannt (2v2)',
 
   'borrowed.title': 'Ausgeliehen',
+  'borrowed.count': '{n} Entleiher',
+  'borrowed.reorder': 'Entleiher verschieben',
   'borrowed.new': 'Neuer Entleiher',
   'borrowed.empty': 'Noch nichts ausgeliehen.',
   'borrowed.rename': 'Entleiher umbenennen',
@@ -363,6 +366,7 @@ const en: Record<string, string> = {
   'dopamin.back': 'Back',
   'dopamin.empty': 'No sets',
   'dopamin.chance': 'Chance',
+  'dopamin.packs': 'Packs: {n}',
 
   'stats.line': '{unique} Unique | {copies} Copies | {catalog} in catalogue',
   'stats.valueTitle': 'Estimate: owned × low + foil × foil low (EUR, Cardmarket)',
@@ -509,6 +513,8 @@ const en: Record<string, string> = {
   'decks.banned2v2': 'Banned (2v2)',
 
   'borrowed.title': 'Borrowed',
+  'borrowed.count': '{n} borrowers',
+  'borrowed.reorder': 'Move borrower',
   'borrowed.new': 'New borrower',
   'borrowed.empty': 'Nothing lent out yet.',
   'borrowed.rename': 'Rename borrower',

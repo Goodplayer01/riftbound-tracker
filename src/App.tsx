@@ -682,7 +682,7 @@ export default function App() {
     setActiveDeckId((id) => (id === pending.id ? null : id))
   }
 
-  function onDeckReorderPointerDown(e: ReactPointerEvent<HTMLSpanElement>, id: string) {
+  function onDeckReorderPointerDown(e: ReactPointerEvent<HTMLSpanElement>, id: string, kind: 'deck' | 'borrow' = 'deck') {
     if (e.button !== 0) return
     e.preventDefault()
     e.stopPropagation()
@@ -744,7 +744,10 @@ export default function App() {
       window.removeEventListener('pointercancel', end)
       for (const s of slots) s.el.style.transform = ''
       row.classList.remove('is-lifted')
-      if (to !== from) setDecks((prev) => moveDeckTo(prev, id, to))
+      if (to !== from) {
+        if (kind === 'borrow') setBorrowed((prev) => moveDeckTo(prev, id, to))
+        else setDecks((prev) => moveDeckTo(prev, id, to))
+      }
       window.setTimeout(() => { deckDragged.current = false }, 0)
     }
     window.addEventListener('pointermove', move)
@@ -3247,9 +3250,11 @@ export default function App() {
 
         {tab === 'borrowed' && (
           <div className="split deck-split">
-            <section className="panel">
+            <section className="panel deck-list-panel">
               <div className="toolbar">
-                <h2 style={{ margin: 0, flex: 1 }}>{t(lang, 'borrowed.title')}</h2>
+                <h2 style={{ margin: 0 }}>{t(lang, 'borrowed.title')}</h2>
+                <span className="deck-list-count">{t(lang, 'borrowed.count', { n: borrowed.length })}</span>
+                <span style={{ flex: 1 }} />
                 <button
                   className="btn"
                   disabled={!activeBorrowed}
@@ -3261,24 +3266,35 @@ export default function App() {
                 <button className="btn primary" onClick={newBorrowedGroup}>{t(lang, 'borrowed.new')}</button>
               </div>
               <p className="help">{t(lang, 'borrowed.help')}</p>
-              <div className="deck-accordion" style={{ marginBottom: 12 }}>
+              <div className="deck-accordion">
                 {borrowed.length === 0 && <div className="empty">{t(lang, 'borrowed.empty')}</div>}
                 {borrowed.map((g) => {
                   const expanded = g.id === activeBorrowedId
                   return (
-                    <div key={g.id} className={`deck-acc-item${expanded ? ' expanded' : ''}${expanded ? ' active' : ''}`}>
+                    <div key={g.id} className={`deck-acc-item${expanded ? ' expanded active' : ''}`}>
                       <div
                         className="deck-acc-head"
                         role="button"
                         tabIndex={0}
-                        onClick={() => setActiveBorrowedId(g.id)}
+                        onClick={() => {
+                          if (deckDragged.current) return
+                          if (expanded) setActiveBorrowedId(null)
+                          else setActiveBorrowedId(g.id)
+                        }}
                         onKeyDown={(e) => {
-                          if (e.key === 'Enter' || e.key === ' ') {
-                            e.preventDefault()
-                            setActiveBorrowedId(g.id)
-                          }
+                          if (e.key !== 'Enter' && e.key !== ' ') return
+                          e.preventDefault()
+                          if (expanded) setActiveBorrowedId(null)
+                          else setActiveBorrowedId(g.id)
                         }}
                       >
+                        <span
+                          className="deck-drag"
+                          title={t(lang, 'borrowed.reorder')}
+                          aria-label={t(lang, 'borrowed.reorder')}
+                          onClick={(e) => e.stopPropagation()}
+                          onPointerDown={(e) => onDeckReorderPointerDown(e, g.id, 'borrow')}
+                        >⠿</span>
                         <span className="deck-acc-chevron" aria-hidden>{expanded ? '▾' : '▸'}</span>
                         <div className="grow deck-acc-title">
                           {expanded ? (
@@ -3296,6 +3312,21 @@ export default function App() {
                           <span className="deck-acc-count">· {t(lang, 'borrowed.cardCount', { n: groupCardCount(g) })}</span>
                         </div>
                         {expanded && <span className="pill ok">{t(lang, 'borrowed.active')}</span>}
+                        {!expanded && (
+                          <button
+                            type="button"
+                            className="btn icon danger deck-trash"
+                            title={t(lang, 'borrowed.delete')}
+                            aria-label={t(lang, 'borrowed.delete')}
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              setDeckConfirm({ kind: 'borrow', id: g.id, name: g.name })
+                            }}
+                            onKeyDown={(e) => e.stopPropagation()}
+                          >
+                            🗑
+                          </button>
+                        )}
                       </div>
                       {expanded && (
                         <div className="deck-acc-body">
@@ -3314,124 +3345,105 @@ export default function App() {
                               🗑
                             </button>
                           </div>
+
+                          {borrowImportOpen && (
+                            <div className="deck-import-box">
+                              <p className="help" style={{ margin: 0 }}>{t(lang, 'borrowed.importHint')}</p>
+                              <textarea
+                                className="field"
+                                placeholder={"Champion:\n1 Rengar, Trophy Hunter\n\nCards:\n1 Darius, Trifarian\n2 Ferrous Forerunner\n\nBattlefields:\n1 Emperor's Dais"}
+                                value={borrowImportText}
+                                onChange={(e) => setBorrowImportText(e.target.value)}
+                                rows={10}
+                              />
+                              <div className="toolbar" style={{ marginBottom: 0 }}>
+                                <button
+                                  className="btn primary"
+                                  disabled={!borrowImportText.trim()}
+                                  onClick={() => runBorrowImport(borrowImportText)}
+                                >{t(lang, 'borrowed.importBtn')}</button>
+                              </div>
+                            </div>
+                          )}
+
+                          {borrowNotice && (
+                            <div className="deck-notice" role="status">
+                              <span>{borrowNotice}</span>
+                              <button type="button" className="btn small" onClick={() => setBorrowNotice(null)}>OK</button>
+                            </div>
+                          )}
+
+                          <div
+                            className={borrowDropClass()}
+                            onDragOver={onBorrowDragOver}
+                            onDragLeave={onBorrowDragLeave}
+                            onDrop={onBorrowDrop}
+                          >
+                            {g.cards.length === 0 && (
+                              <div className="empty">{t(lang, 'borrowed.emptyCards')}</div>
+                            )}
+                            {g.cards.map((bc) => {
+                              const c = byId.get(bc.id)
+                              const have = ownedQty(collection[bc.id])
+                              const avail = availableForDecks(bc.id)
+                              const room = remainingToLend(bc.id)
+                              const img = c?.image
+                              return (
+                                <div
+                                  key={bc.id}
+                                  className="list-item deck-card-row"
+                                  onMouseEnter={(e) => showCardPreview(e, img)}
+                                  onMouseMove={(e) => showCardPreview(e, img)}
+                                  onMouseLeave={hideCardPreview}
+                                >
+                                  <DeckThumb src={img} onOpen={c ? () => openCardLightbox(c) : undefined} openTitle={t(lang, 'card.enlarge')} zoomIcon />
+                                  <div className="grow">
+                                    <button
+                                      type="button"
+                                      className="name name-link"
+                                      title={t(lang, 'price.openCm')}
+                                      disabled={!priceBook?.cards[bc.id]?.cmUrl}
+                                      onClick={() => openCm(priceBook?.cards[bc.id])}
+                                    >{c ? displayCardName(c) : bc.id}</button>
+                                    <div className="sub">
+                                      {c ? `${c.code} · ` : ''}{t(lang, 'borrowed.ownedAvail', { have, avail })}
+                                    </div>
+                                  </div>
+                                  <div className="qty" onClick={(e) => e.stopPropagation()}>
+                                    <button type="button" onClick={() => bumpBorrowedCard(bc.id, -1)}>−</button>
+                                    <b>{bc.qty}</b>
+                                    <button
+                                      type="button"
+                                      disabled={room <= 0}
+                                      title={room <= 0 ? t(lang, 'borrowed.noAvail') : undefined}
+                                      onClick={() => bumpBorrowedCard(bc.id, 1)}
+                                    >+</button>
+                                  </div>
+                                  <button
+                                    type="button"
+                                    className="btn icon danger deck-trash deck-card-trash"
+                                    title={t(lang, 'borrowed.removeCard')}
+                                    aria-label={t(lang, 'borrowed.removeCard')}
+                                    onClick={(e) => {
+                                      e.stopPropagation()
+                                      removeBorrowedCard(bc.id)
+                                    }}
+                                  >
+                                    🗑
+                                  </button>
+                                </div>
+                              )
+                            })}
+                          </div>
                         </div>
                       )}
                     </div>
                   )
                 })}
               </div>
-
-              {activeBorrowed && (
-                <>
-                  {borrowImportOpen && (
-                    <div className="deck-import-box">
-                      <p className="help" style={{ margin: 0 }}>{t(lang, 'borrowed.importHint')}</p>
-                      <textarea
-                        className="field"
-                        placeholder={"Champion:\n1 Rengar, Trophy Hunter\n\nCards:\n1 Darius, Trifarian\n2 Ferrous Forerunner\n\nBattlefields:\n1 Emperor's Dais"}
-                        value={borrowImportText}
-                        onChange={(e) => setBorrowImportText(e.target.value)}
-                        rows={10}
-                      />
-                      <div className="toolbar" style={{ marginBottom: 0 }}>
-                        <button
-                          className="btn primary"
-                          disabled={!borrowImportText.trim()}
-                          onClick={() => runBorrowImport(borrowImportText)}
-                        >{t(lang, 'borrowed.importBtn')}</button>
-                      </div>
-                    </div>
-                  )}
-
-                  {borrowNotice && (
-                    <div className="deck-notice" role="status">
-                      <span>{borrowNotice}</span>
-                      <button type="button" className="btn small" onClick={() => setBorrowNotice(null)}>OK</button>
-                    </div>
-                  )}
-
-                  <div
-                    className={borrowDropClass()}
-                    style={{ marginTop: 12 }}
-                    onDragOver={onBorrowDragOver}
-                    onDragLeave={onBorrowDragLeave}
-                    onDrop={onBorrowDrop}
-                  >
-                    {activeBorrowed.cards.length === 0 && (
-                      <div className="empty">{t(lang, 'borrowed.emptyCards')}</div>
-                    )}
-                    {activeBorrowed.cards.map((bc) => {
-                      const c = byId.get(bc.id)
-                      const have = ownedQty(collection[bc.id])
-                      const avail = availableForDecks(bc.id)
-                      const room = remainingToLend(bc.id)
-                      const img = c?.image
-                      return (
-                        <div
-                          key={bc.id}
-                          className="list-item deck-card-row"
-                          onMouseEnter={(e) => showCardPreview(e, img)}
-                          onMouseMove={(e) => showCardPreview(e, img)}
-                          onMouseLeave={hideCardPreview}
-                        >
-                          {img ? (
-                            <img
-                              className="deck-thumb"
-                              src={img}
-                              alt=""
-                              loading="lazy"
-                              onError={(e) => { (e.currentTarget as HTMLImageElement).style.visibility = 'hidden' }}
-                            />
-                          ) : (
-                            <div className="deck-thumb deck-thumb-empty" aria-hidden />
-                          )}
-                          <div className="grow">
-                            <button
-                              type="button"
-                              className="name name-link"
-                              title={t(lang, 'price.openCm')}
-                              disabled={!priceBook?.cards[bc.id]?.cmUrl}
-                              onClick={() => openCm(priceBook?.cards[bc.id])}
-                            >{c ? displayCardName(c) : bc.id}</button>
-                            <div className="sub">
-                              {c ? `${c.code} · ` : ''}{t(lang, 'borrowed.ownedAvail', { have, avail })}
-                            </div>
-                          </div>
-                          <div className="qty" onClick={(e) => e.stopPropagation()}>
-                            <button type="button" onClick={() => bumpBorrowedCard(bc.id, -1)}>−</button>
-                            <b>{bc.qty}</b>
-                            <button
-                              type="button"
-                              disabled={room <= 0}
-                              title={room <= 0 ? t(lang, 'borrowed.noAvail') : undefined}
-                              onClick={() => bumpBorrowedCard(bc.id, 1)}
-                            >+</button>
-                          </div>
-                          <button
-                            type="button"
-                            className="btn icon danger deck-trash deck-card-trash"
-                            title={t(lang, 'borrowed.removeCard')}
-                            aria-label={t(lang, 'borrowed.removeCard')}
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              removeBorrowedCard(bc.id)
-                            }}
-                          >
-                            🗑
-                          </button>
-                        </div>
-                      )
-                    })}
-                  </div>
-                </>
-              )}
-
-              {!activeBorrowed && borrowed.length > 0 && (
-                <div className="empty">{t(lang, 'borrowed.pickFirst')}</div>
-              )}
             </section>
 
-            <section className="panel">
+            <section className="panel col-fill">
               <h2>{t(lang, 'borrowed.cardsTitle')}</h2>
               <div className="toolbar">
                 <input
@@ -3452,7 +3464,7 @@ export default function App() {
                   ))}
                 </select>
               </div>
-              <div className="list" style={{ maxHeight: '70vh', overflow: 'auto' }}>
+              <div className="list">
                 {!activeBorrowed && <div className="empty">{t(lang, 'borrowed.pickFirst')}</div>}
                 {activeBorrowed && (() => {
                   const query = q.trim().toLowerCase()
@@ -3484,7 +3496,7 @@ export default function App() {
                         onMouseMove={(e) => showCardPreview(e, c.image)}
                         onMouseLeave={hideCardPreview}
                       >
-                        <DeckThumb src={c.image} />
+                        <DeckThumb src={c.image} onOpen={() => openCardLightbox(c)} openTitle={t(lang, 'card.enlarge')} zoomIcon />
                         <div className="grow">
                           <div className="name-with-ban">
                             <button
@@ -3508,7 +3520,7 @@ export default function App() {
                           title={room <= 0 ? t(lang, 'borrowed.noAvail') : undefined}
                           onClick={() => bumpBorrowedCard(c.id, 1)}
                         >
-                          {t(lang, 'borrowed.add')}
+                          {t(lang, 'decks.add')}
                         </button>
                       </div>
                     )

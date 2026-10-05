@@ -701,7 +701,8 @@ textarea.field { min-height: 160px; resize: vertical; font-family: ui-monospace,
   user-select: none;
   min-height: 102px;
 }
-.picker-card .deck-thumb { width: 51px; height: 72px; }
+.picker-card .deck-thumb,
+.picker-card .deck-thumb-wrap { width: 51px; height: 72px; }
 .picker-card:active { cursor: grabbing; }
 .picker-card.dragging {
   opacity: 0.45;
@@ -751,6 +752,16 @@ textarea.field { min-height: 160px; resize: vertical; font-family: ui-monospace,
   box-shadow: inset 0 0 0 1px rgba(255,123,138,.25), 0 0 12px rgba(255,123,138,.2);
   animation: deck-drop-reject .45s ease-out;
 }
+
+
+/* Sales cart: checkbox + thumb + name + qty, no empty stretch */
+.sale-cart .deck-card-row {
+  grid-template-columns: auto auto minmax(0, 1fr) auto;
+  gap: 8px 10px;
+}
+.sale-cart .deck-thumb,
+.sale-cart .deck-thumb-wrap { width: 51px; height: 72px; }
+.sale-cart .deck-card-row .grow { min-width: 0; }
 
 .sale-check {
   display: flex;
@@ -1634,16 +1645,44 @@ button.card-lightbox-title-link:hover {
   gap: 12px;
   padding: 8px 0 12px;
 }
-.dop-sets { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
+.dop-sets {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(132px, 168px));
+  gap: 14px;
+  justify-content: center;
+  width: min(920px, 100%);
+  padding: 0 8px;
+}
 .dop-set {
-  min-width: 168px;
-  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  overflow: hidden;
   border-radius: 14px;
   border: 1px solid var(--border-gold);
-  background: linear-gradient(160deg, color-mix(in srgb, var(--pack) 55%, #1a140c), #12161e);
-  font-weight: 750;
+  background: linear-gradient(160deg, color-mix(in srgb, var(--pack) 40%, #1a140c), #12161e);
+  text-align: center;
 }
 .dop-set:hover { border-color: var(--accent2); }
+.dop-set-art {
+  display: block;
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  object-fit: cover;
+  object-position: center top;
+  background: rgba(0,0,0,.35);
+}
+.dop-set-label {
+  padding: 10px 10px 12px;
+  font-weight: 750;
+  font-size: 13px;
+  line-height: 1.25;
+}
+.dop-packs {
+  color: var(--muted);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
 .dop-pack {
   border: 0;
   padding: 0;

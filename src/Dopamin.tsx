@@ -22,6 +22,17 @@ const PACK_IMG: Record<string, string> = {
   RAD: 'packs/rad.jpg',
 }
 
+const DISPLAY_IMG: Record<string, string> = {
+  OGN: 'displays/ogn.jpg',
+  SFD: 'displays/sfd.jpg',
+  UNL: 'displays/unl.jpg',
+  VEN: 'displays/ven.jpg',
+}
+
+function setMenuArt(id: string) {
+  return DISPLAY_IMG[id] || PACK_IMG[id]
+}
+
 function publicAsset(rel: string) {
   return new URL(rel, window.location.href).href
 }
@@ -55,6 +66,7 @@ export function Dopamin({ cards, lang, prices }: { cards: Card[]; lang: Lang; pr
   const [pack, setPack] = useState<PackSlot[] | null>(null)
   const [idx, setIdx] = useState(0)
   const [face, setFace] = useState<Face>('down')
+  const [packsOpened, setPacksOpened] = useState(0)
   const gen = useRef(0)
   const opening = useRef(false)
   const lock = useRef(false)
@@ -86,6 +98,7 @@ export function Dopamin({ cards, lang, prices }: { cards: Card[]; lang: Lang; pr
     if (!slots) return
     opening.current = true
     const g = ++gen.current
+    setPacksOpened((n) => n + 1)
     setPack(slots)
     setIdx(0)
     setFace('down')
@@ -147,11 +160,21 @@ export function Dopamin({ cards, lang, prices }: { cards: Card[]; lang: Lang; pr
         <h2 className="section-title">{t(lang, 'dopamin.choose')}</h2>
         {sets.length === 0 ? <p className="help">{t(lang, 'dopamin.empty')}</p> : null}
         <div className="dop-sets">
-          {sets.map((s) => (
-            <button key={s.id} type="button" className="dop-set" style={{ ['--pack' as string]: s.tint }} onClick={() => { setSetId(s.id); setPhase('sealed') }}>
-              {s.name} ({s.id})
-            </button>
-          ))}
+          {sets.map((s) => {
+            const art = setMenuArt(s.id)
+            return (
+              <button
+                key={s.id}
+                type="button"
+                className="dop-set"
+                style={{ ['--pack' as string]: s.tint }}
+                onClick={() => { setPacksOpened(0); setSetId(s.id); setPhase('sealed') }}
+              >
+                {art ? <img className="dop-set-art" src={publicAsset(art)} alt="" draggable={false} /> : null}
+                <span className="dop-set-label">{s.name} ({s.id})</span>
+              </button>
+            )
+          })}
         </div>
       </div>
     )
@@ -193,10 +216,11 @@ export function Dopamin({ cards, lang, prices }: { cards: Card[]; lang: Lang; pr
           )}
         </div>
       )}
+      <div className="dop-packs">{t(lang, 'dopamin.packs', { n: packsOpened })}</div>
       {done && (
         <div className="dop-actions">
           <button type="button" className="chip active" onClick={resetPack}>{t(lang, 'dopamin.again')}</button>
-          <button type="button" className="chip" onClick={() => { resetPack(); setSetId(null) }}>{t(lang, 'dopamin.back')}</button>
+          <button type="button" className="chip" onClick={() => { resetPack(); setPacksOpened(0); setSetId(null) }}>{t(lang, 'dopamin.back')}</button>
         </div>
       )}
     </div>
