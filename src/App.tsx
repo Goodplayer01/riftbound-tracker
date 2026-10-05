@@ -549,6 +549,7 @@ const HIDE_NN_KEY = 'riftbound-hide-nexus-night'
 
 /** Last list wiped by delete all. Module scope: gone when the app process exits. */
 let deckListUndo: Deck[] | null = null
+let borrowedListUndo: BorrowedGroup[] | null = null
 
 function loadHideNexusNight(): boolean {
   try {
@@ -624,7 +625,8 @@ export default function App() {
   const [bfTurn, setBfTurn] = useState(false)
   const [clearSec, setClearSec] = useState<DeckSection | null>(null)
   const [deckUndoOn, setDeckUndoOn] = useState(false)
-  const [deckConfirm, setDeckConfirm] = useState<null | { kind: 'all' } | { kind: 'one'; id: string; name: string } | { kind: 'borrow'; id: string; name: string }>(null)
+  const [borrowUndoOn, setBorrowUndoOn] = useState(false)
+  const [deckConfirm, setDeckConfirm] = useState<null | { kind: 'all' } | { kind: 'one'; id: string; name: string } | { kind: 'borrow'; id: string; name: string } | { kind: 'borrowAll' }>(null)
   const [kwExpanded, setKwExpanded] = useState<KeywordId | null>(null)
   const [ocrText, setOcrText] = useState<string | null>(null)
   const [ocrLoading, setOcrLoading] = useState(false)
@@ -661,6 +663,15 @@ export default function App() {
     setActiveDeckId(saved[0]?.id ?? null)
   }
 
+  function restoreBorrowed() {
+    const saved = borrowedListUndo
+    if (!saved) return
+    borrowedListUndo = null
+    setBorrowUndoOn(false)
+    setBorrowed(saved)
+    setActiveBorrowedId(saved[0]?.id ?? null)
+  }
+
   function applyDeckConfirm() {
     const pending = deckConfirm
     setDeckConfirm(null)
@@ -671,6 +682,14 @@ export default function App() {
       setDeckUndoOn(true)
       setDecks([])
       setActiveDeckId(null)
+      return
+    }
+    if (pending.kind === 'borrowAll') {
+      if (borrowed.length === 0) return
+      borrowedListUndo = borrowed.slice()
+      setBorrowUndoOn(true)
+      setBorrowed([])
+      setActiveBorrowedId(null)
       return
     }
     if (pending.kind === 'borrow') {
@@ -3255,6 +3274,12 @@ export default function App() {
                 <h2 style={{ margin: 0 }}>{t(lang, 'borrowed.title')}</h2>
                 <span className="deck-list-count">{t(lang, 'borrowed.count', { n: borrowed.length })}</span>
                 <span style={{ flex: 1 }} />
+                {borrowUndoOn && (
+                  <button type="button" className="btn" onClick={restoreBorrowed}>{t(lang, 'decks.restore')}</button>
+                )}
+                <button type="button" className="btn deck-trash" disabled={borrowed.length === 0} onClick={() => setDeckConfirm({ kind: 'borrowAll' })}>
+                  {t(lang, 'borrowed.deleteAll')}
+                </button>
                 <button
                   className="btn"
                   disabled={!activeBorrowed}
@@ -3728,9 +3753,11 @@ export default function App() {
             <p id="deck-del-title" className="help" style={{ margin: 0 }}>
               {deckConfirm.kind === 'all'
                 ? t(lang, 'decks.deleteAllConfirm')
-                : deckConfirm.kind === 'borrow'
-                  ? t(lang, 'borrowed.deleteConfirm', { name: deckConfirm.name })
-                  : t(lang, 'decks.deleteOneConfirm', { name: deckConfirm.name })}
+                : deckConfirm.kind === 'borrowAll'
+                  ? t(lang, 'borrowed.deleteAllConfirm')
+                  : deckConfirm.kind === 'borrow'
+                    ? t(lang, 'borrowed.deleteConfirm', { name: deckConfirm.name })
+                    : t(lang, 'decks.deleteOneConfirm', { name: deckConfirm.name })}
             </p>
             <div className="confirm-actions">
               <button type="button" className="btn small" onClick={() => setDeckConfirm(null)}>{t(lang, 'decks.clearCancel')}</button>
