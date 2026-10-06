@@ -1,9 +1,9 @@
 import type { Card, Deck, DeckCard } from './types'
 import { sectionOf } from './deckHelpers'
 
-const BG = '#1a1a1a'
+const BG = '#1c1c1c'
 const GOLD = '#c9a227'
-const BADGE_BG = 'rgba(0,0,0,0.72)'
+const BADGE_BG = 'rgba(0,0,0,0.78)'
 const DOMAIN_FILES: Record<string, string> = {
   Fury: 'fury.png',
   Calm: 'calm.png',
@@ -25,7 +25,7 @@ async function loadUrl(url: string | null | undefined): Promise<Loaded> {
       if (res.ok && res.dataUrl) src = res.dataUrl
     }
   } catch {
-    /* fall through to direct load */
+    /* fall through */
   }
   return new Promise((resolve) => {
     const img = new Image()
@@ -71,6 +71,33 @@ function roundRect(
   ctx.closePath()
 }
 
+function drawQtyBadge(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  qty: number,
+) {
+  if (qty <= 1) return
+  const label = `x${qty}`
+  ctx.font = 'bold 11px system-ui, sans-serif'
+  const tw = ctx.measureText(label).width
+  const bw = tw + 10
+  const bh = 16
+  const bx = x + (w - bw) / 2
+  const by = y + h - bh - 4
+  ctx.fillStyle = BADGE_BG
+  roundRect(ctx, bx, by, bw, bh, 8)
+  ctx.fill()
+  ctx.fillStyle = '#fff'
+  ctx.textAlign = 'center'
+  ctx.textBaseline = 'middle'
+  ctx.fillText(label, bx + bw / 2, by + bh / 2 + 0.5)
+  ctx.textAlign = 'left'
+  ctx.textBaseline = 'alphabetic'
+}
+
 function drawCard(
   ctx: CanvasRenderingContext2D,
   img: Loaded,
@@ -81,38 +108,21 @@ function drawCard(
   qty: number,
 ) {
   ctx.save()
-  roundRect(ctx, x, y, w, h, 6)
+  roundRect(ctx, x, y, w, h, 5)
   ctx.clip()
   ctx.fillStyle = '#2a2a2a'
   ctx.fillRect(x, y, w, h)
   if (img) {
-    // cover
     const s = Math.max(w / img.width, h / img.height)
     const dw = img.width * s
     const dh = img.height * s
     ctx.drawImage(img, x + (w - dw) / 2, y + (h - dh) / 2, dw, dh)
   }
   ctx.restore()
-  if (qty > 1) {
-    const label = `x${qty}`
-    ctx.font = 'bold 14px system-ui, sans-serif'
-    const tw = ctx.measureText(label).width
-    const bw = tw + 14
-    const bh = 22
-    const bx = x + (w - bw) / 2
-    const by = y + h - bh - 6
-    ctx.fillStyle = BADGE_BG
-    roundRect(ctx, bx, by, bw, bh, 11)
-    ctx.fill()
-    ctx.fillStyle = '#fff'
-    ctx.textAlign = 'center'
-    ctx.textBaseline = 'middle'
-    ctx.fillText(label, bx + bw / 2, by + bh / 2 + 0.5)
-    ctx.textAlign = 'left'
-    ctx.textBaseline = 'alphabetic'
-  }
+  drawQtyBadge(ctx, x, y, w, h, qty)
 }
 
+/** Portrait battlefield art rotated into a landscape banner (Piltover Archive style). */
 function drawLandscape(
   ctx: CanvasRenderingContext2D,
   img: Loaded,
@@ -127,11 +137,15 @@ function drawLandscape(
   ctx.fillStyle = '#2a2a2a'
   ctx.fillRect(x, y, w, h)
   if (img) {
-    // battlefield art is portrait; crop center as landscape
-    const srcH = img.width * (h / w)
-    const sy = Math.max(0, (img.height - srcH) / 2)
-    const sh = Math.min(img.height, srcH)
-    ctx.drawImage(img, 0, sy, img.width, sh, x, y, w, h)
+    ctx.translate(x + w / 2, y + h / 2)
+    ctx.rotate(-Math.PI / 2)
+    // After -90°, local X maps to screen up; cover the swapped box (h × w).
+    const boxW = h
+    const boxH = w
+    const s = Math.max(boxW / img.width, boxH / img.height)
+    const dw = img.width * s
+    const dh = img.height * s
+    ctx.drawImage(img, -dw / 2, -dh / 2, dw, dh)
   }
   ctx.restore()
 }
@@ -140,17 +154,39 @@ function safeFileName(name: string) {
   return name.replace(/[^\w\- äöüÄÖÜß]+/gi, '_').replace(/\s+/g, '_').slice(0, 80) || 'deck'
 }
 
-/** Render a Piltover Archive style deck PNG and trigger a download. */
-export async function exportDeckScreenshot(
+function paintBg(ctx: CanvasRenderingContext2D, width: number, height: number) {
+  ctx.fillStyle = BG
+  ctx.fillRect(0, 0, width, height)
+  ctx.strokeStyle = 'rgba(255,255,255,0.025)'
+  ctx.lineWidth = 1
+  for (let x = 0; x < width; x += 48) {
+    ctx.beginPath()
+    ctx.moveTo(x, 0)
+    ctx.lineTo(x, height)
+    ctx.stroke()
+  }
+  for (let y = 0; y < height; y += 48) {
+    ctx.beginPath()
+    ctx.moveTo(0, y)
+    ctx.lineTo(width, y)
+    ctx.stroke()
+  }
+}
+
+export type ShareRender =
+  | { ok: true; canvas: HTMLCanvasElement; fileName: string; dataUrl: string }
+  | { ok: false; error: string }
+
+/** Piltover Archive style share canvas (no separate Runes row; rune counts as domain icons). */
+export async function renderDeckShareCanvas(
   deck: Deck,
   byId: Map<string, Card>,
-): Promise<{ ok: true; fileName: string } | { ok: false; error: string }> {
+): Promise<ShareRender> {
   try {
     const legend = sectionCards(deck, 'legend')[0]
     const champion = sectionCards(deck, 'champion')[0]
     const main = sectionCards(deck, 'main')
     const battlefields = sectionCards(deck, 'battlefield')
-    const runes = sectionCards(deck, 'rune')
     const sideboard = sectionCards(deck, 'sideboard')
     const domainCounts = runeDomainCounts(deck, byId)
 
@@ -159,7 +195,6 @@ export async function exportDeckScreenshot(
       champion?.id,
       ...main.map((c) => c.id),
       ...battlefields.map((c) => c.id),
-      ...runes.map((c) => c.id),
       ...sideboard.map((c) => c.id),
     ].filter(Boolean) as string[]
 
@@ -180,43 +215,38 @@ export async function exportDeckScreenshot(
       }),
     )
 
-    const pad = 28
-    const leftW = 220
-    const gap = 16
-    const cardW = 110
-    const cardH = 154
-    const cardGap = 10
+    const pad = 20
+    const brandH = 28
+    const leftW = 200
+    const gap = 14
+    const cardW = 100
+    const cardH = 140
+    const cardGap = 6
     const cols = 8
     const mainRows = Math.max(1, Math.ceil(Math.max(main.length, 1) / cols))
     const sideRows = sideboard.length ? Math.ceil(sideboard.length / cols) : 0
-    const runeRows = runes.length ? Math.ceil(runes.length / cols) : 0
 
-    const legendH = 300
-    const champW = 90
-    const champH = 126
-    const domainRowH = domainCounts.size ? 56 : 0
-    const bfH = 52
-    const bfGap = 8
+    const legendH = 280
+    const champW = 78
+    const champH = 110
+    const domainIcon = 32
+    const domainRowH = domainCounts.size ? domainIcon + 4 : 0
+    const bfH = 48
+    const bfGap = 6
     const leftStack =
       legendH +
-      (champion ? 12 + champH : 0) +
-      (domainRowH ? 12 + domainRowH : 0) +
-      (battlefields.length ? 12 + battlefields.length * (bfH + bfGap) : 0)
+      (champion ? 8 + champH : 0) +
+      (domainRowH ? 10 + domainRowH : 0) +
+      (battlefields.length ? 10 + battlefields.length * (bfH + bfGap) - bfGap : 0)
 
-    const titleH = 36
     const mainBlockH = main.length ? mainRows * (cardH + cardGap) - cardGap : 40
-    const runeLabelH = runes.length ? 28 : 0
-    const runeBlockH = runes.length ? runeRows * (cardH + cardGap) - cardGap : 0
-    const sideLabelH = 36
+    const sideLabelH = 28
     const sideBlockH = sideboard.length ? sideRows * (cardH + cardGap) - cardGap : 0
 
     const rightW = cols * (cardW + cardGap) - cardGap
     const width = pad * 2 + leftW + gap + rightW
-    const contentH = Math.max(
-      leftStack,
-      titleH + 8 + mainBlockH + (runes.length ? 20 + runeLabelH + runeBlockH : 0),
-    )
-    const height = pad * 2 + contentH + sideLabelH + (sideboard.length ? 12 + sideBlockH : 8) + 24
+    const contentH = Math.max(leftStack, mainBlockH)
+    const height = pad + brandH + 10 + contentH + sideLabelH + (sideboard.length ? 10 + sideBlockH : 6) + pad
 
     const canvas = document.createElement('canvas')
     canvas.width = width
@@ -224,108 +254,61 @@ export async function exportDeckScreenshot(
     const ctx = canvas.getContext('2d')
     if (!ctx) return { ok: false, error: 'canvas' }
 
-    ctx.fillStyle = BG
-    ctx.fillRect(0, 0, width, height)
-    // subtle grid pattern
-    ctx.strokeStyle = 'rgba(255,255,255,0.03)'
-    ctx.lineWidth = 1
-    for (let x = 0; x < width; x += 40) {
-      ctx.beginPath()
-      ctx.moveTo(x, 0)
-      ctx.lineTo(x, height)
-      ctx.stroke()
-    }
-    for (let y = 0; y < height; y += 40) {
-      ctx.beginPath()
-      ctx.moveTo(0, y)
-      ctx.lineTo(width, y)
-      ctx.stroke()
-    }
+    paintBg(ctx, width, height)
 
-    const title = deck.name?.trim() || 'Deakrix Riftbound Tracker'
+    const brand = `${(deck.name || 'Deck').trim()} · Deakrix`
     ctx.fillStyle = '#fff'
-    ctx.font = '600 20px system-ui, sans-serif'
-    ctx.fillText(title, pad + leftW + gap, pad + 22)
-    ctx.fillStyle = GOLD
-    ctx.font = '12px system-ui, sans-serif'
-    ctx.fillText('Deakrix Riftbound Tracker', pad + leftW + gap, pad + 40)
+    ctx.font = '600 15px system-ui, sans-serif'
+    ctx.fillText(brand, pad, pad + 18)
 
     let lx = pad
-    let ly = pad
+    let ly = pad + brandH + 10
 
-    // Legend
     if (legend) {
-      drawCard(ctx, imgMap.get(legend.id) || null, lx, ly, leftW, legendH, legend.qty)
-      ly += legendH + 12
+      drawCard(ctx, imgMap.get(legend.id) || null, lx, ly, leftW, legendH, 0)
+      ly += legendH + 8
     } else {
       ctx.fillStyle = '#333'
-      roundRect(ctx, lx, ly, leftW, 80, 6)
+      roundRect(ctx, lx, ly, leftW, 72, 5)
       ctx.fill()
-      ctx.fillStyle = '#888'
-      ctx.font = '14px system-ui, sans-serif'
-      ctx.fillText('Legend', lx + 12, ly + 44)
-      ly += 92
+      ly += 80
     }
 
-    // Champion under legend
     if (champion) {
-      drawCard(ctx, imgMap.get(champion.id) || null, lx, ly, champW, champH, champion.qty)
-      ctx.fillStyle = '#ccc'
-      ctx.font = '11px system-ui, sans-serif'
-      ctx.fillText('Champion', lx + champW + 8, ly + 18)
-      const ch = byId.get(champion.id)
-      if (ch) {
-        ctx.fillStyle = '#fff'
-        ctx.font = '13px system-ui, sans-serif'
-        const nm = ch.subtitle ? `${ch.name}, ${ch.subtitle}` : ch.name
-        ctx.fillText(nm.slice(0, 28), lx + champW + 8, ly + 38)
-      }
-      ly += champH + 12
+      drawCard(ctx, imgMap.get(champion.id) || null, lx, ly, champW, champH, 0)
+      ly += champH + 10
     }
 
-    // Domain / rune counts
     if (domainCounts.size) {
       let dx = lx
       for (const [dom, n] of domainCounts) {
         const dimg = domainImgs.get(dom)
-        if (dimg) ctx.drawImage(dimg, dx, ly, 36, 36)
+        if (dimg) ctx.drawImage(dimg, dx, ly, domainIcon, domainIcon)
         else {
           ctx.fillStyle = '#444'
           ctx.beginPath()
-          ctx.arc(dx + 18, ly + 18, 18, 0, Math.PI * 2)
+          ctx.arc(dx + domainIcon / 2, ly + domainIcon / 2, domainIcon / 2, 0, Math.PI * 2)
           ctx.fill()
         }
         ctx.fillStyle = '#fff'
         ctx.font = 'bold 12px system-ui, sans-serif'
-        ctx.fillText(`x${n}`, dx + 8, ly + 52)
-        dx += 48
+        ctx.fillText(`x${n}`, dx + domainIcon + 4, ly + domainIcon / 2 + 4)
+        dx += domainIcon + 28
       }
-      ly += domainRowH + 12
+      ly += domainRowH + 10
     }
 
-    // Battlefields stacked
     for (const bf of battlefields) {
       drawLandscape(ctx, imgMap.get(bf.id) || null, lx, ly, leftW, bfH)
-      if (bf.qty > 1) {
-        ctx.fillStyle = BADGE_BG
-        roundRect(ctx, lx + leftW - 36, ly + bfH - 24, 30, 18, 9)
-        ctx.fill()
-        ctx.fillStyle = '#fff'
-        ctx.font = 'bold 11px system-ui, sans-serif'
-        ctx.textAlign = 'center'
-        ctx.fillText(`x${bf.qty}`, lx + leftW - 21, ly + bfH - 11)
-        ctx.textAlign = 'left'
-      }
       ly += bfH + bfGap
     }
 
-    // Main deck grid
     const rx = pad + leftW + gap
-    let ry = pad + titleH + 16
+    let ry = pad + brandH + 10
     if (!main.length) {
       ctx.fillStyle = '#666'
-      ctx.font = '14px system-ui, sans-serif'
-      ctx.fillText('Main', rx, ry + 20)
+      ctx.font = '13px system-ui, sans-serif'
+      ctx.fillText('Main', rx, ry + 16)
     } else {
       main.forEach((dc, i) => {
         const col = i % cols
@@ -335,47 +318,31 @@ export async function exportDeckScreenshot(
         drawCard(ctx, imgMap.get(dc.id) || null, x, y, cardW, cardH, dc.qty)
       })
     }
-    ry += mainBlockH + 20
 
-    // Runes
-    if (runes.length) {
-      ctx.fillStyle = GOLD
-      ctx.font = 'bold 12px system-ui, sans-serif'
-      ctx.fillText('RUNES', rx, ry + 14)
-      ry += runeLabelH
-      runes.forEach((dc, i) => {
-        const col = i % cols
-        const row = Math.floor(i / cols)
-        const x = rx + col * (cardW + cardGap)
-        const y = ry + row * (cardH + cardGap)
-        drawCard(ctx, imgMap.get(dc.id) || null, x, y, cardW, cardH, dc.qty)
-      })
-      ry += runeBlockH + 16
-    }
-
-    // Sideboard divider
-    const sideY = Math.max(ry, pad + leftStack + 8)
-    const lineY = sideY + 8
+    const sideY = pad + brandH + 10 + contentH + 4
+    const lineY = sideY + 10
     ctx.strokeStyle = GOLD
-    ctx.lineWidth = 2
+    ctx.lineWidth = 1.5
     ctx.beginPath()
     ctx.moveTo(pad, lineY)
     ctx.lineTo(width - pad, lineY)
     ctx.stroke()
     const sideLabel = 'SIDEBOARD'
-    ctx.font = 'bold 12px system-ui, sans-serif'
-    const sw = ctx.measureText(sideLabel).width + 20
+    ctx.font = 'bold 11px system-ui, sans-serif'
+    const sw = ctx.measureText(sideLabel).width + 16
+    ctx.fillStyle = BG
+    ctx.fillRect((width - sw) / 2, lineY - 10, sw, 20)
+    ctx.strokeStyle = GOLD
+    roundRect(ctx, (width - sw) / 2, lineY - 10, sw, 20, 4)
+    ctx.stroke()
     ctx.fillStyle = GOLD
-    roundRect(ctx, (width - sw) / 2, lineY - 11, sw, 22, 11)
-    ctx.fill()
-    ctx.fillStyle = '#111'
     ctx.textAlign = 'center'
     ctx.textBaseline = 'middle'
     ctx.fillText(sideLabel, width / 2, lineY)
     ctx.textAlign = 'left'
     ctx.textBaseline = 'alphabetic'
 
-    let sy = lineY + 24
+    const sy = lineY + 16
     if (sideboard.length) {
       sideboard.forEach((dc, i) => {
         const col = i % cols
@@ -386,19 +353,17 @@ export async function exportDeckScreenshot(
       })
     }
 
-    const fileName = `${safeFileName(deck.name)}_screenshot.png`
-    const blob: Blob | null = await new Promise((resolve) =>
-      canvas.toBlob((b) => resolve(b), 'image/png'),
-    )
-    if (!blob) return { ok: false, error: 'blob' }
-
-    const a = document.createElement('a')
-    a.href = URL.createObjectURL(blob)
-    a.download = fileName
-    a.click()
-    setTimeout(() => URL.revokeObjectURL(a.href), 5000)
-    return { ok: true, fileName }
+    const fileName = `${safeFileName(deck.name)}_share.png`
+    const dataUrl = canvas.toDataURL('image/png')
+    return { ok: true, canvas, fileName, dataUrl }
   } catch (e) {
     return { ok: false, error: String(e) }
   }
+}
+
+export function downloadSharePng(dataUrl: string, fileName: string) {
+  const a = document.createElement('a')
+  a.href = dataUrl
+  a.download = fileName
+  a.click()
 }

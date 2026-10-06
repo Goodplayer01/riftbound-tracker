@@ -1782,3 +1782,45 @@ button.card-lightbox-title-link:hover {
   .dop-inner, .dop-inner.rareflip { transition: none; }
   .dop-flip.hold .dop-back { animation: none; }
 }
+
+/* Share preview (Piltover Archive style) */
+.deck-share-btn {
+  flex-shrink: 0;
+  margin-left: 8px;
+  padding: 4px 10px;
+  font-size: 12px;
+}
+.deck-share-lightbox .deck-share-inner {
+  max-width: min(96vw, 1200px);
+  max-height: 94vh;
+  overflow: auto;
+  padding: 12px 14px 16px;
+  background: #141414;
+  border: 1px solid rgba(201,162,39,.35);
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.deck-share-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.deck-share-toolbar h2 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  flex: 1;
+}
+.deck-share-img-wrap {
+  overflow: auto;
+  max-height: calc(94vh - 64px);
+  border-radius: 6px;
+  background: #1c1c1c;
+}
+.deck-share-img-wrap img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}

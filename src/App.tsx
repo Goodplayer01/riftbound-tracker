@@ -17,6 +17,7 @@ import {
   SECTION_CAPS,
   SECTION_LABEL,
   SECTION_ORDER,
+  isDeckComplete,
   canAddToSection,
   cardFitsSection,
   cardMatchesLegendDomains,
@@ -62,7 +63,7 @@ import {
   drawPoolSize,
   drawTopCard,
 } from './handTester'
-import { exportDeckScreenshot } from './deckScreenshot'
+import { downloadSharePng, renderDeckShareCanvas } from './deckScreenshot'
 
 type Tab = 'collection' | 'catalog' | 'sales' | 'decks' | 'borrowed' | 'stores' | 'dopamin'
 
@@ -621,6 +622,7 @@ export default function App() {
   const [deckExportText, setDeckExportText] = useState<string | null>(null)
   const [deckExportCopied, setDeckExportCopied] = useState(false)
   const [deckShotBusy, setDeckShotBusy] = useState(false)
+  const [sharePreview, setSharePreview] = useState<{ dataUrl: string; fileName: string } | null>(null)
   const [missingExpanded, setMissingExpanded] = useState(false)
   const [cardPreview, setCardPreview] = useState<{ src: string; x: number; y: number } | null>(null)
   const [cardLightbox, setCardLightbox] = useState<Card | null>(null)
@@ -2017,17 +2019,26 @@ export default function App() {
     setDeckExportText(formatDeckList(activeDeck))
   }
 
-  async function runDeckScreenshot() {
-    if (!activeDeck || deckShotBusy) return
+  async function openDeckShare(deck: Deck) {
+    if (deckShotBusy) return
     setDeckShotBusy(true)
     try {
-      const res = await exportDeckScreenshot(activeDeck, byId)
-      if (!res.ok) window.alert(t(lang, 'decks.screenshotFail'))
+      const res = await renderDeckShareCanvas(deck, byId)
+      if (!res.ok) {
+        window.alert(t(lang, 'decks.shareFail'))
+        return
+      }
+      setSharePreview({ dataUrl: res.dataUrl, fileName: res.fileName })
     } catch {
-      window.alert(t(lang, 'decks.screenshotFail'))
+      window.alert(t(lang, 'decks.shareFail'))
     } finally {
       setDeckShotBusy(false)
     }
+  }
+
+  function downloadDeckShare() {
+    if (!sharePreview) return
+    downloadSharePng(sharePreview.dataUrl, sharePreview.fileName)
   }
 
   async function copyDeckExport() {
@@ -2179,16 +2190,17 @@ export default function App() {
   }, [storeKm, storeCenter, storeAllGermany])
 
   useEffect(() => {
-    if (!cardLightbox && !clearSec && deckExportText == null) return
+    if (!cardLightbox && !clearSec && deckExportText == null && !sharePreview) return
     const onKey = (e: KeyboardEvent) => {
       if (e.key !== 'Escape') return
-      if (deckExportText != null) setDeckExportText(null)
+      if (sharePreview) setSharePreview(null)
+      else if (deckExportText != null) setDeckExportText(null)
       else if (clearSec) setClearSec(null)
       else setCardLightbox(null)
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [cardLightbox, clearSec, deckExportText])
+  }, [cardLightbox, clearSec, deckExportText, sharePreview])
 
   useEffect(() => {
     if (!cardLightbox) {
@@ -3074,9 +3086,6 @@ export default function App() {
                   {t(lang, 'decks.deleteAll')}
                 </button>
                 <button className="btn" disabled={!activeDeck} onClick={openDeckExport}>{t(lang, 'decks.export')}</button>
-                <button className="btn" disabled={!activeDeck || deckShotBusy} onClick={() => void runDeckScreenshot()}>
-                  {deckShotBusy ? t(lang, 'decks.screenshotBusy') : t(lang, 'decks.screenshot')}
-                </button>
                 <button className="btn" onClick={() => { setDeckImportOpen((v) => !v); setDeckImportText('') }}>{t(lang, 'decks.import')}</button>
                 <button className="btn primary" onClick={newDeck}>{t(lang, 'decks.new')}</button>
               </div>
@@ -3140,6 +3149,20 @@ export default function App() {
                             <span className="name">{d.name}</span>
                           )}
                           <span className="deck-acc-count">· {deckCount(d)} Karten</span>
+                          {expanded && isDeckComplete(d.cards) && (
+                            <button
+                              type="button"
+                              className="btn small deck-share-btn"
+                              disabled={deckShotBusy}
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                void openDeckShare(d)
+                              }}
+                              onKeyDown={(e) => e.stopPropagation()}
+                            >
+                              {deckShotBusy ? t(lang, 'decks.shareBusy') : t(lang, 'decks.share')}
+                            </button>
+                          )}
                         </div>
                         {expanded && <span className="pill ok">{t(lang, 'decks.active')}</span>}
                         {!expanded && (
@@ -3739,6 +3762,32 @@ export default function App() {
         {tab === 'dopamin' && catalog && <Dopamin cards={catalog.cards} lang={lang} prices={priceBook} />}
 
       </main>
+
+      {sharePreview && (
+        <div
+          className="card-lightbox deck-share-lightbox"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="deck-share-title"
+          onClick={() => setSharePreview(null)}
+        >
+          <div className="deck-share-inner" onClick={(e) => e.stopPropagation()}>
+            <div className="deck-share-toolbar">
+              <h2 id="deck-share-title">{t(lang, 'decks.sharePreview')}</h2>
+              <button type="button" className="btn small" onClick={() => setSharePreview(null)}>
+                {t(lang, 'decks.shareClose')}
+              </button>
+              <button type="button" className="btn small primary" onClick={downloadDeckShare}>
+                {t(lang, 'decks.share')}
+              </button>
+            </div>
+            <div className="deck-share-img-wrap">
+              <img src={sharePreview.dataUrl} alt={sharePreview.fileName} />
+            </div>
+          </div>
+        </div>
+      )}
+
       {deckExportText != null && (
         <div
           className="card-lightbox"

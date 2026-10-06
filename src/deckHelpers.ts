@@ -229,6 +229,11 @@ export function sectionCount(cards: DeckCard[], section: DeckSection) {
   return cards.filter((c) => sectionOf(c) === section).reduce((s, c) => s + c.qty, 0)
 }
 
+/** True when every section is at its cap (1/1, 1/1, 39/39, 3/3, 12/12, 10/10). */
+export function isDeckComplete(cards: DeckCard[]) {
+  return SECTION_ORDER.every((sec) => sectionCount(cards, sec) >= SECTION_CAPS[sec])
+}
+
 /** Sections that require exactly one Legend before building (Battlefields exempt). */
 export const SECTIONS_NEED_LEGEND: DeckSection[] = ['champion', 'main', 'sideboard', 'rune']
 
