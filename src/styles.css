@@ -1784,16 +1784,20 @@ button.card-lightbox-title-link:hover {
 }
 
 /* Share preview (Piltover Archive style) */
+.deck-header-btn,
 .deck-share-btn {
   flex-shrink: 0;
-  margin-left: 8px;
+  margin-left: 4px;
   padding: 4px 10px;
   font-size: 12px;
+  position: relative;
+  z-index: 1;
+  pointer-events: auto;
 }
 .deck-share-lightbox .deck-share-inner {
   max-width: min(96vw, 1200px);
   max-height: 94vh;
-  overflow: auto;
+  overflow: hidden;
   padding: 12px 14px 16px;
   background: #141414;
   border: 1px solid rgba(201,162,39,.35);
@@ -1801,26 +1805,46 @@ button.card-lightbox-title-link:hover {
   display: flex;
   flex-direction: column;
   gap: 10px;
+  position: relative;
 }
 .deck-share-toolbar {
   display: flex;
   align-items: center;
   gap: 8px;
+  position: relative;
+  z-index: 5;
+  flex-shrink: 0;
+  isolation: isolate;
 }
 .deck-share-toolbar h2 {
   margin: 0;
   font-size: 15px;
   font-weight: 600;
   flex: 1;
+  min-width: 0;
+  pointer-events: none;
+}
+.deck-share-toolbar .btn {
+  position: relative;
+  z-index: 2;
+  pointer-events: auto;
+  cursor: pointer;
 }
 .deck-share-img-wrap {
   overflow: auto;
   max-height: calc(94vh - 64px);
   border-radius: 6px;
   background: #1c1c1c;
+  position: relative;
+  z-index: 0;
+  flex: 1;
+  min-height: 0;
 }
 .deck-share-img-wrap img {
   display: block;
   max-width: 100%;
   height: auto;
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-drag: none;
 }

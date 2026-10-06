@@ -622,7 +622,7 @@ export default function App() {
   const [deckExportText, setDeckExportText] = useState<string | null>(null)
   const [deckExportCopied, setDeckExportCopied] = useState(false)
   const [deckShotBusy, setDeckShotBusy] = useState(false)
-  const [sharePreview, setSharePreview] = useState<{ dataUrl: string; fileName: string } | null>(null)
+  const [sharePreview, setSharePreview] = useState<{ dataUrl: string; fileName: string; exportText: string } | null>(null)
   const [missingExpanded, setMissingExpanded] = useState(false)
   const [cardPreview, setCardPreview] = useState<{ src: string; x: number; y: number } | null>(null)
   const [cardLightbox, setCardLightbox] = useState<Card | null>(null)
@@ -2028,7 +2028,7 @@ export default function App() {
         window.alert(t(lang, 'decks.shareFail'))
         return
       }
-      setSharePreview({ dataUrl: res.dataUrl, fileName: res.fileName })
+      setSharePreview({ dataUrl: res.dataUrl, fileName: res.fileName, exportText: formatDeckList(deck) })
     } catch {
       window.alert(t(lang, 'decks.shareFail'))
     } finally {
@@ -3085,8 +3085,6 @@ export default function App() {
                 <button type="button" className="btn deck-trash" disabled={decks.length === 0} onClick={() => setDeckConfirm({ kind: 'all' })}>
                   {t(lang, 'decks.deleteAll')}
                 </button>
-                <button className="btn" disabled={!activeDeck} onClick={openDeckExport}>{t(lang, 'decks.export')}</button>
-                <button className="btn" onClick={() => { setDeckImportOpen((v) => !v); setDeckImportText('') }}>{t(lang, 'decks.import')}</button>
                 <button className="btn primary" onClick={newDeck}>{t(lang, 'decks.new')}</button>
               </div>
               <div className="deck-accordion" style={{ marginBottom: 12 }}>
@@ -3149,19 +3147,46 @@ export default function App() {
                             <span className="name">{d.name}</span>
                           )}
                           <span className="deck-acc-count">· {deckCount(d)} Karten</span>
-                          {expanded && isDeckComplete(d.cards) && (
-                            <button
-                              type="button"
-                              className="btn small deck-share-btn"
-                              disabled={deckShotBusy}
-                              onClick={(e) => {
-                                e.stopPropagation()
-                                void openDeckShare(d)
-                              }}
-                              onKeyDown={(e) => e.stopPropagation()}
-                            >
-                              {deckShotBusy ? t(lang, 'decks.shareBusy') : t(lang, 'decks.share')}
-                            </button>
+                          {expanded && (
+                            <>
+                              <button
+                                type="button"
+                                className="btn small deck-header-btn"
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  openDeckExport()
+                                }}
+                                onKeyDown={(e) => e.stopPropagation()}
+                              >
+                                {t(lang, 'decks.export')}
+                              </button>
+                              <button
+                                type="button"
+                                className="btn small deck-header-btn"
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  setDeckImportOpen((v) => !v)
+                                  setDeckImportText('')
+                                }}
+                                onKeyDown={(e) => e.stopPropagation()}
+                              >
+                                {t(lang, 'decks.import')}
+                              </button>
+                              {isDeckComplete(d.cards) && (
+                                <button
+                                  type="button"
+                                  className="btn small deck-share-btn"
+                                  disabled={deckShotBusy}
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    void openDeckShare(d)
+                                  }}
+                                  onKeyDown={(e) => e.stopPropagation()}
+                                >
+                                  {deckShotBusy ? t(lang, 'decks.shareBusy') : t(lang, 'decks.share')}
+                                </button>
+                              )}
+                            </>
                           )}
                         </div>
                         {expanded && <span className="pill ok">{t(lang, 'decks.active')}</span>}
@@ -3776,6 +3801,17 @@ export default function App() {
               <h2 id="deck-share-title">{t(lang, 'decks.sharePreview')}</h2>
               <button type="button" className="btn small" onClick={() => setSharePreview(null)}>
                 {t(lang, 'decks.shareClose')}
+              </button>
+              <button
+                type="button"
+                className="btn small"
+                onClick={() => {
+                  if (!sharePreview) return
+                  setDeckExportCopied(false)
+                  setDeckExportText(sharePreview.exportText)
+                }}
+              >
+                {t(lang, 'decks.export')}
               </button>
               <button type="button" className="btn small primary" onClick={downloadDeckShare}>
                 {t(lang, 'decks.share')}

@@ -4,6 +4,8 @@ import { sectionOf } from './deckHelpers'
 const BG = '#1c1c1c'
 const GOLD = '#c9a227'
 const BADGE_BG = 'rgba(0,0,0,0.78)'
+/** Fixed 3× logical layout so exported PNG stays crisp on all displays. */
+const RENDER_SCALE = 3
 const DOMAIN_FILES: Record<string, string> = {
   Fury: 'fury.png',
   Calm: 'calm.png',
@@ -16,12 +18,41 @@ const DOMAIN_FILES: Record<string, string> = {
 
 type Loaded = HTMLImageElement | null
 
-async function loadUrl(url: string | null | undefined): Promise<Loaded> {
+/** Drop CDN thumb/resize params so we load full card art. */
+function fullResImageUrl(url: string | null | undefined): string | null {
   if (!url) return null
-  let src = url
   try {
-    if (window.riftbound?.fetchImageDataUrl && /^https:\/\//i.test(url)) {
-      const res = await window.riftbound.fetchImageDataUrl(url)
+    const u = new URL(url)
+    for (const key of [
+      'w',
+      'h',
+      'width',
+      'height',
+      'auto',
+      'q',
+      'dpr',
+      'fit',
+      'rect',
+      'max-w',
+      'max-h',
+      'quality',
+      'fm',
+    ]) {
+      u.searchParams.delete(key)
+    }
+    return u.toString()
+  } catch {
+    return url
+  }
+}
+
+async function loadUrl(url: string | null | undefined): Promise<Loaded> {
+  const full = fullResImageUrl(url)
+  if (!full) return null
+  let src = full
+  try {
+    if (window.riftbound?.fetchImageDataUrl && /^https:\/\//i.test(full)) {
+      const res = await window.riftbound.fetchImageDataUrl(full)
       if (res.ok && res.dataUrl) src = res.dataUrl
     }
   } catch {
@@ -81,10 +112,10 @@ function drawQtyBadge(
 ) {
   if (qty <= 1) return
   const label = `x${qty}`
-  ctx.font = 'bold 11px system-ui, sans-serif'
+  ctx.font = 'bold 12px system-ui, sans-serif'
   const tw = ctx.measureText(label).width
   const bw = tw + 10
-  const bh = 16
+  const bh = 17
   const bx = x + (w - bw) / 2
   const by = y + h - bh - 4
   ctx.fillStyle = BADGE_BG
@@ -122,8 +153,12 @@ function drawCard(
   drawQtyBadge(ctx, x, y, w, h, qty)
 }
 
-/** Portrait battlefield art rotated into a landscape banner (Piltover Archive style). */
-function drawLandscape(
+/**
+ * Piltover Archive landscape battlefield banner.
+ * Landscape art (w ≥ h): draw as-is. Portrait files store the banner on its
+ * side — rotate 90° clockwise (same as card detail bf-on) so text reads flat.
+ */
+function drawBattlefieldBanner(
   ctx: CanvasRenderingContext2D,
   img: Loaded,
   x: number,
@@ -137,15 +172,22 @@ function drawLandscape(
   ctx.fillStyle = '#2a2a2a'
   ctx.fillRect(x, y, w, h)
   if (img) {
-    ctx.translate(x + w / 2, y + h / 2)
-    ctx.rotate(-Math.PI / 2)
-    // After -90°, local X maps to screen up; cover the swapped box (h × w).
-    const boxW = h
-    const boxH = w
-    const s = Math.max(boxW / img.width, boxH / img.height)
-    const dw = img.width * s
-    const dh = img.height * s
-    ctx.drawImage(img, -dw / 2, -dh / 2, dw, dh)
+    const portrait = img.naturalHeight > img.naturalWidth
+    if (portrait) {
+      ctx.translate(x + w / 2, y + h / 2)
+      ctx.rotate(Math.PI / 2)
+      const boxW = h
+      const boxH = w
+      const s = Math.max(boxW / img.width, boxH / img.height)
+      const dw = img.width * s
+      const dh = img.height * s
+      ctx.drawImage(img, -dw / 2, -dh / 2, dw, dh)
+    } else {
+      const s = Math.max(w / img.width, h / img.height)
+      const dw = img.width * s
+      const dh = img.height * s
+      ctx.drawImage(img, x + (w - dw) / 2, y + (h - dh) / 2, dw, dh)
+    }
   }
   ctx.restore()
 }
@@ -190,10 +232,12 @@ export async function renderDeckShareCanvas(
     const sideboard = sectionCards(deck, 'sideboard')
     const domainCounts = runeDomainCounts(deck, byId)
 
+    // Champion is the first card of the main grid (not under Legend).
+    const mainGrid: DeckCard[] = champion ? [champion, ...main] : main
+
     const allIds = [
       legend?.id,
-      champion?.id,
-      ...main.map((c) => c.id),
+      ...mainGrid.map((c) => c.id),
       ...battlefields.map((c) => c.id),
       ...sideboard.map((c) => c.id),
     ].filter(Boolean) as string[]
@@ -219,40 +263,45 @@ export async function renderDeckShareCanvas(
     const brandH = 28
     const leftW = 200
     const gap = 14
-    const cardW = 100
-    const cardH = 140
+    const cardW = 110
+    const cardH = 154
     const cardGap = 6
     const cols = 8
-    const mainRows = Math.max(1, Math.ceil(Math.max(main.length, 1) / cols))
+    const mainRows = Math.max(1, Math.ceil(Math.max(mainGrid.length, 1) / cols))
     const sideRows = sideboard.length ? Math.ceil(sideboard.length / cols) : 0
 
     const legendH = 280
-    const champW = 78
-    const champH = 110
     const domainIcon = 32
     const domainRowH = domainCounts.size ? domainIcon + 4 : 0
-    const bfH = 48
+    const bfH = 52
     const bfGap = 6
     const leftStack =
       legendH +
-      (champion ? 8 + champH : 0) +
       (domainRowH ? 10 + domainRowH : 0) +
       (battlefields.length ? 10 + battlefields.length * (bfH + bfGap) - bfGap : 0)
 
-    const mainBlockH = main.length ? mainRows * (cardH + cardGap) - cardGap : 40
+    const mainBlockH = mainGrid.length ? mainRows * (cardH + cardGap) - cardGap : 40
     const sideLabelH = 28
     const sideBlockH = sideboard.length ? sideRows * (cardH + cardGap) - cardGap : 0
 
     const rightW = cols * (cardW + cardGap) - cardGap
     const width = pad * 2 + leftW + gap + rightW
-    const contentH = Math.max(leftStack, mainBlockH)
-    const height = pad + brandH + 10 + contentH + sideLabelH + (sideboard.length ? 10 + sideBlockH : 6) + pad
+    const contentTop = pad + brandH + 10
+    const mainBottom = contentTop + mainBlockH
+    const leftBottom = contentTop + leftStack
+    // Sit sideboard under the taller of main grid / left column (no champion under Legend → no huge gap).
+    const contentBottom = Math.max(mainBottom, leftBottom)
+    const height =
+      contentBottom + sideLabelH + (sideboard.length ? 10 + sideBlockH : 6) + pad
 
     const canvas = document.createElement('canvas')
-    canvas.width = width
-    canvas.height = height
+    canvas.width = Math.round(width * RENDER_SCALE)
+    canvas.height = Math.round(height * RENDER_SCALE)
     const ctx = canvas.getContext('2d')
     if (!ctx) return { ok: false, error: 'canvas' }
+    ctx.setTransform(RENDER_SCALE, 0, 0, RENDER_SCALE, 0, 0)
+    ctx.imageSmoothingEnabled = true
+    ctx.imageSmoothingQuality = 'high'
 
     paintBg(ctx, width, height)
 
@@ -262,7 +311,7 @@ export async function renderDeckShareCanvas(
     ctx.fillText(brand, pad, pad + 18)
 
     let lx = pad
-    let ly = pad + brandH + 10
+    let ly = contentTop
 
     if (legend) {
       drawCard(ctx, imgMap.get(legend.id) || null, lx, ly, leftW, legendH, 0)
@@ -272,11 +321,6 @@ export async function renderDeckShareCanvas(
       roundRect(ctx, lx, ly, leftW, 72, 5)
       ctx.fill()
       ly += 80
-    }
-
-    if (champion) {
-      drawCard(ctx, imgMap.get(champion.id) || null, lx, ly, champW, champH, 0)
-      ly += champH + 10
     }
 
     if (domainCounts.size) {
@@ -299,18 +343,18 @@ export async function renderDeckShareCanvas(
     }
 
     for (const bf of battlefields) {
-      drawLandscape(ctx, imgMap.get(bf.id) || null, lx, ly, leftW, bfH)
+      drawBattlefieldBanner(ctx, imgMap.get(bf.id) || null, lx, ly, leftW, bfH)
       ly += bfH + bfGap
     }
 
     const rx = pad + leftW + gap
-    let ry = pad + brandH + 10
-    if (!main.length) {
+    const ry = contentTop
+    if (!mainGrid.length) {
       ctx.fillStyle = '#666'
       ctx.font = '13px system-ui, sans-serif'
       ctx.fillText('Main', rx, ry + 16)
     } else {
-      main.forEach((dc, i) => {
+      mainGrid.forEach((dc, i) => {
         const col = i % cols
         const row = Math.floor(i / cols)
         const x = rx + col * (cardW + cardGap)
@@ -319,8 +363,7 @@ export async function renderDeckShareCanvas(
       })
     }
 
-    const sideY = pad + brandH + 10 + contentH + 4
-    const lineY = sideY + 10
+    const lineY = contentBottom + 14
     ctx.strokeStyle = GOLD
     ctx.lineWidth = 1.5
     ctx.beginPath()
