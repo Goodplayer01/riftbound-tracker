@@ -271,13 +271,17 @@ export async function renderDeckShareCanvas(
     const sideRows = sideboard.length ? Math.ceil(sideboard.length / cols) : 0
 
     const legendH = 280
-    const domainIcon = 32
+    // Gold rimmed domain icons (same public/domains assets as filter chips).
+    const domainIcon = 40
+    const domainRim = 2.5
+    const domainLabelGap = 6
+    const domainItemGap = 18
     const domainRowH = domainCounts.size ? domainIcon + 4 : 0
     const bfH = 52
     const bfGap = 6
     const leftStack =
       legendH +
-      (domainRowH ? 10 + domainRowH : 0) +
+      (domainRowH ? 12 + domainRowH : 0) +
       (battlefields.length ? 10 + battlefields.length * (bfH + bfGap) - bfGap : 0)
 
     const mainBlockH = mainGrid.length ? mainRows * (cardH + cardGap) - cardGap : 40
@@ -289,10 +293,10 @@ export async function renderDeckShareCanvas(
     const contentTop = pad + brandH + 10
     const mainBottom = contentTop + mainBlockH
     const leftBottom = contentTop + leftStack
-    // Sit sideboard under the taller of main grid / left column (no champion under Legend → no huge gap).
-    const contentBottom = Math.max(mainBottom, leftBottom)
-    const height =
-      contentBottom + sideLabelH + (sideboard.length ? 10 + sideBlockH : 6) + pad
+    // Sideboard sits under the main deck grid only (right column), not under max(left, main).
+    const sideTop = mainBottom + 14
+    const sideEnd = sideTop + sideLabelH + (sideboard.length ? 10 + sideBlockH : 0)
+    const height = Math.max(leftBottom, sideEnd) + pad
 
     const canvas = document.createElement('canvas')
     canvas.width = Math.round(width * RENDER_SCALE)
@@ -326,20 +330,38 @@ export async function renderDeckShareCanvas(
     if (domainCounts.size) {
       let dx = lx
       for (const [dom, n] of domainCounts) {
+        const cx = dx + domainIcon / 2
+        const cy = ly + domainIcon / 2
+        const r = domainIcon / 2
+        // Soft disc + gold rim (Piltover Archive chip look; art from public/domains).
+        ctx.beginPath()
+        ctx.arc(cx, cy, r, 0, Math.PI * 2)
+        ctx.fillStyle = '#141414'
+        ctx.fill()
         const dimg = domainImgs.get(dom)
-        if (dimg) ctx.drawImage(dimg, dx, ly, domainIcon, domainIcon)
-        else {
-          ctx.fillStyle = '#444'
+        if (dimg) {
+          ctx.save()
           ctx.beginPath()
-          ctx.arc(dx + domainIcon / 2, ly + domainIcon / 2, domainIcon / 2, 0, Math.PI * 2)
-          ctx.fill()
+          ctx.arc(cx, cy, r - domainRim, 0, Math.PI * 2)
+          ctx.clip()
+          ctx.drawImage(dimg, dx + 1, ly + 1, domainIcon - 2, domainIcon - 2)
+          ctx.restore()
         }
+        ctx.beginPath()
+        ctx.arc(cx, cy, r - domainRim / 2, 0, Math.PI * 2)
+        ctx.strokeStyle = GOLD
+        ctx.lineWidth = domainRim
+        ctx.stroke()
         ctx.fillStyle = '#fff'
-        ctx.font = 'bold 12px system-ui, sans-serif'
-        ctx.fillText(`x${n}`, dx + domainIcon + 4, ly + domainIcon / 2 + 4)
-        dx += domainIcon + 28
+        ctx.font = 'bold 14px system-ui, sans-serif'
+        ctx.textBaseline = 'middle'
+        const qtyLabel = `x${n}`
+        ctx.fillText(qtyLabel, dx + domainIcon + domainLabelGap, cy + 0.5)
+        const tw = ctx.measureText(qtyLabel).width
+        ctx.textBaseline = 'alphabetic'
+        dx += domainIcon + domainLabelGap + tw + domainItemGap
       }
-      ly += domainRowH + 10
+      ly += domainRowH + 12
     }
 
     for (const bf of battlefields) {
@@ -363,25 +385,27 @@ export async function renderDeckShareCanvas(
       })
     }
 
-    const lineY = contentBottom + 14
+    // Gold divider + SIDEBOARD label span the right column only (under main grid).
+    const lineY = sideTop
+    const rightMid = rx + rightW / 2
     ctx.strokeStyle = GOLD
     ctx.lineWidth = 1.5
     ctx.beginPath()
-    ctx.moveTo(pad, lineY)
-    ctx.lineTo(width - pad, lineY)
+    ctx.moveTo(rx, lineY)
+    ctx.lineTo(rx + rightW, lineY)
     ctx.stroke()
     const sideLabel = 'SIDEBOARD'
     ctx.font = 'bold 11px system-ui, sans-serif'
     const sw = ctx.measureText(sideLabel).width + 16
     ctx.fillStyle = BG
-    ctx.fillRect((width - sw) / 2, lineY - 10, sw, 20)
+    ctx.fillRect(rightMid - sw / 2, lineY - 10, sw, 20)
     ctx.strokeStyle = GOLD
-    roundRect(ctx, (width - sw) / 2, lineY - 10, sw, 20, 4)
+    roundRect(ctx, rightMid - sw / 2, lineY - 10, sw, 20, 4)
     ctx.stroke()
     ctx.fillStyle = GOLD
     ctx.textAlign = 'center'
     ctx.textBaseline = 'middle'
-    ctx.fillText(sideLabel, width / 2, lineY)
+    ctx.fillText(sideLabel, rightMid, lineY)
     ctx.textAlign = 'left'
     ctx.textBaseline = 'alphabetic'
 
@@ -390,7 +414,7 @@ export async function renderDeckShareCanvas(
       sideboard.forEach((dc, i) => {
         const col = i % cols
         const row = Math.floor(i / cols)
-        const x = pad + col * (cardW + cardGap)
+        const x = rx + col * (cardW + cardGap)
         const y = sy + row * (cardH + cardGap)
         drawCard(ctx, imgMap.get(dc.id) || null, x, y, cardW, cardH, dc.qty)
       })
