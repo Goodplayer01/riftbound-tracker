@@ -62,6 +62,7 @@ import {
   drawPoolSize,
   drawTopCard,
 } from './handTester'
+import { exportDeckScreenshot } from './deckScreenshot'
 
 type Tab = 'collection' | 'catalog' | 'sales' | 'decks' | 'borrowed' | 'stores' | 'dopamin'
 
@@ -619,6 +620,7 @@ export default function App() {
   const [deckImportOpen, setDeckImportOpen] = useState(false)
   const [deckExportText, setDeckExportText] = useState<string | null>(null)
   const [deckExportCopied, setDeckExportCopied] = useState(false)
+  const [deckShotBusy, setDeckShotBusy] = useState(false)
   const [missingExpanded, setMissingExpanded] = useState(false)
   const [cardPreview, setCardPreview] = useState<{ src: string; x: number; y: number } | null>(null)
   const [cardLightbox, setCardLightbox] = useState<Card | null>(null)
@@ -2015,6 +2017,19 @@ export default function App() {
     setDeckExportText(formatDeckList(activeDeck))
   }
 
+  async function runDeckScreenshot() {
+    if (!activeDeck || deckShotBusy) return
+    setDeckShotBusy(true)
+    try {
+      const res = await exportDeckScreenshot(activeDeck, byId)
+      if (!res.ok) window.alert(t(lang, 'decks.screenshotFail'))
+    } catch {
+      window.alert(t(lang, 'decks.screenshotFail'))
+    } finally {
+      setDeckShotBusy(false)
+    }
+  }
+
   async function copyDeckExport() {
     if (!deckExportText) return
     try {
@@ -3059,6 +3074,9 @@ export default function App() {
                   {t(lang, 'decks.deleteAll')}
                 </button>
                 <button className="btn" disabled={!activeDeck} onClick={openDeckExport}>{t(lang, 'decks.export')}</button>
+                <button className="btn" disabled={!activeDeck || deckShotBusy} onClick={() => void runDeckScreenshot()}>
+                  {deckShotBusy ? t(lang, 'decks.screenshotBusy') : t(lang, 'decks.screenshot')}
+                </button>
                 <button className="btn" onClick={() => { setDeckImportOpen((v) => !v); setDeckImportText('') }}>{t(lang, 'decks.import')}</button>
                 <button className="btn primary" onClick={newDeck}>{t(lang, 'decks.new')}</button>
               </div>

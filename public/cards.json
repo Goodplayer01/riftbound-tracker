@@ -37186,6 +37186,63 @@
       "rulesText": "When you play me, play a Bomb gear token to a battlefield. (It has [Deploy]. When it dies, deal 2 to an enemy there and kill your other Bombs there.)"
     },
     {
+      "id": "rad-r01a",
+      "name": "Fury Rune",
+      "subtitle": null,
+      "code": "RAD-R01a",
+      "cn": 1,
+      "set": "RAD",
+      "setName": "Radiance",
+      "types": [
+        "Rune"
+      ],
+      "superTypes": [
+        "Basic"
+      ],
+      "rarity": "Showcase",
+      "domains": [
+        "Fury"
+      ],
+      "energy": 0,
+      "might": 0,
+      "image": "https://cdn.piltoverarchive.com/cards/RAD-R01a.webp",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": true,
+      "tags": [],
+      "rulesText": "[NO TEXT]"
+    },
+    {
+      "id": "rad-sp1",
+      "name": "Ahri",
+      "subtitle": "Confident",
+      "code": "RAD-SP1",
+      "cn": 1,
+      "set": "RAD",
+      "setName": "Radiance",
+      "types": [
+        "Unit"
+      ],
+      "superTypes": [
+        "Champion"
+      ],
+      "rarity": "Showcase",
+      "domains": [
+        "Calm"
+      ],
+      "energy": 4,
+      "might": 4,
+      "image": "https://cdn.piltoverarchive.com/cards/RAD-SP1.webp",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": true,
+      "tags": [
+        "Ahri",
+        "Ionia"
+      ],
+      "rulesText": "[Disarm] (When I attack, give an enemy unit here -1[Might] this turn.)\nWhen you reduce the Might of an enemy unit here by 1 or more, give me +1[Might] this turn."
+    },
+    {
       "id": "rad-002",
       "name": "Banner of Conquest",
       "subtitle": null,
@@ -37652,6 +37709,83 @@
       "rulesText": "When you play me or when I become exhausted, play a 1 [S] Recruit unit token to your base.\nI have +1 [S] for each other exhausted unit you control."
     },
     {
+      "id": "rad-006",
+      "name": "Scorched Earth",
+      "subtitle": null,
+      "code": "RAD-006",
+      "cn": 6,
+      "set": "RAD",
+      "setName": "Radiance",
+      "types": [
+        "Spell"
+      ],
+      "superTypes": [],
+      "rarity": "Common",
+      "domains": [
+        "Fury"
+      ],
+      "energy": 4,
+      "might": 0,
+      "image": "https://cdn.piltoverarchive.com/cards/RAD-006.webp",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": false,
+      "tags": [],
+      "rulesText": "[Action] (Play on your turn or in showdowns.)\nDeal 5 damage split among units at a single battlefield."
+    },
+    {
+      "id": "rad-r06a",
+      "name": "Order Rune",
+      "subtitle": null,
+      "code": "RAD-R06a",
+      "cn": 6,
+      "set": "RAD",
+      "setName": "Radiance",
+      "types": [
+        "Rune"
+      ],
+      "superTypes": [
+        "Basic"
+      ],
+      "rarity": "Showcase",
+      "domains": [
+        "Order"
+      ],
+      "energy": 0,
+      "might": 0,
+      "image": "https://cdn.piltoverarchive.com/cards/RAD-R06a.webp",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": true,
+      "tags": [],
+      "rulesText": "."
+    },
+    {
+      "id": "rad-007",
+      "name": "Rally for War",
+      "subtitle": null,
+      "code": "RAD-007",
+      "cn": 7,
+      "set": "RAD",
+      "setName": "Radiance",
+      "types": [
+        "Spell"
+      ],
+      "superTypes": [],
+      "rarity": "Common",
+      "domains": [
+        "Fury"
+      ],
+      "energy": 3,
+      "might": 0,
+      "image": "https://cdn.piltoverarchive.com/temporary/1791236850398-2czsq3hld9f.png",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": false,
+      "tags": [],
+      "rulesText": "Choose an occupied enemy battlefield. Play three 1 [Might] Recruit unit tokens there."
+    },
+    {
       "id": "rad-012",
       "name": "Runeblade Anvil",
       "subtitle": null,
@@ -37759,6 +37893,68 @@
       "rulesText": "[Empower] [2][Fury]\nWhen I move, you may deal 1 to a unit at a battlefield I moved to or from. If I'm [Empowered], deal 2 instead.\n[Empowered][>] I have +1 [S].."
     },
     {
+      "id": "rad-015-champion",
+      "name": "Akali",
+      "subtitle": "Brash",
+      "code": "RAD-015-Champion",
+      "cn": 15,
+      "set": "RAD",
+      "setName": "Radiance",
+      "types": [
+        "Unit"
+      ],
+      "superTypes": [
+        "Champion"
+      ],
+      "rarity": "Rare",
+      "domains": [
+        "Fury"
+      ],
+      "energy": 5,
+      "might": 5,
+      "image": "https://cdn.piltoverarchive.com/temporary/1791230693027-xkekti8xe5k.png",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": false,
+      "tags": [
+        "Akali",
+        "Ionia",
+        "promo"
+      ],
+      "rulesText": "The first time I move each turn, [Add] [1] [Rune].\nThe second time I move each turn, banish the top card of your Main Deck. Until your next Ending Phase, you may play that card. (You still pay its costs.)"
+    },
+    {
+      "id": "rad-015-skirmishtop",
+      "name": "Akali",
+      "subtitle": "Brash",
+      "code": "RAD-015-SkirmishTop",
+      "cn": 15,
+      "set": "RAD",
+      "setName": "Radiance",
+      "types": [
+        "Unit"
+      ],
+      "superTypes": [
+        "Champion"
+      ],
+      "rarity": "Rare",
+      "domains": [
+        "Fury"
+      ],
+      "energy": 5,
+      "might": 5,
+      "image": "https://cdn.piltoverarchive.com/temporary/1791230629421-sl8vj1i4bi.png",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": false,
+      "tags": [
+        "Akali",
+        "Ionia",
+        "promo"
+      ],
+      "rulesText": "The first time I move each turn, [Add] [1] [Rune].\nThe second time I move each turn, banish the top card of your Main Deck. Until your next Ending Phase, you may play that card. (You still pay its costs.)"
+    },
+    {
       "id": "rad-016",
       "name": "Coalesced Energy",
       "subtitle": null,
@@ -37784,6 +37980,118 @@
         "Shurima"
       ],
       "rulesText": null
+    },
+    {
+      "id": "rad-017",
+      "name": "Detonation Amplifier",
+      "subtitle": null,
+      "code": "RAD-017",
+      "cn": 17,
+      "set": "RAD",
+      "setName": "Radiance",
+      "types": [
+        "Gear"
+      ],
+      "superTypes": [],
+      "rarity": "Rare",
+      "domains": [
+        "Fury"
+      ],
+      "energy": 4,
+      "might": 0,
+      "image": "https://cdn.piltoverarchive.com/cards/RAD-017.webp",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": false,
+      "tags": [],
+      "rulesText": "[Deploy] (Play this only to a battlefield. When an opponent holds here, kill this.)\nWhen you play this, you may kill another friendly unit or gear to draw 1.\nFriendly [Deathknell] effects here trigger an additional time."
+    },
+    {
+      "id": "rad-018",
+      "name": "Drakehound Packmaster",
+      "subtitle": null,
+      "code": "RAD-018",
+      "cn": 18,
+      "set": "RAD",
+      "setName": "Radiance",
+      "types": [
+        "Unit"
+      ],
+      "superTypes": [],
+      "rarity": "Rare",
+      "domains": [
+        "Fury"
+      ],
+      "energy": 9,
+      "might": 9,
+      "image": "https://cdn.piltoverarchive.com/temporary/1791184494505-0urxj4bx7i6d.png",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": false,
+      "tags": [
+        "Noxus"
+      ],
+      "rulesText": "When you play me, reveal the top card of each opponent's Main Deck. Choose one and banish it, then play it, ignoring its cost. Recycle the rest."
+    },
+    {
+      "id": "rad-021",
+      "name": "Ekko",
+      "subtitle": "Revolutionary",
+      "code": "RAD-021",
+      "cn": 21,
+      "set": "RAD",
+      "setName": "Radiance",
+      "types": [
+        "Unit"
+      ],
+      "superTypes": [
+        "Champion"
+      ],
+      "rarity": "Epic",
+      "domains": [
+        "Fury"
+      ],
+      "energy": 5,
+      "might": 4,
+      "image": "https://cdn.piltoverarchive.com/temporary/1791237002970-qf26dczkfq.jpg",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": false,
+      "tags": [
+        "Ekko",
+        "Zaun"
+      ],
+      "rulesText": "I enter ready.\n[Assault] (+1 while I'm an attacker.)\n[Action] Discard 1, [1] [Fury]: Banish me, then play me to your base, ignoring my cost."
+    },
+    {
+      "id": "rad-021a",
+      "name": "Ekko",
+      "subtitle": "Revolutionary",
+      "code": "RAD-021a",
+      "cn": 21,
+      "set": "RAD",
+      "setName": "Radiance",
+      "types": [
+        "Unit"
+      ],
+      "superTypes": [
+        "Champion"
+      ],
+      "rarity": "Showcase",
+      "domains": [
+        "Fury"
+      ],
+      "energy": 5,
+      "might": 4,
+      "image": "https://cdn.piltoverarchive.com/temporary/1791237177093-7rqlnsbceb.jpg",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": true,
+      "tags": [
+        "Ekko",
+        "Zaun"
+      ],
+      "rulesText": "I enter ready.\n[Assault] (+1 while I'm an attacker.)\n[Action] Discard 1, [1] [Fury]: Banish me, then play me to your base, ignoring my cost."
     },
     {
       "id": "rad-023",
@@ -37951,6 +38259,31 @@
         "Bird"
       ],
       "rulesText": null
+    },
+    {
+      "id": "rad-028",
+      "name": "Ki Burst",
+      "subtitle": null,
+      "code": "RAD-028",
+      "cn": 28,
+      "set": "RAD",
+      "setName": "Radiance",
+      "types": [
+        "Spell"
+      ],
+      "superTypes": [],
+      "rarity": "Common",
+      "domains": [
+        "Calm"
+      ],
+      "energy": 1,
+      "might": 0,
+      "image": "https://cdn.piltoverarchive.com/temporary/1791259637452-5gucm6ix9pg.png",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": false,
+      "tags": [],
+      "rulesText": "[Action] (Play on your turn or in showdowns.)\n As an additional cost to play this, exhaust a friendly unit.\n[Stun] a unit. (It doesn't deal combat damage this turn.)"
     },
     {
       "id": "rad-033",
@@ -38168,6 +38501,116 @@
       "rulesText": "[Disarm] (When I attack, give an enemy unit here -1 [S] this turn.)\nWhen you reduce the Might of an enemy unit here by 1 or more, give me +1 [S] this turn."
     },
     {
+      "id": "rad-039",
+      "name": "Ephemeral Ward",
+      "subtitle": null,
+      "code": "RAD-039",
+      "cn": 39,
+      "set": "RAD",
+      "setName": "Radiance",
+      "types": [
+        "Gear"
+      ],
+      "superTypes": [],
+      "rarity": "Rare",
+      "domains": [
+        "Calm"
+      ],
+      "energy": 4,
+      "might": 0,
+      "image": "https://cdn.piltoverarchive.com/temporary/1791243804479-ccewp3b73jg.png",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": false,
+      "tags": [],
+      "rulesText": "Your units have +2 [Might].\nWhen you play a unit, kill this."
+    },
+    {
+      "id": "rad-040",
+      "name": "Heartening Soul",
+      "subtitle": null,
+      "code": "RAD-040",
+      "cn": 40,
+      "set": "RAD",
+      "setName": "Radiance",
+      "types": [
+        "Unit"
+      ],
+      "superTypes": [],
+      "rarity": "Rare",
+      "domains": [
+        "Calm"
+      ],
+      "energy": 7,
+      "might": 7,
+      "image": "https://cdn.piltoverarchive.com/temporary/1791315795059-d9juhh2z4ku.png",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": false,
+      "tags": [],
+      "rulesText": "When you play me, ready a friendly legend.\nFriendly legends have \"[tap] : Give a unit +3 [might] this turn.\""
+    },
+    {
+      "id": "rad-043",
+      "name": "Riven",
+      "subtitle": "Broken Blade",
+      "code": "RAD-043",
+      "cn": 43,
+      "set": "RAD",
+      "setName": "Radiance",
+      "types": [
+        "Unit"
+      ],
+      "superTypes": [
+        "Champion"
+      ],
+      "rarity": "Rare",
+      "domains": [
+        "Calm"
+      ],
+      "energy": 4,
+      "might": 4,
+      "image": "https://cdn.piltoverarchive.com/temporary/1791212419780-ap3dnaib2in.png",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": false,
+      "tags": [
+        "Riven",
+        "Noxus"
+      ],
+      "rulesText": "When I become exhausted, choose one that hasn't been chosen this turn –\n• [Buff] me. (Give me a +1 [Might] buff if i don't have one.)\n• Spend my buff to [Stun] an enemy unit. (It doesn't deal combat damage this turn.)\n• Spend my buff to ready me."
+    },
+    {
+      "id": "rad-043a",
+      "name": "Riven",
+      "subtitle": "Broken Blade",
+      "code": "RAD-043a",
+      "cn": 43,
+      "set": "RAD",
+      "setName": "Radiance",
+      "types": [
+        "Unit"
+      ],
+      "superTypes": [
+        "Champion"
+      ],
+      "rarity": "Showcase",
+      "domains": [
+        "Calm"
+      ],
+      "energy": 4,
+      "might": 4,
+      "image": "https://cdn.piltoverarchive.com/temporary/1791212426355-f2rlqeuu1kp.png",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": true,
+      "tags": [
+        "Riven",
+        "Noxus"
+      ],
+      "rulesText": "When I become exhausted, choose one that hasn't been chosen this turn –\n• [Buff] me. (Give me a +1 [Might] buff if i don't have one.)\n• Spend my buff to [Stun] an enemy unit. (It doesn't deal combat damage this turn.)\n• Spend my buff to ready me."
+    },
+    {
       "id": "rad-045",
       "name": "K'Sante",
       "subtitle": "Dauntless",
@@ -38298,6 +38741,60 @@
       "altArt": false,
       "tags": [],
       "rulesText": null
+    },
+    {
+      "id": "rad-049",
+      "name": "Industrious Mechsmith",
+      "subtitle": null,
+      "code": "RAD-049",
+      "cn": 49,
+      "set": "RAD",
+      "setName": "Radiance",
+      "types": [
+        "Unit"
+      ],
+      "superTypes": [],
+      "rarity": "Common",
+      "domains": [
+        "Mind"
+      ],
+      "energy": 4,
+      "might": 1,
+      "image": "https://cdn.piltoverarchive.com/cards/RAD-049.webp",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": false,
+      "tags": [
+        "Zaun"
+      ],
+      "rulesText": "When you play me, play a 3 [Might] Mech unit token here."
+    },
+    {
+      "id": "rad-050",
+      "name": "Mysterious Chronomancer",
+      "subtitle": null,
+      "code": "RAD-050",
+      "cn": 50,
+      "set": "RAD",
+      "setName": "Radiance",
+      "types": [
+        "Unit"
+      ],
+      "superTypes": [],
+      "rarity": "Common",
+      "domains": [
+        "Mind"
+      ],
+      "energy": 5,
+      "might": 4,
+      "image": "https://cdn.piltoverarchive.com/temporary/1791212835604-uslx48xz8qq.png",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": false,
+      "tags": [
+        "Shurima"
+      ],
+      "rulesText": "When you play me, [Predict 2]. (Look at the top 2 cards of your Main Deck. Recycle any of them and put the rest back in any order.)\n[Disarm 2] (When I attack, give an enemy unit here -2[Might] this turn.)"
     },
     {
       "id": "rad-055",
@@ -38431,6 +38928,34 @@
       "rulesText": "Deal 10 to a unit. Draw 2."
     },
     {
+      "id": "rad-060",
+      "name": "The Empyrean",
+      "subtitle": null,
+      "code": "RAD-060",
+      "cn": 60,
+      "set": "RAD",
+      "setName": "Radiance",
+      "types": [
+        "Unit"
+      ],
+      "superTypes": [],
+      "rarity": "Uncommon",
+      "domains": [
+        "Mind"
+      ],
+      "energy": 8,
+      "might": 8,
+      "image": "https://cdn.piltoverarchive.com/temporary/1791236783702-8vxyixnjlch.png",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": false,
+      "tags": [
+        "Ionia",
+        "Dragon"
+      ],
+      "rulesText": "[Show Off] a card. (As you play me, you may reveal a card from your hand or pick another friendly one.)\nWhen you play me, if you showed off a card, [Predict] equal to its Power cost, then draw 2. (Look at that many cards from your Main Deck. Recycle any of them and put the rest back in any order.)"
+    },
+    {
       "id": "rad-061",
       "name": "Ekko",
       "subtitle": "Ingenious",
@@ -38486,6 +39011,31 @@
         "showcase"
       ],
       "rulesText": "As an additional cost to play me, return a friendly unit to its owner's hand.\n[Ganking]"
+    },
+    {
+      "id": "rad-062",
+      "name": "Gravity Field",
+      "subtitle": null,
+      "code": "RAD-062",
+      "cn": 62,
+      "set": "RAD",
+      "setName": "Radiance",
+      "types": [
+        "Gear"
+      ],
+      "superTypes": [],
+      "rarity": "Rare",
+      "domains": [
+        "Mind"
+      ],
+      "energy": 5,
+      "might": 0,
+      "image": "https://cdn.piltoverarchive.com/temporary/1791246150611-llc6d3pyn1o.jpg",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": false,
+      "tags": [],
+      "rulesText": "[Deploy] (Play this only to a battlefield. When an opponent holds where, kill this.)\nOpponents must pay [1] [Rune] to move one or more units to this battlefield.\n[Deathknell] Draw 1. (When I die, get the effect.)"
     },
     {
       "id": "rad-063",
@@ -38730,6 +39280,33 @@
       "rulesText": "[Deploy] (Play this only to a battlefield. When an opponent holds here, kill this.)\nWhen you play this or when you conquer here, [Buff] a friendly unit. (Give it a +1 [S] buff if it doesn't have one.)"
     },
     {
+      "id": "rad-074",
+      "name": "Raving Witness",
+      "subtitle": null,
+      "code": "RAD-074",
+      "cn": 74,
+      "set": "RAD",
+      "setName": "Radiance",
+      "types": [
+        "Unit"
+      ],
+      "superTypes": [],
+      "rarity": "Common",
+      "domains": [
+        "Body"
+      ],
+      "energy": 3,
+      "might": 3,
+      "image": "https://cdn.piltoverarchive.com/cards/RAD-074.webp",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": false,
+      "tags": [
+        "Freljord"
+      ],
+      "rulesText": "When I move, reveal the top card of your Main Deck. If it's [Mighty], draw it. Otherwise, recycle it. (A unit is Mighty while it has 5+ [Might]."
+    },
+    {
       "id": "rad-079",
       "name": "Avalanche",
       "subtitle": null,
@@ -38889,6 +39466,37 @@
       "rulesText": null
     },
     {
+      "id": "rad-085-skirmish",
+      "name": "Graves",
+      "subtitle": "Blasting Through",
+      "code": "RAD-085-Skirmish",
+      "cn": 85,
+      "set": "RAD",
+      "setName": "Radiance",
+      "types": [
+        "Unit"
+      ],
+      "superTypes": [
+        "Champion"
+      ],
+      "rarity": "Rare",
+      "domains": [
+        "Body"
+      ],
+      "energy": 5,
+      "might": 4,
+      "image": "https://cdn.piltoverarchive.com/temporary/1791230826634-52w0wpim5a2.png",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": false,
+      "tags": [
+        "Graves",
+        "Bilgewater",
+        "promo"
+      ],
+      "rulesText": "When I attack or defend, deal damage equal to my Might to all enemy units here.\nI don't deal combat damage."
+    },
+    {
       "id": "rad-086",
       "name": "K'Sante",
       "subtitle": "Courageous",
@@ -38969,6 +39577,58 @@
       "altArt": false,
       "tags": [],
       "rulesText": null
+    },
+    {
+      "id": "rad-088",
+      "name": "Staunch Survivor",
+      "subtitle": null,
+      "code": "RAD-088",
+      "cn": 88,
+      "set": "RAD",
+      "setName": "Radiance",
+      "types": [
+        "Unit"
+      ],
+      "superTypes": [],
+      "rarity": "Rare",
+      "domains": [
+        "Body"
+      ],
+      "energy": 2,
+      "might": 2,
+      "image": "https://cdn.piltoverarchive.com/temporary/1791212709792-5xsdk5nsi74.png",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": false,
+      "tags": [
+        "Freljord"
+      ],
+      "rulesText": "[Assault 2], [Shield 2] (+2[Might] while I'm an attacker or defender.)"
+    },
+    {
+      "id": "rad-089",
+      "name": "Titanic Shrine",
+      "subtitle": null,
+      "code": "RAD-089",
+      "cn": 89,
+      "set": "RAD",
+      "setName": "Radiance",
+      "types": [
+        "Gear"
+      ],
+      "superTypes": [],
+      "rarity": "Rare",
+      "domains": [
+        "Body"
+      ],
+      "energy": 3,
+      "might": 0,
+      "image": "https://cdn.piltoverarchive.com/temporary/1791315646811-yecrvytr7r.png",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": false,
+      "tags": [],
+      "rulesText": "When you play a unit with Might greater than each other unit on the board, exhaust me to draw 1."
     },
     {
       "id": "rad-090",
@@ -39216,6 +39876,34 @@
       "rulesText": "[Reaction] (Play any time, even before spells and abilities resolve.)\nMove an enemy unit that moved this turn."
     },
     {
+      "id": "rad-099",
+      "name": "Suave Negotiator",
+      "subtitle": null,
+      "code": "RAD-099",
+      "cn": 99,
+      "set": "RAD",
+      "setName": "Radiance",
+      "types": [
+        "Unit"
+      ],
+      "superTypes": [],
+      "rarity": "Common",
+      "domains": [
+        "Chaos"
+      ],
+      "energy": 3,
+      "might": 3,
+      "image": "https://cdn.piltoverarchive.com/cards/RAD-099.webp",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": false,
+      "tags": [
+        "Bilgewater",
+        "Demon"
+      ],
+      "rulesText": "When you play me, choose an opponent. You and that player each draw 1."
+    },
+    {
       "id": "rad-105",
       "name": "Reckless Innovator",
       "subtitle": null,
@@ -39385,6 +40073,123 @@
         "Yordle"
       ],
       "rulesText": null
+    },
+    {
+      "id": "rad-110-skirmish",
+      "name": "Lulu",
+      "subtitle": "Whimsical",
+      "code": "RAD-110-Skirmish",
+      "cn": 110,
+      "set": "RAD",
+      "setName": "Radiance",
+      "types": [
+        "Unit"
+      ],
+      "superTypes": [
+        "Champion"
+      ],
+      "rarity": "Rare",
+      "domains": [
+        "Chaos"
+      ],
+      "energy": 3,
+      "might": 3,
+      "image": "https://cdn.piltoverarchive.com/temporary/1791230501153-5rki33b8lj.png",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": false,
+      "tags": [
+        "Lulu",
+        "Bandle City",
+        "Yordle",
+        "promo"
+      ],
+      "rulesText": "When I move, you may have another unit's base Might become 4 this turn."
+    },
+    {
+      "id": "rad-111",
+      "name": "Mechanical Bandit",
+      "subtitle": null,
+      "code": "RAD-111",
+      "cn": 111,
+      "set": "RAD",
+      "setName": "Radiance",
+      "types": [
+        "Gear"
+      ],
+      "superTypes": [],
+      "rarity": "Rare",
+      "domains": [
+        "Chaos"
+      ],
+      "energy": 4,
+      "might": 0,
+      "image": "https://cdn.piltoverarchive.com/temporary/1791315944476-l9kg1e7cq2b.png",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": false,
+      "tags": [],
+      "rulesText": "At the start of your Beginning Phase, each player reveals the top card of their Main Deck. If you revealed a card with the lowest energy cost, draw it. Recycle the rest."
+    },
+    {
+      "id": "rad-114",
+      "name": "Riven Deserter",
+      "subtitle": null,
+      "code": "RAD-114",
+      "cn": 114,
+      "set": "RAD",
+      "setName": "Radiance",
+      "types": [
+        "Unit"
+      ],
+      "superTypes": [
+        "Champion"
+      ],
+      "rarity": "Epic",
+      "domains": [
+        "Chaos"
+      ],
+      "energy": 5,
+      "might": 5,
+      "image": "https://cdn.piltoverarchive.com/temporary/1791315436877-d20262yy55.png",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": false,
+      "tags": [
+        "RIven",
+        "Noxus"
+      ],
+      "rulesText": "When another friendly unit becomes exhausted, give me +1 [might] this turn.\nExhaust a friendly unit: Ready a unit. Use this ability only once per turn."
+    },
+    {
+      "id": "rad-114a",
+      "name": "Riven Deserter",
+      "subtitle": null,
+      "code": "RAD-114a",
+      "cn": 114,
+      "set": "RAD",
+      "setName": "Radiance",
+      "types": [
+        "Unit"
+      ],
+      "superTypes": [
+        "Champion"
+      ],
+      "rarity": "Showcase",
+      "domains": [
+        "Chaos"
+      ],
+      "energy": 5,
+      "might": 5,
+      "image": "https://cdn.piltoverarchive.com/temporary/1791315504232-pyqb5344c2g.png",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": true,
+      "tags": [
+        "RIven",
+        "Noxus"
+      ],
+      "rulesText": "When another friendly unit becomes exhausted, give me +1 [might] this turn.\nExhaust a friendly unit: Ready a unit. Use this ability only once per turn."
     },
     {
       "id": "rad-115",
@@ -39674,6 +40479,33 @@
         "Demacia"
       ],
       "rulesText": null
+    },
+    {
+      "id": "rad-131",
+      "name": "Demacian Illuminators",
+      "subtitle": null,
+      "code": "RAD-131",
+      "cn": 131,
+      "set": "RAD",
+      "setName": "Radiance",
+      "types": [
+        "Unit"
+      ],
+      "superTypes": [],
+      "rarity": "Rare",
+      "domains": [
+        "Order"
+      ],
+      "energy": 3,
+      "might": 3,
+      "image": "https://cdn.piltoverarchive.com/temporary/1791259786722-w7mo0hym1mi.png",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": false,
+      "tags": [
+        "Demacia"
+      ],
+      "rulesText": "When one or more friendly units die, [buff] a friendly unit. (Give it a +1[might] buff if it doesn't have one.)"
     },
     {
       "id": "rad-132",
@@ -39983,6 +40815,36 @@
       "rulesText": "When you play me or when I attack, you may discard 1 to kill a unit or gear."
     },
     {
+      "id": "rad-144",
+      "name": "Realm of Death",
+      "subtitle": null,
+      "code": "RAD-144",
+      "cn": 144,
+      "set": "RAD",
+      "setName": "Radiance",
+      "types": [
+        "Spell"
+      ],
+      "superTypes": [
+        "Signature"
+      ],
+      "rarity": "Epic",
+      "domains": [
+        "Fury",
+        "Order"
+      ],
+      "energy": 2,
+      "might": 0,
+      "image": "https://cdn.piltoverarchive.com/cards/RAD-144.webp",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": false,
+      "tags": [
+        "Mordekaiser"
+      ],
+      "rulesText": "Give an enemy unit -2 [Might] this turn and a friendly unit +2 [Might] this turn. They deal damage equal to their Mights to each other."
+    },
+    {
       "id": "rad-145",
       "name": "Orianna",
       "subtitle": "Lady of Clockwork",
@@ -40007,6 +40869,36 @@
       "altArt": false,
       "tags": [],
       "rulesText": "At the start of your Main Phase, you may pay [1] to choose a friendly gear. It becomes a unit gear with Might equal to its Energy cost until you choose another gear with me."
+    },
+    {
+      "id": "rad-146",
+      "name": "The Ball",
+      "subtitle": null,
+      "code": "RAD-146",
+      "cn": 146,
+      "set": "RAD",
+      "setName": "Radiance",
+      "types": [
+        "Gear"
+      ],
+      "superTypes": [
+        "Signature"
+      ],
+      "rarity": "Epic",
+      "domains": [
+        "Calm",
+        "Mind"
+      ],
+      "energy": 5,
+      "might": 0,
+      "image": "https://cdn.piltoverarchive.com/temporary/1791212587366-1l5lpl8fjy1.png",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": false,
+      "tags": [
+        "Orianna"
+      ],
+      "rulesText": "[Deploy] (Play this only to a battlefield. When an opponent holds here, kill this.)\n[Ganking] (While this is a unit, it can move from battlefield to battlefield.)\nWhen you play or move this, choose one:\n- Draw 1.\n- Deal 2 to enemy units here."
     },
     {
       "id": "rad-147",
@@ -40180,6 +41072,36 @@
       "rulesText": "Once each turn, when you play a card from face down, draw 1. Then, if it's not your turn, discard 1."
     },
     {
+      "id": "rad-154",
+      "name": "Last Caress",
+      "subtitle": null,
+      "code": "RAD-154",
+      "cn": 154,
+      "set": "RAD",
+      "setName": "Radiance",
+      "types": [
+        "Spell"
+      ],
+      "superTypes": [
+        "Signature"
+      ],
+      "rarity": "Epic",
+      "domains": [
+        "Body",
+        "Chaos"
+      ],
+      "energy": 2,
+      "might": 0,
+      "image": "https://cdn.piltoverarchive.com/cards/RAD-154.webp",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": false,
+      "tags": [
+        "Evelynn"
+      ],
+      "rulesText": "[Reaction] (Play at any time, even before spells and abilities resolve.)\nThe next unit you play this turn (even from face down) can be played to any battlefield. When you play it, [Buff] it. (Give it a +1 [Might] buff if it doesn't have one.)"
+    },
+    {
       "id": "rad-155",
       "name": "Jarvan IV",
       "subtitle": "Exemplar of Demacia",
@@ -40282,6 +41204,29 @@
       "altArt": false,
       "tags": [],
       "rulesText": null
+    },
+    {
+      "id": "rad-159",
+      "name": "Black Rose Sanctum",
+      "subtitle": null,
+      "code": "RAD-159",
+      "cn": 159,
+      "set": "RAD",
+      "setName": "Radiance",
+      "types": [
+        "Battlefield"
+      ],
+      "superTypes": [],
+      "rarity": "Uncommon",
+      "domains": [],
+      "energy": 0,
+      "might": 0,
+      "image": "https://cdn.piltoverarchive.com/cards/RAD-159.webp",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": false,
+      "tags": [],
+      "rulesText": "For each player, the first time each turn a non-token unit they control dies here, they play a 1 [Might] Recruit unit token to their base."
     },
     {
       "id": "rad-160",
@@ -41049,6 +41994,31 @@
         "showcase"
       ],
       "rulesText": "[Tank]\nI get +1 [S] for each buffed friendly unit at my battlefield."
+    },
+    {
+      "id": "rad-184",
+      "name": "Packed Amphitheater",
+      "subtitle": null,
+      "code": "RAD-184",
+      "cn": 184,
+      "set": "RAD",
+      "setName": "Radiance",
+      "types": [
+        "Battlefield"
+      ],
+      "superTypes": [],
+      "rarity": "Showcase",
+      "domains": [],
+      "energy": 0,
+      "might": 0,
+      "image": "https://cdn.piltoverarchive.com/cards/RAD-184.webp",
+      "signed": false,
+      "overnumbered": true,
+      "altArt": false,
+      "tags": [
+        "overnumbered"
+      ],
+      "rulesText": "Champion units here have +1 [Might]."
     }
   ]
 }
