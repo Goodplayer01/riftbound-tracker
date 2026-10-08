@@ -3,6 +3,7 @@ import type { BorrowedCard, BorrowedGroup, Card, Catalog, Deck, DeckSection, Pri
 import { loadBorrowed, loadCollection, loadDecks, saveBorrowed, saveCollection, saveDecks, type Collection } from './storage'
 import { loadLang, saveLang, t, type Lang } from './i18n'
 import { Dopamin } from './Dopamin'
+import { SearchInput } from './SearchInput'
 import {
   detectKeywordsInText,
   keywordsForCard,
@@ -2793,11 +2794,12 @@ export default function App() {
                   <div className="sub">{totals.unique} Unique | {totals.copies} {t(lang, 'bulk.copies')}</div>
                 )}
               </div>
-              <input
-                className="search grow"
+              <SearchInput
+                wrapClassName="grow"
+                lang={lang}
                 placeholder={t(lang, 'collection.search')}
                 value={q}
-                onChange={(e) => setQ(e.target.value)}
+                onChange={setQ}
               />
               <button
                 type="button"
@@ -2865,11 +2867,12 @@ export default function App() {
         {tab === 'catalog' && (
           <>
             <div className="toolbar">
-              <input
-                className="search grow"
+              <SearchInput
+                wrapClassName="grow"
+                lang={lang}
                 placeholder={t(lang, 'collection.search')}
                 value={q}
-                onChange={(e) => setQ(e.target.value)}
+                onChange={setQ}
               />
               <select className="select" style={{ maxWidth: 180 }} value={setFilter} onChange={(e) => setSetFilter(e.target.value)}>
                 <option value="">{t(lang, 'catalog.allSets')}</option>
@@ -3005,11 +3008,11 @@ export default function App() {
             </section>
             <section className="panel col-fill">
               <h2>{t(lang, 'sales.addTitle')}</h2>
-              <input
-                className="search"
+              <SearchInput
+                lang={lang}
                 placeholder={t(lang, 'sales.searchOwned')}
                 value={saleQ}
-                onChange={(e) => setSaleQ(e.target.value)}
+                onChange={setSaleQ}
                 style={{ marginBottom: 10 }}
               />
               <div className="list">
@@ -3251,7 +3254,7 @@ export default function App() {
             <section className="panel col-fill">
               <h2>{t(lang, 'decks.cardsTitle', { section: SECTION_LABEL[activeSection] })}</h2>
               <div className="toolbar">
-                <input className="search grow" placeholder={t(lang, 'decks.search')} value={q} onChange={(e) => setQ(e.target.value)} />
+                <SearchInput wrapClassName="grow" lang={lang} placeholder={t(lang, 'decks.search')} value={q} onChange={setQ} />
                 <label className="pill">
                   <input type="checkbox" checked={deckOwnedOnly} onChange={(e) => setDeckOwnedOnly(e.target.checked)} /> {t(lang, 'catalog.ownedOnly')}
                 </label>
@@ -3537,11 +3540,12 @@ export default function App() {
             <section className="panel col-fill">
               <h2>{t(lang, 'borrowed.cardsTitle')}</h2>
               <div className="toolbar">
-                <input
-                  className="search grow"
+                <SearchInput
+                  wrapClassName="grow"
+                  lang={lang}
                   placeholder={t(lang, 'decks.search')}
                   value={q}
-                  onChange={(e) => setQ(e.target.value)}
+                  onChange={setQ}
                 />
                 <select
                   className="select"
@@ -3625,10 +3629,12 @@ export default function App() {
         {tab === 'stores' && (
           <div className="stores-page">
             <div className="stores-search">
-              <input
+              <SearchInput
                 className="field stores-query"
+                wrapClassName="stores-query-wrap"
+                lang={lang}
                 value={storeQuery}
-                onChange={(e) => setStoreQuery(e.target.value)}
+                onChange={setStoreQuery}
                 onKeyDown={(e) => { if (e.key === 'Enter') void runStoreSearch() }}
                 placeholder={t(lang, 'stores.queryPh')}
                 aria-label={t(lang, 'stores.query')}
