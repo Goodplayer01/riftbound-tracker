@@ -37786,6 +37786,34 @@
       "rulesText": "Choose an occupied enemy battlefield. Play three 1 [Might] Recruit unit tokens there."
     },
     {
+      "id": "rad-008",
+      "name": "War Scout",
+      "subtitle": null,
+      "code": "RAD-008",
+      "cn": 8,
+      "set": "RAD",
+      "setName": "Radiance",
+      "types": [
+        "Unit"
+      ],
+      "superTypes": [],
+      "rarity": "Common",
+      "domains": [
+        "Fury"
+      ],
+      "energy": 3,
+      "might": 2,
+      "image": "https://cdn.piltoverarchive.com/cards/RAD-008.webp",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": false,
+      "tags": [
+        "Demacia",
+        "Yordle"
+      ],
+      "rulesText": "[Accelerate] (You may pay [1] [Fury] as an additional cost to have me enter ready.)\nWhen you play me, give a unit +2 [Might] this turn."
+    },
+    {
       "id": "rad-012",
       "name": "Runeblade Anvil",
       "subtitle": null,
@@ -38032,6 +38060,95 @@
         "Noxus"
       ],
       "rulesText": "When you play me, reveal the top card of each opponent's Main Deck. Choose one and banish it, then play it, ignoring its cost. Recycle the rest."
+    },
+    {
+      "id": "rad-019",
+      "name": "Firebrand Raider",
+      "subtitle": null,
+      "code": "RAD-019",
+      "cn": 19,
+      "set": "RAD",
+      "setName": "Radiance",
+      "types": [
+        "Unit"
+      ],
+      "superTypes": [],
+      "rarity": "Rare",
+      "domains": [
+        "Fury"
+      ],
+      "energy": 6,
+      "might": 6,
+      "image": "https://cdn.piltoverarchive.com/cards/RAD-019.webp",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": false,
+      "tags": [
+        "Freljord"
+      ],
+      "rulesText": "I enter ready.\nWhen you play me, ready all enemy units.\nOther units enter ready.\nUnits don;t ready during the Awaken Phase."
+    },
+    {
+      "id": "rad-020",
+      "name": "Mordekaiser",
+      "subtitle": "Twice Slain",
+      "code": "RAD-020",
+      "cn": 20,
+      "set": "RAD",
+      "setName": "Radiance",
+      "types": [
+        "Unit"
+      ],
+      "superTypes": [
+        "Champion"
+      ],
+      "rarity": "Rare",
+      "domains": [
+        "Fury"
+      ],
+      "energy": 7,
+      "might": 5,
+      "image": "https://cdn.piltoverarchive.com/temporary/1791383641289-6fvwzgcnvex.png",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": false,
+      "tags": [
+        "Mordekaiser",
+        "Noxus",
+        "Spirit"
+      ],
+      "rulesText": "[Accelerate] (You may pay [1] [Fury] as an additional cost to have me enter ready.)\n[Assault 3] (+3 [Might] while I'm an attacker.)\nOnce each turn, if I would die, you may kill a friendly unit to heal me, exhaust me, and recall me instead."
+    },
+    {
+      "id": "rad-020a",
+      "name": "Mordekaiser",
+      "subtitle": "Twice Slain",
+      "code": "RAD-020a",
+      "cn": 20,
+      "set": "RAD",
+      "setName": "Radiance",
+      "types": [
+        "Unit"
+      ],
+      "superTypes": [
+        "Champion"
+      ],
+      "rarity": "Showcase",
+      "domains": [
+        "Fury"
+      ],
+      "energy": 7,
+      "might": 5,
+      "image": "https://cdn.piltoverarchive.com/temporary/1791383669670-ialltyx3c9.png",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": true,
+      "tags": [
+        "Mordekaiser",
+        "Noxus",
+        "Spirit"
+      ],
+      "rulesText": "[Accelerate] (You may pay [1] [Fury] as an additional cost to have me enter ready.)\n[Assault 3] (+3 [Might] while I'm an attacker.)\nOnce each turn, if I would die, you may kill a friendly unit to heal me, exhaust me, and recall me instead."
     },
     {
       "id": "rad-021",
@@ -38284,6 +38401,31 @@
       "altArt": false,
       "tags": [],
       "rulesText": "[Action] (Play on your turn or in showdowns.)\n As an additional cost to play this, exhaust a friendly unit.\n[Stun] a unit. (It doesn't deal combat damage this turn.)"
+    },
+    {
+      "id": "rad-029",
+      "name": "Life from Stone",
+      "subtitle": null,
+      "code": "RAD-029",
+      "cn": 29,
+      "set": "RAD",
+      "setName": "Radiance",
+      "types": [
+        "Spell"
+      ],
+      "superTypes": [],
+      "rarity": "Common",
+      "domains": [
+        "Calm"
+      ],
+      "energy": 1,
+      "might": 0,
+      "image": "https://cdn.piltoverarchive.com/cards/RAD-029.webp",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": false,
+      "tags": [],
+      "rulesText": "[Reaction] (Play any time, even before spells and abilities resolve.)\nAs an additional cost to play this, exhaust a friendly unit.\nDraw 1 and channel 1 rune exhausted."
     },
     {
       "id": "rad-033",
@@ -38551,6 +38693,91 @@
       "rulesText": "When you play me, ready a friendly legend.\nFriendly legends have \"[tap] : Give a unit +3 [might] this turn.\""
     },
     {
+      "id": "rad-041",
+      "name": "Hush",
+      "subtitle": null,
+      "code": "RAD-041",
+      "cn": 41,
+      "set": "RAD",
+      "setName": "Radiance",
+      "types": [
+        "Spell"
+      ],
+      "superTypes": [],
+      "rarity": "Rare",
+      "domains": [
+        "Calm"
+      ],
+      "energy": 1,
+      "might": 0,
+      "image": "https://cdn.piltoverarchive.com/temporary/1791432129130-9cd3i945j6.jpg",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": false,
+      "tags": [],
+      "rulesText": "[Reaction] (Play any time, even before spells and abilities resolve.)\nCounter a spell with Power cost [Rune] [Rune] or more."
+    },
+    {
+      "id": "rad-042",
+      "name": "Orianna",
+      "subtitle": "Exquisite",
+      "code": "RAD-042",
+      "cn": 42,
+      "set": "RAD",
+      "setName": "Radiance",
+      "types": [
+        "Unit"
+      ],
+      "superTypes": [
+        "Champion"
+      ],
+      "rarity": "Rare",
+      "domains": [
+        "Calm"
+      ],
+      "energy": 3,
+      "might": 4,
+      "image": "https://cdn.piltoverarchive.com/temporary/1791449408909-w6f7263hio.png",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": false,
+      "tags": [
+        "Orianna",
+        "Piltover"
+      ],
+      "rulesText": "[Shield] (+1 [Might] while I'm a defender.)\nI don't deal combat damage unless there's a friendly gear here."
+    },
+    {
+      "id": "rad-042a",
+      "name": "Orianna",
+      "subtitle": "Exquisite",
+      "code": "RAD-042a",
+      "cn": 42,
+      "set": "RAD",
+      "setName": "Radiance",
+      "types": [
+        "Unit"
+      ],
+      "superTypes": [
+        "Champion"
+      ],
+      "rarity": "Showcase",
+      "domains": [
+        "Calm"
+      ],
+      "energy": 3,
+      "might": 4,
+      "image": "https://cdn.piltoverarchive.com/temporary/1791449423640-myx8t5tpge.png",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": true,
+      "tags": [
+        "Orianna",
+        "Piltover"
+      ],
+      "rulesText": "[Shield] (+1 [Might] while I'm a defender.)\nI don't deal combat damage unless there's a friendly gear here."
+    },
+    {
       "id": "rad-043",
       "name": "Riven",
       "subtitle": "Broken Blade",
@@ -38795,6 +39022,31 @@
         "Shurima"
       ],
       "rulesText": "When you play me, [Predict 2]. (Look at the top 2 cards of your Main Deck. Recycle any of them and put the rest back in any order.)\n[Disarm 2] (When I attack, give an enemy unit here -2[Might] this turn.)"
+    },
+    {
+      "id": "rad-051",
+      "name": "Parallel Convergence",
+      "subtitle": null,
+      "code": "RAD-051",
+      "cn": 51,
+      "set": "RAD",
+      "setName": "Radiance",
+      "types": [
+        "Spell"
+      ],
+      "superTypes": [],
+      "rarity": "Common",
+      "domains": [
+        "Mind"
+      ],
+      "energy": 2,
+      "might": 0,
+      "image": "https://cdn.piltoverarchive.com/cards/RAD-051.webp",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": false,
+      "tags": [],
+      "rulesText": "As an additional cost to play this, return a friendly unit to its owner's hand.\nDeal 5 to a unit at a battlefield."
     },
     {
       "id": "rad-055",
@@ -39065,6 +39317,31 @@
       "rulesText": "[Disarm] (When I attack, give an enemy unit here -1 [S] this turn).\nWhile I'm in a showdown, your spells have [Reaction]. (Play them any time, even before spells and abilities resolve.)"
     },
     {
+      "id": "rad-064",
+      "name": "Scrutinizing Scope",
+      "subtitle": null,
+      "code": "RAD-064",
+      "cn": 64,
+      "set": "RAD",
+      "setName": "Radiance",
+      "types": [
+        "Gear"
+      ],
+      "superTypes": [],
+      "rarity": "Rare",
+      "domains": [
+        "Mind"
+      ],
+      "energy": 2,
+      "might": 0,
+      "image": "https://cdn.piltoverarchive.com/temporary/1791411303945-adng6twczh.png",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": false,
+      "tags": [],
+      "rulesText": "[1], [Tap]: Choose an opponent. They guess a card type. Reveal the top card of your Main Deck. If it has that type, recycle it. Otherwise, draw it. (Unit, gear and spell are types.)"
+    },
+    {
       "id": "rad-067",
       "name": "Clocktower Guardian",
       "subtitle": null,
@@ -39305,6 +39582,62 @@
         "Freljord"
       ],
       "rulesText": "When I move, reveal the top card of your Main Deck. If it's [Mighty], draw it. Otherwise, recycle it. (A unit is Mighty while it has 5+ [Might]."
+    },
+    {
+      "id": "rad-075",
+      "name": "Skystrike Squadron",
+      "subtitle": null,
+      "code": "RAD-075",
+      "cn": 75,
+      "set": "RAD",
+      "setName": "Radiance",
+      "types": [
+        "Unit"
+      ],
+      "superTypes": [],
+      "rarity": "Common",
+      "domains": [
+        "Body"
+      ],
+      "energy": 5,
+      "might": 4,
+      "image": "https://cdn.piltoverarchive.com/cards/RAD-075.webp",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": false,
+      "tags": [
+        "Demacia",
+        "Elite",
+        "Bird"
+      ],
+      "rulesText": "You may return a friendly gear to its owner's hand as an additional cost to play me. If you do, I cost [2] less.\n[Deflect] (Opponents must pay [Rune] to choose me with a spell or ability.)"
+    },
+    {
+      "id": "rad-076",
+      "name": "Sneaky Zeebles",
+      "subtitle": null,
+      "code": "RAD-076",
+      "cn": 76,
+      "set": "RAD",
+      "setName": "Radiance",
+      "types": [
+        "Unit"
+      ],
+      "superTypes": [],
+      "rarity": "Common",
+      "domains": [
+        "Body"
+      ],
+      "energy": 2,
+      "might": 1,
+      "image": "https://cdn.piltoverarchive.com/temporary/1791413062115-rqpz47onwe.webp",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": false,
+      "tags": [
+        "Mount Targon"
+      ],
+      "rulesText": "When I conquer, [Add] [Rune]. (Abilities that add resources can't be reacted to.)"
     },
     {
       "id": "rad-079",
@@ -39904,6 +40237,108 @@
       "rulesText": "When you play me, choose an opponent. You and that player each draw 1."
     },
     {
+      "id": "rad-100",
+      "name": "The Waters' Wage",
+      "subtitle": null,
+      "code": "RAD-100",
+      "cn": 100,
+      "set": "RAD",
+      "setName": "Radiance",
+      "types": [
+        "Spell"
+      ],
+      "superTypes": [],
+      "rarity": "Common",
+      "domains": [
+        "Chaos"
+      ],
+      "energy": 1,
+      "might": 0,
+      "image": "https://cdn.piltoverarchive.com/cards/RAD-100.webp",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": false,
+      "tags": [],
+      "rulesText": "[Hidden] (Hide now for [Rune] to react with later for [0].)\nPlay a Gold gear token exhausted. If it's your turn and you played this from face down, play three ready Gold gear tokens instead. (Gold tokens have \"[Reaction] Kill this,[Tap] : [Add] [Rune].\")"
+    },
+    {
+      "id": "rad-101",
+      "name": "An Offer You Can't Refuse",
+      "subtitle": null,
+      "code": "RAD-101",
+      "cn": 101,
+      "set": "RAD",
+      "setName": "Radiance",
+      "types": [
+        "Spell"
+      ],
+      "superTypes": [],
+      "rarity": "Uncommon",
+      "domains": [
+        "Chaos"
+      ],
+      "energy": 2,
+      "might": 0,
+      "image": "https://cdn.piltoverarchive.com/cards/RAD-101.webp",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": false,
+      "tags": [],
+      "rulesText": "[Action] (Play on your turn or in showdowns.)\nKill a gear. Its controller plays a Gold gear token exhausted. (Gold has \"[Reaction] Kill this, [Tap]: [Add] [Rune].\")"
+    },
+    {
+      "id": "rad-102",
+      "name": "Demon Shade",
+      "subtitle": null,
+      "code": "RAD-102",
+      "cn": 102,
+      "set": "RAD",
+      "setName": "Radiance",
+      "types": [
+        "Spell"
+      ],
+      "superTypes": [],
+      "rarity": "Uncommon",
+      "domains": [
+        "Chaos"
+      ],
+      "energy": 3,
+      "might": 0,
+      "image": "https://cdn.piltoverarchive.com/temporary/1791432041671-vb5cj7ridl.jpg",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": false,
+      "tags": [],
+      "rulesText": "[Hidden] (Hide now for [Rune] to react with later for [0].)\nChoose a friendly unit, then choose one –\n• Move it to an open battlefield.\n• Give it [Ganking] this turn if there are no open battlefields. (It can move from battlefield to battlefield."
+    },
+    {
+      "id": "rad-103",
+      "name": "Gutter Guardian",
+      "subtitle": null,
+      "code": "RAD-103",
+      "cn": 103,
+      "set": "RAD",
+      "setName": "Radiance",
+      "types": [
+        "Unit"
+      ],
+      "superTypes": [],
+      "rarity": "Uncommon",
+      "domains": [
+        "Chaos"
+      ],
+      "energy": 3,
+      "might": 3,
+      "image": "https://cdn.piltoverarchive.com/temporary/1791461200615-uv18g83l6jl.png",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": false,
+      "tags": [
+        "Zaun"
+      ],
+      "rulesText": "[Hidden] (Hide now for [Rune] to react later for [0].)\n[Show Off] a card with [Hidden]. (As you play me, you may reveal such a card from your hand or pick another friendly one on the board.)\nWhen you play me, if you showed off, [Add] [Rune]."
+    },
+    {
       "id": "rad-105",
       "name": "Reckless Innovator",
       "subtitle": null,
@@ -40132,6 +40567,68 @@
       "rulesText": "At the start of your Beginning Phase, each player reveals the top card of their Main Deck. If you revealed a card with the lowest energy cost, draw it. Recycle the rest."
     },
     {
+      "id": "rad-112",
+      "name": "Ziggs",
+      "subtitle": "Explosive",
+      "code": "RAD-112",
+      "cn": 112,
+      "set": "RAD",
+      "setName": "Radiance",
+      "types": [
+        "Unit"
+      ],
+      "superTypes": [
+        "Champion"
+      ],
+      "rarity": "Rare",
+      "domains": [
+        "Chaos"
+      ],
+      "energy": 4,
+      "might": 4,
+      "image": "https://cdn.piltoverarchive.com/temporary/1791399179686-tqy6a3i5pek.webp",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": false,
+      "tags": [
+        "Ziggs",
+        "Zaun",
+        "Yordle"
+      ],
+      "rulesText": "[1],[Tap]: Play a Bomb gear token to a battlefield. (It has [Deploy]. When it dies deal 2 to an enemy there and kill your other Bombs there.)\nWhen I defend, you may kill a friendly gear to give me +2[Might] this turn."
+    },
+    {
+      "id": "rad-112a",
+      "name": "Ziggs",
+      "subtitle": "Explosive",
+      "code": "RAD-112a",
+      "cn": 112,
+      "set": "RAD",
+      "setName": "Radiance",
+      "types": [
+        "Unit"
+      ],
+      "superTypes": [
+        "Champion"
+      ],
+      "rarity": "Showcase",
+      "domains": [
+        "Chaos"
+      ],
+      "energy": 4,
+      "might": 4,
+      "image": "https://cdn.piltoverarchive.com/temporary/1791399346609-rpf4neuoir.jpg",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": true,
+      "tags": [
+        "Ziggs",
+        "Zaun",
+        "Yordle"
+      ],
+      "rulesText": "[1],[Tap]: Play a Bomb gear token to a battlefield. (It has [Deploy]. When it dies deal 2 to an enemy there and kill your other Bombs there.)\nWhen I defend, you may kill a friendly gear to give me +2[Might] this turn."
+    },
+    {
       "id": "rad-114",
       "name": "Riven Deserter",
       "subtitle": null,
@@ -40320,6 +40817,83 @@
         "Dog"
       ],
       "rulesText": null
+    },
+    {
+      "id": "rad-120",
+      "name": "Meticulous Restorationist",
+      "subtitle": null,
+      "code": "RAD-120",
+      "cn": 120,
+      "set": "RAD",
+      "setName": "Radiance",
+      "types": [
+        "Unit"
+      ],
+      "superTypes": [],
+      "rarity": "Common",
+      "domains": [
+        "Order"
+      ],
+      "energy": 2,
+      "might": 2,
+      "image": "https://cdn.piltoverarchive.com/cards/RAD-120.webp",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": false,
+      "tags": [
+        "Piltover"
+      ],
+      "rulesText": "When you play a card with Energy cost [7] or more, you may play me from your trash for [Rune]."
+    },
+    {
+      "id": "rad-121",
+      "name": "One-Two Punch",
+      "subtitle": null,
+      "code": "RAD-121",
+      "cn": 121,
+      "set": "RAD",
+      "setName": "Radiance",
+      "types": [
+        "Spell"
+      ],
+      "superTypes": [],
+      "rarity": "Common",
+      "domains": [
+        "Order"
+      ],
+      "energy": 3,
+      "might": 0,
+      "image": "https://cdn.piltoverarchive.com/cards/RAD-121.webp",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": false,
+      "tags": [],
+      "rulesText": "[Action] (Play on your turn or in showdowns.)\n[Buff] a friendly unit and [Stun] an enemy unit. (Give the friendly unit a +1 [Might] buff if it doesn't have one. The enemy unit doesn't deal combat damage this turn.)"
+    },
+    {
+      "id": "rad-122",
+      "name": "Party Crasher",
+      "subtitle": null,
+      "code": "RAD-122",
+      "cn": 122,
+      "set": "RAD",
+      "setName": "Radiance",
+      "types": [
+        "Unit"
+      ],
+      "superTypes": [],
+      "rarity": "Common",
+      "domains": [
+        "Order"
+      ],
+      "energy": 9,
+      "might": 6,
+      "image": "https://cdn.piltoverarchive.com/temporary/1791374197047-l7hbgt0d0mb.png",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": false,
+      "tags": [],
+      "rulesText": "I cost [1] less for each exhausted unit you control.\n[Tank] (I must be assigned combat damage first.)"
     },
     {
       "id": "rad-125",
@@ -40531,6 +41105,36 @@
       "altArt": false,
       "tags": [],
       "rulesText": "If you would play a unit token to a location while I'm at a battlefield, you may play a 3 [S] Mech unit token to that same location instead."
+    },
+    {
+      "id": "rad-133a",
+      "name": "Jarvan IV",
+      "subtitle": "Royal Heir",
+      "code": "RAD-133a",
+      "cn": 133,
+      "set": "RAD",
+      "setName": "Radiance",
+      "types": [
+        "Unit"
+      ],
+      "superTypes": [
+        "Champion"
+      ],
+      "rarity": "Showcase",
+      "domains": [
+        "Order"
+      ],
+      "energy": 7,
+      "might": 7,
+      "image": "https://cdn.piltoverarchive.com/temporary/1791431858808-244lalebepr.jpg",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": true,
+      "tags": [
+        "Jarvan IV",
+        "Demacia"
+      ],
+      "rulesText": "[Assault] (+1 [Might] while I'm an attacker.)\n[Tank] (I must be assigned combat damage first.)\nWhen I attack, you may move a unit you control to my battlefield."
     },
     {
       "id": "rad-136",
