@@ -43,3 +43,7 @@ Output: `release/RiftboundTracker-Setup-<version>.exe`
 
 - Collection data stays on your PC (localStorage in the app profile).
 - Unsigned installer may trigger Windows SmartScreen until a code-signing cert is added.
+
+## Credits
+
+UI icons in `src/Icon.tsx` are from [Lucide](https://lucide.dev) (ISC License, Copyright (c) Lucide Icons and Contributors). The torn booster pack icon on the Dopamin tab is a custom drawing in the same style.

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { Icon } from './Icon'
 import type { Card, PriceBook } from './types'
 import { t, type Lang } from './i18n'
 import { displayCardName } from './deckHelpers'
@@ -219,8 +220,8 @@ export function Dopamin({ cards, lang, prices }: { cards: Card[]; lang: Lang; pr
       <div className="dop-packs">{t(lang, 'dopamin.packs', { n: packsOpened })}</div>
       {done && (
         <div className="dop-actions">
-          <button type="button" className="chip active" onClick={resetPack}>{t(lang, 'dopamin.again')}</button>
-          <button type="button" className="chip" onClick={() => { resetPack(); setPacksOpened(0); setSetId(null) }}>{t(lang, 'dopamin.back')}</button>
+          <button type="button" className="chip active" onClick={resetPack}><Icon name="refresh-cw" />{t(lang, 'dopamin.again')}</button>
+          <button type="button" className="chip" onClick={() => { resetPack(); setPacksOpened(0); setSetId(null) }}><Icon name="arrow-left" />{t(lang, 'dopamin.back')}</button>
         </div>
       )}
     </div>

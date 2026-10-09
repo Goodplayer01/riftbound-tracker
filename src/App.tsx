@@ -65,6 +65,7 @@ import {
   drawTopCard,
 } from './handTester'
 import { downloadSharePng, renderDeckShareCanvas } from './deckScreenshot'
+import { Icon } from './Icon'
 
 type Tab = 'collection' | 'catalog' | 'sales' | 'decks' | 'borrowed' | 'stores' | 'dopamin'
 
@@ -1811,7 +1812,7 @@ export default function App() {
                 setClearSec(sec)
               }}
             >
-              {t(lang, 'decks.clearSection')}
+              <Icon name="list-x" />{t(lang, 'decks.clearSection')}
             </button>
           )}
           <span className={`deck-sec-cap${over ? ' over' : ''}`}>{count}/{cap}</span>
@@ -1858,7 +1859,7 @@ export default function App() {
                       bump(c.id, 'qty', 1)
                     }}
                   >
-                    {t(lang, 'decks.addToCollection')}
+                    <Icon name="plus" />{t(lang, 'decks.addToCollection')}
                   </button>
                 )}
                 {isSingleSlotSection(sec) ? (
@@ -1872,7 +1873,7 @@ export default function App() {
                       removeDeckCard(dc.id, sec)
                     }}
                   >
-                    🗑
+                    <Icon name="trash-2" size={16} />
                   </button>
                 ) : (
                   <div className="qty" onClick={(e) => e.stopPropagation()}>
@@ -2311,7 +2312,7 @@ export default function App() {
                         rows={10}
                       />
                       <div className="toolbar" style={{ marginBottom: 0 }}>
-                        <button className="btn primary" disabled={!deckImportText.trim()} onClick={() => runDeckImport(deckImportText)}>{t(lang, 'decks.importBtn')}</button>
+                        <button className="btn primary" disabled={!deckImportText.trim()} onClick={() => runDeckImport(deckImportText)}><Icon name="upload" />{t(lang, 'decks.importBtn')}</button>
                       </div>
                     </div>
                   )}
@@ -2332,7 +2333,7 @@ export default function App() {
                           style={{ marginTop: 6 }}
                           onClick={() => setMissingExpanded((v) => !v)}
                         >
-                          {t(lang, missingExpanded ? 'decks.hideMissing' : 'decks.showMissing')}
+                          <Icon name={missingExpanded ? 'chevron-up' : 'chevron-down'} />{t(lang, missingExpanded ? 'decks.hideMissing' : 'decks.showMissing')}
                         </button>
                         {missingExpanded && (
                           <div className="deck-warn-list">
@@ -2380,7 +2381,7 @@ export default function App() {
                                         bump(u.id, 'qty', 1)
                                       }}
                                     >
-                                      {t(lang, 'decks.addToCollection')}
+                                      <Icon name="plus" />{t(lang, 'decks.addToCollection')}
                                     </button>
                                   )}
                                 </div>
@@ -2395,7 +2396,7 @@ export default function App() {
                   {deckNotice && (
                     <div className="deck-notice" role="status">
                       <span>{deckNotice}</span>
-                      <button type="button" className="btn small" onClick={() => setDeckNotice(null)}>OK</button>
+                      <button type="button" className="btn small" onClick={() => setDeckNotice(null)}><Icon name="check" />OK</button>
                     </div>
                   )}
 
@@ -2445,7 +2446,7 @@ export default function App() {
                               <>
                                 <div className="hand-tester-controls">
                                   <button type="button" className="btn primary" onClick={dealNewHand}>
-                                    {t(lang, 'hand.new')}
+                                    <Icon name="hand" />{t(lang, 'hand.new')}
                                   </button>
                                   <button
                                     type="button"
@@ -2454,7 +2455,7 @@ export default function App() {
                                     title={mulliganUsed ? t(lang, 'hand.mulliganDone') : t(lang, 'hand.selectHint')}
                                     onClick={runMulligan}
                                   >
-                                    {t(lang, 'hand.mulligan')}
+                                    <Icon name="shuffle" />{t(lang, 'hand.mulligan')}
                                   </button>
                                   {handCards && !mulliganUsed && (
                                     <span className="hand-hint">{t(lang, 'hand.selected', { n: handSelected.length })}</span>
@@ -2469,7 +2470,7 @@ export default function App() {
                                     title={handDrawn ? t(lang, 'hand.drawDone') : handLibrary.length < 1 ? t(lang, 'hand.noLibrary') : undefined}
                                     onClick={drawTurnOneCard}
                                   >
-                                    {t(lang, 'hand.draw')}
+                                    <Icon name="arrow-down-to-line" />{t(lang, 'hand.draw')}
                                   </button>
                                 </div>
                                 {!handCards ? (
@@ -2527,25 +2528,39 @@ export default function App() {
   return (
     <div className="app">
       <header className="top titlebar">
-        <div className="brand"><img className="brand-dante" src={publicAsset('dante.png')} alt="Dante" />Deakrix <span>Riftbound Tracker</span></div>
+        <div className="brand">
+          <img className="brand-dante" src={publicAsset('dante.png')} alt="Dante" />
+          <div className="brand-text">
+            <div className="brand-title">Deakrix <span>Riftbound Tracker</span></div>
+            <div className="maker-credit">made by Stefan</div>
+          </div>
+        </div>
         <nav className="tabs no-drag">
           {([
-            ['collection', 'tab.collection'],
-            ['catalog', 'tab.catalog'],
-            ['sales', 'tab.sales'],
-            ['decks', 'tab.decks'],
-            ['borrowed', 'tab.borrowed'],
-            ['stores', 'tab.stores'],
-            ['dopamin', 'tab.dopamin'],
-          ] as const).map(([id, key]) => (
+            ['collection', 'tab.collection', 'album'],
+            ['catalog', 'tab.catalog', 'layout-grid'],
+            ['sales', 'tab.sales', 'coins'],
+            ['decks', 'tab.decks', 'layers'],
+            ['borrowed', 'tab.borrowed', 'handshake'],
+            ['stores', 'tab.stores', 'store'],
+            ['dopamin', 'tab.dopamin', 'booster-open'],
+          ] as const).map(([id, key, icon]) => (
             <button key={id} className={`tab ${tab === id ? 'active' : ''}`} onClick={() => setTab(id)}>
-              {t(lang, key)}
+              <Icon name={icon} />
+              <span className="tab-label">{t(lang, key)}</span>
             </button>
           ))}
         </nav>
         <div className="stats no-drag" style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-          <span className="maker-credit">made by Stefan</span>
-          <span>{t(lang, 'stats.line', { unique: totals.unique, copies: totals.copies, catalog: totals.catalog })}</span>
+          {(() => {
+            const parts = t(lang, 'stats.line', { unique: totals.unique, copies: totals.copies, catalog: totals.catalog }).split(' | ')
+            return (
+              <span className="stats-lines">
+                <span>{parts.slice(0, 2).join(' | ')}</span>
+                <span>{parts.slice(2).join(' | ')}</span>
+              </span>
+            )
+          })()}
           {collectionValue && (
             <span className="value-pill" title={t(lang, 'stats.valueTitle')}>
               ~{collectionValue.sum.toFixed(2)} EUR
@@ -2561,7 +2576,7 @@ export default function App() {
               aria-expanded={langMenuOpen}
               onClick={() => setLangMenuOpen((o) => !o)}
             >
-              {t(lang, 'lang.label')}
+              <img className="lang-flag" src={lang === 'de' ? 'flags/de.svg' : 'flags/gb.svg'} alt="" width={18} height={12} />
               <svg className="lang-caret" width="10" height="6" viewBox="0 0 10 6" aria-hidden="true">
                 <path d="M1 1l4 4 4-4" stroke="currentColor" strokeWidth="1.4" fill="none" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
@@ -2642,11 +2657,11 @@ export default function App() {
                   })
                 }}
               >
-                {t(lang, 'collection.hideNexusNight')}
+                <Icon name="eye-off" />{t(lang, 'collection.hideNexusNight')}
               </button>
-              <button className="btn" onClick={exportCsv}>{t(lang, 'catalog.csvExport')}</button>
+              <button className="btn" onClick={exportCsv}><Icon name="file-down" />{t(lang, 'catalog.csvExport')}</button>
               <label className="btn">
-                {t(lang, 'catalog.csvImport')}
+                <Icon name="file-up" />{t(lang, 'catalog.csvImport')}
                 <input
                   type="file"
                   accept=".csv,text/csv"
@@ -2659,7 +2674,7 @@ export default function App() {
                 />
               </label>
               <button type="button" className="btn" onClick={() => setQuickOpen((v) => !v)}>
-                {t(lang, 'collection.quickImport')}
+                <Icon name="zap" />{t(lang, 'collection.quickImport')}
               </button>
             </div>
             {quickOpen && (
@@ -2674,8 +2689,8 @@ export default function App() {
                   onChange={(e) => setBulkText(e.target.value)}
                   placeholder={t(lang, quickMode === 'codes' ? 'collection.quickPhCodes' : 'collection.quickPhList')}
                 />
-                <button className="btn primary small" disabled={!bulkText.trim()} onClick={runQuickImport}>{t(lang, 'decks.importBtn')}</button>
-                <button type="button" className="btn small" onClick={() => setQuickOpen(false)}>{t(lang, 'decks.exportClose')}</button>
+                <button className="btn primary small" disabled={!bulkText.trim()} onClick={runQuickImport}><Icon name="upload" />{t(lang, 'decks.importBtn')}</button>
+                <button type="button" className="btn small" onClick={() => setQuickOpen(false)}><Icon name="x" />{t(lang, 'decks.exportClose')}</button>
                 {bulkReport && <p className="help">{bulkReport}</p>}
               </div>
             )}
@@ -2752,7 +2767,7 @@ export default function App() {
         {tab === 'collection' && binderView != null && (
           <div className="binder-view">
             <div className="toolbar binder-toolbar">
-              <button className="btn" onClick={() => { setBinderView(null); setBinderRarity(null) }}>{t(lang, 'collection.back')}</button>
+              <button className="btn" onClick={() => { setBinderView(null); setBinderRarity(null) }}><Icon name="arrow-left" />{t(lang, 'collection.back')}</button>
               <div className="grow">
                 <div className="section-title">
                   {binderView === 'owned'
@@ -2806,7 +2821,7 @@ export default function App() {
                 className={`chip ${binderOwnedOnly ? 'active' : ''}`}
                 onClick={() => { setBinderOwnedOnly((v) => !v); if (!binderOwnedOnly) setBinderMissing(false) }}
               >
-                {t(lang, 'collection.ownedOnly')}
+                <Icon name="check" />{t(lang, 'collection.ownedOnly')}
               </button>
               {binderView !== 'owned' && (
                 <button
@@ -2814,7 +2829,7 @@ export default function App() {
                   className={`chip ${binderMissing ? 'active' : ''}`}
                   onClick={() => { setBinderMissing((v) => !v); if (!binderMissing) setBinderOwnedOnly(false) }}
                 >
-                  {t(lang, 'collection.missing')}
+                  <Icon name="list-x" />{t(lang, 'collection.missing')}
                 </button>
               )}
               <RarityMenu
@@ -2904,9 +2919,9 @@ export default function App() {
                 <input type="checkbox" checked={ownedOnly} onChange={(e) => setOwnedOnly(e.target.checked)} /> {t(lang, 'catalog.ownedOnly')}
               </label>
               <DomainFilterRow value={domainFilter} onChange={setDomainFilter} lang={lang} />
-              <button className="btn" onClick={exportCsv}>{t(lang, 'catalog.csvExport')}</button>
+              <button className="btn" onClick={exportCsv}><Icon name="file-down" />{t(lang, 'catalog.csvExport')}</button>
               <label className="btn">
-                {t(lang, 'catalog.csvImport')}
+                <Icon name="file-up" />{t(lang, 'catalog.csvImport')}
                 <input
                   type="file"
                   accept=".csv,text/csv"
@@ -2954,7 +2969,7 @@ export default function App() {
                   onClick={confirmSale}
                   title={saleSelectedCount === 0 ? t(lang, 'sales.pickFirst') : undefined}
                 >
-                  {t(lang, 'sales.markSold')}{saleSelectedCount > 0 ? ` (${saleSelectedCount})` : ''}
+                  <Icon name="badge-check" />{t(lang, 'sales.markSold')}{saleSelectedCount > 0 ? ` (${saleSelectedCount})` : ''}
                 </button>
               </div>
               {saleReport && <p className="help">{saleReport}</p>}
@@ -3042,8 +3057,8 @@ export default function App() {
                         <div className="sub">{c.code} · x{have}{room < have ? t(lang, 'sales.inCart', { n: have - room }) : ''}</div>
                         <PriceBits entry={priceBook?.cards[c.id]} lang={lang} />
                       </div>
-                      <button className="btn small primary" disabled={room <= 0} onClick={() => addToSale(c.id, 1)}>
-                        +
+                      <button className="btn small primary" disabled={room <= 0} onClick={() => addToSale(c.id, 1)} title={t(lang, 'sales.toCart')} aria-label={t(lang, 'sales.toCart')}>
+                        <Icon name="shopping-cart" />
                       </button>
                     </div>
                   )
@@ -3065,10 +3080,10 @@ export default function App() {
                   placeholder={t(lang, 'sales.pastePh')}
                 />
                 <button className="btn primary small" disabled={!salePaste.trim()} onClick={applySalePaste}>
-                  {t(lang, 'sales.toCart')}
+                  <Icon name="shopping-cart" />{t(lang, 'sales.toCart')}
                 </button>
                 <button className="btn small" disabled={!salePaste.trim()} onClick={() => setSalePaste('')}>
-                  {t(lang, 'sales.clear')}
+                  <Icon name="eraser" />{t(lang, 'sales.clear')}
                 </button>
               </div>
             </section>
@@ -3083,12 +3098,12 @@ export default function App() {
                 <span className="deck-list-count">{t(lang, 'decks.count', { n: decks.length })}</span>
                 <span style={{ flex: 1 }} />
                 {deckUndoOn && (
-                  <button type="button" className="btn" onClick={restoreDecks}>{t(lang, 'decks.restore')}</button>
+                  <button type="button" className="btn" onClick={restoreDecks}><Icon name="rotate-ccw" />{t(lang, 'decks.restore')}</button>
                 )}
                 <button type="button" className="btn deck-trash" disabled={decks.length === 0} onClick={() => setDeckConfirm({ kind: 'all' })}>
-                  {t(lang, 'decks.deleteAll')}
+                  <Icon name="trash-2" />{t(lang, 'decks.deleteAll')}
                 </button>
-                <button className="btn primary" onClick={newDeck}>{t(lang, 'decks.new')}</button>
+                <button className="btn primary" onClick={newDeck}><Icon name="plus" />{t(lang, 'decks.new')}</button>
               </div>
               <div className="deck-accordion" style={{ marginBottom: 12 }}>
                 {decks.length === 0 && <div className="empty">{t(lang, 'decks.empty')}</div>}
@@ -3161,7 +3176,7 @@ export default function App() {
                                 }}
                                 onKeyDown={(e) => e.stopPropagation()}
                               >
-                                {t(lang, 'decks.export')}
+                                <Icon name="download" />{t(lang, 'decks.export')}
                               </button>
                               <button
                                 type="button"
@@ -3173,7 +3188,7 @@ export default function App() {
                                 }}
                                 onKeyDown={(e) => e.stopPropagation()}
                               >
-                                {t(lang, 'decks.import')}
+                                <Icon name="upload" />{t(lang, 'decks.import')}
                               </button>
                               {isDeckComplete(d.cards) && (
                                 <button
@@ -3186,7 +3201,7 @@ export default function App() {
                                   }}
                                   onKeyDown={(e) => e.stopPropagation()}
                                 >
-                                  {deckShotBusy ? t(lang, 'decks.shareBusy') : t(lang, 'decks.share')}
+                                  <Icon name="share-2" />{deckShotBusy ? t(lang, 'decks.shareBusy') : t(lang, 'decks.share')}
                                 </button>
                               )}
                             </>
@@ -3205,7 +3220,7 @@ export default function App() {
                             }}
                             onKeyDown={(e) => e.stopPropagation()}
                           >
-                            🗑
+                            <Icon name="trash-2" size={16} />
                           </button>
                         )}
                       </div>
@@ -3238,7 +3253,7 @@ export default function App() {
                                 setDeckConfirm({ kind: 'one', id: d.id, name: d.name })
                               }}
                             >
-                              🗑
+                              <Icon name="trash-2" size={16} />
                             </button>
                           </div>
                           {renderOpenDeck()}
@@ -3327,7 +3342,7 @@ export default function App() {
                         }
                         onClick={() => addToDeck(c.id, activeSection)}
                       >
-                        Add
+                        <Icon name="plus" />{t(lang, 'decks.add')}
                       </button>
                     </div>
                   ))}
@@ -3344,10 +3359,10 @@ export default function App() {
                 <span className="deck-list-count">{t(lang, 'borrowed.count', { n: borrowed.length })}</span>
                 <span style={{ flex: 1 }} />
                 {borrowUndoOn && (
-                  <button type="button" className="btn" onClick={restoreBorrowed}>{t(lang, 'decks.restore')}</button>
+                  <button type="button" className="btn" onClick={restoreBorrowed}><Icon name="rotate-ccw" />{t(lang, 'decks.restore')}</button>
                 )}
                 <button type="button" className="btn deck-trash" disabled={borrowed.length === 0} onClick={() => setDeckConfirm({ kind: 'borrowAll' })}>
-                  {t(lang, 'borrowed.deleteAll')}
+                  <Icon name="trash-2" />{t(lang, 'borrowed.deleteAll')}
                 </button>
                 <button
                   className="btn"
@@ -3356,8 +3371,8 @@ export default function App() {
                     setBorrowImportOpen((v) => !v)
                     setBorrowImportText('')
                   }}
-                >{t(lang, 'borrowed.import')}</button>
-                <button className="btn primary" onClick={newBorrowedGroup}>{t(lang, 'borrowed.new')}</button>
+                ><Icon name="upload" />{t(lang, 'borrowed.import')}</button>
+                <button className="btn primary" onClick={newBorrowedGroup}><Icon name="plus" />{t(lang, 'borrowed.new')}</button>
               </div>
               <p className="help">{t(lang, 'borrowed.help')}</p>
               <div className="deck-accordion">
@@ -3418,7 +3433,7 @@ export default function App() {
                             }}
                             onKeyDown={(e) => e.stopPropagation()}
                           >
-                            🗑
+                            <Icon name="trash-2" size={16} />
                           </button>
                         )}
                       </div>
@@ -3436,7 +3451,7 @@ export default function App() {
                                 setDeckConfirm({ kind: 'borrow', id: g.id, name: g.name })
                               }}
                             >
-                              🗑
+                              <Icon name="trash-2" size={16} />
                             </button>
                           </div>
 
@@ -3455,7 +3470,7 @@ export default function App() {
                                   className="btn primary"
                                   disabled={!borrowImportText.trim()}
                                   onClick={() => runBorrowImport(borrowImportText)}
-                                >{t(lang, 'borrowed.importBtn')}</button>
+                                ><Icon name="upload" />{t(lang, 'borrowed.importBtn')}</button>
                               </div>
                             </div>
                           )}
@@ -3463,7 +3478,7 @@ export default function App() {
                           {borrowNotice && (
                             <div className="deck-notice" role="status">
                               <span>{borrowNotice}</span>
-                              <button type="button" className="btn small" onClick={() => setBorrowNotice(null)}>OK</button>
+                              <button type="button" className="btn small" onClick={() => setBorrowNotice(null)}><Icon name="check" />OK</button>
                             </div>
                           )}
 
@@ -3523,7 +3538,7 @@ export default function App() {
                                       removeBorrowedCard(bc.id)
                                     }}
                                   >
-                                    🗑
+                                    <Icon name="trash-2" size={16} />
                                   </button>
                                 </div>
                               )
@@ -3615,7 +3630,7 @@ export default function App() {
                           title={room <= 0 ? t(lang, 'borrowed.noAvail') : undefined}
                           onClick={() => bumpBorrowedCard(c.id, 1)}
                         >
-                          {t(lang, 'decks.add')}
+                          <Icon name="plus" />{t(lang, 'decks.add')}
                         </button>
                       </div>
                     )
@@ -3684,22 +3699,22 @@ export default function App() {
                   setStoreAllGermany(true)
                   void runGermanySearch()
                 }}
-              >{t(lang, 'stores.allGermany')}</button>
+              ><Icon name="globe" />{t(lang, 'stores.allGermany')}</button>
               <button
                 type="button"
                 className={`btn${storeStockOnly ? ' primary' : ''}`}
                 aria-pressed={storeStockOnly}
                 title={t(lang, 'stores.stockOnlyHint')}
                 onClick={() => setStoreStockOnly((v) => !v)}
-              >{t(lang, 'stores.stockOnly')}</button>
+              ><Icon name="package" />{t(lang, 'stores.stockOnly')}</button>
               <button className="btn primary" disabled={storeBusy} onClick={() => void runStoreSearch()}>
-                {storeBusy ? t(lang, 'stores.searching') : t(lang, 'stores.search')}
+                <Icon name="search" />{storeBusy ? t(lang, 'stores.searching') : t(lang, 'stores.search')}
               </button>
               <button
                 type="button"
                 className="btn"
                 onClick={() => openStoreLink(STORE_LOCATOR_URL)}
-              >{t(lang, 'stores.openOfficial')}</button>
+              ><Icon name="external-link" />{t(lang, 'stores.openOfficial')}</button>
             </div>
             <p className="help stores-help">{t(lang, 'stores.help')}</p>
             {storeError && <p className="help" style={{ color: 'var(--danger)' }}>{storeError}</p>}
@@ -3751,11 +3766,11 @@ export default function App() {
                         <div className="store-actions">
                           {h.website && (
                             <button type="button" className="btn small" onClick={() => openStoreLink(websiteUrl(h.website!))}>
-                              {t(lang, 'stores.website')}
+                              <Icon name="external-link" />{t(lang, 'stores.website')}
                             </button>
                           )}
                           <button type="button" className="btn small" onClick={() => openStoreLink(mapsUrl(h))}>
-                            {t(lang, 'stores.maps')}
+                            <Icon name="map-pinned" />{t(lang, 'stores.maps')}
                           </button>
                         </div>
                         {products && shown.length > 0 ? (
@@ -3773,7 +3788,7 @@ export default function App() {
                                   className="store-stock-more"
                                   onClick={() => setStoreStockOpen((prev) => ({ ...prev, [h.id]: !open }))}
                                 >
-                                  {open ? t(lang, 'stores.showLess') : t(lang, 'stores.showMore')}
+                                  <Icon name={open ? 'chevron-up' : 'chevron-down'} size={13} />{open ? t(lang, 'stores.showLess') : t(lang, 'stores.showMore')}
                                 </button>
                               </li>
                             )}
@@ -3806,7 +3821,7 @@ export default function App() {
             <div className="deck-share-toolbar">
               <h2 id="deck-share-title">{t(lang, 'decks.sharePreview')}</h2>
               <button type="button" className="btn small" onClick={() => setSharePreview(null)}>
-                {t(lang, 'decks.shareClose')}
+                <Icon name="x" />{t(lang, 'decks.shareClose')}
               </button>
               <button
                 type="button"
@@ -3817,10 +3832,10 @@ export default function App() {
                   setDeckExportText(sharePreview.exportText)
                 }}
               >
-                {t(lang, 'decks.export')}
+                <Icon name="download" />{t(lang, 'decks.export')}
               </button>
               <button type="button" className="btn small primary" onClick={downloadDeckShare}>
-                {t(lang, 'decks.share')}
+                <Icon name="share-2" />{t(lang, 'decks.share')}
               </button>
             </div>
             <div className="deck-share-img-wrap">
@@ -3842,9 +3857,9 @@ export default function App() {
             <h2 id="deck-export-title">{t(lang, 'decks.exportTitle')}</h2>
             <textarea className="field" readOnly rows={12} value={deckExportText} onFocus={(e) => e.currentTarget.select()} />
             <div className="confirm-actions">
-              <button type="button" className="btn small" onClick={() => setDeckExportText(null)}>{t(lang, 'decks.exportClose')}</button>
+              <button type="button" className="btn small" onClick={() => setDeckExportText(null)}><Icon name="x" />{t(lang, 'decks.exportClose')}</button>
               <button type="button" className="btn small primary" onClick={() => void copyDeckExport()}>
-                {deckExportCopied ? t(lang, 'decks.copied') : t(lang, 'decks.copy')}
+                <Icon name={deckExportCopied ? 'check' : 'copy'} />{deckExportCopied ? t(lang, 'decks.copied') : t(lang, 'decks.copy')}
               </button>
             </div>
           </div>
@@ -3869,8 +3884,8 @@ export default function App() {
                     : t(lang, 'decks.deleteOneConfirm', { name: deckConfirm.name })}
             </p>
             <div className="confirm-actions">
-              <button type="button" className="btn small" onClick={() => setDeckConfirm(null)}>{t(lang, 'decks.clearCancel')}</button>
-              <button type="button" className="btn small deck-trash" onClick={applyDeckConfirm}>{t(lang, 'decks.clearConfirm')}</button>
+              <button type="button" className="btn small" onClick={() => setDeckConfirm(null)}><Icon name="x" />{t(lang, 'decks.clearCancel')}</button>
+              <button type="button" className="btn small deck-trash" onClick={applyDeckConfirm}><Icon name="trash-2" />{t(lang, 'decks.clearConfirm')}</button>
             </div>
           </div>
         </div>
@@ -3886,7 +3901,7 @@ export default function App() {
           <div className="panel confirm-box" onClick={(e) => e.stopPropagation()}>
             <p id="clear-sec-title" className="help" style={{ margin: 0 }}>{t(lang, 'decks.clearSectionConfirm', { section: SECTION_LABEL[clearSec] })}</p>
             <div className="confirm-actions">
-              <button type="button" className="btn small" onClick={() => setClearSec(null)}>{t(lang, 'decks.clearCancel')}</button>
+              <button type="button" className="btn small" onClick={() => setClearSec(null)}><Icon name="x" />{t(lang, 'decks.clearCancel')}</button>
               <button
                 type="button"
                 className="btn small deck-trash"
@@ -3895,7 +3910,7 @@ export default function App() {
                   setClearSec(null)
                   clearDeckSection(sec)
                 }}
-              >{t(lang, 'decks.clearConfirm')}</button>
+              ><Icon name="trash-2" />{t(lang, 'decks.clearConfirm')}</button>
             </div>
           </div>
         </div>
@@ -3924,7 +3939,7 @@ export default function App() {
               onClick={closeCardLightbox}
               title={t(lang, 'card.enlargeClose')}
               aria-label={t(lang, 'card.enlargeClose')}
-            >×</button>
+            ><Icon name="x" size={18} /></button>
             <div className="card-lightbox-art">
               {cardLightbox.image ? (
                 <img
@@ -4029,7 +4044,7 @@ export default function App() {
                   className="btn"
                   style={{ marginTop: 10 }}
                   onClick={() => openCm(priceBook?.cards[cardLightbox.id])}
-                >{t(lang, 'price.openCm')}</button>
+                ><Icon name="external-link" />{t(lang, 'price.openCm')}</button>
               )}
             </div>
           </div>
