@@ -37814,6 +37814,56 @@
       "rulesText": "[Accelerate] (You may pay [1] [Fury] as an additional cost to have me enter ready.)\nWhen you play me, give a unit +2 [Might] this turn."
     },
     {
+      "id": "rad-009",
+      "name": "Antagonistic Apparatus",
+      "subtitle": null,
+      "code": "RAD-009",
+      "cn": 9,
+      "set": "RAD",
+      "setName": "Radiance",
+      "types": [
+        "Unit"
+      ],
+      "superTypes": [],
+      "rarity": "Uncommon",
+      "domains": [
+        "Fury"
+      ],
+      "energy": 6,
+      "might": 3,
+      "image": "https://cdn.piltoverarchive.com/cards/RAD-009.webp",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": false,
+      "tags": [],
+      "rulesText": "I enter ready.\nWhen you play me, play a ready 3 [S] Mech unit token here."
+    },
+    {
+      "id": "rad-010",
+      "name": "Forbidden Technique",
+      "subtitle": null,
+      "code": "RAD-010",
+      "cn": 10,
+      "set": "RAD",
+      "setName": "Radiance",
+      "types": [
+        "Spell"
+      ],
+      "superTypes": [],
+      "rarity": "Uncommon",
+      "domains": [
+        "Fury"
+      ],
+      "energy": 2,
+      "might": 0,
+      "image": "https://cdn.piltoverarchive.com/cards/RAD-010.webp",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": false,
+      "tags": [],
+      "rulesText": "𝗖𝗮𝗿𝗱 𝗘𝗿𝗿𝗮𝘁𝗮 𝗧𝗲𝘅𝘁 – 𝗙𝗿𝗼𝗺 𝗥𝗮𝗱𝗶𝗮𝗻𝗰𝗲 𝗖𝗮𝗿𝗱 𝗘𝗿𝗿𝗮𝘁𝗮:\nReady a unit.\nWhen you play a card with Energy cost [7] or more, you may play this from your trash for [1][Fury][Fury]. Then banish this."
+    },
+    {
       "id": "rad-012",
       "name": "Runeblade Anvil",
       "subtitle": null,
@@ -38426,6 +38476,56 @@
       "altArt": false,
       "tags": [],
       "rulesText": "[Reaction] (Play any time, even before spells and abilities resolve.)\nAs an additional cost to play this, exhaust a friendly unit.\nDraw 1 and channel 1 rune exhausted."
+    },
+    {
+      "id": "rad-030",
+      "name": "Sanctum Conservator",
+      "subtitle": null,
+      "code": "RAD-030",
+      "cn": 30,
+      "set": "RAD",
+      "setName": "Radiance",
+      "types": [
+        "Unit"
+      ],
+      "superTypes": [],
+      "rarity": "Common",
+      "domains": [
+        "Calm"
+      ],
+      "energy": 5,
+      "might": 5,
+      "image": "https://cdn.piltoverarchive.com/cards/RAD-030.webp",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": false,
+      "tags": [],
+      "rulesText": "When you play a card with Energy cost [7] or more, ready me."
+    },
+    {
+      "id": "rad-031",
+      "name": "Stoic Ferryman",
+      "subtitle": null,
+      "code": "RAD-031",
+      "cn": 31,
+      "set": "RAD",
+      "setName": "Radiance",
+      "types": [
+        "Unit"
+      ],
+      "superTypes": [],
+      "rarity": "Common",
+      "domains": [
+        "Calm"
+      ],
+      "energy": 4,
+      "might": 2,
+      "image": "https://cdn.piltoverarchive.com/cards/RAD-031.webp",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": false,
+      "tags": [],
+      "rulesText": "[Shield 3] (+3 [S] while I'm a defender.)\nWhen you play me to a battlefield, you may move another unit you control here to your base."
     },
     {
       "id": "rad-033",
@@ -39049,6 +39149,81 @@
       "rulesText": "As an additional cost to play this, return a friendly unit to its owner's hand.\nDeal 5 to a unit at a battlefield."
     },
     {
+      "id": "rad-052",
+      "name": "Resource Extractor",
+      "subtitle": null,
+      "code": "RAD-052",
+      "cn": 52,
+      "set": "RAD",
+      "setName": "Radiance",
+      "types": [
+        "Gear"
+      ],
+      "superTypes": [],
+      "rarity": "Common",
+      "domains": [
+        "Mind"
+      ],
+      "energy": 1,
+      "might": 0,
+      "image": "https://cdn.piltoverarchive.com/cards/RAD-052.webp",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": false,
+      "tags": [],
+      "rulesText": "[Deploy] (Play this only to a battlefield. When an opponent holds here, kill this.)\nAt the end of your turn, if you control this battlefield, play a Gold gear token exhausted. (It has \"[Reaction] Kill this, [Tap]: [Add] [Rune].\")"
+    },
+    {
+      "id": "rad-053",
+      "name": "Strigian Oracle",
+      "subtitle": null,
+      "code": "RAD-053",
+      "cn": 53,
+      "set": "RAD",
+      "setName": "Radiance",
+      "types": [
+        "Unit"
+      ],
+      "superTypes": [],
+      "rarity": "Common",
+      "domains": [
+        "Mind"
+      ],
+      "energy": 2,
+      "might": 2,
+      "image": "https://cdn.piltoverarchive.com/cards/RAD-053.webp",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": false,
+      "tags": [],
+      "rulesText": "When I become exhausted, [Predict]. (Look at the top card of your Main Deck. You may recycle it.)"
+    },
+    {
+      "id": "rad-054",
+      "name": "Trinket Peddler",
+      "subtitle": null,
+      "code": "RAD-054",
+      "cn": 54,
+      "set": "RAD",
+      "setName": "Radiance",
+      "types": [
+        "Unit"
+      ],
+      "superTypes": [],
+      "rarity": "Common",
+      "domains": [
+        "Mind"
+      ],
+      "energy": 3,
+      "might": 3,
+      "image": "https://cdn.piltoverarchive.com/temporary/1791545467178-38suok1h2zd.png",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": false,
+      "tags": [],
+      "rulesText": "[Disarm] (When I attack, give an enemy unit here -1 [S] this turn.)"
+    },
+    {
       "id": "rad-055",
       "name": "Clanging Sentry",
       "subtitle": null,
@@ -39340,6 +39515,88 @@
       "altArt": false,
       "tags": [],
       "rulesText": "[1], [Tap]: Choose an opponent. They guess a card type. Reveal the top card of your Main Deck. If it has that type, recycle it. Otherwise, draw it. (Unit, gear and spell are types.)"
+    },
+    {
+      "id": "rad-065",
+      "name": "Seraphine",
+      "subtitle": "Inspiring",
+      "code": "RAD-065",
+      "cn": 65,
+      "set": "RAD",
+      "setName": "Radiance",
+      "types": [
+        "Unit"
+      ],
+      "superTypes": [
+        "Champion"
+      ],
+      "rarity": "Rare",
+      "domains": [
+        "Mind"
+      ],
+      "energy": 4,
+      "might": 3,
+      "image": "https://cdn.piltoverarchive.com/cards/RAD-065a.webp",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": false,
+      "tags": [],
+      "rulesText": "[Disarm 2] (When I attack, give an enemy unit here -2 [S] this turn.)\nOnce each turn, when you exhaust three or more friendly units at the same time, you may draw 1."
+    },
+    {
+      "id": "rad-065a",
+      "name": "Seraphine",
+      "subtitle": "Inspiring",
+      "code": "RAD-065a",
+      "cn": 65,
+      "set": "RAD",
+      "setName": "Radiance",
+      "types": [
+        "Unit"
+      ],
+      "superTypes": [
+        "Champion"
+      ],
+      "rarity": "Showcase",
+      "domains": [
+        "Mind"
+      ],
+      "energy": 4,
+      "might": 3,
+      "image": "https://cdn.piltoverarchive.com/cards/RAD-065a.webp",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": true,
+      "tags": [
+        "alt",
+        "showcase"
+      ],
+      "rulesText": "[Disarm 2] (When I attack, give an enemy unit here -2 [S] this turn.)\nOnce each turn, when you exhaust three or more friendly units at the same time, you may draw 1."
+    },
+    {
+      "id": "rad-066",
+      "name": "Spirit of the Forge",
+      "subtitle": null,
+      "code": "RAD-066",
+      "cn": 66,
+      "set": "RAD",
+      "setName": "Radiance",
+      "types": [
+        "Unit"
+      ],
+      "superTypes": [],
+      "rarity": "Rare",
+      "domains": [
+        "Mind"
+      ],
+      "energy": 6,
+      "might": 4,
+      "image": "https://cdn.piltoverarchive.com/temporary/1791597831855-togpgq64949.webp",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": false,
+      "tags": [],
+      "rulesText": "You may return a friendly gear to its owner's hand as an additional cost to play me.\nWhen you play me, if you paid the additional cost, ready me and give me + [S] this turn equal to the Energy cost of the gear you returned."
     },
     {
       "id": "rad-067",
@@ -39640,6 +39897,56 @@
       "rulesText": "When I conquer, [Add] [Rune]. (Abilities that add resources can't be reacted to.)"
     },
     {
+      "id": "rad-077",
+      "name": "Wrath of the Freljord",
+      "subtitle": null,
+      "code": "RAD-077",
+      "cn": 77,
+      "set": "RAD",
+      "setName": "Radiance",
+      "types": [
+        "Unit"
+      ],
+      "superTypes": [],
+      "rarity": "Common",
+      "domains": [
+        "Body"
+      ],
+      "energy": 9,
+      "might": 7,
+      "image": "https://cdn.piltoverarchive.com/cards/RAD-077.webp",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": false,
+      "tags": [],
+      "rulesText": "I enter ready.\n[Shield 3] (+3 [S] while I'm a defender.)"
+    },
+    {
+      "id": "rad-078",
+      "name": "Armored Tusker",
+      "subtitle": null,
+      "code": "RAD-078",
+      "cn": 78,
+      "set": "RAD",
+      "setName": "Radiance",
+      "types": [
+        "Unit"
+      ],
+      "superTypes": [],
+      "rarity": "Uncommon",
+      "domains": [
+        "Body"
+      ],
+      "energy": 6,
+      "might": 4,
+      "image": "https://cdn.piltoverarchive.com/cards/RAD-078.webp",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": false,
+      "tags": [],
+      "rulesText": "[Shield 3] (+3 [S] while I'm a defender.)\n[Tank] (I must be assigned combat damage first.)\nWhen I move, you may deal damage equal to my [Shield] to a unit at a battlefield."
+    },
+    {
       "id": "rad-079",
       "name": "Avalanche",
       "subtitle": null,
@@ -39663,6 +39970,31 @@
       "altArt": false,
       "tags": [],
       "rulesText": null
+    },
+    {
+      "id": "rad-080",
+      "name": "Bloodscent Swarm",
+      "subtitle": null,
+      "code": "RAD-080",
+      "cn": 80,
+      "set": "RAD",
+      "setName": "Radiance",
+      "types": [
+        "Unit"
+      ],
+      "superTypes": [],
+      "rarity": "Uncommon",
+      "domains": [
+        "Body"
+      ],
+      "energy": 8,
+      "might": 8,
+      "image": "https://cdn.piltoverarchive.com/temporary/1791597706495-9o06ruyxm38.jpg",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": false,
+      "tags": [],
+      "rulesText": "I cost [2] less for each battlefield you've conquered this turn."
     },
     {
       "id": "rad-081",
@@ -40081,6 +40413,31 @@
       "rulesText": "Your gear with [Deploy] have [Action].\nWhen I conquer, if there is a friendly gear with [Deploy] here, channel 1 rune exhausted."
     },
     {
+      "id": "rad-092",
+      "name": "Seraphic Wyvern",
+      "subtitle": null,
+      "code": "RAD-092",
+      "cn": 92,
+      "set": "RAD",
+      "setName": "Radiance",
+      "types": [
+        "Unit"
+      ],
+      "superTypes": [],
+      "rarity": "Epic",
+      "domains": [
+        "Body"
+      ],
+      "energy": 7,
+      "might": 7,
+      "image": "https://cdn.piltoverarchive.com/cards/RAD-092.webp",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": false,
+      "tags": [],
+      "rulesText": "If you would channel runes, channel that many runes plus 1 exhausted rune instead."
+    },
+    {
       "id": "rad-093",
       "name": "Disposal Expert",
       "subtitle": null,
@@ -40419,6 +40776,31 @@
       "rulesText": null
     },
     {
+      "id": "rad-108",
+      "name": "Bushwhack Trap",
+      "subtitle": null,
+      "code": "RAD-108",
+      "cn": 108,
+      "set": "RAD",
+      "setName": "Radiance",
+      "types": [
+        "Gear"
+      ],
+      "superTypes": [],
+      "rarity": "Rare",
+      "domains": [
+        "Chaos"
+      ],
+      "energy": 1,
+      "might": 0,
+      "image": "https://cdn.piltoverarchive.com/cards/RAD-108.webp",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": false,
+      "tags": [],
+      "rulesText": "[Deploy] (Play this only to a battlefield. When an opponent holds here, kill this.)\nWhile you or an ally control this battlefield, that player may hide an additional card here."
+    },
+    {
       "id": "rad-109",
       "name": "Evelynn",
       "subtitle": "in Control",
@@ -40627,6 +41009,31 @@
         "Yordle"
       ],
       "rulesText": "[1],[Tap]: Play a Bomb gear token to a battlefield. (It has [Deploy]. When it dies deal 2 to an enemy there and kill your other Bombs there.)\nWhen I defend, you may kill a friendly gear to give me +2[Might] this turn."
+    },
+    {
+      "id": "rad-113",
+      "name": "Angler Wyrm",
+      "subtitle": null,
+      "code": "RAD-113",
+      "cn": 113,
+      "set": "RAD",
+      "setName": "Radiance",
+      "types": [
+        "Unit"
+      ],
+      "superTypes": [],
+      "rarity": "Epic",
+      "domains": [
+        "Chaos"
+      ],
+      "energy": 8,
+      "might": 8,
+      "image": "https://cdn.piltoverarchive.com/cards/RAD-113.webp",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": false,
+      "tags": [],
+      "rulesText": "[Deflect] (Opponents must pay [Rune] to choose me with a spell of ability.)\n[Tap]: Choose an opponent. They must move a unit they control to my battlefield."
     },
     {
       "id": "rad-114",
@@ -40896,6 +41303,56 @@
       "rulesText": "I cost [1] less for each exhausted unit you control.\n[Tank] (I must be assigned combat damage first.)"
     },
     {
+      "id": "rad-123",
+      "name": "Protector's Shield",
+      "subtitle": null,
+      "code": "RAD-123",
+      "cn": 123,
+      "set": "RAD",
+      "setName": "Radiance",
+      "types": [
+        "Gear"
+      ],
+      "superTypes": [],
+      "rarity": "Common",
+      "domains": [
+        "Order"
+      ],
+      "energy": 2,
+      "might": 0,
+      "image": "https://cdn.piltoverarchive.com/cards/RAD-123.webp",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": false,
+      "tags": [],
+      "rulesText": "[Quick-Draw] (This has [Reaction]. When you play it, attach it to a unit you control.)\n[Equip] [1] ([1]: Attach this to a unit you control.)"
+    },
+    {
+      "id": "rad-124",
+      "name": "Burn Away",
+      "subtitle": null,
+      "code": "RAD-124",
+      "cn": 124,
+      "set": "RAD",
+      "setName": "Radiance",
+      "types": [
+        "Spell"
+      ],
+      "superTypes": [],
+      "rarity": "Uncommon",
+      "domains": [
+        "Order"
+      ],
+      "energy": 3,
+      "might": 0,
+      "image": "https://cdn.piltoverarchive.com/temporary/1791597623574-c2b4sg8s4sl.webp",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": false,
+      "tags": [],
+      "rulesText": "Banish a unit with 3 [S] or less or a gear. [Burn 2]. (Put the top 2 cards of your Main Deck into your trash.)"
+    },
+    {
       "id": "rad-125",
       "name": "Dune Devourer",
       "subtitle": null,
@@ -41135,6 +41592,58 @@
         "Demacia"
       ],
       "rulesText": "[Assault] (+1 [Might] while I'm an attacker.)\n[Tank] (I must be assigned combat damage first.)\nWhen I attack, you may move a unit you control to my battlefield."
+    },
+    {
+      "id": "rad-133",
+      "name": "Jarvan IV",
+      "subtitle": "Royal Heir",
+      "code": "RAD-133",
+      "cn": 133,
+      "set": "RAD",
+      "setName": "Radiance",
+      "types": [
+        "Unit"
+      ],
+      "superTypes": [
+        "Champion"
+      ],
+      "rarity": "Rare",
+      "domains": [
+        "Order"
+      ],
+      "energy": 7,
+      "might": 7,
+      "image": "https://cdn.piltoverarchive.com/cards/RAD-133.webp",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": false,
+      "tags": [],
+      "rulesText": "[Assault] (+1 [S] while I'm an attacker.)\n[Tank] (I must be assigned combat damage first.)\nWhen I attack, you may move a unit you control to my battlefield."
+    },
+    {
+      "id": "rad-134",
+      "name": "Raucous Anthem",
+      "subtitle": null,
+      "code": "RAD-134",
+      "cn": 134,
+      "set": "RAD",
+      "setName": "Radiance",
+      "types": [
+        "Spell"
+      ],
+      "superTypes": [],
+      "rarity": "Rare",
+      "domains": [
+        "Order"
+      ],
+      "energy": 7,
+      "might": 0,
+      "image": "https://cdn.piltoverarchive.com/cards/RAD-134.webp",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": false,
+      "tags": [],
+      "rulesText": "Ready your units and give them +3 [S] this turn."
     },
     {
       "id": "rad-136",
@@ -41559,6 +42068,32 @@
       "altArt": false,
       "tags": [],
       "rulesText": "[Action] (Play on your turn or in showdowns.)\nGive a friendly unit [Shield 2] this turn, then deal damage equal to its [Shield] to an enemy unit. (A unit with Shield has +1 [S] for each instance of Shield while it's a defender.)"
+    },
+    {
+      "id": "rad-149",
+      "name": "Riven",
+      "subtitle": "The Exile",
+      "code": "RAD-149",
+      "cn": 149,
+      "set": "RAD",
+      "setName": "Radiance",
+      "types": [
+        "Legend"
+      ],
+      "superTypes": [],
+      "rarity": "Rare",
+      "domains": [
+        "Calm",
+        "Chaos"
+      ],
+      "energy": 0,
+      "might": 0,
+      "image": "https://cdn.piltoverarchive.com/cards/RAD-149.webp",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": false,
+      "tags": [],
+      "rulesText": "Units you play to battlefields you control enter ready."
     },
     {
       "id": "rad-150",
@@ -42304,6 +42839,35 @@
         "showcase"
       ],
       "rulesText": "[1], [T]: Give a friendly unit \"I have [Assault] equal to my [Shield]\" this turn."
+    },
+    {
+      "id": "rad-173",
+      "name": "Riven",
+      "subtitle": "The Exile",
+      "code": "RAD-173",
+      "cn": 173,
+      "set": "RAD",
+      "setName": "Radiance",
+      "types": [
+        "Legend"
+      ],
+      "superTypes": [],
+      "rarity": "Showcase",
+      "domains": [
+        "Calm",
+        "Chaos"
+      ],
+      "energy": 0,
+      "might": 0,
+      "image": "https://cdn.piltoverarchive.com/cards/RAD-173.webp",
+      "signed": false,
+      "overnumbered": true,
+      "altArt": false,
+      "tags": [
+        "overnumbered",
+        "showcase"
+      ],
+      "rulesText": "Units you play to battlefields you control enter ready."
     },
     {
       "id": "rad-174",

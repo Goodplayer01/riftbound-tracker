@@ -162,8 +162,12 @@ assert(near(pullChance(cards, 'OGN', ognOn[12]), (1 / 4) / 30), 'ogn epic chance
 const radOn = rollPack(cards, 'RAD', justUnderUr)
 assert(radOn[13].card.id === 'rad-164-ur' && radOn[12].card.rarity === 'Rare', 'rad ur last')
 assert(pullChance(cards, 'RAD', radOn[13]) === 0.00025, 'rad ur chance')
-assert(near(pullChance(cards, 'RAD', radOn[12]), (2 - 0.00025) / 24), 'rad rare')
-assert(near(pullChance(cards, 'RAD', radOn[0]), 7 / 24), 'rad common')
+// ponytail: pool sizes from the catalog so new RAD reveals do not break this
+const rad = cards.filter((c) => c.set === 'RAD')
+const radRares = rad.filter((c) => c.rarity === 'Rare' && !c.altArt && !c.overnumbered && !c.signed && !(c.superTypes || []).includes('Signature')).length
+const radCommons = rad.filter((c) => c.rarity === 'Common' && !c.signed && !c.overnumbered && !(c.tags || []).includes('showcase') && !(c.tags || []).includes('promo') && !(c.types || []).some((t) => t === 'Rune' || t === 'Token')).length
+assert(near(pullChance(cards, 'RAD', radOn[12]), Math.min(1, (2 - 0.00025) / radRares)), 'rad rare')
+assert(near(pullChance(cards, 'RAD', radOn[0]), Math.min(1, 7 / radCommons)), 'rad common')
 const radOff = rollPack(cards, 'RAD', atUr)
 assert(radOff[12].card.rarity === 'Rare' && radOff[13].card.rarity === 'Rare', 'rad no ur')
 assert(!rollPack(cards, 'SFD', justUnderEpic).some((s) => s.card.rarity === 'Epic'), 'sfd no invented epic')
