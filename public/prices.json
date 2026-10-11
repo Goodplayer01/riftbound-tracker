@@ -9420,7 +9420,7 @@
       "foilLow": null,
       "foilTrend": 0,
       "cmId": "898154",
-      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Vendetta/Fury-Rune",
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Vendetta/Fury-Rune-V1-Common",
       "languageId": 1
     },
     "ven-sp1-006": {
@@ -9450,7 +9450,7 @@
       "foilLow": null,
       "foilTrend": 0,
       "cmId": "898155",
-      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Vendetta/Calm-Rune",
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Vendetta/Calm-Rune-V1-Common",
       "languageId": 1
     },
     "ven-sp2-006": {
@@ -9480,7 +9480,7 @@
       "foilLow": null,
       "foilTrend": 0,
       "cmId": "898156",
-      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Vendetta/Mind-Rune",
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Vendetta/Mind-Rune-V1-Common",
       "languageId": 1
     },
     "ven-sp3-006": {
@@ -9510,7 +9510,7 @@
       "foilLow": null,
       "foilTrend": 0,
       "cmId": "898157",
-      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Vendetta/Body-Rune",
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Vendetta/Body-Rune-V1-Common",
       "languageId": 1
     },
     "ven-sp4-006": {
@@ -9550,7 +9550,7 @@
       "foilLow": null,
       "foilTrend": 0,
       "cmId": "898158",
-      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Vendetta/Chaos-Rune",
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Vendetta/Chaos-Rune-V1-Common",
       "languageId": 1
     },
     "ven-sp5-006": {
@@ -9580,7 +9580,7 @@
       "foilLow": null,
       "foilTrend": 0,
       "cmId": "898159",
-      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Vendetta/Order-Rune",
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Vendetta/Order-Rune-V1-Common",
       "languageId": 1
     },
     "ven-sp6-006": {
@@ -13731,6 +13731,116 @@
       "foilTrend": null,
       "cmId": null,
       "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Unleashed-Promos/Lillia-Fae-Fawn",
+      "languageId": 1
+    },
+    "ven-060-166": {
+      "low": 0.02,
+      "avg30": 0.05,
+      "trend": 0.02,
+      "foilLow": 0.02,
+      "foilTrend": 0.17,
+      "cmId": "898001",
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Vendetta/Sky-Cruiser",
+      "languageId": 1
+    },
+    "sfd-179-221": {
+      "low": 0.5,
+      "avg30": 1.97,
+      "trend": 2.25,
+      "foilLow": 0.5,
+      "foilTrend": 3.18,
+      "cmId": "866925",
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Spiritforged/Corina-Veraza",
+      "languageId": 1
+    },
+    "unl-082-219": {
+      "low": 0.02,
+      "avg30": 0.38,
+      "trend": 0.33,
+      "foilLow": 0.02,
+      "foilTrend": 0.41,
+      "cmId": "884050",
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Unleashed/Lillia-Fae-Fawn-V1-Rare",
+      "languageId": 1
+    },
+    "unl-082a-219": {
+      "low": 3,
+      "avg30": 5.02,
+      "trend": 4.88,
+      "foilLow": 3,
+      "foilTrend": 5.24,
+      "cmId": "884051",
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Unleashed/Lillia-Fae-Fawn-V2-Showcase",
+      "languageId": 1
+    },
+    "unl-t02": {
+      "low": 0.02,
+      "avg30": 0.09,
+      "trend": 0.12,
+      "foilLow": null,
+      "foilTrend": 0,
+      "cmId": "886238",
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Unleashed/Bird",
+      "languageId": 1
+    },
+    "ven-r01a": {
+      "low": 4.4,
+      "avg30": 6.99,
+      "trend": 7.28,
+      "foilLow": 4.4,
+      "foilTrend": 6.34,
+      "cmId": "898178",
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Vendetta/Fury-Rune-V2-Showcase",
+      "languageId": 1
+    },
+    "ven-r02a": {
+      "low": 4,
+      "avg30": 6.79,
+      "trend": 5.37,
+      "foilLow": 4,
+      "foilTrend": 6.58,
+      "cmId": "898180",
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Vendetta/Calm-Rune-V2-Showcase",
+      "languageId": 1
+    },
+    "ven-r03a": {
+      "low": 4,
+      "avg30": 7.34,
+      "trend": 6.7,
+      "foilLow": 4,
+      "foilTrend": 5.64,
+      "cmId": "898181",
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Vendetta/Mind-Rune-V2-Showcase",
+      "languageId": 1
+    },
+    "ven-r04a": {
+      "low": 3,
+      "avg30": 6.07,
+      "trend": 5.97,
+      "foilLow": 3,
+      "foilTrend": 5.37,
+      "cmId": "898182",
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Vendetta/Body-Rune-V2-Showcase",
+      "languageId": 1
+    },
+    "ven-r05a": {
+      "low": 4.95,
+      "avg30": 8.14,
+      "trend": 8.15,
+      "foilLow": 4.95,
+      "foilTrend": 7.82,
+      "cmId": "898183",
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Vendetta/Chaos-Rune-V2-Showcase",
+      "languageId": 1
+    },
+    "ven-r06a": {
+      "low": 3.5,
+      "avg30": 6.8,
+      "trend": 7.16,
+      "foilLow": 3.5,
+      "foilTrend": 6.35,
+      "cmId": "898184",
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Vendetta/Order-Rune-V2-Showcase",
       "languageId": 1
     }
   },
