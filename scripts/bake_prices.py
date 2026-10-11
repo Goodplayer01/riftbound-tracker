@@ -4,6 +4,7 @@
 Language policy (EN-first, fallback):
   - Prefer English site-locale cmUrls (/en/...).
   - Prefer languageId=1 (English) as the article-language preference marker.
+  - Append ?language=1 on cmUrls (English article filter; keep other query params).
   - If a product has no usable English market link, keep whatever cmUrl we already
     have (or build from another locale) — never drop the price row.
   - The upstream TCG Cardmarket API exposes product-level Low/Avg30 only; it has
@@ -26,6 +27,7 @@ import sys
 import time
 import urllib.error
 import urllib.request
+from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -67,12 +69,15 @@ def http_json(method: str, url: str, body: dict | None = None):
 def prefer_english_url(url: str | None) -> str | None:
     if not url:
         return url
-    parts = url.rstrip("/").split("/")
-    # https://www.cardmarket.com/{locale}/Riftbound/...
-    if len(parts) > 4 and parts[2].endswith("cardmarket.com"):
-        parts[3] = CARDMARKET_SITE_LOCALE
-        return "/".join(parts)
-    return url
+    sp = urlsplit(url)
+    segs = sp.path.split("/")
+    # /{locale}/Riftbound/...
+    if sp.netloc.endswith("cardmarket.com") and len(segs) > 1:
+        segs[1] = CARDMARKET_SITE_LOCALE
+    q = dict(parse_qsl(sp.query, keep_blank_values=True))
+    q.pop("languageId", None)
+    q["language"] = str(CARDMARKET_PRODUCT_LANGUAGE_ID)
+    return urlunsplit((sp.scheme, sp.netloc, "/".join(segs), urlencode(q), sp.fragment))
 
 
 def main() -> None:

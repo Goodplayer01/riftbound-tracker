@@ -294,8 +294,16 @@ function ownedLineEur(o: { qty?: number; foil?: number } | undefined, p?: PriceE
 }
 
 function openCm(p?: PriceEntry | null) {
-  const url = p?.cmUrl
-  if (!url) return
+  const raw = p?.cmUrl
+  if (!raw) return
+  let url = raw
+  try {
+    const u = new URL(raw)
+    u.searchParams.set('language', '1')
+    url = u.toString()
+  } catch {
+    /* keep raw */
+  }
   if (window.riftbound?.openExternal) {
     void window.riftbound.openExternal(url)
   } else {

@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """Rewrite Cardmarket cmUrl roles with English-first language preference.
 
-Prefer English site locale (/en/) and languageId=1. If a row somehow lacks an
-English market link, keep the existing URL (fallback) rather than clearing it.
-Article language is distinct from site locale.
+Prefer English site locale (/en/), JSON languageId=1, and ?language=1 on cmUrls.
+If a row somehow lacks an English market link, keep the existing URL (fallback)
+rather than clearing it. Article language is distinct from site locale.
 
 German seller filter (sellerCountry=7): NOT applied here. Product Low/Avg30 from
 the bake API are global; MKM Articles can filter live offers by seller country,
@@ -27,6 +27,7 @@ from __future__ import annotations
 
 import json
 import re
+from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 from collections import defaultdict
 from pathlib import Path
 
@@ -91,29 +92,33 @@ def suffix_for(c: dict, has_alt: bool, has_base: bool) -> str | None:
 
 
 def english_url(url: str) -> str:
-    """Use Cardmarket's English site locale for an already matched product."""
+    """English site locale + ?language=1 for an already matched product."""
     if not url:
         return url
-    parts = url.rstrip("/").split("/")
-    # https://www.cardmarket.com/{locale}/Riftbound/...
-    if len(parts) > 4 and parts[2].endswith("cardmarket.com"):
-        parts[3] = CARDMARKET_SITE_LOCALE
-    return "/".join(parts)
+    sp = urlsplit(url)
+    segs = sp.path.split("/")
+    if sp.netloc.endswith("cardmarket.com") and len(segs) > 1:
+        segs[1] = CARDMARKET_SITE_LOCALE
+    q = dict(parse_qsl(sp.query, keep_blank_values=True))
+    q.pop("languageId", None)
+    q["language"] = str(CARDMARKET_PRODUCT_LANGUAGE_ID)
+    return urlunsplit((sp.scheme, sp.netloc, "/".join(segs), urlencode(q), sp.fragment))
 
 
 def rewrite_url(url: str, new_suffix: str) -> str | None:
     if not url:
         return None
-    parts = url.rstrip("/").split("/")
-    slug = parts[-1]
+    sp = urlsplit(url)
+    segs = sp.path.rstrip("/").split("/")
+    slug = segs[-1]
     m = VERSIONED.match(slug)
     if not m:
         return None  # keep non-versioned
     new_slug = f"{m.group('stem')}-{new_suffix}"
     if new_slug == slug:
         return url
-    parts[-1] = new_slug
-    return "/".join(parts)
+    segs[-1] = new_slug
+    return urlunsplit((sp.scheme, sp.netloc, "/".join(segs), sp.query, sp.fragment))
 
 
 def main() -> None:
@@ -145,7 +150,7 @@ def main() -> None:
     if OVERRIDES_PATH.exists():
         overrides.update(json.loads(OVERRIDES_PATH.read_text(encoding="utf-8")))
 
-    # EN-first language preference. Prefer idLanguage=1 /en/ links; keep
+    # EN-first language preference. Prefer /en/ + ?language=1; keep
     # existing cmUrl if rewrite is impossible (fallback — do not wipe).
     prices_doc["language"] = CARDMARKET_PRODUCT_LANGUAGE
     prices_doc["languageId"] = CARDMARKET_PRODUCT_LANGUAGE_ID
@@ -190,7 +195,7 @@ def main() -> None:
             missing_card += 1
             continue
 
-        slug = url.rstrip("/").split("/")[-1]
+        slug = urlsplit(url).path.rstrip("/").split("/")[-1]
         if not VERSIONED.match(slug):
             skipped_non_versioned += 1
             continue
@@ -232,7 +237,7 @@ def main() -> None:
     print("\nVERIFY:")
     ok = True
     for cid, slug in expect.items():
-        got = (prices[cid].get("cmUrl") or "").split("/")[-1]
+        got = urlsplit(prices[cid].get("cmUrl") or "").path.rstrip("/").split("/")[-1]
         status = "OK" if got == slug else "FAIL"
         if status != "OK":
             ok = False
