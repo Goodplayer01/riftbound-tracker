@@ -9414,13 +9414,13 @@
       "languageId": 1
     },
     "ven-r01": {
-      "low": 3.5,
-      "avg30": 5.62,
-      "trend": 5.24,
-      "foilLow": 3.5,
-      "foilTrend": 4.74,
-      "cmId": "898187",
-      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Vendetta-Promos/Fury-Rune",
+      "low": 0.02,
+      "avg30": 0.06,
+      "trend": 0.07,
+      "foilLow": null,
+      "foilTrend": 0,
+      "cmId": "898154",
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Vendetta/Fury-Rune",
       "languageId": 1
     },
     "ven-sp1-006": {
@@ -9435,22 +9435,22 @@
     },
     "ven-002-166": {
       "low": 0.02,
-      "avg30": 0.21,
+      "avg30": 0.05,
       "trend": 0.06,
       "foilLow": 0.02,
-      "foilTrend": 0.08,
-      "cmId": "898205",
-      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Vendetta-Promos/Blade-Twirler",
+      "foilTrend": 0.16,
+      "cmId": "897902",
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Vendetta/Blade-Twirler",
       "languageId": 1
     },
     "ven-r02": {
-      "low": 3.8,
-      "avg30": 5.53,
-      "trend": 6.08,
-      "foilLow": 3.8,
-      "foilTrend": 4.82,
-      "cmId": "898188",
-      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Vendetta-Promos/Calm-Rune",
+      "low": 0.02,
+      "avg30": 0.07,
+      "trend": 0.03,
+      "foilLow": null,
+      "foilTrend": 0,
+      "cmId": "898155",
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Vendetta/Calm-Rune",
       "languageId": 1
     },
     "ven-sp2-006": {
@@ -9474,13 +9474,13 @@
       "languageId": 1
     },
     "ven-r03": {
-      "low": 4.8,
-      "avg30": 7.57,
-      "trend": 8.8,
-      "foilLow": 4.8,
-      "foilTrend": 6.04,
-      "cmId": "898189",
-      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Vendetta-Promos/Mind-Rune",
+      "low": 0.02,
+      "avg30": 0.07,
+      "trend": 0.05,
+      "foilLow": null,
+      "foilTrend": 0,
+      "cmId": "898156",
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Vendetta/Mind-Rune",
       "languageId": 1
     },
     "ven-sp3-006": {
@@ -9494,23 +9494,23 @@
       "languageId": 1
     },
     "ven-004-166": {
-      "low": 0.05,
-      "avg30": 0.44,
-      "trend": 0.02,
-      "foilLow": 0.05,
-      "foilTrend": 0.12,
-      "cmId": "898203",
-      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Vendetta-Promos/Dune-Surfer",
+      "low": 0.02,
+      "avg30": 0.04,
+      "trend": 0.05,
+      "foilLow": 0.02,
+      "foilTrend": 0.14,
+      "cmId": "897918",
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Vendetta/Dune-Surfer",
       "languageId": 1
     },
     "ven-r04": {
-      "low": 2.4,
-      "avg30": 4.72,
-      "trend": 4.6,
-      "foilLow": 2.4,
-      "foilTrend": 3.7,
-      "cmId": "898190",
-      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Vendetta-Promos/Body-Rune",
+      "low": 0.02,
+      "avg30": 0.07,
+      "trend": 0.08,
+      "foilLow": null,
+      "foilTrend": 0,
+      "cmId": "898157",
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Vendetta/Body-Rune",
       "languageId": 1
     },
     "ven-sp4-006": {
@@ -9544,13 +9544,13 @@
       "languageId": 1
     },
     "ven-r05": {
-      "low": 5,
-      "avg30": 8.94,
-      "trend": 9.16,
-      "foilLow": 5,
-      "foilTrend": 6.43,
-      "cmId": "898191",
-      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Vendetta-Promos/Chaos-Rune",
+      "low": 0.02,
+      "avg30": 0.07,
+      "trend": 0.05,
+      "foilLow": null,
+      "foilTrend": 0,
+      "cmId": "898158",
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Vendetta/Chaos-Rune",
       "languageId": 1
     },
     "ven-sp5-006": {
@@ -9574,13 +9574,13 @@
       "languageId": 1
     },
     "ven-r06": {
-      "low": 3.2,
-      "avg30": 5.49,
-      "trend": 5.35,
-      "foilLow": 3.2,
-      "foilTrend": 3.82,
-      "cmId": "898192",
-      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Vendetta-Promos/Order-Rune",
+      "low": 0.02,
+      "avg30": 0.08,
+      "trend": 0.06,
+      "foilLow": null,
+      "foilTrend": 0,
+      "cmId": "898159",
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Vendetta/Order-Rune",
       "languageId": 1
     },
     "ven-sp6-006": {
@@ -9655,12 +9655,12 @@
     },
     "ven-013-166": {
       "low": 0.02,
-      "avg30": 0.45,
-      "trend": 0.02,
-      "foilLow": 0.02,
-      "foilTrend": 0.1,
-      "cmId": "898207",
-      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Vendetta-Promos/Shadow-Assassin",
+      "avg30": 0.07,
+      "trend": 0.03,
+      "foilLow": 0.03,
+      "foilTrend": 0.14,
+      "cmId": "897948",
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Vendetta/Shadow-Assassin",
       "languageId": 1
     },
     "ven-014-166": {
@@ -9704,13 +9704,13 @@
       "languageId": 1
     },
     "ven-017-166": {
-      "low": 0.2,
-      "avg30": 2.7,
-      "trend": 2.7,
-      "foilLow": 0.2,
-      "foilTrend": 0.08,
-      "cmId": "904277",
-      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Vendetta-Promos/Morgana-Vindictive-V1-Rare",
+      "low": 0.02,
+      "avg30": 0.11,
+      "trend": 0.15,
+      "foilLow": 0.02,
+      "foilTrend": 0.19,
+      "cmId": "897952",
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Vendetta/Morgana-Vindictive-V1-Rare",
       "languageId": 1
     },
     "ven-018-166": {
@@ -9835,12 +9835,12 @@
     },
     "ven-026-166": {
       "low": 0.02,
-      "avg30": 0.36,
-      "trend": 0.07,
+      "avg30": 0.06,
+      "trend": 0.09,
       "foilLow": 0.02,
-      "foilTrend": 0.13,
-      "cmId": "898208",
-      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Vendetta-Promos/Field-Musicians",
+      "foilTrend": 0.15,
+      "cmId": "897964",
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Vendetta/Field-Musicians",
       "languageId": 1
     },
     "ven-027-166": {
@@ -9864,13 +9864,13 @@
       "languageId": 1
     },
     "ven-029-166": {
-      "low": 0.09,
-      "avg30": 0.84,
-      "trend": 0.17,
-      "foilLow": 0.09,
-      "foilTrend": 0.67,
-      "cmId": "898196",
-      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Vendetta-Promos/Ol-Poro",
+      "low": 0.02,
+      "avg30": 0.08,
+      "trend": 0.04,
+      "foilLow": 0.02,
+      "foilTrend": 0.14,
+      "cmId": "897967",
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Vendetta/Ol-Poro",
       "languageId": 1
     },
     "ven-030-166": {
@@ -9944,13 +9944,13 @@
       "languageId": 1
     },
     "ven-037-166": {
-      "low": 0.1,
-      "avg30": 0.78,
-      "trend": 0.55,
-      "foilLow": 0.1,
-      "foilTrend": 0.49,
-      "cmId": "898194",
-      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Vendetta-Promos/Tomb-Raider-Barbara",
+      "low": 0.02,
+      "avg30": 0.12,
+      "trend": 0.12,
+      "foilLow": 0.02,
+      "foilTrend": 0.32,
+      "cmId": "897975",
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Vendetta/Tomb-Raider-Barbara",
       "languageId": 1
     },
     "ven-038a-166": {
@@ -10004,13 +10004,13 @@
       "languageId": 1
     },
     "ven-041-166": {
-      "low": 0.2,
-      "avg30": 1.03,
-      "trend": 0.96,
-      "foilLow": 0.2,
-      "foilTrend": 0.54,
-      "cmId": "897168",
-      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Vendetta-Promos/Riven-Shattered-V1-Rare",
+      "low": 0.02,
+      "avg30": 0.17,
+      "trend": 0.22,
+      "foilLow": 0.02,
+      "foilTrend": 0.11,
+      "cmId": "897980",
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Vendetta/Riven-Shattered-V1-Rare",
       "languageId": 1
     },
     "ven-170-166": {
@@ -10104,13 +10104,13 @@
       "languageId": 1
     },
     "ven-048-166": {
-      "low": 0.08,
-      "avg30": 0.45,
-      "trend": 0.09,
-      "foilLow": 0.08,
-      "foilTrend": 0.25,
-      "cmId": "898206",
-      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Vendetta-Promos/Cloud-Drake",
+      "low": 0.02,
+      "avg30": 0.06,
+      "trend": 0.02,
+      "foilLow": 0.02,
+      "foilTrend": 0.1,
+      "cmId": "897989",
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Vendetta/Cloud-Drake",
       "languageId": 1
     },
     "ven-049-166": {
@@ -10125,12 +10125,12 @@
     },
     "ven-050-166": {
       "low": 0.02,
-      "avg30": 0.23,
+      "avg30": 0.05,
       "trend": 0.04,
       "foilLow": 0.02,
-      "foilTrend": 0.16,
-      "cmId": "898193",
-      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Vendetta-Promos/Grumpy-Rockbear",
+      "foilTrend": 0.15,
+      "cmId": "897991",
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Vendetta/Grumpy-Rockbear",
       "languageId": 1
     },
     "ven-051-166": {
@@ -10204,13 +10204,13 @@
       "languageId": 1
     },
     "ven-058-166": {
-      "low": 0.2,
-      "avg30": 1.09,
-      "trend": 1.25,
-      "foilLow": 0.2,
-      "foilTrend": 0.78,
-      "cmId": "898198",
-      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Vendetta-Promos/Patched-Porobot",
+      "low": 0.02,
+      "avg30": 0.17,
+      "trend": 0.15,
+      "foilLow": 0.05,
+      "foilTrend": 0.48,
+      "cmId": "897999",
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Vendetta/Patched-Porobot",
       "languageId": 1
     },
     "ven-059-166": {
@@ -10334,13 +10334,13 @@
       "languageId": 1
     },
     "ven-068-166": {
-      "low": 23,
-      "avg30": 35.49,
-      "trend": 38.17,
-      "foilLow": 23,
-      "foilTrend": 22.32,
-      "cmId": "903066",
-      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Vendetta-Promos/Jayce-Brilliant-Inventor-V1-Epic",
+      "low": 0.15,
+      "avg30": 1.36,
+      "trend": 1.17,
+      "foilLow": 0.15,
+      "foilTrend": 0.81,
+      "cmId": "898010",
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Vendetta/Jayce-Brilliant-Inventor-V1-Epic",
       "languageId": 1
     },
     "ven-069a-166": {
@@ -10354,13 +10354,13 @@
       "languageId": 1
     },
     "ven-069-166": {
-      "low": 144,
-      "avg30": 239.99,
-      "trend": 239.99,
-      "foilLow": 144,
-      "foilTrend": 164.9,
-      "cmId": "898211",
-      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Vendetta-Promos/Mel-Newly-Awakened-V1-Epic",
+      "low": 1,
+      "avg30": 4.23,
+      "trend": 3.48,
+      "foilLow": 1,
+      "foilTrend": 1.94,
+      "cmId": "898012",
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Vendetta/Mel-Newly-Awakened-V1-Epic",
       "languageId": 1
     },
     "ven-070-166": {
@@ -10375,12 +10375,12 @@
     },
     "ven-071-166": {
       "low": 0.02,
-      "avg30": 0.24,
-      "trend": 0.03,
+      "avg30": 0.06,
+      "trend": 0.12,
       "foilLow": 0.02,
-      "foilTrend": 0.15,
-      "cmId": "898199",
-      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Vendetta-Promos/Fretful-Feline",
+      "foilTrend": 0.14,
+      "cmId": "898015",
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Vendetta/Fretful-Feline",
       "languageId": 1
     },
     "ven-072-166": {
@@ -10425,12 +10425,12 @@
     },
     "ven-076-166": {
       "low": 0.02,
-      "avg30": 0.4,
-      "trend": 0.34,
+      "avg30": 0.08,
+      "trend": 0.04,
       "foilLow": 0.02,
-      "foilTrend": 0.13,
-      "cmId": "898204",
-      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Vendetta-Promos/Repair-Specialist",
+      "foilTrend": 0.19,
+      "cmId": "898020",
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Vendetta/Repair-Specialist",
       "languageId": 1
     },
     "ven-077-166": {
@@ -10484,13 +10484,13 @@
       "languageId": 1
     },
     "ven-082-166": {
-      "low": 0.15,
-      "avg30": 0.73,
-      "trend": 0.49,
-      "foilLow": 0.15,
-      "foilTrend": 0.34,
-      "cmId": "898201",
-      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Vendetta-Promos/Profiteer",
+      "low": 0.02,
+      "avg30": 0.09,
+      "trend": 0.02,
+      "foilLow": 0.02,
+      "foilTrend": 0.17,
+      "cmId": "898026",
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Vendetta/Profiteer",
       "languageId": 1
     },
     "ven-083-166": {
@@ -10534,23 +10534,23 @@
       "languageId": 1
     },
     "ven-181-166": {
-      "low": 48.99,
+      "low": 42.02,
       "avg30": 119.99,
       "trend": 119.99,
-      "foilLow": 48.99,
-      "foilTrend": 88.18,
+      "foilLow": 42.02,
+      "foilTrend": 81.14,
       "cmId": "898135",
-      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Vendetta/Gangplank-Naval-V2-Overnumbered",
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Vendetta/Gangplank-Naval-V2-Showcase",
       "languageId": 1
     },
     "ven-086-166": {
-      "low": 280,
-      "avg30": null,
-      "trend": 0,
-      "foilLow": 280,
-      "foilTrend": 350,
-      "cmId": "906114",
-      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Vendetta-Promos/Gangplank-Naval-V1-Rare",
+      "low": 0.02,
+      "avg30": 0.37,
+      "trend": 0.21,
+      "foilLow": 0.02,
+      "foilTrend": 0.21,
+      "cmId": "898031",
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Vendetta/Gangplank-Naval-V1-Rare",
       "languageId": 1
     },
     "ven-087-166": {
@@ -10684,13 +10684,13 @@
       "languageId": 1
     },
     "ven-097-166": {
-      "low": 0.5,
-      "avg30": 1.57,
-      "trend": 2,
-      "foilLow": 0.5,
-      "foilTrend": 1.01,
-      "cmId": "898210",
-      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Vendetta-Promos/Spiderling",
+      "low": 0.02,
+      "avg30": 0.14,
+      "trend": 0.14,
+      "foilLow": 0.02,
+      "foilTrend": 0.28,
+      "cmId": "898044",
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Vendetta/Spiderling",
       "languageId": 1
     },
     "ven-098-166": {
@@ -10705,12 +10705,12 @@
     },
     "ven-099-166": {
       "low": 0.02,
-      "avg30": 0.59,
-      "trend": 0.51,
+      "avg30": 0.07,
+      "trend": 0.07,
       "foilLow": 0.02,
-      "foilTrend": 0.36,
-      "cmId": "898209",
-      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Vendetta-Promos/Tornado-Warrior",
+      "foilTrend": 0.2,
+      "cmId": "898046",
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Vendetta/Tornado-Warrior",
       "languageId": 1
     },
     "ven-100-166": {
@@ -10724,13 +10724,13 @@
       "languageId": 1
     },
     "ven-101-166": {
-      "low": 0.27,
-      "avg30": 0.89,
-      "trend": 0.49,
-      "foilLow": 0.27,
-      "foilTrend": 0.33,
-      "cmId": "898195",
-      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Vendetta-Promos/Gust-Monk",
+      "low": 0.02,
+      "avg30": 0.12,
+      "trend": 0.1,
+      "foilLow": 0.04,
+      "foilTrend": 0.37,
+      "cmId": "898048",
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Vendetta/Gust-Monk",
       "languageId": 1
     },
     "ven-102-166": {
@@ -10814,13 +10814,13 @@
       "languageId": 1
     },
     "ven-109-166": {
-      "low": 0.94,
-      "avg30": 4.55,
-      "trend": 4.55,
-      "foilLow": 0.94,
-      "foilTrend": 0.28,
-      "cmId": "904248",
-      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Vendetta-Promos/Illaoi-Prophet-of-the-Great-Kraken-V1-Rare",
+      "low": 0.02,
+      "avg30": 0.28,
+      "trend": 0.19,
+      "foilLow": 0.02,
+      "foilTrend": 0.26,
+      "cmId": "898056",
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Vendetta/Illaoi-Prophet-of-the-Great-Kraken-V1-Rare",
       "languageId": 1
     },
     "ven-188-166": {
@@ -10944,13 +10944,13 @@
       "languageId": 1
     },
     "ven-118-166": {
-      "low": 0.03,
-      "avg30": 0.42,
+      "low": 0.02,
+      "avg30": 0.04,
       "trend": 0.02,
-      "foilLow": 0.03,
-      "foilTrend": 0.13,
-      "cmId": "898202",
-      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Vendetta-Promos/Horns-of-the-Dragon",
+      "foilLow": 0.02,
+      "foilTrend": 0.14,
+      "cmId": "898068",
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Vendetta/Horns-of-the-Dragon",
       "languageId": 1
     },
     "ven-119-166": {
@@ -10994,13 +10994,13 @@
       "languageId": 1
     },
     "ven-123-166": {
-      "low": 0.03,
-      "avg30": 0.47,
-      "trend": 0.02,
-      "foilLow": 0.03,
-      "foilTrend": 0.02,
-      "cmId": "901254",
-      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Vendetta-Promos/Soulspinner",
+      "low": 0.02,
+      "avg30": 0.04,
+      "trend": 0.04,
+      "foilLow": 0.02,
+      "foilTrend": 0.12,
+      "cmId": "898073",
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Vendetta/Soulspinner",
       "languageId": 1
     },
     "ven-124-166": {
@@ -11014,13 +11014,13 @@
       "languageId": 1
     },
     "ven-125-166": {
-      "low": 0.04,
-      "avg30": 0.24,
-      "trend": 0.03,
-      "foilLow": 0.04,
-      "foilTrend": 0.21,
-      "cmId": "898197",
-      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Vendetta-Promos/Hungry-Wolf",
+      "low": 0.02,
+      "avg30": 0.06,
+      "trend": 0.02,
+      "foilLow": 0.02,
+      "foilTrend": 0.16,
+      "cmId": "898075",
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Vendetta/Hungry-Wolf",
       "languageId": 1
     },
     "ven-126-166": {
@@ -11114,13 +11114,13 @@
       "languageId": 1
     },
     "ven-134-166": {
-      "low": 1.75,
-      "avg30": null,
-      "trend": 0,
-      "foilLow": 1.75,
-      "foilTrend": 1.41,
-      "cmId": "905991",
-      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Vendetta-Promos/Kayle-Justified-V1-Rare",
+      "low": 0.02,
+      "avg30": 0.49,
+      "trend": 0.33,
+      "foilLow": 0.02,
+      "foilTrend": 0.38,
+      "cmId": "898084",
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Vendetta/Kayle-Justified-V1-Rare",
       "languageId": 1
     },
     "ven-135a-166": {
