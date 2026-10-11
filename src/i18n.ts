@@ -38,7 +38,8 @@ const de: Record<string, string> = {
   'dopamin.chance': 'Chance',
   'dopamin.packs': 'Packs: {n}',
 
-  'stats.line': '{unique} Unique | {copies} Kopien | {catalog} im Katalog',
+  'stats.line1': '{unique} Unique | {copies} Kopien',
+  'stats.line2': '{catalog} im Katalog',
   'stats.valueTitle': 'Schätzung: Besitz × ab + Foil × Foil ab (EUR, Cardmarket)',
 
   'update.checking': 'Suche Updates…',
@@ -377,7 +378,8 @@ const en: Record<string, string> = {
   'dopamin.chance': 'Chance',
   'dopamin.packs': 'Packs: {n}',
 
-  'stats.line': '{unique} Unique | {copies} Copies | {catalog} in catalogue',
+  'stats.line1': '{unique} Unique | {copies} Copies',
+  'stats.line2': '{catalog} in catalogue',
   'stats.valueTitle': 'Estimate: owned × low + foil × foil low (EUR, Cardmarket)',
 
   'update.checking': 'Checking updates…',

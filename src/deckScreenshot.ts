@@ -6,15 +6,7 @@ const GOLD = '#c9a227'
 const BADGE_BG = 'rgba(0,0,0,0.78)'
 /** Fixed 3× logical layout so exported PNG stays crisp on all displays. */
 const RENDER_SCALE = 3
-const DOMAIN_FILES: Record<string, string> = {
-  Fury: 'fury.png',
-  Calm: 'calm.png',
-  Mind: 'mind.png',
-  Body: 'body.png',
-  Chaos: 'chaos.png',
-  Order: 'order.png',
-  Colorless: 'colorless.png',
-}
+const DOMAINS = new Set(['Fury', 'Calm', 'Mind', 'Body', 'Chaos', 'Order', 'Colorless'])
 
 type Loaded = HTMLImageElement | null
 
@@ -23,21 +15,7 @@ function fullResImageUrl(url: string | null | undefined): string | null {
   if (!url) return null
   try {
     const u = new URL(url)
-    for (const key of [
-      'w',
-      'h',
-      'width',
-      'height',
-      'auto',
-      'q',
-      'dpr',
-      'fit',
-      'rect',
-      'max-w',
-      'max-h',
-      'quality',
-      'fm',
-    ]) {
+    for (const key of 'w h width height auto q dpr fit rect max-w max-h quality fm'.split(' ')) {
       u.searchParams.delete(key)
     }
     return u.toString()
@@ -84,22 +62,17 @@ function runeDomainCounts(deck: Deck, byId: Map<string, Card>): Map<string, numb
   return m
 }
 
-function roundRect(
-  ctx: CanvasRenderingContext2D,
-  x: number,
-  y: number,
-  w: number,
-  h: number,
-  r: number,
-) {
-  const rr = Math.min(r, w / 2, h / 2)
+function roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number) {
   ctx.beginPath()
-  ctx.moveTo(x + rr, y)
-  ctx.arcTo(x + w, y, x + w, y + h, rr)
-  ctx.arcTo(x + w, y + h, x, y + h, rr)
-  ctx.arcTo(x, y + h, x, y, rr)
-  ctx.arcTo(x, y, x + w, y, rr)
-  ctx.closePath()
+  ctx.roundRect(x, y, w, h, Math.min(r, w / 2, h / 2))
+}
+
+/** Scale img to cover a boxW×boxH box centred on (cx, cy). */
+function drawCover(ctx: CanvasRenderingContext2D, img: HTMLImageElement, cx: number, cy: number, boxW: number, boxH: number) {
+  const s = Math.max(boxW / img.width, boxH / img.height)
+  const dw = img.width * s
+  const dh = img.height * s
+  ctx.drawImage(img, cx - dw / 2, cy - dh / 2, dw, dh)
 }
 
 function drawQtyBadge(
@@ -143,12 +116,7 @@ function drawCard(
   ctx.clip()
   ctx.fillStyle = '#2a2a2a'
   ctx.fillRect(x, y, w, h)
-  if (img) {
-    const s = Math.max(w / img.width, h / img.height)
-    const dw = img.width * s
-    const dh = img.height * s
-    ctx.drawImage(img, x + (w - dw) / 2, y + (h - dh) / 2, dw, dh)
-  }
+  if (img) drawCover(ctx, img, x + w / 2, y + h / 2, w, h)
   ctx.restore()
   drawQtyBadge(ctx, x, y, w, h, qty)
 }
@@ -172,22 +140,11 @@ function drawBattlefieldBanner(
   ctx.fillStyle = '#2a2a2a'
   ctx.fillRect(x, y, w, h)
   if (img) {
-    const portrait = img.naturalHeight > img.naturalWidth
-    if (portrait) {
+    if (img.naturalHeight > img.naturalWidth) {
       ctx.translate(x + w / 2, y + h / 2)
       ctx.rotate(Math.PI / 2)
-      const boxW = h
-      const boxH = w
-      const s = Math.max(boxW / img.width, boxH / img.height)
-      const dw = img.width * s
-      const dh = img.height * s
-      ctx.drawImage(img, -dw / 2, -dh / 2, dw, dh)
-    } else {
-      const s = Math.max(w / img.width, h / img.height)
-      const dw = img.width * s
-      const dh = img.height * s
-      ctx.drawImage(img, x + (w - dw) / 2, y + (h - dh) / 2, dw, dh)
-    }
+      drawCover(ctx, img, 0, 0, h, w)
+    } else drawCover(ctx, img, x + w / 2, y + h / 2, w, h)
   }
   ctx.restore()
 }
@@ -196,27 +153,8 @@ function safeFileName(name: string) {
   return name.replace(/[^\w\- äöüÄÖÜß]+/gi, '_').replace(/\s+/g, '_').slice(0, 80) || 'deck'
 }
 
-function paintBg(ctx: CanvasRenderingContext2D, width: number, height: number) {
-  ctx.fillStyle = BG
-  ctx.fillRect(0, 0, width, height)
-  ctx.strokeStyle = 'rgba(255,255,255,0.025)'
-  ctx.lineWidth = 1
-  for (let x = 0; x < width; x += 48) {
-    ctx.beginPath()
-    ctx.moveTo(x, 0)
-    ctx.lineTo(x, height)
-    ctx.stroke()
-  }
-  for (let y = 0; y < height; y += 48) {
-    ctx.beginPath()
-    ctx.moveTo(0, y)
-    ctx.lineTo(width, y)
-    ctx.stroke()
-  }
-}
-
 export type ShareRender =
-  | { ok: true; canvas: HTMLCanvasElement; fileName: string; dataUrl: string }
+  | { ok: true; fileName: string; dataUrl: string }
   | { ok: false; error: string }
 
 /** Piltover Archive style share canvas (no separate Runes row; rune counts as domain icons). */
@@ -253,9 +191,8 @@ export async function renderDeckShareCanvas(
     const domainImgs = new Map<string, Loaded>()
     await Promise.all(
       [...domainCounts.keys()].map(async (d) => {
-        const file = DOMAIN_FILES[d]
-        if (!file) return
-        domainImgs.set(d, await loadUrl(`${import.meta.env.BASE_URL}domains/${file}`))
+        if (!DOMAINS.has(d)) return
+        domainImgs.set(d, await loadUrl(`${import.meta.env.BASE_URL}domains/${d.toLowerCase()}.png`))
       }),
     )
 
@@ -307,7 +244,8 @@ export async function renderDeckShareCanvas(
     ctx.imageSmoothingEnabled = true
     ctx.imageSmoothingQuality = 'high'
 
-    paintBg(ctx, width, height)
+    ctx.fillStyle = BG
+    ctx.fillRect(0, 0, width, height)
 
     const brand = `${(deck.name || 'Deck').trim()} · Deakrix`
     ctx.fillStyle = '#fff'
@@ -371,18 +309,18 @@ export async function renderDeckShareCanvas(
 
     const rx = pad + leftW + gap
     const ry = contentTop
+    const drawGrid = (cards: DeckCard[], top: number) =>
+      cards.forEach((dc, i) => {
+        const x = rx + (i % cols) * (cardW + cardGap)
+        const y = top + Math.floor(i / cols) * (cardH + cardGap)
+        drawCard(ctx, imgMap.get(dc.id) || null, x, y, cardW, cardH, dc.qty)
+      })
     if (!mainGrid.length) {
       ctx.fillStyle = '#666'
       ctx.font = '13px system-ui, sans-serif'
       ctx.fillText('Main', rx, ry + 16)
     } else {
-      mainGrid.forEach((dc, i) => {
-        const col = i % cols
-        const row = Math.floor(i / cols)
-        const x = rx + col * (cardW + cardGap)
-        const y = ry + row * (cardH + cardGap)
-        drawCard(ctx, imgMap.get(dc.id) || null, x, y, cardW, cardH, dc.qty)
-      })
+      drawGrid(mainGrid, ry)
     }
 
     // Gold divider + SIDEBOARD label span the right column only (under main grid).
@@ -409,20 +347,11 @@ export async function renderDeckShareCanvas(
     ctx.textAlign = 'left'
     ctx.textBaseline = 'alphabetic'
 
-    const sy = lineY + 16
-    if (sideboard.length) {
-      sideboard.forEach((dc, i) => {
-        const col = i % cols
-        const row = Math.floor(i / cols)
-        const x = rx + col * (cardW + cardGap)
-        const y = sy + row * (cardH + cardGap)
-        drawCard(ctx, imgMap.get(dc.id) || null, x, y, cardW, cardH, dc.qty)
-      })
-    }
+    drawGrid(sideboard, lineY + 16)
 
     const fileName = `${safeFileName(deck.name)}_share.png`
     const dataUrl = canvas.toDataURL('image/png')
-    return { ok: true, canvas, fileName, dataUrl }
+    return { ok: true, fileName, dataUrl }
   } catch (e) {
     return { ok: false, error: String(e) }
   }

@@ -1,7 +1,7 @@
-import { useRef, type CSSProperties, type KeyboardEvent } from 'react'
+import { useRef, type InputHTMLAttributes } from 'react'
 import { t, type Lang } from './i18n'
 
-type Props = {
+type Props = Omit<InputHTMLAttributes<HTMLInputElement>, 'value' | 'onChange'> & {
   value: string
   onChange: (value: string) => void
   placeholder?: string
@@ -9,37 +9,28 @@ type Props = {
   className?: string
   /** Extra classes on the wrapper (e.g. "grow"). */
   wrapClassName?: string
-  style?: CSSProperties
   lang: Lang
-  onKeyDown?: (e: KeyboardEvent<HTMLInputElement>) => void
-  'aria-label'?: string
 }
 
 /** Text search with a clear X on the right when there is typed text. */
 export function SearchInput({
   value,
   onChange,
-  placeholder,
   className = 'search',
-  wrapClassName = '',
-  style,
+  wrapClassName,
   lang,
-  onKeyDown,
-  'aria-label': ariaLabel,
+  ...rest
 }: Props) {
   const inputRef = useRef<HTMLInputElement>(null)
-  const wrap = ['search-wrap', wrapClassName].filter(Boolean).join(' ')
 
   return (
-    <div className={wrap} style={style}>
+    <div className={`search-wrap ${wrapClassName ?? ''}`}>
       <input
+        {...rest}
         ref={inputRef}
         className={className}
         value={value}
-        placeholder={placeholder}
-        aria-label={ariaLabel}
         onChange={(e) => onChange(e.target.value)}
-        onKeyDown={onKeyDown}
       />
       {value ? (
         <button

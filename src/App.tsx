@@ -2552,15 +2552,10 @@ export default function App() {
           ))}
         </nav>
         <div className="stats no-drag" style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-          {(() => {
-            const parts = t(lang, 'stats.line', { unique: totals.unique, copies: totals.copies, catalog: totals.catalog }).split(' | ')
-            return (
-              <span className="stats-lines">
-                <span>{parts.slice(0, 2).join(' | ')}</span>
-                <span>{parts.slice(2).join(' | ')}</span>
-              </span>
-            )
-          })()}
+          <span className="stats-lines">
+            <span>{t(lang, 'stats.line1', { unique: totals.unique, copies: totals.copies })}</span>
+            <span>{t(lang, 'stats.line2', { catalog: totals.catalog })}</span>
+          </span>
           {collectionValue && (
             <span className="value-pill" title={t(lang, 'stats.valueTitle')}>
               ~{collectionValue.sum.toFixed(2)} EUR
@@ -3166,27 +3161,21 @@ export default function App() {
                           )}
                           <span className="deck-acc-count">· {deckCount(d)} Karten</span>
                           {expanded && (
-                            <>
+                            <span style={{ display: 'contents' }} onClick={(e) => e.stopPropagation()} onKeyDown={(e) => e.stopPropagation()}>
                               <button
                                 type="button"
                                 className="btn small deck-header-btn"
-                                onClick={(e) => {
-                                  e.stopPropagation()
-                                  openDeckExport()
-                                }}
-                                onKeyDown={(e) => e.stopPropagation()}
+                                onClick={openDeckExport}
                               >
                                 <Icon name="download" />{t(lang, 'decks.export')}
                               </button>
                               <button
                                 type="button"
                                 className="btn small deck-header-btn"
-                                onClick={(e) => {
-                                  e.stopPropagation()
+                                onClick={() => {
                                   setDeckImportOpen((v) => !v)
                                   setDeckImportText('')
                                 }}
-                                onKeyDown={(e) => e.stopPropagation()}
                               >
                                 <Icon name="upload" />{t(lang, 'decks.import')}
                               </button>
@@ -3195,16 +3184,12 @@ export default function App() {
                                   type="button"
                                   className="btn small deck-share-btn"
                                   disabled={deckShotBusy}
-                                  onClick={(e) => {
-                                    e.stopPropagation()
-                                    void openDeckShare(d)
-                                  }}
-                                  onKeyDown={(e) => e.stopPropagation()}
-                                >
+                                  onClick={() => void openDeckShare(d)}
+                                  >
                                   <Icon name="share-2" />{deckShotBusy ? t(lang, 'decks.shareBusy') : t(lang, 'decks.share')}
                                 </button>
                               )}
-                            </>
+                            </span>
                           )}
                         </div>
                         {expanded && <span className="pill ok">{t(lang, 'decks.active')}</span>}
