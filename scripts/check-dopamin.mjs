@@ -47,13 +47,13 @@ for (const id of sets) {
     const tokenish = (t.card.types || []).includes('Token') || (t.card.superTypes || []).includes('Token') || (t.card.types || []).includes('Rune')
     assert(!t.foil && !t.card.altArt && tokenish, id + ' token slot')
     const epics = highs.filter((s) => s.card.rarity === 'Epic')
-    const urs = highs.filter((s) => s.card.rarity === 'Ultimate Rare' || s.card.id === 'rad-164-ur')
+    const urs = highs.filter((s) => s.card.rarity === 'Ultimate Rare' || s.card.id === 'rad-184')
     assert(epics.length <= 1, id + ' two epics')
     assert(urs.length <= 1, id + ' two urs')
     for (const s of highs) {
       if (s.card.rarity === 'Rare' || s.card.rarity === 'Epic') assert(s.foil, id + ' high not foil')
       if (s.card.rarity === 'Ultimate Rare') assert(!s.foil, id + ' ur foil')
-      assert(!s.card.altArt && !s.card.overnumbered && !(s.card.superTypes || []).includes('Signature') && !s.card.signed, id + ' high junk')
+      assert(!s.card.altArt && (s.card.rarity === 'Ultimate Rare' || !s.card.overnumbered) && !(s.card.superTypes || []).includes('Signature') && !s.card.signed, id + ' high junk')
     }
   }
   const epicPack = rollPack(cards, id, justUnderEpic)
@@ -70,10 +70,10 @@ for (const id of sets) {
   const urOff = rollPack(cards, id, atUr)
   const urCount = (pack) => pack.filter((s) => s.card.rarity === 'Ultimate Rare').length
   if (id === 'RAD') {
-    assert(urCount(urOn) === 1 && urOn.find((s) => s.card.rarity === 'Ultimate Rare').card.id === 'rad-164-ur', 'rad ur on')
+    assert(urCount(urOn) === 1 && urOn.find((s) => s.card.rarity === 'Ultimate Rare').card.id === 'rad-184', 'rad ur on')
     assert(urCount(urOff) === 0, 'rad ur off')
-    const ur = urOn.find((s) => s.card.id === 'rad-164-ur')
-    const other = urOn.filter((s) => s.role === 'high' && s.card.id !== 'rad-164-ur')
+    const ur = urOn.find((s) => s.card.id === 'rad-184')
+    const other = urOn.filter((s) => s.role === 'high' && s.card.id !== 'rad-184')
     assert(!ur.foil && other.length === 1 && other[0].card.rarity === 'Rare' && other[0].foil, 'rad ur pair')
   } else {
     assert(urCount(urOn) === 0 && urCount(urOff) === 0, id + ' no ur')
@@ -160,7 +160,7 @@ const ognOn = rollPack(cards, 'OGN', justUnderEpic)
 assert(ognOn[12].card.rarity === 'Epic' && ognOn[13].card.rarity === 'Rare', 'ogn epic first high')
 assert(near(pullChance(cards, 'OGN', ognOn[12]), (1 / 4) / 30), 'ogn epic chance')
 const radOn = rollPack(cards, 'RAD', justUnderUr)
-assert(radOn[13].card.id === 'rad-164-ur' && radOn[12].card.rarity === 'Rare', 'rad ur last')
+assert(radOn[13].card.id === 'rad-184' && radOn[12].card.rarity === 'Rare', 'rad ur last')
 assert(pullChance(cards, 'RAD', radOn[13]) === 0.00025, 'rad ur chance')
 // ponytail: pool sizes from the catalog so new RAD reveals do not break this
 const rad = cards.filter((c) => c.set === 'RAD')

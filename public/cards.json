@@ -37864,6 +37864,34 @@
       "rulesText": "𝗖𝗮𝗿𝗱 𝗘𝗿𝗿𝗮𝘁𝗮 𝗧𝗲𝘅𝘁 – 𝗙𝗿𝗼𝗺 𝗥𝗮𝗱𝗶𝗮𝗻𝗰𝗲 𝗖𝗮𝗿𝗱 𝗘𝗿𝗿𝗮𝘁𝗮:\nReady a unit.\nWhen you play a card with Energy cost [7] or more, you may play this from your trash for [1][Fury][Fury]. Then banish this."
     },
     {
+      "id": "rad-011",
+      "name": "Incorrigible Construct",
+      "subtitle": null,
+      "code": "RAD-011",
+      "cn": 11,
+      "set": "RAD",
+      "setName": "Radiance",
+      "types": [
+        "Unit"
+      ],
+      "superTypes": [],
+      "rarity": "Uncommon",
+      "domains": [
+        "Fury"
+      ],
+      "energy": 4,
+      "might": 4,
+      "image": "https://cdn.piltoverarchive.com/cards/RAD-011.webp",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": false,
+      "tags": [
+        "Piltover",
+        "Mech"
+      ],
+      "rulesText": "[Show Off] a Mech. (As you play me, you may reveal a Mech from your hand or pick another friendly Mech.)\nI enter ready if you showed off."
+    },
+    {
       "id": "rad-012",
       "name": "Runeblade Anvil",
       "subtitle": null,
@@ -38261,6 +38289,31 @@
       "rulesText": "I enter ready.\n[Assault] (+1 while I'm an attacker.)\n[Action] Discard 1, [1] [Fury]: Banish me, then play me to your base, ignoring my cost."
     },
     {
+      "id": "rad-022",
+      "name": "Whirling Twirligig",
+      "subtitle": null,
+      "code": "RAD-022",
+      "cn": 22,
+      "set": "RAD",
+      "setName": "Radiance",
+      "types": [
+        "Gear"
+      ],
+      "superTypes": [],
+      "rarity": "Epic",
+      "domains": [
+        "Fury"
+      ],
+      "energy": 4,
+      "might": 0,
+      "image": "https://cdn.piltoverarchive.com/cards/RAD-022.webp",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": false,
+      "tags": [],
+      "rulesText": "[T]: Play a Gold gear token exhausted. (It has \"[Reaction] Kill this, [T]: [Add] [A].\")\nKill a friendly gear, [T]: Play a 1 [S] Recruit unit token.\nKill a friendly unit, [T]: Play a 3 [S] Mech unit token."
+    },
+    {
       "id": "rad-023",
       "name": "Ziggs",
       "subtitle": "Short-Fused",
@@ -38526,6 +38579,31 @@
       "altArt": false,
       "tags": [],
       "rulesText": "[Shield 3] (+3 [S] while I'm a defender.)\nWhen you play me to a battlefield, you may move another unit you control here to your base."
+    },
+    {
+      "id": "rad-032",
+      "name": "Battle Preparations",
+      "subtitle": null,
+      "code": "RAD-032",
+      "cn": 32,
+      "set": "RAD",
+      "setName": "Radiance",
+      "types": [
+        "Spell"
+      ],
+      "superTypes": [],
+      "rarity": "Uncommon",
+      "domains": [
+        "Calm"
+      ],
+      "energy": 2,
+      "might": 0,
+      "image": "https://cdn.piltoverarchive.com/cards/RAD-032.webp",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": false,
+      "tags": [],
+      "rulesText": "[Reaction] (Play any time, even before spells and abilities resolve.)\n[Show Off] a gear. (As you play this, you may reveal a gear from your hand or pick a friendly gear.)\nGive a unit +2 [S] this turn. If you showed off, ready up to 2 runes."
     },
     {
       "id": "rad-033",
@@ -38936,6 +39014,31 @@
         "Noxus"
       ],
       "rulesText": "When I become exhausted, choose one that hasn't been chosen this turn –\n• [Buff] me. (Give me a +1 [Might] buff if i don't have one.)\n• Spend my buff to [Stun] an enemy unit. (It doesn't deal combat damage this turn.)\n• Spend my buff to ready me."
+    },
+    {
+      "id": "rad-044",
+      "name": "Hunting Blind",
+      "subtitle": null,
+      "code": "RAD-044",
+      "cn": 44,
+      "set": "RAD",
+      "setName": "Radiance",
+      "types": [
+        "Gear"
+      ],
+      "superTypes": [],
+      "rarity": "Epic",
+      "domains": [
+        "Calm"
+      ],
+      "energy": 4,
+      "might": 0,
+      "image": "https://cdn.piltoverarchive.com/cards/RAD-044.webp",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": false,
+      "tags": [],
+      "rulesText": "[Deploy] (Play this only to a battlefield. When an opponent holds here, kill this.)\nWhen you play this, you may move an enemy unit to this battlefield.\nFriendly units here have [Shield 2]. (+2 [S] while they're defenders.)"
     },
     {
       "id": "rad-045",
@@ -40463,6 +40566,33 @@
       "rulesText": "I enter ready if you control no other units.\n[Disarm 2] (When I attack, give an enemy unit here -2 [S] this turn.)"
     },
     {
+      "id": "rad-094",
+      "name": "Explosimian",
+      "subtitle": null,
+      "code": "RAD-094",
+      "cn": 94,
+      "set": "RAD",
+      "setName": "Radiance",
+      "types": [
+        "Unit"
+      ],
+      "superTypes": [],
+      "rarity": "Common",
+      "domains": [
+        "Chaos"
+      ],
+      "energy": 6,
+      "might": 6,
+      "image": "https://cdn.piltoverarchive.com/cards/RAD-094.webp",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": false,
+      "tags": [
+        "Zaun"
+      ],
+      "rulesText": "When I hold, play three Bomb gear tokens to a single battlefield. (They have [Deploy]. When each dies, deal 2 to an enemy there and kill your other Bombs there.)"
+    },
+    {
       "id": "rad-095",
       "name": "Momentary Companion",
       "subtitle": null,
@@ -40694,6 +40824,34 @@
         "Zaun"
       ],
       "rulesText": "[Hidden] (Hide now for [Rune] to react later for [0].)\n[Show Off] a card with [Hidden]. (As you play me, you may reveal such a card from your hand or pick another friendly one on the board.)\nWhen you play me, if you showed off, [Add] [Rune]."
+    },
+    {
+      "id": "rad-104",
+      "name": "Pitiless Stalker",
+      "subtitle": null,
+      "code": "RAD-104",
+      "cn": 104,
+      "set": "RAD",
+      "setName": "Radiance",
+      "types": [
+        "Unit"
+      ],
+      "superTypes": [],
+      "rarity": "Uncommon",
+      "domains": [
+        "Chaos"
+      ],
+      "energy": 5,
+      "might": 5,
+      "image": "https://cdn.piltoverarchive.com/cards/RAD-104.webp",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": false,
+      "tags": [
+        "Shadow Isles",
+        "Cat"
+      ],
+      "rulesText": "[T]: [Stun] an enemy unit. (It doesn't deal combat damage this turn.)"
     },
     {
       "id": "rad-105",
@@ -41646,6 +41804,31 @@
       "rulesText": "Ready your units and give them +3 [S] this turn."
     },
     {
+      "id": "rad-135",
+      "name": "Remember the Fallen",
+      "subtitle": null,
+      "code": "RAD-135",
+      "cn": 135,
+      "set": "RAD",
+      "setName": "Radiance",
+      "types": [
+        "Spell"
+      ],
+      "superTypes": [],
+      "rarity": "Rare",
+      "domains": [
+        "Order"
+      ],
+      "energy": 8,
+      "might": 0,
+      "image": "https://cdn.piltoverarchive.com/cards/RAD-135.webp",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": false,
+      "tags": [],
+      "rulesText": "Play up to 3 units and/or gear from your trash, each with Energy cost no more than [3] and Power cost no more than [A], ignoring their costs."
+    },
+    {
       "id": "rad-136",
       "name": "Dockside Lock-Up",
       "subtitle": null,
@@ -42483,31 +42666,6 @@
       "rulesText": "Champion units here have +1 [S]."
     },
     {
-      "id": "rad-164-ur",
-      "name": "Packed Amphitheater",
-      "subtitle": null,
-      "code": "RAD-164",
-      "cn": 164,
-      "set": "RAD",
-      "setName": "Radiance",
-      "types": [
-        "Battlefield"
-      ],
-      "superTypes": [],
-      "rarity": "Ultimate Rare",
-      "domains": [],
-      "energy": 0,
-      "might": 0,
-      "image": "https://cdn.piltoverarchive.com/cards/RAD-164.webp",
-      "signed": false,
-      "overnumbered": false,
-      "altArt": false,
-      "tags": [
-        "ultimate"
-      ],
-      "rulesText": "Champion units here have +1 [S]."
-    },
-    {
       "id": "rad-165",
       "name": "Rakelstake",
       "subtitle": null,
@@ -42984,6 +43142,37 @@
       "rulesText": "When you play a gear with [Deploy], you may exhaust me and pay [A] to move a friendly unit to that battlefield."
     },
     {
+      "id": "rad-177",
+      "name": "Ekko",
+      "subtitle": "Revolutionary",
+      "code": "RAD-177",
+      "cn": 177,
+      "set": "RAD",
+      "setName": "Radiance",
+      "types": [
+        "Unit"
+      ],
+      "superTypes": [
+        "Champion"
+      ],
+      "rarity": "Showcase",
+      "domains": [
+        "Fury"
+      ],
+      "energy": 5,
+      "might": 4,
+      "image": "https://cdn.piltoverarchive.com/cards/RAD-177.webp",
+      "signed": false,
+      "overnumbered": true,
+      "altArt": false,
+      "tags": [
+        "Ekko",
+        "Zaun",
+        "overnumbered"
+      ],
+      "rulesText": "I enter ready.\n[Assault] (+1 while I'm an attacker.)\n[Action] Discard 1, [1] [Fury]: Banish me, then play me to your base, ignoring my cost."
+    },
+    {
       "id": "rad-178",
       "name": "K'Sante",
       "subtitle": "Courageous",
@@ -43175,7 +43364,7 @@
         "Battlefield"
       ],
       "superTypes": [],
-      "rarity": "Showcase",
+      "rarity": "Ultimate Rare",
       "domains": [],
       "energy": 0,
       "might": 0,
@@ -43184,9 +43373,10 @@
       "overnumbered": true,
       "altArt": false,
       "tags": [
+        "ultimate",
         "overnumbered"
       ],
-      "rulesText": "Champion units here have +1 [Might]."
+      "rulesText": "Champion units here have +1 [S]."
     }
   ]
 }

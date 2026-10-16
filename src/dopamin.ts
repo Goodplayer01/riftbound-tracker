@@ -87,7 +87,7 @@ export function pullChance(cards: Card[], setId: string, slot: PackSlot): number
   if (slot.role === 'token') return groupChance(1, p.tokens.length)
   if (slot.role === 'foil') return groupChance(1, p.commons.length + p.uncommons.length)
   if (setId === 'OGN' && slot.card.rarity === 'Epic') return p.epics.length ? (1 / 4) / p.epics.length : null
-  if (setId === 'RAD' && (slot.card.id === 'rad-164-ur' || slot.card.rarity === 'Ultimate Rare')) return 0.00025
+  if (setId === 'RAD' && (slot.card.id === 'rad-184' || slot.card.rarity === 'Ultimate Rare')) return 0.00025
   const rares = p.rares.length
   if (!rares) return null
   if (setId === 'OGN' && p.epics.length) return Math.min(1, 1.75 / rares)
@@ -104,7 +104,7 @@ export function rollPack(cards: Card[], setId: string, rng: () => number = Math.
     highs[0] = { card: take(p.epics, 1, rng)[0], foil: true, role: 'high' }
   }
   if (setId === 'RAD' && rng() < 0.00025) {
-    const ur = cards.find((c) => c.id === 'rad-164-ur') || cards.find((c) => c.set === 'RAD' && c.rarity === 'Ultimate Rare')
+    const ur = cards.find((c) => c.id === 'rad-184') || cards.find((c) => c.set === 'RAD' && c.rarity === 'Ultimate Rare')
     if (ur) highs[1] = { card: ur, foil: false, role: 'high' }
   }
   return [
