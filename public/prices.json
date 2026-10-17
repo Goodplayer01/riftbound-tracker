@@ -12209,8 +12209,8 @@
       "trend": null,
       "foilLow": null,
       "foilTrend": null,
-      "cmId": null,
-      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance-Promos/Ahri-Confident",
+      "cmId": "917402",
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance-Promos/Ahri-Confident-V1-Rare?language=1",
       "languageId": 1
     },
     "rad-038-skirmish": {
@@ -12219,8 +12219,8 @@
       "trend": null,
       "foilLow": null,
       "foilTrend": null,
-      "cmId": null,
-      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance-Promos/Ahri-Confident",
+      "cmId": "917403",
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance-Promos/Ahri-Confident-V2-Rare?language=1",
       "languageId": 1
     },
     "ogn-001-p": {
@@ -13842,6 +13842,2276 @@
       "cmId": "898184",
       "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Vendetta/Order-Rune-V2-Showcase",
       "languageId": 1
+    },
+    "rad-001": {
+      "low": 0.25,
+      "avg30": null,
+      "trend": null,
+      "foilLow": 0.28,
+      "foilTrend": null,
+      "cmId": "917208",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Amateur-Demolitionist?language=1"
+    },
+    "rad-r01a": {
+      "low": 8,
+      "avg30": null,
+      "trend": null,
+      "foilLow": 8,
+      "foilTrend": null,
+      "cmId": "917447",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Fury-Rune-V2-Showcase?language=1"
+    },
+    "rad-038": {
+      "low": 1.9,
+      "avg30": null,
+      "trend": null,
+      "foilLow": 1.9,
+      "foilTrend": null,
+      "cmId": "917243",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Ahri-Confident-V1-Rare?language=1"
+    },
+    "rad-sp1": {
+      "low": 290,
+      "avg30": null,
+      "trend": null,
+      "foilLow": 290,
+      "foilTrend": null,
+      "cmId": "917459",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Ahri-Confident-V2-Showcase?language=1"
+    },
+    "rad-002": {
+      "low": 0.25,
+      "avg30": null,
+      "trend": 0.3,
+      "foilLow": 0.25,
+      "foilTrend": 0,
+      "cmId": "917209",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Banner-of-Conquest?language=1"
+    },
+    "rad-r02": {
+      "low": 0.2,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": "917448",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Calm-Rune-V1-Common?language=1"
+    },
+    "rad-r02a": {
+      "low": 15,
+      "avg30": null,
+      "trend": null,
+      "foilLow": 15,
+      "foilTrend": null,
+      "cmId": "917449",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Calm-Rune-V2-Showcase?language=1"
+    },
+    "rad-015": {
+      "low": 1.45,
+      "avg30": null,
+      "trend": null,
+      "foilLow": 1.45,
+      "foilTrend": null,
+      "cmId": "917220",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Akali-Brash-V1-Rare?language=1"
+    },
+    "rad-sp2": {
+      "low": 175,
+      "avg30": null,
+      "trend": null,
+      "foilLow": 175,
+      "foilTrend": null,
+      "cmId": "917410",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Akali-Brash?language=1"
+    },
+    "rad-t02": {
+      "low": 0.2,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": "917491",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Bomb?language=1"
+    },
+    "rad-003": {
+      "low": 0.25,
+      "avg30": null,
+      "trend": 0.25,
+      "foilLow": 0.25,
+      "foilTrend": 0,
+      "cmId": "917210",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Bilgewater-Tracker?language=1"
+    },
+    "rad-r03": {
+      "low": 0.2,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": "917450",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Mind-Rune-V1-Common?language=1"
+    },
+    "rad-r03a": {
+      "low": 8,
+      "avg30": null,
+      "trend": null,
+      "foilLow": 8,
+      "foilTrend": null,
+      "cmId": "917451",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Mind-Rune-V2-Showcase?language=1"
+    },
+    "rad-109": {
+      "low": 0.95,
+      "avg30": null,
+      "trend": 0,
+      "foilLow": 0.95,
+      "foilTrend": 2,
+      "cmId": "917310",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Evelynn-In-Control-V1-Rare?language=1"
+    },
+    "rad-109a": {
+      "low": 12,
+      "avg30": null,
+      "trend": null,
+      "foilLow": 12,
+      "foilTrend": null,
+      "cmId": "917311",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Evelynn-In-Control-V2-Showcase?language=1"
+    },
+    "rad-sp3": {
+      "low": 195,
+      "avg30": null,
+      "trend": null,
+      "foilLow": 195,
+      "foilTrend": null,
+      "cmId": "917461",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Evelynn-In-Control-V3-Showcase?language=1"
+    },
+    "rad-004": {
+      "low": 0.25,
+      "avg30": null,
+      "trend": null,
+      "foilLow": 0.45,
+      "foilTrend": null,
+      "cmId": "917211",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Brawl?language=1"
+    },
+    "rad-r04": {
+      "low": 0.2,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": "917452",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Body-Rune-V1-Common?language=1"
+    },
+    "rad-r04a": {
+      "low": 8,
+      "avg30": null,
+      "trend": null,
+      "foilLow": 8,
+      "foilTrend": null,
+      "cmId": "917453",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Body-Rune-V2-Showcase?language=1"
+    },
+    "rad-063": {
+      "low": 1.9,
+      "avg30": null,
+      "trend": null,
+      "foilLow": 1.9,
+      "foilTrend": null,
+      "cmId": "917268",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/KaiSa-Rebel-V1-Rare?language=1"
+    },
+    "rad-sp4": {
+      "low": 295,
+      "avg30": null,
+      "trend": null,
+      "foilLow": 295,
+      "foilTrend": null,
+      "cmId": "917465",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/KaiSa-Rebel-V2-Showcase?language=1"
+    },
+    "rad-005": {
+      "low": 0.25,
+      "avg30": null,
+      "trend": 0.25,
+      "foilLow": 0.28,
+      "foilTrend": 0,
+      "cmId": "917212",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Lingering-Animus?language=1"
+    },
+    "rad-r05": {
+      "low": 0.2,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": "917454",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Chaos-Rune-V1-Common?language=1"
+    },
+    "rad-r05a": {
+      "low": 9.99,
+      "avg30": null,
+      "trend": null,
+      "foilLow": 9.99,
+      "foilTrend": null,
+      "cmId": "917455",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Chaos-Rune-V2-Showcase?language=1"
+    },
+    "rad-138": {
+      "low": 10,
+      "avg30": null,
+      "trend": null,
+      "foilLow": 10,
+      "foilTrend": null,
+      "cmId": "917339",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Seraphine-Not-Alone-V1-Epic?language=1"
+    },
+    "rad-138a": {
+      "low": 18,
+      "avg30": null,
+      "trend": null,
+      "foilLow": 18,
+      "foilTrend": null,
+      "cmId": "917340",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Seraphine-Not-Alone-V2-Showcase?language=1"
+    },
+    "rad-sp5": {
+      "low": 195,
+      "avg30": null,
+      "trend": null,
+      "foilLow": 195,
+      "foilTrend": null,
+      "cmId": "917466",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Seraphine-Not-Alone-V3-Showcase?language=1"
+    },
+    "rad-006": {
+      "low": 0.25,
+      "avg30": null,
+      "trend": null,
+      "foilLow": 0.28,
+      "foilTrend": null,
+      "cmId": "917213",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Scorched-Earth?language=1"
+    },
+    "rad-r06a": {
+      "low": 8,
+      "avg30": null,
+      "trend": null,
+      "foilLow": 8,
+      "foilTrend": null,
+      "cmId": "917457",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Order-Rune-V2-Showcase?language=1"
+    },
+    "rad-007": {
+      "low": 0.25,
+      "avg30": null,
+      "trend": null,
+      "foilLow": 10000,
+      "foilTrend": null,
+      "cmId": "917214",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Rally-for-War?language=1"
+    },
+    "rad-008": {
+      "low": 0.25,
+      "avg30": null,
+      "trend": null,
+      "foilLow": 0.28,
+      "foilTrend": null,
+      "cmId": "917216",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/War-Scout?language=1"
+    },
+    "rad-009": {
+      "low": 0.25,
+      "avg30": null,
+      "trend": null,
+      "foilLow": 0.45,
+      "foilTrend": null,
+      "cmId": "917215",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Antagonistic-Apparatus?language=1"
+    },
+    "rad-010": {
+      "low": 0.75,
+      "avg30": null,
+      "trend": null,
+      "foilLow": 1.5,
+      "foilTrend": null,
+      "cmId": "917408",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Forbidden-Technique?language=1"
+    },
+    "rad-011": {
+      "low": 0.75,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": "917409",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Incorrigible-Construct?language=1"
+    },
+    "rad-012": {
+      "low": 0.5,
+      "avg30": null,
+      "trend": 0.75,
+      "foilLow": 10000,
+      "foilTrend": 0,
+      "cmId": "917217",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Runeblade-Anvil?language=1"
+    },
+    "rad-013": {
+      "low": 0.3,
+      "avg30": null,
+      "trend": null,
+      "foilLow": 0.3,
+      "foilTrend": null,
+      "cmId": "917218",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Lost-to-the-Sands?language=1"
+    },
+    "rad-014": {
+      "low": 0.75,
+      "avg30": null,
+      "trend": 0.9,
+      "foilLow": 10000,
+      "foilTrend": 0,
+      "cmId": "917219",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Shimmering-Swimmer?language=1"
+    },
+    "rad-015-champion": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": "917404",
+      "languageId": 1,
+      "cmUrl": null
+    },
+    "rad-015-skirmishtop": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": "917405",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance-Promos/Akali-Brash-V2-Rare?language=1"
+    },
+    "rad-016": {
+      "low": 0.45,
+      "avg30": null,
+      "trend": 0,
+      "foilLow": 0.45,
+      "foilTrend": 1,
+      "cmId": "917221",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Coalesced-Energy?language=1"
+    },
+    "rad-017": {
+      "low": 0.6,
+      "avg30": null,
+      "trend": 0,
+      "foilLow": 0.6,
+      "foilTrend": 0.9,
+      "cmId": "917222",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Detonation-Amplifier?language=1"
+    },
+    "rad-018": {
+      "low": 0.7,
+      "avg30": null,
+      "trend": null,
+      "foilLow": 0.7,
+      "foilTrend": null,
+      "cmId": "917223",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Drakehound-Packmaster?language=1"
+    },
+    "rad-019": {
+      "low": 0.3,
+      "avg30": null,
+      "trend": null,
+      "foilLow": 0.3,
+      "foilTrend": null,
+      "cmId": "917224",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Firebrand-Raider?language=1"
+    },
+    "rad-020": {
+      "low": 0.9,
+      "avg30": null,
+      "trend": 0,
+      "foilLow": 0.9,
+      "foilTrend": 3,
+      "cmId": "917225",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Mordekaiser-Twice-Slain-V1-Rare?language=1"
+    },
+    "rad-020a": {
+      "low": 9.95,
+      "avg30": null,
+      "trend": null,
+      "foilLow": 9.95,
+      "foilTrend": null,
+      "cmId": "917226",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Mordekaiser-Twice-Slain-V2-Showcase?language=1"
+    },
+    "rad-021": {
+      "low": 14.99,
+      "avg30": null,
+      "trend": null,
+      "foilLow": 14.99,
+      "foilTrend": null,
+      "cmId": "917227",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Ekko-Revolutionary-V1-Epic?language=1"
+    },
+    "rad-021a": {
+      "low": 19,
+      "avg30": null,
+      "trend": null,
+      "foilLow": 19,
+      "foilTrend": null,
+      "cmId": "917228",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Ekko-Revolutionary-V2-Showcase?language=1"
+    },
+    "rad-177": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": "917445",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Ekko-Revolutionary-V3-Showcase?language=1"
+    },
+    "rad-022": {
+      "low": 9.99,
+      "avg30": null,
+      "trend": null,
+      "foilLow": 9.99,
+      "foilTrend": null,
+      "cmId": "917415",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Whirling-Twirligig?language=1"
+    },
+    "rad-023": {
+      "low": 10,
+      "avg30": null,
+      "trend": null,
+      "foilLow": 10,
+      "foilTrend": null,
+      "cmId": "917229",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Ziggs-Short-Fused-V1-Epic?language=1"
+    },
+    "rad-023a": {
+      "low": 19,
+      "avg30": null,
+      "trend": null,
+      "foilLow": 19,
+      "foilTrend": null,
+      "cmId": "917230",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Ziggs-Short-Fused-V2-Showcase?language=1"
+    },
+    "rad-024": {
+      "low": 0.25,
+      "avg30": null,
+      "trend": 0.25,
+      "foilLow": 0.25,
+      "foilTrend": 0,
+      "cmId": "917231",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Blossoming-Dreamroot?language=1"
+    },
+    "rad-025": {
+      "low": 0.25,
+      "avg30": null,
+      "trend": null,
+      "foilLow": 0.45,
+      "foilTrend": null,
+      "cmId": "917232",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Consult-the-Heavens?language=1"
+    },
+    "rad-026": {
+      "low": 0.25,
+      "avg30": null,
+      "trend": null,
+      "foilLow": 10000,
+      "foilTrend": null,
+      "cmId": "917233",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Entrenched-Boar?language=1"
+    },
+    "rad-027": {
+      "low": 0.25,
+      "avg30": null,
+      "trend": null,
+      "foilLow": 0.45,
+      "foilTrend": null,
+      "cmId": "917234",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Iridescent-Avian?language=1"
+    },
+    "rad-028": {
+      "low": 0.25,
+      "avg30": null,
+      "trend": 0.3,
+      "foilLow": 0.4,
+      "foilTrend": 0,
+      "cmId": "917235",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Ki-Burst?language=1"
+    },
+    "rad-029": {
+      "low": 0.25,
+      "avg30": null,
+      "trend": 0.25,
+      "foilLow": 10000,
+      "foilTrend": 0,
+      "cmId": "917236",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Life-from-Stone?language=1"
+    },
+    "rad-030": {
+      "low": 0.25,
+      "avg30": null,
+      "trend": null,
+      "foilLow": 10000,
+      "foilTrend": null,
+      "cmId": "917237",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Sanctum-Conservator?language=1"
+    },
+    "rad-031": {
+      "low": 1,
+      "avg30": null,
+      "trend": null,
+      "foilLow": 1,
+      "foilTrend": null,
+      "cmId": "917418",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Stoic-Ferryman?language=1"
+    },
+    "rad-032": {
+      "low": 1,
+      "avg30": null,
+      "trend": 0.75,
+      "foilLow": 1,
+      "foilTrend": 0,
+      "cmId": "917420",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Battle-Preparations?language=1"
+    },
+    "rad-033": {
+      "low": 0.5,
+      "avg30": null,
+      "trend": 0.5,
+      "foilLow": 0.9,
+      "foilTrend": 0,
+      "cmId": "917238",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Command-Attack?language=1"
+    },
+    "rad-034": {
+      "low": 0.5,
+      "avg30": null,
+      "trend": 0.5,
+      "foilLow": 10000,
+      "foilTrend": 0,
+      "cmId": "917239",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Hunker-Down?language=1"
+    },
+    "rad-035": {
+      "low": 0.45,
+      "avg30": null,
+      "trend": 0.5,
+      "foilLow": 0.45,
+      "foilTrend": 0,
+      "cmId": "917240",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Invigorating-Bloom?language=1"
+    },
+    "rad-036": {
+      "low": 0.25,
+      "avg30": null,
+      "trend": 0.5,
+      "foilLow": 0.4,
+      "foilTrend": 0,
+      "cmId": "917241",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Storm-Raptor?language=1"
+    },
+    "rad-037": {
+      "low": 0.25,
+      "avg30": null,
+      "trend": null,
+      "foilLow": 10000,
+      "foilTrend": null,
+      "cmId": "917242",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Watchful-Curator?language=1"
+    },
+    "rad-039": {
+      "low": 0.29,
+      "avg30": null,
+      "trend": null,
+      "foilLow": 0.29,
+      "foilTrend": null,
+      "cmId": "917244",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Ephemeral-Ward?language=1"
+    },
+    "rad-040": {
+      "low": 0.5,
+      "avg30": null,
+      "trend": null,
+      "foilLow": 0.5,
+      "foilTrend": null,
+      "cmId": "917245",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Heartening-Soul?language=1"
+    },
+    "rad-041": {
+      "low": 1.5,
+      "avg30": null,
+      "trend": 0,
+      "foilLow": 1.5,
+      "foilTrend": 2.89,
+      "cmId": "917246",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Hush?language=1"
+    },
+    "rad-042": {
+      "low": 1,
+      "avg30": null,
+      "trend": null,
+      "foilLow": 1,
+      "foilTrend": null,
+      "cmId": "917411",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Orianna-Exquisite-V1-Rare?language=1"
+    },
+    "rad-042a": {
+      "low": 15,
+      "avg30": null,
+      "trend": null,
+      "foilLow": 15,
+      "foilTrend": null,
+      "cmId": "917412",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Orianna-Exquisite-V2-Rare?language=1"
+    },
+    "rad-043": {
+      "low": 2.4,
+      "avg30": null,
+      "trend": 0,
+      "foilLow": 2.4,
+      "foilTrend": 2.95,
+      "cmId": "917247",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Riven-Broken-Blade-V1-Rare?language=1"
+    },
+    "rad-043a": {
+      "low": 17,
+      "avg30": null,
+      "trend": 0,
+      "foilLow": 17,
+      "foilTrend": 16,
+      "cmId": "917248",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Riven-Broken-Blade-V2-Showcase?language=1"
+    },
+    "rad-044": {
+      "low": 14,
+      "avg30": null,
+      "trend": null,
+      "foilLow": 14,
+      "foilTrend": null,
+      "cmId": "917421",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Hunting-Blind?language=1"
+    },
+    "rad-045": {
+      "low": 9,
+      "avg30": null,
+      "trend": null,
+      "foilLow": 9,
+      "foilTrend": null,
+      "cmId": "917249",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/KSante-Dauntless-V1-Epic?language=1"
+    },
+    "rad-045a": {
+      "low": 5,
+      "avg30": null,
+      "trend": null,
+      "foilLow": 5,
+      "foilTrend": null,
+      "cmId": "917250",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/KSante-Dauntless-V2-Showcase?language=1"
+    },
+    "rad-046": {
+      "low": 11,
+      "avg30": null,
+      "trend": null,
+      "foilLow": 11,
+      "foilTrend": null,
+      "cmId": "917251",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Resplendent-Rostrum?language=1"
+    },
+    "rad-047": {
+      "low": 0.25,
+      "avg30": null,
+      "trend": 0.25,
+      "foilLow": 0.28,
+      "foilTrend": 0,
+      "cmId": "917252",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Fanfare?language=1"
+    },
+    "rad-048": {
+      "low": 0.25,
+      "avg30": null,
+      "trend": null,
+      "foilLow": 0.28,
+      "foilTrend": null,
+      "cmId": "917253",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/High-Note?language=1"
+    },
+    "rad-049": {
+      "low": 0.25,
+      "avg30": null,
+      "trend": null,
+      "foilLow": 0.28,
+      "foilTrend": null,
+      "cmId": "917254",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Industrious-Mechsmith?language=1"
+    },
+    "rad-050": {
+      "low": 0.25,
+      "avg30": null,
+      "trend": null,
+      "foilLow": 10000,
+      "foilTrend": null,
+      "cmId": "917255",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Mysterious-Chronomancer?language=1"
+    },
+    "rad-051": {
+      "low": 0.25,
+      "avg30": null,
+      "trend": 0.3,
+      "foilLow": 0.28,
+      "foilTrend": 0,
+      "cmId": "917256",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Parallel-Convergence?language=1"
+    },
+    "rad-052": {
+      "low": 0.25,
+      "avg30": null,
+      "trend": null,
+      "foilLow": 0.48,
+      "foilTrend": null,
+      "cmId": "917257",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Resource-Extractor?language=1"
+    },
+    "rad-053": {
+      "low": 0.9,
+      "avg30": null,
+      "trend": null,
+      "foilLow": 0.9,
+      "foilTrend": null,
+      "cmId": "917422",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Strigian-Oracle?language=1"
+    },
+    "rad-054": {
+      "low": 0.25,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": "917423",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Trinket-Peddler?language=1"
+    },
+    "rad-055": {
+      "low": 0.04,
+      "avg30": null,
+      "trend": null,
+      "foilLow": 0.04,
+      "foilTrend": null,
+      "cmId": "917259",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Clanging-Sentry?language=1"
+    },
+    "rad-056": {
+      "low": 0.5,
+      "avg30": null,
+      "trend": null,
+      "foilLow": 0.9,
+      "foilTrend": null,
+      "cmId": "917260",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Improvised-Projectile?language=1"
+    },
+    "rad-057": {
+      "low": 0.25,
+      "avg30": null,
+      "trend": null,
+      "foilLow": 0.48,
+      "foilTrend": null,
+      "cmId": "917261",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Piltovan-Guidebot?language=1"
+    },
+    "rad-058": {
+      "low": 0.25,
+      "avg30": null,
+      "trend": 0.5,
+      "foilLow": 10000,
+      "foilTrend": 0,
+      "cmId": "917262",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Riptide-Mage?language=1"
+    },
+    "rad-059": {
+      "low": 0.25,
+      "avg30": null,
+      "trend": null,
+      "foilLow": 10000,
+      "foilTrend": null,
+      "cmId": "917263",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Supernova?language=1"
+    },
+    "rad-060": {
+      "low": 0.25,
+      "avg30": null,
+      "trend": 0.5,
+      "foilLow": 0.45,
+      "foilTrend": 0,
+      "cmId": "917264",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/The-Empyrean?language=1"
+    },
+    "rad-061": {
+      "low": 0.65,
+      "avg30": null,
+      "trend": 0,
+      "foilLow": 0.65,
+      "foilTrend": 1,
+      "cmId": "917265",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Ekko-Ingenious-V1-Rare?language=1"
+    },
+    "rad-061a": {
+      "low": 7,
+      "avg30": null,
+      "trend": null,
+      "foilLow": 7,
+      "foilTrend": null,
+      "cmId": "917266",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Ekko-Ingenious-V2-Showcase?language=1"
+    },
+    "rad-062": {
+      "low": 0.8,
+      "avg30": null,
+      "trend": null,
+      "foilLow": 0.8,
+      "foilTrend": null,
+      "cmId": "917267",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Gravity-Field?language=1"
+    },
+    "rad-064": {
+      "low": 0.7,
+      "avg30": null,
+      "trend": null,
+      "foilLow": 0.7,
+      "foilTrend": null,
+      "cmId": "917269",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Scrutinizing-Scope?language=1"
+    },
+    "rad-065": {
+      "low": 0.9,
+      "avg30": null,
+      "trend": null,
+      "foilLow": 0.9,
+      "foilTrend": null,
+      "cmId": "917424",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Seraphine-Inspiring-V1-Rare?language=1"
+    },
+    "rad-065a": {
+      "low": 20,
+      "avg30": null,
+      "trend": null,
+      "foilLow": 20,
+      "foilTrend": null,
+      "cmId": "917425",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Seraphine-Inspiring-V2-Showcase?language=1"
+    },
+    "rad-066": {
+      "low": 3,
+      "avg30": null,
+      "trend": null,
+      "foilLow": 3,
+      "foilTrend": null,
+      "cmId": "917426",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Spirit-of-the-Forge?language=1"
+    },
+    "rad-067": {
+      "low": 8,
+      "avg30": null,
+      "trend": null,
+      "foilLow": 8,
+      "foilTrend": null,
+      "cmId": "917270",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Clocktower-Guardian?language=1"
+    },
+    "rad-068": {
+      "low": 17,
+      "avg30": null,
+      "trend": null,
+      "foilLow": 17,
+      "foilTrend": null,
+      "cmId": "917271",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Orianna-Mechanical-Marvel-V1-Epic?language=1"
+    },
+    "rad-068a": {
+      "low": 14,
+      "avg30": null,
+      "trend": null,
+      "foilLow": 14,
+      "foilTrend": null,
+      "cmId": "917272",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Orianna-Mechanical-Marvel-V2-Epic?language=1"
+    },
+    "rad-069": {
+      "low": 13,
+      "avg30": null,
+      "trend": null,
+      "foilLow": 13,
+      "foilTrend": null,
+      "cmId": "917273",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Zero-Point-Inflection?language=1"
+    },
+    "rad-070": {
+      "low": 0.25,
+      "avg30": null,
+      "trend": 0.25,
+      "foilLow": 0.28,
+      "foilTrend": 0,
+      "cmId": "917274",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Hold-Em?language=1"
+    },
+    "rad-071": {
+      "low": 0.25,
+      "avg30": null,
+      "trend": 0,
+      "foilLow": 10000,
+      "foilTrend": 0.28,
+      "cmId": "917275",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Nazuman-Ntofo?language=1"
+    },
+    "rad-072": {
+      "low": 0.25,
+      "avg30": null,
+      "trend": 0.25,
+      "foilLow": 0.3,
+      "foilTrend": 0,
+      "cmId": "917276",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Overloaded-Traveler?language=1"
+    },
+    "rad-073": {
+      "low": 0.25,
+      "avg30": null,
+      "trend": 0.25,
+      "foilLow": 0.25,
+      "foilTrend": 0,
+      "cmId": "917277",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Pillaged-Armory?language=1"
+    },
+    "rad-074": {
+      "low": 0.25,
+      "avg30": null,
+      "trend": null,
+      "foilLow": 0.45,
+      "foilTrend": null,
+      "cmId": "917278",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Raving-Witness?language=1"
+    },
+    "rad-075": {
+      "low": 0.25,
+      "avg30": null,
+      "trend": null,
+      "foilLow": 0.25,
+      "foilTrend": null,
+      "cmId": "917279",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Skystrike-Squadron?language=1"
+    },
+    "rad-076": {
+      "low": 0.25,
+      "avg30": null,
+      "trend": 0.25,
+      "foilLow": 10000,
+      "foilTrend": 0,
+      "cmId": "917280",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Sneaky-Zeebles?language=1"
+    },
+    "rad-077": {
+      "low": 0.25,
+      "avg30": null,
+      "trend": null,
+      "foilLow": 10000,
+      "foilTrend": null,
+      "cmId": "917281",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Wrath-of-the-Freljord?language=1"
+    },
+    "rad-078": {
+      "low": 1,
+      "avg30": null,
+      "trend": null,
+      "foilLow": 1,
+      "foilTrend": null,
+      "cmId": "917427",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Armored-Tusker?language=1"
+    },
+    "rad-079": {
+      "low": 0.25,
+      "avg30": null,
+      "trend": null,
+      "foilLow": 0.9,
+      "foilTrend": null,
+      "cmId": "917282",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Avalanche?language=1"
+    },
+    "rad-080": {
+      "low": 0.5,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": "917428",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Bloodscent-Swarm?language=1"
+    },
+    "rad-081": {
+      "low": 0.25,
+      "avg30": null,
+      "trend": 0.5,
+      "foilLow": 0.9,
+      "foilTrend": 0,
+      "cmId": "917283",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Elnuk-Herd?language=1"
+    },
+    "rad-082": {
+      "low": 0.25,
+      "avg30": null,
+      "trend": null,
+      "foilLow": 0.4,
+      "foilTrend": null,
+      "cmId": "917284",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Primordial-Roar?language=1"
+    },
+    "rad-083": {
+      "low": 0.5,
+      "avg30": null,
+      "trend": null,
+      "foilLow": 10000,
+      "foilTrend": null,
+      "cmId": "917285",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Stalwart-Goatherd?language=1"
+    },
+    "rad-084": {
+      "low": 0.49,
+      "avg30": null,
+      "trend": 0,
+      "foilLow": 0.49,
+      "foilTrend": 0.75,
+      "cmId": "917286",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Cataclysm?language=1"
+    },
+    "rad-085": {
+      "low": 0.4,
+      "avg30": null,
+      "trend": 0,
+      "foilLow": 0.4,
+      "foilTrend": 0.91,
+      "cmId": "917287",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Graves-Blasting-Through?language=1"
+    },
+    "rad-085-skirmish": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": "917406",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance-Promos/Graves-Blasting-Through?language=1"
+    },
+    "rad-086": {
+      "low": 0.25,
+      "avg30": null,
+      "trend": 0,
+      "foilLow": 0.25,
+      "foilTrend": 0.9,
+      "cmId": "917288",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/KSante-Courageous-V1-Rare?language=1"
+    },
+    "rad-086a": {
+      "low": 9.5,
+      "avg30": null,
+      "trend": null,
+      "foilLow": 9.5,
+      "foilTrend": null,
+      "cmId": "917289",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/KSante-Courageous-V2-Showcase?language=1"
+    },
+    "rad-178": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": "917377",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/KSante-Courageous-V3-Showcase?language=1"
+    },
+    "rad-087": {
+      "low": 0.29,
+      "avg30": null,
+      "trend": 0,
+      "foilLow": 0.29,
+      "foilTrend": 1.65,
+      "cmId": "917290",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Portable-Portal?language=1"
+    },
+    "rad-088": {
+      "low": 0.7,
+      "avg30": null,
+      "trend": null,
+      "foilLow": 0.7,
+      "foilTrend": null,
+      "cmId": "917291",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Staunch-Survivor?language=1"
+    },
+    "rad-089": {
+      "low": 0.25,
+      "avg30": null,
+      "trend": null,
+      "foilLow": 0.25,
+      "foilTrend": null,
+      "cmId": "917292",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Titanic-Shrine?language=1"
+    },
+    "rad-090": {
+      "low": 6.95,
+      "avg30": null,
+      "trend": null,
+      "foilLow": 6.95,
+      "foilTrend": null,
+      "cmId": "917293",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Evelynn-Consuming-V1-Epic?language=1"
+    },
+    "rad-090a": {
+      "low": 13,
+      "avg30": null,
+      "trend": null,
+      "foilLow": 13,
+      "foilTrend": null,
+      "cmId": "917294",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Evelynn-Consuming-V2-Showcase?language=1"
+    },
+    "rad-091": {
+      "low": 14.99,
+      "avg30": null,
+      "trend": null,
+      "foilLow": 14.99,
+      "foilTrend": null,
+      "cmId": "917295",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Jarvan-IV-Martial-Paragon-V1-Epic?language=1"
+    },
+    "rad-091a": {
+      "low": 19.95,
+      "avg30": null,
+      "trend": null,
+      "foilLow": 19.95,
+      "foilTrend": null,
+      "cmId": "917296",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Jarvan-IV-Martial-Paragon-V2-Showcase?language=1"
+    },
+    "rad-092": {
+      "low": 15,
+      "avg30": null,
+      "trend": null,
+      "foilLow": 15,
+      "foilTrend": null,
+      "cmId": "917430",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Seraphic-Wyvern?language=1"
+    },
+    "rad-093": {
+      "low": 0.25,
+      "avg30": null,
+      "trend": null,
+      "foilLow": 0.28,
+      "foilTrend": null,
+      "cmId": "917297",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Disposal-Expert?language=1"
+    },
+    "rad-094": {
+      "low": 1,
+      "avg30": null,
+      "trend": null,
+      "foilLow": 1,
+      "foilTrend": null,
+      "cmId": "917432",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Explosimian?language=1"
+    },
+    "rad-095": {
+      "low": 0.25,
+      "avg30": null,
+      "trend": 0.3,
+      "foilLow": 0.45,
+      "foilTrend": 0,
+      "cmId": "917298",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Momentary-Companion?language=1"
+    },
+    "rad-096": {
+      "low": 0.25,
+      "avg30": null,
+      "trend": null,
+      "foilLow": 0.28,
+      "foilTrend": null,
+      "cmId": "917299",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Satchel-Charge?language=1"
+    },
+    "rad-097": {
+      "low": 0.25,
+      "avg30": null,
+      "trend": null,
+      "foilLow": 0.28,
+      "foilTrend": null,
+      "cmId": "917300",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Siren-of-the-Shallows?language=1"
+    },
+    "rad-098": {
+      "low": 0.25,
+      "avg30": null,
+      "trend": 0.28,
+      "foilLow": 0.25,
+      "foilTrend": 0.28,
+      "cmId": "917301",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Sirens-Song?language=1"
+    },
+    "rad-099": {
+      "low": 0.25,
+      "avg30": null,
+      "trend": null,
+      "foilLow": 0.25,
+      "foilTrend": null,
+      "cmId": "917302",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Suave-Negotiator?language=1"
+    },
+    "rad-100": {
+      "low": 0.25,
+      "avg30": null,
+      "trend": null,
+      "foilLow": 10000,
+      "foilTrend": null,
+      "cmId": "917303",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/The-Waters-Wage?language=1"
+    },
+    "rad-101": {
+      "low": 0.75,
+      "avg30": null,
+      "trend": null,
+      "foilLow": 0.88,
+      "foilTrend": null,
+      "cmId": "917304",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/An-Offer-You-Cant-Refuse?language=1"
+    },
+    "rad-102": {
+      "low": 0.5,
+      "avg30": null,
+      "trend": null,
+      "foilLow": 0.9,
+      "foilTrend": null,
+      "cmId": "917305",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Demon-Shade?language=1"
+    },
+    "rad-103": {
+      "low": 0.5,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": "917433",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Gutter-Guardian?language=1"
+    },
+    "rad-104": {
+      "low": 1,
+      "avg30": null,
+      "trend": null,
+      "foilLow": 1,
+      "foilTrend": null,
+      "cmId": "917435",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Pitiless-Stalker?language=1"
+    },
+    "rad-105": {
+      "low": 0.5,
+      "avg30": null,
+      "trend": 0.83,
+      "foilLow": 10000,
+      "foilTrend": 0,
+      "cmId": "917306",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Reckless-Innovator?language=1"
+    },
+    "rad-106": {
+      "low": 0.4,
+      "avg30": null,
+      "trend": 0.5,
+      "foilLow": 3.5,
+      "foilTrend": 0.48,
+      "cmId": "917307",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/The-Good-Stuff?language=1"
+    },
+    "rad-107": {
+      "low": 1,
+      "avg30": null,
+      "trend": 0,
+      "foilLow": 1,
+      "foilTrend": 1.95,
+      "cmId": "917308",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Bedeviling-Stranger?language=1"
+    },
+    "rad-108": {
+      "low": 0.5,
+      "avg30": null,
+      "trend": null,
+      "foilLow": 0.5,
+      "foilTrend": null,
+      "cmId": "917309",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Bushwhack-Trap?language=1"
+    },
+    "rad-110": {
+      "low": 0.75,
+      "avg30": null,
+      "trend": null,
+      "foilLow": 0.75,
+      "foilTrend": null,
+      "cmId": "917312",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Lulu-Whimsical?language=1"
+    },
+    "rad-110-skirmish": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": null,
+      "languageId": 1,
+      "cmUrl": null
+    },
+    "rad-111": {
+      "low": 0.3,
+      "avg30": null,
+      "trend": null,
+      "foilLow": 0.3,
+      "foilTrend": null,
+      "cmId": "917313",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Mechanical-Bandit?language=1"
+    },
+    "rad-112": {
+      "low": 0.8,
+      "avg30": null,
+      "trend": null,
+      "foilLow": 0.8,
+      "foilTrend": null,
+      "cmId": "917314",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Ziggs-Explosive-V1-Rare?language=1"
+    },
+    "rad-112a": {
+      "low": 9.95,
+      "avg30": null,
+      "trend": null,
+      "foilLow": 9.95,
+      "foilTrend": null,
+      "cmId": "917315",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Ziggs-Explosive-V2-Showcase?language=1"
+    },
+    "rad-113": {
+      "low": 14,
+      "avg30": null,
+      "trend": null,
+      "foilLow": 14,
+      "foilTrend": null,
+      "cmId": "917436",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Angler-Wyrm?language=1"
+    },
+    "rad-114": {
+      "low": 17,
+      "avg30": null,
+      "trend": null,
+      "foilLow": 17,
+      "foilTrend": null,
+      "cmId": "917316",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Riven-Deserter-V1-Epic?language=1"
+    },
+    "rad-114a": {
+      "low": 25,
+      "avg30": null,
+      "trend": null,
+      "foilLow": 25,
+      "foilTrend": null,
+      "cmId": "917317",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Riven-Deserter-V2-Showcase?language=1"
+    },
+    "rad-115": {
+      "low": 15,
+      "avg30": null,
+      "trend": null,
+      "foilLow": 15,
+      "foilTrend": null,
+      "cmId": "917318",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Transpositionist?language=1"
+    },
+    "rad-116": {
+      "low": 0.25,
+      "avg30": null,
+      "trend": null,
+      "foilLow": 0.45,
+      "foilTrend": null,
+      "cmId": "917319",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Concert-Poster?language=1"
+    },
+    "rad-117": {
+      "low": 0.25,
+      "avg30": null,
+      "trend": null,
+      "foilLow": 0.45,
+      "foilTrend": null,
+      "cmId": "917320",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/For-Demacia?language=1"
+    },
+    "rad-118": {
+      "low": 0.25,
+      "avg30": null,
+      "trend": null,
+      "foilLow": 1,
+      "foilTrend": null,
+      "cmId": "917321",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Herald-of-the-Emperor?language=1"
+    },
+    "rad-119": {
+      "low": 0.25,
+      "avg30": null,
+      "trend": 0,
+      "foilLow": 0.45,
+      "foilTrend": 0.28,
+      "cmId": "917322",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Hunting-Dog?language=1"
+    },
+    "rad-120": {
+      "low": 0.25,
+      "avg30": null,
+      "trend": null,
+      "foilLow": 0.45,
+      "foilTrend": null,
+      "cmId": "917323",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Meticulous-Restorationist?language=1"
+    },
+    "rad-121": {
+      "low": 0.25,
+      "avg30": null,
+      "trend": 0.3,
+      "foilLow": 0.45,
+      "foilTrend": 0,
+      "cmId": "917324",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/One-Two-Punch?language=1"
+    },
+    "rad-122": {
+      "low": 0.25,
+      "avg30": null,
+      "trend": null,
+      "foilLow": 0.28,
+      "foilTrend": null,
+      "cmId": "917325",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Party-Crasher?language=1"
+    },
+    "rad-123": {
+      "low": 0.9,
+      "avg30": null,
+      "trend": null,
+      "foilLow": 0.9,
+      "foilTrend": null,
+      "cmId": "917438",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Protectors-Shield?language=1"
+    },
+    "rad-124": {
+      "low": 0.8,
+      "avg30": null,
+      "trend": null,
+      "foilLow": 0.8,
+      "foilTrend": null,
+      "cmId": "917439",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Burn-Away?language=1"
+    },
+    "rad-125": {
+      "low": 0.4,
+      "avg30": null,
+      "trend": null,
+      "foilLow": 0.4,
+      "foilTrend": null,
+      "cmId": "917326",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Dune-Devourer?language=1"
+    },
+    "rad-126": {
+      "low": 0.25,
+      "avg30": null,
+      "trend": null,
+      "foilLow": 10000,
+      "foilTrend": null,
+      "cmId": "917327",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Mournful-Spirit?language=1"
+    },
+    "rad-127": {
+      "low": 0.25,
+      "avg30": null,
+      "trend": null,
+      "foilLow": 0.45,
+      "foilTrend": null,
+      "cmId": "917328",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Rousing-Display?language=1"
+    },
+    "rad-128": {
+      "low": 0.15,
+      "avg30": null,
+      "trend": null,
+      "foilLow": 0.3,
+      "foilTrend": null,
+      "cmId": "917329",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Steadfast-Outrider?language=1"
+    },
+    "rad-129": {
+      "low": 0.75,
+      "avg30": null,
+      "trend": 0.9,
+      "foilLow": 25,
+      "foilTrend": 0,
+      "cmId": "917330",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Trifarian-Captain?language=1"
+    },
+    "rad-130": {
+      "low": 0.4,
+      "avg30": null,
+      "trend": null,
+      "foilLow": 0.4,
+      "foilTrend": null,
+      "cmId": "917331",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Battlefield-Armorer?language=1"
+    },
+    "rad-131": {
+      "low": 0.6,
+      "avg30": null,
+      "trend": null,
+      "foilLow": 0.6,
+      "foilTrend": null,
+      "cmId": "917332",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Demacian-Illuminators?language=1"
+    },
+    "rad-132": {
+      "low": 0.49,
+      "avg30": null,
+      "trend": 0,
+      "foilLow": 0.9,
+      "foilTrend": 0.9,
+      "cmId": "917333",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Heimerdinger-Academy-Instructor?language=1"
+    },
+    "rad-133": {
+      "low": 0.25,
+      "avg30": null,
+      "trend": null,
+      "foilLow": 0.25,
+      "foilTrend": null,
+      "cmId": "917334",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Jarvan-IV-Royal-Heir-V1-Rare?language=1"
+    },
+    "rad-133a": {
+      "low": 14.95,
+      "avg30": null,
+      "trend": null,
+      "foilLow": 14.95,
+      "foilTrend": null,
+      "cmId": "917335",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Jarvan-IV-Royal-Heir-V2-Showcase?language=1"
+    },
+    "rad-134": {
+      "low": 1,
+      "avg30": null,
+      "trend": null,
+      "foilLow": 1,
+      "foilTrend": null,
+      "cmId": "917440",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Raucous-Anthem?language=1"
+    },
+    "rad-135": {
+      "low": 2.9,
+      "avg30": null,
+      "trend": null,
+      "foilLow": 2.9,
+      "foilTrend": null,
+      "cmId": "917441",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Remember-the-Fallen?language=1"
+    },
+    "rad-136": {
+      "low": 8.95,
+      "avg30": null,
+      "trend": null,
+      "foilLow": 8.95,
+      "foilTrend": null,
+      "cmId": "917336",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Dockside-Lock-Up?language=1"
+    },
+    "rad-137": {
+      "low": 10,
+      "avg30": null,
+      "trend": null,
+      "foilLow": 10,
+      "foilTrend": null,
+      "cmId": "917337",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Mordekaiser-Dominating-V1-Epic?language=1"
+    },
+    "rad-137a": {
+      "low": 24.99,
+      "avg30": null,
+      "trend": null,
+      "foilLow": 24.99,
+      "foilTrend": null,
+      "cmId": "917338",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Mordekaiser-Dominating-V2-Showcase?language=1"
+    },
+    "rad-139": {
+      "low": 0.3,
+      "avg30": null,
+      "trend": 0,
+      "foilLow": 0.3,
+      "foilTrend": 0.9,
+      "cmId": "917341",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Ekko-Boy-Who-Shattered-Time-V1-Rare?language=1"
+    },
+    "rad-168": {
+      "low": 90,
+      "avg30": null,
+      "trend": null,
+      "foilLow": 90,
+      "foilTrend": null,
+      "cmId": "917369",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Ekko-Boy-Who-Shattered-Time-V2-Showcase?language=1"
+    },
+    "rad-168-star": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": "917486",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Ekko-Boy-Who-Shattered-Time-V3-Signed-Showcase?language=1"
+    },
+    "rad-140": {
+      "low": 14,
+      "avg30": null,
+      "trend": 0,
+      "foilLow": 14,
+      "foilTrend": 25,
+      "cmId": "917342",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Chronobreak?language=1"
+    },
+    "rad-141": {
+      "low": 0.3,
+      "avg30": null,
+      "trend": 0,
+      "foilLow": 0.3,
+      "foilTrend": 0.9,
+      "cmId": "917343",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Ziggs-Hexplosives-Expert-V1-Rare?language=1"
+    },
+    "rad-169": {
+      "low": 200,
+      "avg30": null,
+      "trend": 0,
+      "foilLow": 200,
+      "foilTrend": 180,
+      "cmId": "917370",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Ziggs-Hexplosives-Expert-V2-Showcase?language=1"
+    },
+    "rad-169-star": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": "917487",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Ziggs-Hexplosives-Expert-V3-Signed-Showcase?language=1"
+    },
+    "rad-142": {
+      "low": 17,
+      "avg30": null,
+      "trend": null,
+      "foilLow": 17,
+      "foilTrend": null,
+      "cmId": "917344",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Hexplosive-Minefield?language=1"
+    },
+    "rad-143": {
+      "low": 0.19,
+      "avg30": null,
+      "trend": 0,
+      "foilLow": 0.19,
+      "foilTrend": 0.9,
+      "cmId": "917345",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Mordekaiser-Iron-Revenant?language=1"
+    },
+    "rad-170": {
+      "low": 170,
+      "avg30": null,
+      "trend": null,
+      "foilLow": 170,
+      "foilTrend": null,
+      "cmId": "917371",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Mordekaiser-Iron-Revenant-V2-Showcase?language=1"
+    },
+    "rad-170-star": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": "917488",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Mordekaiser-Iron-Revenant-V3-Signed-Showcase?language=1"
+    },
+    "rad-144": {
+      "low": 14.49,
+      "avg30": null,
+      "trend": null,
+      "foilLow": 14.49,
+      "foilTrend": null,
+      "cmId": "917346",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Realm-of-Death?language=1"
+    },
+    "rad-145": {
+      "low": 0.25,
+      "avg30": null,
+      "trend": 0,
+      "foilLow": 0.25,
+      "foilTrend": 0.9,
+      "cmId": "917347",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Orianna-Lady-of-Clockwork?language=1"
+    },
+    "rad-171": {
+      "low": 150,
+      "avg30": null,
+      "trend": null,
+      "foilLow": 150,
+      "foilTrend": null,
+      "cmId": "917372",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Orianna-Lady-of-Clockwork-V2-Showcase?language=1"
+    },
+    "rad-171-star": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": "917489",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Orianna-Lady-of-Clockwork-V3-Signed-Showcase?language=1"
+    },
+    "rad-146": {
+      "low": 19.95,
+      "avg30": null,
+      "trend": null,
+      "foilLow": 19.95,
+      "foilTrend": null,
+      "cmId": "917348",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/The-Ball?language=1"
+    },
+    "rad-147": {
+      "low": 0.25,
+      "avg30": null,
+      "trend": 0,
+      "foilLow": 0.25,
+      "foilTrend": 0.9,
+      "cmId": "917349",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/KSante-Pride-of-Nazumah-V1-Rare?language=1"
+    },
+    "rad-172": {
+      "low": 99,
+      "avg30": null,
+      "trend": null,
+      "foilLow": 99,
+      "foilTrend": null,
+      "cmId": "917373",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/KSante-Pride-of-Nazumah-V2-Showcase?language=1"
+    },
+    "rad-148": {
+      "low": 7.85,
+      "avg30": null,
+      "trend": null,
+      "foilLow": 7.85,
+      "foilTrend": null,
+      "cmId": "917350",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Ntofo-Strikes?language=1"
+    },
+    "rad-149": {
+      "low": 3,
+      "avg30": null,
+      "trend": null,
+      "foilLow": 3,
+      "foilTrend": null,
+      "cmId": "917442",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Riven-The-Exile-V1-Rare?language=1"
+    },
+    "rad-173": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": "917444",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Riven-The-Exile-V2-Showcase?language=1"
+    },
+    "rad-150": {
+      "low": 33.95,
+      "avg30": null,
+      "trend": null,
+      "foilLow": 33.95,
+      "foilTrend": null,
+      "cmId": "917351",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Blade-of-the-Exile?language=1"
+    },
+    "rad-151": {
+      "low": 0.25,
+      "avg30": null,
+      "trend": 0,
+      "foilLow": 0.25,
+      "foilTrend": 0.9,
+      "cmId": "917352",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Seraphine-Starry-Eyed-Songstress-V1-Rare?language=1"
+    },
+    "rad-174": {
+      "low": 249.95,
+      "avg30": null,
+      "trend": null,
+      "foilLow": 249.95,
+      "foilTrend": null,
+      "cmId": "917374",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Seraphine-Starry-Eyed-Songstress-V2-Showcase?language=1"
+    },
+    "rad-174-star": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": "917490",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Seraphine-Starry-Eyed-Songstress-V3-Signed-Showcase?language=1"
+    },
+    "rad-152": {
+      "low": 9,
+      "avg30": null,
+      "trend": null,
+      "foilLow": 9,
+      "foilTrend": null,
+      "cmId": "917353",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Encore?language=1"
+    },
+    "rad-153": {
+      "low": 0.19,
+      "avg30": null,
+      "trend": 0,
+      "foilLow": 0.19,
+      "foilTrend": 0.9,
+      "cmId": "917354",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Evelynn-Agonys-Embrace-V1-Rare?language=1"
+    },
+    "rad-175": {
+      "low": 209.98,
+      "avg30": null,
+      "trend": 0,
+      "foilLow": 209.98,
+      "foilTrend": 210,
+      "cmId": "917375",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Evelynn-Agonys-Embrace-V2-Showcase?language=1"
+    },
+    "rad-154": {
+      "low": 11.95,
+      "avg30": null,
+      "trend": null,
+      "foilLow": 11.95,
+      "foilTrend": null,
+      "cmId": "917355",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Last-Caress?language=1"
+    },
+    "rad-155": {
+      "low": 0.3,
+      "avg30": null,
+      "trend": 0,
+      "foilLow": 0.3,
+      "foilTrend": 0.85,
+      "cmId": "917356",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Jarvan-IV-Exemplar-of-Demacia-V1-Rare?language=1"
+    },
+    "rad-176": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": "917376",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Jarvan-IV-Exemplar-of-Demacia-V2-Showcase?language=1"
+    },
+    "rad-156": {
+      "low": 10,
+      "avg30": null,
+      "trend": null,
+      "foilLow": 10,
+      "foilTrend": null,
+      "cmId": "917357",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Demacian-Standard?language=1"
+    },
+    "rad-157": {
+      "low": 0.65,
+      "avg30": null,
+      "trend": null,
+      "foilLow": 0.9,
+      "foilTrend": null,
+      "cmId": "917358",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Bandle-Scouts-Academy?language=1"
+    },
+    "rad-158": {
+      "low": 0.75,
+      "avg30": null,
+      "trend": null,
+      "foilLow": 10000,
+      "foilTrend": null,
+      "cmId": "917359",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Black-Market?language=1"
+    },
+    "rad-159": {
+      "low": 0.25,
+      "avg30": null,
+      "trend": null,
+      "foilLow": 0.9,
+      "foilTrend": null,
+      "cmId": "917360",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Black-Rose-Sanctum?language=1"
+    },
+    "rad-160": {
+      "low": 0.75,
+      "avg30": null,
+      "trend": null,
+      "foilLow": 0.8,
+      "foilTrend": null,
+      "cmId": "917361",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Cosmic-Vista?language=1"
+    },
+    "rad-161": {
+      "low": 0.25,
+      "avg30": null,
+      "trend": null,
+      "foilLow": 10000,
+      "foilTrend": null,
+      "cmId": "917362",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Durand-Memorial?language=1"
+    },
+    "rad-162": {
+      "low": 0.75,
+      "avg30": null,
+      "trend": null,
+      "foilLow": 10000,
+      "foilTrend": null,
+      "cmId": "917363",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Firelights-Hideout?language=1"
+    },
+    "rad-163": {
+      "low": 0.25,
+      "avg30": null,
+      "trend": null,
+      "foilLow": 0.5,
+      "foilTrend": null,
+      "cmId": "917364",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Hunters-Circle?language=1"
+    },
+    "rad-164": {
+      "low": 0.75,
+      "avg30": null,
+      "trend": null,
+      "foilLow": 10000,
+      "foilTrend": null,
+      "cmId": "917365",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Packed-Amphitheater-V1-Uncommon?language=1"
+    },
+    "rad-184": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": "917383",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Packed-Amphitheater-V2-Showcase?language=1"
+    },
+    "rad-165": {
+      "low": 0.25,
+      "avg30": null,
+      "trend": null,
+      "foilLow": 0.9,
+      "foilTrend": null,
+      "cmId": "917366",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Rakelstake?language=1"
+    },
+    "rad-166": {
+      "low": 0.75,
+      "avg30": null,
+      "trend": null,
+      "foilLow": 0.9,
+      "foilTrend": null,
+      "cmId": "917367",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Ruined-Monastery?language=1"
+    },
+    "rad-167": {
+      "low": 23.95,
+      "avg30": null,
+      "trend": null,
+      "foilLow": 23.95,
+      "foilTrend": null,
+      "cmId": "917368",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Neeko-Blending-In?language=1"
+    },
+    "rad-179": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": "917378",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Aphelios-Exalted?language=1"
+    },
+    "rad-180": {
+      "low": 1000,
+      "avg30": null,
+      "trend": null,
+      "foilLow": 1000,
+      "foilTrend": null,
+      "cmId": "917379",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Ezreal-Dashing?language=1"
+    },
+    "rad-181": {
+      "low": 240,
+      "avg30": null,
+      "trend": null,
+      "foilLow": 240,
+      "foilTrend": null,
+      "cmId": "917380",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Yone-Blademaster?language=1"
+    },
+    "rad-182": {
+      "low": 300,
+      "avg30": null,
+      "trend": null,
+      "foilLow": 300,
+      "foilTrend": null,
+      "cmId": "917381",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Kayn-Unleashed?language=1"
+    },
+    "rad-183": {
+      "low": 300,
+      "avg30": null,
+      "trend": null,
+      "foilLow": 300,
+      "foilTrend": null,
+      "cmId": "917382",
+      "languageId": 1,
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Sett-Kingpin?language=1"
     }
   },
   "language": "English",
