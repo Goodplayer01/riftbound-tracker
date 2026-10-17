@@ -42999,6 +42999,35 @@
       "rulesText": "[1], [T]: Give a friendly unit \"I have [Assault] equal to my [Shield]\" this turn."
     },
     {
+      "id": "rad-172-star",
+      "name": "K'Sante",
+      "subtitle": "Pride of Nazumah",
+      "code": "RAD-172*",
+      "cn": 172,
+      "set": "RAD",
+      "setName": "Radiance",
+      "types": [
+        "Legend"
+      ],
+      "superTypes": [],
+      "rarity": "Showcase",
+      "domains": [
+        "Body",
+        "Calm"
+      ],
+      "energy": 0,
+      "might": 0,
+      "image": "https://riftcompare.com/radiance-spoilers/k-sante-pride-of-nazumah-signature.jpg",
+      "signed": true,
+      "overnumbered": true,
+      "altArt": false,
+      "tags": [
+        "overnumbered",
+        "showcase"
+      ],
+      "rulesText": "[1], [T]: Give a friendly unit \"I have [Assault] equal to my [Shield]\" this turn."
+    },
+    {
       "id": "rad-173",
       "name": "Riven",
       "subtitle": "The Exile",
@@ -43019,6 +43048,35 @@
       "might": 0,
       "image": "https://cdn.piltoverarchive.com/cards/RAD-173.webp",
       "signed": false,
+      "overnumbered": true,
+      "altArt": false,
+      "tags": [
+        "overnumbered",
+        "showcase"
+      ],
+      "rulesText": "Units you play to battlefields you control enter ready."
+    },
+    {
+      "id": "rad-173-star",
+      "name": "Riven",
+      "subtitle": "The Exile",
+      "code": "RAD-173*",
+      "cn": 173,
+      "set": "RAD",
+      "setName": "Radiance",
+      "types": [
+        "Legend"
+      ],
+      "superTypes": [],
+      "rarity": "Showcase",
+      "domains": [
+        "Calm",
+        "Chaos"
+      ],
+      "energy": 0,
+      "might": 0,
+      "image": "https://riftcompare.com/radiance-spoilers/riven-the-exile-signature.jpg",
+      "signed": true,
       "overnumbered": true,
       "altArt": false,
       "tags": [
@@ -43083,7 +43141,35 @@
         "overnumbered",
         "showcase"
       ],
-      "rulesText": "When you play me or when I become exhausted, play a 1 [S] Recruit unit token to your base.\nI have +1 [S] for each other exhausted unit you control."
+      "rulesText": "As an additional cost to play a spell, you may exhaust me and three friendly units to reduce the cost of that spell by [2]."
+    },
+    {
+      "id": "rad-174a-star",
+      "name": "Seraphine",
+      "subtitle": "Starry-Eyed Songstress",
+      "code": "RAD-174a*",
+      "cn": 174,
+      "set": "RAD",
+      "setName": "Radiance",
+      "types": [
+        "Legend"
+      ],
+      "superTypes": [],
+      "rarity": "Showcase",
+      "domains": [
+        "Order",
+        "Mind"
+      ],
+      "energy": 0,
+      "might": 0,
+      "image": "https://riftcompare.com/radiance-spoilers/seraphine-starry-eyed-songstress-174a-signature.jpg",
+      "signed": true,
+      "overnumbered": true,
+      "altArt": true,
+      "tags": [
+        "Seraphine"
+      ],
+      "rulesText": "As an additional cost to play a spell, you may exhaust me and three friendly units to reduce the cost of that spell by [2]."
     },
     {
       "id": "rad-175",
@@ -43114,6 +43200,34 @@
       "rulesText": "Once each turn, when you play a card from face down, draw 1. Then, if it's not your turn, discard 1."
     },
     {
+      "id": "rad-175-star",
+      "name": "Evelynn",
+      "subtitle": "Agony's Embrace",
+      "code": "RAD-175*",
+      "cn": 175,
+      "set": "RAD",
+      "setName": "Radiance",
+      "types": [
+        "Legend"
+      ],
+      "superTypes": [],
+      "rarity": "Showcase",
+      "domains": [
+        "Body",
+        "Chaos"
+      ],
+      "energy": 0,
+      "might": 0,
+      "image": "https://riftcompare.com/radiance-spoilers/evelynn-agonys-embrace-signature.jpg",
+      "signed": true,
+      "overnumbered": true,
+      "altArt": false,
+      "tags": [
+        "Evelynn"
+      ],
+      "rulesText": "Once each turn, when you play a card from face down, draw 1. Then, if it's not your turn, discard 1."
+    },
+    {
       "id": "rad-176",
       "name": "Jarvan IV",
       "subtitle": "Exemplar of Demacia",
@@ -43134,6 +43248,34 @@
       "might": 0,
       "image": "https://cdn.piltoverarchive.com/cards/RAD-176.webp",
       "signed": false,
+      "overnumbered": true,
+      "altArt": false,
+      "tags": [
+        "Jarvan IV"
+      ],
+      "rulesText": "When you play a gear with [Deploy], you may exhaust me and pay [A] to move a friendly unit to that battlefield."
+    },
+    {
+      "id": "rad-176-star",
+      "name": "Jarvan IV",
+      "subtitle": "Exemplar of Demacia",
+      "code": "RAD-176*",
+      "cn": 176,
+      "set": "RAD",
+      "setName": "Radiance",
+      "types": [
+        "Legend"
+      ],
+      "superTypes": [],
+      "rarity": "Showcase",
+      "domains": [
+        "Body",
+        "Order"
+      ],
+      "energy": 0,
+      "might": 0,
+      "image": "https://riftcompare.com/radiance-spoilers/jarvan-iv-exemplar-of-demacia-signature.jpg",
+      "signed": true,
       "overnumbered": true,
       "altArt": false,
       "tags": [
