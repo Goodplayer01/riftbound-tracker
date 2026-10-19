@@ -360,6 +360,59 @@ function RulesText({ text }: { text: string }) {
   return <>{parts}</>
 }
 
+/** Ability filter: add one line per keyword. Matches the keyword at line start, not prose mentions. */
+const ABILITIES = [
+  { id: 'hidden', label: 'Hidden', re: /(^|\n)\[?Hidden\]?(?=[\s(]|$)/ },
+] as const
+
+function AbilityMenu({ lang, open, setOpen, value, onChange, menuRef }: {
+  lang: Lang
+  open: boolean
+  setOpen: (next: boolean | ((o: boolean) => boolean)) => void
+  value: string[]
+  onChange: (next: string[]) => void
+  menuRef: RefObject<HTMLDivElement | null>
+}) {
+  return (
+    <div className={`lang-menu${open ? ' open' : ''}`} ref={menuRef}>
+      <button
+        type="button"
+        className={`lang-trigger${open || value.length ? ' open' : ''}`}
+        title={t(lang, 'filter.ability')}
+        aria-label={t(lang, 'filter.ability')}
+        aria-haspopup="menu"
+        aria-expanded={open}
+        onClick={() => setOpen((o) => !o)}
+      >
+        {t(lang, 'filter.ability')}
+        <svg className="lang-caret" width="10" height="6" viewBox="0 0 10 6" aria-hidden="true">
+          <path d="M1 1l4 4 4-4" stroke="currentColor" strokeWidth="1.4" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      </button>
+      {open && (
+        <div className="lang-dropdown" role="menu" aria-label={t(lang, 'filter.ability')} style={{ left: 0, right: 'auto' }}>
+          {ABILITIES.map((a) => {
+            const on = value.includes(a.id)
+            return (
+              <button
+                key={a.id}
+                type="button"
+                role="menuitemcheckbox"
+                aria-checked={on}
+                className={`lang-option${on ? ' active' : ''}`}
+                onClick={() => onChange(on ? value.filter((v) => v !== a.id) : [...value, a.id])}
+              >
+                <input type="checkbox" className="lang-check" checked={on} readOnly tabIndex={-1} />
+                <span>{a.label}</span>
+              </button>
+            )
+          })}
+        </div>
+      )}
+    </div>
+  )
+}
+
 function RarityMenu({
   lang,
   open,
@@ -615,6 +668,9 @@ export default function App() {
   const [rarityUltimate, setRarityUltimate] = useState(false)
   const [rarityMenuOpen, setRarityMenuOpen] = useState(false)
   const rarityMenuRef = useRef<HTMLDivElement | null>(null)
+  const [abilityFilter, setAbilityFilter] = useState<string[]>([])
+  const [abilityMenuOpen, setAbilityMenuOpen] = useState(false)
+  const abilityMenuRef = useRef<HTMLDivElement | null>(null)
   const [bulkText, setBulkText] = useState('')
   const [quickOpen, setQuickOpen] = useState(false)
   const [quickMode, setQuickMode] = useState<'codes' | 'list'>('codes')
@@ -869,16 +925,18 @@ export default function App() {
   }
 
   useEffect(() => {
-    if (!langMenuOpen && !rarityMenuOpen) return
+    if (!langMenuOpen && !rarityMenuOpen && !abilityMenuOpen) return
     function onDocPointerDown(e: PointerEvent) {
       const t = e.target as Node
       if (langMenuOpen && langMenuRef.current && !langMenuRef.current.contains(t)) setLangMenuOpen(false)
       if (rarityMenuOpen && rarityMenuRef.current && !rarityMenuRef.current.contains(t)) setRarityMenuOpen(false)
+      if (abilityMenuOpen && abilityMenuRef.current && !abilityMenuRef.current.contains(t)) setAbilityMenuOpen(false)
     }
     function onKey(e: KeyboardEvent) {
       if (e.key === 'Escape') {
         setLangMenuOpen(false)
         setRarityMenuOpen(false)
+        setAbilityMenuOpen(false)
       }
     }
     document.addEventListener('pointerdown', onDocPointerDown)
@@ -887,7 +945,7 @@ export default function App() {
       document.removeEventListener('pointerdown', onDocPointerDown)
       document.removeEventListener('keydown', onKey)
     }
-  }, [langMenuOpen, rarityMenuOpen])
+  }, [langMenuOpen, rarityMenuOpen, abilityMenuOpen])
 
   useEffect(() => {
     setCollection(loadCollection())
@@ -961,6 +1019,7 @@ export default function App() {
         (rarityUltimate && c.rarity === 'Ultimate Rare')
       if (!hit) return false
     }
+    if (!abilityFilter.every((id) => ABILITIES.find((a) => a.id === id)?.re.test(c.rulesText || ''))) return false
     if (!query) return true
     return cardSearchHay(c).includes(query)
   }
@@ -1009,7 +1068,7 @@ export default function App() {
       if (ownedOnly && ownedQty(collection[c.id]) <= 0) return false
       return matchesFilters(c, query)
     })
-  }, [cards, q, setFilter, typeFilter, domainFilter, raritySigned, rarityOver, rarityPromo, rarityUltimate, ownedOnly, collection, legendIds])
+  }, [cards, q, setFilter, typeFilter, domainFilter, raritySigned, rarityOver, rarityPromo, rarityUltimate, abilityFilter, ownedOnly, collection, legendIds])
 
   const ownedCards = useMemo(
     () => cards.filter((c) => ownedQty(collection[c.id]) > 0),
@@ -1099,7 +1158,7 @@ export default function App() {
       return matchesSharedFilters(c, query)
     })
     return [...list].sort((a, b) => a.cn - b.cn || a.code.localeCompare(b.code))
-  }, [binderView, cards, collection, q, binderOwnedOnly, binderMissing, binderRarity, domainFilter, raritySigned, rarityOver, rarityPromo, rarityUltimate, legendIds])
+  }, [binderView, cards, collection, q, binderOwnedOnly, binderMissing, binderRarity, domainFilter, raritySigned, rarityOver, rarityPromo, rarityUltimate, abilityFilter, legendIds])
 
   const rarityBySet = useMemo(() => {
     const out: Record<string, { rarity: string; total: number; owned: number }[]> = {}
@@ -2849,6 +2908,7 @@ export default function App() {
                 setUltimate={setRarityUltimate}
                 menuRef={rarityMenuRef}
               />
+              <AbilityMenu lang={lang} open={abilityMenuOpen} setOpen={setAbilityMenuOpen} value={abilityFilter} onChange={setAbilityFilter} menuRef={abilityMenuRef} />
               <DomainFilterRow value={domainFilter} onChange={setDomainFilter} lang={lang} />
             </div>
 
@@ -2918,6 +2978,7 @@ export default function App() {
                 setUltimate={setRarityUltimate}
                 menuRef={rarityMenuRef}
               />
+              <AbilityMenu lang={lang} open={abilityMenuOpen} setOpen={setAbilityMenuOpen} value={abilityFilter} onChange={setAbilityFilter} menuRef={abilityMenuRef} />
               <label className="pill">
                 <input type="checkbox" checked={ownedOnly} onChange={(e) => setOwnedOnly(e.target.checked)} /> {t(lang, 'catalog.ownedOnly')}
               </label>
