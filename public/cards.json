@@ -187,7 +187,7 @@
       "overnumbered": false,
       "altArt": false,
       "tags": [],
-      "rulesText": null
+      "rulesText": "[NO TEXT]"
     },
     {
       "id": "ogn-007a-298",
@@ -217,7 +217,7 @@
         "alt",
         "showcase"
       ],
-      "rulesText": null
+      "rulesText": "[NO TEXT]"
     },
     {
       "id": "ogn-008-298",
@@ -1435,7 +1435,7 @@
       "overnumbered": false,
       "altArt": false,
       "tags": [],
-      "rulesText": null
+      "rulesText": "[NO TEXT]"
     },
     {
       "id": "ogn-050-298",
@@ -2546,7 +2546,7 @@
       "overnumbered": false,
       "altArt": false,
       "tags": [],
-      "rulesText": null
+      "rulesText": "[NO TEXT]"
     },
     {
       "id": "ogn-089-298",
@@ -3666,7 +3666,7 @@
       "overnumbered": false,
       "altArt": false,
       "tags": [],
-      "rulesText": null
+      "rulesText": "[NO TEXT]"
     },
     {
       "id": "ogn-126a-298",
@@ -3696,7 +3696,7 @@
         "alt",
         "showcase"
       ],
-      "rulesText": null
+      "rulesText": "[NO TEXT]"
     },
     {
       "id": "ogn-127-298",
@@ -4096,7 +4096,7 @@
       "overnumbered": false,
       "altArt": false,
       "tags": [],
-      "rulesText": null
+      "rulesText": "[NO TEXT]"
     },
     {
       "id": "ogn-143-298",
@@ -4834,7 +4834,7 @@
       "overnumbered": false,
       "altArt": false,
       "tags": [],
-      "rulesText": null
+      "rulesText": "[NO TEXT]"
     },
     {
       "id": "ogn-166a-298",
@@ -4864,7 +4864,7 @@
         "alt",
         "showcase"
       ],
-      "rulesText": null
+      "rulesText": "[NO TEXT]"
     },
     {
       "id": "ogn-167-298",
@@ -5089,7 +5089,7 @@
       "overnumbered": false,
       "altArt": false,
       "tags": [],
-      "rulesText": null
+      "rulesText": "[NO TEXT]"
     },
     {
       "id": "ogn-176-298",
@@ -5576,7 +5576,7 @@
         "promo",
         "regionals"
       ],
-      "rulesText": "[Accelerate] (You may pay [1][Body] as an additional cost to have me enter ready.)\n[Ganking] (I can move from battlefield to battlefield.)\nThe first time I move each turn, you may ready something else that's exhausted."
+      "rulesText": "You may play me to an open battlefield.\nFriendly units may be played to open battlefields."
     },
     {
       "id": "ogn-193a-298",
@@ -6233,7 +6233,7 @@
       "overnumbered": false,
       "altArt": false,
       "tags": [],
-      "rulesText": null
+      "rulesText": "[NO TEXT]"
     },
     {
       "id": "ogn-214a-298",
@@ -6263,7 +6263,7 @@
         "alt",
         "showcase"
       ],
-      "rulesText": null
+      "rulesText": "[NO TEXT]"
     },
     {
       "id": "ogn-215-298",
@@ -6388,7 +6388,7 @@
       "overnumbered": false,
       "altArt": false,
       "tags": [],
-      "rulesText": null
+      "rulesText": "[NO TEXT]"
     },
     {
       "id": "ogn-220-298",
@@ -7169,7 +7169,7 @@
       "overnumbered": false,
       "altArt": false,
       "tags": [],
-      "rulesText": "When you play a card on an opponent's turn, play a 1 [S] Recruit unit token in your base."
+      "rulesText": "When another non-Recruit unit you control dies, play a 1 [S] Recruit unit token into your base."
     },
     {
       "id": "ogn-246a-298",
@@ -7199,7 +7199,7 @@
         "alt",
         "showcase"
       ],
-      "rulesText": "When you play a card on an opponent's turn, play a 1 [S] Recruit unit token in your base."
+      "rulesText": "When another non-Recruit unit you control dies, play a 1 [S] Recruit unit token into your base."
     },
     {
       "id": "ogn-247-298",
@@ -7875,7 +7875,7 @@
       "overnumbered": false,
       "altArt": false,
       "tags": [],
-      "rulesText": null
+      "rulesText": "[NO TEXT]"
     },
     {
       "id": "ogn-272-298",
@@ -7903,7 +7903,7 @@
       "overnumbered": false,
       "altArt": false,
       "tags": [],
-      "rulesText": null
+      "rulesText": "[NO TEXT]"
     },
     {
       "id": "ogn-273-298",
@@ -7931,7 +7931,7 @@
       "overnumbered": false,
       "altArt": false,
       "tags": [],
-      "rulesText": null
+      "rulesText": "[NO TEXT]"
     },
     {
       "id": "ogn-274-298",
@@ -25922,7 +25922,7 @@
       "overnumbered": false,
       "altArt": false,
       "tags": [],
-      "rulesText": null
+      "rulesText": "[NO TEXT]"
     },
     {
       "id": "ven-r01a",
@@ -26286,7 +26286,7 @@
       "overnumbered": false,
       "altArt": false,
       "tags": [],
-      "rulesText": null
+      "rulesText": "[NO TEXT]"
     },
     {
       "id": "ven-r04a",
@@ -26374,7 +26374,7 @@
       "overnumbered": false,
       "altArt": false,
       "tags": [],
-      "rulesText": null
+      "rulesText": "[NO TEXT]"
     },
     {
       "id": "ven-005-166",
@@ -26426,7 +26426,7 @@
       "overnumbered": false,
       "altArt": false,
       "tags": [],
-      "rulesText": null
+      "rulesText": "[NO TEXT]"
     },
     {
       "id": "ven-r05a",
@@ -26566,7 +26566,7 @@
       "overnumbered": false,
       "altArt": false,
       "tags": [],
-      "rulesText": null
+      "rulesText": "[NO TEXT]"
     },
     {
       "id": "ven-r06a",
@@ -32628,7 +32628,7 @@
         "promo",
         "nexus-night"
       ],
-      "rulesText": "[Hidden] (Hide now for [A] to react with later for [0].)\nWhen I defend or I'm played from [Hidden], reveal the top 5 cards of your Main Deck. Deal 1 to an enemy unit here for each card with [Hidden], then recycle them."
+      "rulesText": "[Hidden] (Hide now for [A] to react with later for [0].)\nWhen you play me, give me +3 [S] this turn."
     },
     {
       "id": "ogn-214b",
@@ -32924,7 +32924,7 @@
         "promo",
         "launch"
       ],
-      "rulesText": "When I attack or defend, give an enemy unit here -2 [S] this turn, to a minimum of 1 [S]."
+      "rulesText": "When I hold, you score 1 point."
     },
     {
       "id": "ogn-67-top8",
@@ -33305,7 +33305,7 @@
         "promo",
         "regionals"
       ],
-      "rulesText": "[Accelerate] (You may pay [1][Body] as an additional cost to have me enter ready.)\n[Ganking] (I can move from battlefield to battlefield.)\nThe first time I move each turn, you may ready something else that's exhausted."
+      "rulesText": "You may play me to an open battlefield.\nFriendly units may be played to open battlefields."
     },
     {
       "id": "ogn-193a-top8",
@@ -33335,7 +33335,7 @@
         "promo",
         "top8"
       ],
-      "rulesText": "[Accelerate] (You may pay [1][Body] as an additional cost to have me enter ready.)\n[Ganking] (I can move from battlefield to battlefield.)\nThe first time I move each turn, you may ready something else that's exhausted."
+      "rulesText": "You may play me to an open battlefield.\nFriendly units may be played to open battlefields."
     },
     {
       "id": "ogn-197-demo",
@@ -33365,7 +33365,7 @@
         "promo",
         "demo"
       ],
-      "rulesText": "[Hidden] (Hide now for [A] to react with later for [0].)\nWhen I defend or I'm played from [Hidden], reveal the top 5 cards of your Main Deck. Deal 1 to an enemy unit here for each card with [Hidden], then recycle them."
+      "rulesText": "[Hidden] (Hide now for [A] to react with later for [0].)\nWhen you play me, give me +3 [S] this turn."
     },
     {
       "id": "ogn-202-release",
@@ -33395,7 +33395,7 @@
         "promo",
         "release"
       ],
-      "rulesText": "[Accelerate] (You may pay [1][Fury] as an additional cost to have me enter ready.)\n[Assault 2] (+2 [S] while I'm an attacker.)\nWhen you play me, discard 2."
+      "rulesText": "When you discard one or more cards, ready me and give me +1 [S] this turn."
     },
     {
       "id": "ogn-210-p",
@@ -33512,7 +33512,7 @@
         "promo",
         "release"
       ],
-      "rulesText": "When you play a card on an opponent's turn, play a 1 [S] Recruit unit token in your base."
+      "rulesText": "When another non-Recruit unit you control dies, play a 1 [S] Recruit unit token into your base."
     },
     {
       "id": "ogn-247-release",
@@ -33715,7 +33715,7 @@
         "promo",
         "release"
       ],
-      "rulesText": "[2], [T]: Move a friendly unit to or from its base."
+      "rulesText": "[2], [T]: Move a friendly unit to or from your base."
     },
     {
       "id": "ogn-261-release",
@@ -35493,7 +35493,7 @@
         "promo",
         "champion"
       ],
-      "rulesText": "When you play a token unit, give me +1 [S] this turn.\nYour token units have [Tank]."
+      "rulesText": "When you play a token unit, give me +1 [S] this turn.\nYour token units have [Tank]. (They must be assigned combat damage first.)"
     },
     {
       "id": "unl-58-top8",
@@ -35523,7 +35523,7 @@
         "promo",
         "top8"
       ],
-      "rulesText": "When you play a token unit, give me +1 [S] this turn.\nYour token units have [Tank]."
+      "rulesText": "When you play a token unit, give me +1 [S] this turn.\nYour token units have [Tank]. (They must be assigned combat damage first.)"
     },
     {
       "id": "unl-061-p",
@@ -35668,7 +35668,7 @@
         "promo",
         "judge"
       ],
-      "rulesText": "[Shield 2]\nYour hold effects for holding here trigger an additional time.\nWhen I hold, [Add] [A] at the start of your next Main Phase."
+      "rulesText": "[Shield 2] (+2 [S] while I'm a defender.)\nYour hold effects for holding here trigger an additional time.\nWhen I hold, [Add] [A] at the start of your next Main Phase. (Abilities that add resources can't be reacted to.)"
     },
     {
       "id": "unl-093-p",
@@ -36050,7 +36050,7 @@
         "promo",
         "regionals"
       ],
-      "rulesText": "[Deflect] (Opponents must pay [A] to choose me with a spell or ability.)\nWhen you play me, if an opponent's score is within 3 points of the Victory Score, ready me and gain 3 XP."
+      "rulesText": "You may spend 3 XP as an additional cost to play me. If you do, I cost [3] less.\n[Ambush] (You may play me as a [Reaction] to a battlefield where you have units.)\n[Tank] (I must be assigned combat damage first.)"
     },
     {
       "id": "unl-178a-regionals",
@@ -36080,7 +36080,7 @@
         "promo",
         "regionals"
       ],
-      "rulesText": "[Deflect] (Opponents must pay [A] to choose me with a spell or ability.)\nWhen you play me, if an opponent's score is within 3 points of the Victory Score, ready me and gain 3 XP."
+      "rulesText": "You may spend 3 XP as an additional cost to play me. If you do, I cost [3] less.\n[Ambush] (You may play me as a [Reaction] to a battlefield where you have units.)\n[Tank] (I must be assigned combat damage first.)"
     },
     {
       "id": "unl-178b-regionals",
@@ -36110,7 +36110,7 @@
         "promo",
         "regionals"
       ],
-      "rulesText": "[Deflect] (Opponents must pay [A] to choose me with a spell or ability.)\nWhen you play me, if an opponent's score is within 3 points of the Victory Score, ready me and gain 3 XP."
+      "rulesText": "You may spend 3 XP as an additional cost to play me. If you do, I cost [3] less.\n[Ambush] (You may play me as a [Reaction] to a battlefield where you have units.)\n[Tank] (I must be assigned combat damage first.)"
     },
     {
       "id": "unl-r01b",
@@ -36413,7 +36413,7 @@
         "promo",
         "skirmish"
       ],
-      "rulesText": "[Ambush]\nWhen you play me, deal damage to a unit equal to the damage marked on it."
+      "rulesText": "[Ambush] (You may play me as a [Reaction] to a battlefield where you have units.)\nWhen you play me, deal damage to a unit equal to the damage marked on it."
     },
     {
       "id": "ven-026-p",
@@ -36648,7 +36648,7 @@
         "promo",
         "nexus-night"
       ],
-      "rulesText": "[Empower] — Discard a spell\nWhen I become [Empowered], banish an enemy unit at a battlefield with 3 [S] or less."
+      "rulesText": "When you play me, draw 1.\n[Empower] [3] ([3]: Empower me. Use only if not Empowered.)\n[Empowered][>] Your spells and abilities can't be countered. If a spell or ability you control would give -[S] to a unit it chooses, it gives an additional -1 [S]."
     },
     {
       "id": "ven-071-p",
@@ -37155,7 +37155,7 @@
         "promo",
         "regionals"
       ],
-      "rulesText": "When you play a token unit, give me +1 [S] this turn.\nYour token units have [Tank]."
+      "rulesText": "[Accelerate] (You may pay [1][Mind] as an additional cost to have me enter ready.)\nWhen I move from a location, play a 3 [S] Sprite unit token with [Temporary] there. (Kill it at the start of its controller's Beginning Phase, before scoring.)"
     },
     {
       "id": "rad-001",
@@ -37240,7 +37240,7 @@
         "Ahri",
         "Ionia"
       ],
-      "rulesText": "[Disarm] (When I attack, give an enemy unit here -1[Might] this turn.)\nWhen you reduce the Might of an enemy unit here by 1 or more, give me +1[Might] this turn."
+      "rulesText": "[Disarm]\nWhen you reduce the Might of an enemy unit here by 1 or more, give me +1 [S] this turn."
     },
     {
       "id": "rad-002",
@@ -37349,7 +37349,7 @@
         "Akali",
         "Ionia"
       ],
-      "rulesText": "[Empower] [2][Fury]\nWhen I move, you may deal 1 to a unit at a battlefield I moved to or from. If I'm [Empowered], deal 2 instead.\n[Empowered][>] I have +1 [S].."
+      "rulesText": "The first time I move each turn, [Add] [1][A].\nThe second time I move each turn, banish the top card of your Main Deck. Until your next Ending Phase, you may play that card."
     },
     {
       "id": "rad-t02",
@@ -37488,7 +37488,7 @@
         "Evelynn",
         "Demon"
       ],
-      "rulesText": "[Disarm]\nWhen I hold, if you control a facedown card here, score 1 point."
+      "rulesText": "[Disarm] (When I attack, give an enemy unit here -1 [S] this turn.)\nWhen I hold, if you control a facedown card here, score 1 point."
     },
     {
       "id": "rad-004",
@@ -37513,7 +37513,7 @@
       "overnumbered": false,
       "altArt": false,
       "tags": [],
-      "rulesText": null
+      "rulesText": "[Action] (Play on your turn or in showdowns.)\nGive a unit [Assault] this turn equal to its Might. (+1 [S] for each instance of Assault while it's an attacker.)"
     },
     {
       "id": "rad-r04",
@@ -37567,7 +37567,7 @@
       "overnumbered": false,
       "altArt": true,
       "tags": [],
-      "rulesText": null
+      "rulesText": "[NO TEXT]"
     },
     {
       "id": "rad-sp4",
@@ -37758,7 +37758,7 @@
       "overnumbered": false,
       "altArt": true,
       "tags": [],
-      "rulesText": "."
+      "rulesText": "[NO TEXT]"
     },
     {
       "id": "rad-007",
@@ -37861,7 +37861,7 @@
       "overnumbered": false,
       "altArt": false,
       "tags": [],
-      "rulesText": "𝗖𝗮𝗿𝗱 𝗘𝗿𝗿𝗮𝘁𝗮 𝗧𝗲𝘅𝘁 – 𝗙𝗿𝗼𝗺 𝗥𝗮𝗱𝗶𝗮𝗻𝗰𝗲 𝗖𝗮𝗿𝗱 𝗘𝗿𝗿𝗮𝘁𝗮:\nReady a unit.\nWhen you play a card with Energy cost [7] or more, you may play this from your trash for [1][Fury][Fury]. Then banish this."
+      "rulesText": "Ready a unit.\nWhen you play a card with Energy cost [7] or more, you may play this from your trash for [1][Fury][Fury]. Banish this."
     },
     {
       "id": "rad-011",
@@ -37889,7 +37889,7 @@
         "Piltover",
         "Mech"
       ],
-      "rulesText": "[Show Off] a Mech. (As you play me, you may reveal a Mech from your hand or pick another friendly Mech.)\nI enter ready if you showed off."
+      "rulesText": "[Show Off] a Mech. (As you play me, you may reveal a Mech from hand or pick another friendly Mech.)\nI enter ready if you showed off."
     },
     {
       "id": "rad-012",
@@ -37966,7 +37966,7 @@
       "tags": [
         "Bilgewater"
       ],
-      "rulesText": null
+      "rulesText": "You may kill a friendly unit or gear as an additional cost to play me.\nWhen you play me, if you paid the additional cost, deal 2 to a unit."
     },
     {
       "id": "rad-015",
@@ -37996,7 +37996,7 @@
         "Akali",
         "Ionia"
       ],
-      "rulesText": "[Empower] [2][Fury]\nWhen I move, you may deal 1 to a unit at a battlefield I moved to or from. If I'm [Empowered], deal 2 instead.\n[Empowered][>] I have +1 [S].."
+      "rulesText": "The first time I move each turn, [Add] [1][A].\nThe second time I move each turn, banish the top card of your Main Deck. Until your next Ending Phase, you may play that card. (You still pay its costs.)"
     },
     {
       "id": "rad-015-champion",
@@ -38085,7 +38085,7 @@
       "tags": [
         "Shurima"
       ],
-      "rulesText": null
+      "rulesText": "At the end of your turn, recycle all your runes, then channel 4 runes exhausted."
     },
     {
       "id": "rad-017",
@@ -38226,7 +38226,7 @@
         "Noxus",
         "Spirit"
       ],
-      "rulesText": "[Accelerate] (You may pay [1] [Fury] as an additional cost to have me enter ready.)\n[Assault 3] (+3 [Might] while I'm an attacker.)\nOnce each turn, if I would die, you may kill a friendly unit to heal me, exhaust me, and recall me instead."
+      "rulesText": "[Accelerate]\n[Assault 3]\nOnce each turn, if I would die, you may kill a friendly unit to heal me, exhaust me, and recall me instead."
     },
     {
       "id": "rad-021",
@@ -38256,7 +38256,7 @@
         "Ekko",
         "Zaun"
       ],
-      "rulesText": "I enter ready.\n[Assault] (+1 while I'm an attacker.)\n[Action] Discard 1, [1] [Fury]: Banish me, then play me to your base, ignoring my cost."
+      "rulesText": "I enter ready.\n[Assault] (+1 [S] while I'm an attacker.)\n[Action][>] Discard 1, [1][Fury]: Banish me, then play me to your base, ignoring my cost."
     },
     {
       "id": "rad-021a",
@@ -38286,7 +38286,7 @@
         "Ekko",
         "Zaun"
       ],
-      "rulesText": "I enter ready.\n[Assault] (+1 while I'm an attacker.)\n[Action] Discard 1, [1] [Fury]: Banish me, then play me to your base, ignoring my cost."
+      "rulesText": "I enter ready.\n[Assault]\n[Action][>] Discard 1, [1][Fury]: Banish me, then play me to your base, ignoring my cost."
     },
     {
       "id": "rad-022",
@@ -38423,7 +38423,7 @@
       "overnumbered": false,
       "altArt": false,
       "tags": [],
-      "rulesText": null
+      "rulesText": "[Reaction] (Play any time, even before spells and abilities resolve.)\nGive a unit [Shield 2] this turn. (+2 [S] while it's a defender.)\n[Predict]. (Look at the top card of your Main Deck. You may recycle it.)"
     },
     {
       "id": "rad-026",
@@ -38478,7 +38478,7 @@
         "Ixtal",
         "Bird"
       ],
-      "rulesText": null
+      "rulesText": "[T]: [Buff] a unit. If it's already buffed, give it +2 [S] this turn instead. (To buff a unit, give it a +1 [S] buff if it doesn't have one.)"
     },
     {
       "id": "rad-028",
@@ -38603,7 +38603,7 @@
       "overnumbered": false,
       "altArt": false,
       "tags": [],
-      "rulesText": "[Reaction] (Play any time, even before spells and abilities resolve.)\n[Show Off] a gear. (As you play this, you may reveal a gear from your hand or pick a friendly gear.)\nGive a unit +2 [S] this turn. If you showed off, ready up to 2 runes."
+      "rulesText": "[Reaction] (Play any time, even before spells and abilities resolve.)\n[Show Off] a gear. (As you play this, you may reveal a gear from hand or pick a friendly gear.)\nGive a unit +2 [S] this turn. If you showed off, ready up to 2 runes."
     },
     {
       "id": "rad-033",
@@ -38706,7 +38706,7 @@
         "Freljord",
         "Bird"
       ],
-      "rulesText": null
+      "rulesText": "[Deflect] (Opponents must pay [A] to choose me with a spell or ability.)\nWhen a stunned enemy unit dies here, draw 1."
     },
     {
       "id": "rad-037",
@@ -38733,7 +38733,7 @@
       "tags": [
         "Piltover"
       ],
-      "rulesText": null
+      "rulesText": "Your gear have [Deflect]. (Opponents must pay [A] to choose each with a spell or ability.)"
     },
     {
       "id": "rad-038",
@@ -38868,7 +38868,7 @@
       "overnumbered": false,
       "altArt": false,
       "tags": [],
-      "rulesText": "When you play me, ready a friendly legend.\nFriendly legends have \"[tap] : Give a unit +3 [might] this turn.\""
+      "rulesText": "When you play me, ready a friendly legend.\nFriendly legends have \"[T]: Give a unit +3 [S] this turn.\""
     },
     {
       "id": "rad-041",
@@ -38953,7 +38953,7 @@
         "Orianna",
         "Piltover"
       ],
-      "rulesText": "[Shield] (+1 [Might] while I'm a defender.)\nI don't deal combat damage unless there's a friendly gear here."
+      "rulesText": "[Shield]\nI don't deal combat damage unless there's a friendly gear here."
     },
     {
       "id": "rad-043",
@@ -39013,7 +39013,7 @@
         "Riven",
         "Noxus"
       ],
-      "rulesText": "When I become exhausted, choose one that hasn't been chosen this turn –\n• [Buff] me. (Give me a +1 [Might] buff if i don't have one.)\n• Spend my buff to [Stun] an enemy unit. (It doesn't deal combat damage this turn.)\n• Spend my buff to ready me."
+      "rulesText": "When I become exhausted, choose one that hasn't been chosen this turn —[Buff] me.Spend my buff to [Stun] an enemy unit.Spend my buff to ready me."
     },
     {
       "id": "rad-044",
@@ -39145,7 +39145,7 @@
       "overnumbered": false,
       "altArt": false,
       "tags": [],
-      "rulesText": null
+      "rulesText": "The next three times you play a unit this turn, draw 1."
     },
     {
       "id": "rad-048",
@@ -39170,7 +39170,7 @@
       "overnumbered": false,
       "altArt": false,
       "tags": [],
-      "rulesText": null
+      "rulesText": "[Reaction] (Play any time, even before spells and abilities resolve.)\nGive a unit –[S] this turn equal to the number of exhausted units you control."
     },
     {
       "id": "rad-049",
@@ -39274,7 +39274,7 @@
       "overnumbered": false,
       "altArt": false,
       "tags": [],
-      "rulesText": "[Deploy] (Play this only to a battlefield. When an opponent holds here, kill this.)\nAt the end of your turn, if you control this battlefield, play a Gold gear token exhausted. (It has \"[Reaction] Kill this, [Tap]: [Add] [Rune].\")"
+      "rulesText": "[Deploy] (Play this only to a battlefield. When an opponent holds here, kill this.)\nAt the end of your turn, if you control this battlefield, play a Gold gear token exhausted. (It has \"[Reaction][>] Kill this, [T]: [Add] [A].\")"
     },
     {
       "id": "rad-053",
@@ -39405,7 +39405,7 @@
         "Piltover",
         "Mech"
       ],
-      "rulesText": null
+      "rulesText": "When you play a card, you may have my base Might become equal to that card's Energy cost this turn."
     },
     {
       "id": "rad-058",
@@ -39483,7 +39483,7 @@
         "Ionia",
         "Dragon"
       ],
-      "rulesText": "[Show Off] a card. (As you play me, you may reveal a card from your hand or pick another friendly one.)\nWhen you play me, if you showed off a card, [Predict] equal to its Power cost, then draw 2. (Look at that many cards from your Main Deck. Recycle any of them and put the rest back in any order.)"
+      "rulesText": "[Show Off] a card. (As you play me, you may reveal a card from hand or pick another friendly one.)\nWhen you play me, if you showed off a card, [Predict] equal to its Power cost, then draw 2. (Look at that many cards from your Main Deck. Recycle any of them and put the rest back in any order.)"
     },
     {
       "id": "rad-061",
@@ -39565,7 +39565,7 @@
       "overnumbered": false,
       "altArt": false,
       "tags": [],
-      "rulesText": "[Deploy] (Play this only to a battlefield. When an opponent holds where, kill this.)\nOpponents must pay [1] [Rune] to move one or more units to this battlefield.\n[Deathknell] Draw 1. (When I die, get the effect.)"
+      "rulesText": "[Deploy] (Play this only to a battlefield. When an opponent holds here, kill this.)\nOpponents must pay [1][A] to move one or more units to this battlefield.\n[Deathknell][>] Draw 1. (When I die, get the effect.)"
     },
     {
       "id": "rad-063",
@@ -39617,7 +39617,7 @@
       "overnumbered": false,
       "altArt": false,
       "tags": [],
-      "rulesText": "[1], [Tap]: Choose an opponent. They guess a card type. Reveal the top card of your Main Deck. If it has that type, recycle it. Otherwise, draw it. (Unit, gear and spell are types.)"
+      "rulesText": "[1], [T]: Choose an opponent. They guess a card type. Reveal the top card of your Main Deck. If it has that type, recycle it. Otherwise, draw it. (Unit, gear, and spell are types.)"
     },
     {
       "id": "rad-065",
@@ -39674,7 +39674,7 @@
         "alt",
         "showcase"
       ],
-      "rulesText": "[Disarm 2] (When I attack, give an enemy unit here -2 [S] this turn.)\nOnce each turn, when you exhaust three or more friendly units at the same time, you may draw 1."
+      "rulesText": "[Disarm 2]\nOnce each turn, when you exhaust three or more friendly units at the same time, you may draw 1."
     },
     {
       "id": "rad-066",
@@ -39861,7 +39861,7 @@
       "tags": [
         "Equipment"
       ],
-      "rulesText": null
+      "rulesText": "Equip [1] ([1]: Attach this to a unit you control.)"
     },
     {
       "id": "rad-072",
@@ -40072,7 +40072,7 @@
       "overnumbered": false,
       "altArt": false,
       "tags": [],
-      "rulesText": null
+      "rulesText": "Deal 3 to all units in bases."
     },
     {
       "id": "rad-080",
@@ -40201,7 +40201,7 @@
       "overnumbered": false,
       "altArt": false,
       "tags": [],
-      "rulesText": null
+      "rulesText": "Opponents can't play spells this turn.\nMove a friendly unit to an occupied enemy battlefield."
     },
     {
       "id": "rad-085",
@@ -40231,7 +40231,7 @@
         "Graves",
         "Bilgewater"
       ],
-      "rulesText": null
+      "rulesText": "When I attack or defend, deal damage equal to my Might to all enemy units here.\nI don't deal combat damage."
     },
     {
       "id": "rad-085-skirmish",
@@ -40344,7 +40344,7 @@
       "overnumbered": false,
       "altArt": false,
       "tags": [],
-      "rulesText": null
+      "rulesText": "[Deploy] (Play this only to a battlefield. When an opponent holds here, kill this.)\nWhen you play this, you may pay [Body] to ready a unit here.\nFriendly units here have [Ganking]. (They can move from battlefield to battlefield.)"
     },
     {
       "id": "rad-088",
@@ -40483,7 +40483,7 @@
         "Jarvan IV",
         "Demacia"
       ],
-      "rulesText": null
+      "rulesText": "Your gear with [Deploy] have [Action]. (They can be played on your turn or in showdowns.)\nWhen I conquer, if there is a friendly gear with [Deploy] here, channel 1 rune exhausted."
     },
     {
       "id": "rad-091a",
@@ -40668,7 +40668,7 @@
       "overnumbered": false,
       "altArt": false,
       "tags": [],
-      "rulesText": null
+      "rulesText": "[Disarm] (When I attack, give an enemy unit here -1 [S] this turn.)\n[Ganking] (I can move from battlefield to battlefield.)"
     },
     {
       "id": "rad-098",
@@ -40746,7 +40746,7 @@
       "overnumbered": false,
       "altArt": false,
       "tags": [],
-      "rulesText": "[Hidden] (Hide now for [Rune] to react with later for [0].)\nPlay a Gold gear token exhausted. If it's your turn and you played this from face down, play three ready Gold gear tokens instead. (Gold tokens have \"[Reaction] Kill this,[Tap] : [Add] [Rune].\")"
+      "rulesText": "[Hidden] (Hide now for [A] to react with later for [0].)\nPlay a Gold gear token exhausted. If it's your turn and you played this from face down, play three ready Gold gear tokens instead. (Gold tokens have \"[Reaction][>] Kill this, [T]: [Add] [A].\")"
     },
     {
       "id": "rad-101",
@@ -40771,7 +40771,7 @@
       "overnumbered": false,
       "altArt": false,
       "tags": [],
-      "rulesText": "[Action] (Play on your turn or in showdowns.)\nKill a gear. Its controller plays a Gold gear token exhausted. (Gold has \"[Reaction] Kill this, [Tap]: [Add] [Rune].\")"
+      "rulesText": "[Action] (Play on your turn or in showdowns.)\nKill a gear. Its controller plays a Gold gear token exhausted. (It has \"[Reaction][>] Kill this, [T]: [Add] [A].\")"
     },
     {
       "id": "rad-102",
@@ -40823,7 +40823,7 @@
       "tags": [
         "Zaun"
       ],
-      "rulesText": "[Hidden] (Hide now for [Rune] to react later for [0].)\n[Show Off] a card with [Hidden]. (As you play me, you may reveal such a card from your hand or pick another friendly one on the board.)\nWhen you play me, if you showed off, [Add] [Rune]."
+      "rulesText": "[Hidden] (Hide now for [A] to react with later for [0].)\n[Show Off] a card with [Hidden]. (As you play me, you may reveal such a card from hand or pick another friendly one on the board.)\nWhen you play me, if you showed off, [Add] [A]."
     },
     {
       "id": "rad-104",
@@ -40931,7 +40931,7 @@
         "Shadow Isles",
         "Demon"
       ],
-      "rulesText": null
+      "rulesText": "[Hidden] (Hide now for [A] to react with later for [0].)\nWhen you play me, choose a battlefield. If there are 4 or more units there, you may return an enemy unit there to its owner's hand."
     },
     {
       "id": "rad-108",
@@ -41047,7 +41047,7 @@
         "Bandle City",
         "Yordle"
       ],
-      "rulesText": null
+      "rulesText": "When I move, you may have another unit's base Might become 4 this turn."
     },
     {
       "id": "rad-110-skirmish",
@@ -41135,7 +41135,7 @@
         "Zaun",
         "Yordle"
       ],
-      "rulesText": "[1],[Tap]: Play a Bomb gear token to a battlefield. (It has [Deploy]. When it dies deal 2 to an enemy there and kill your other Bombs there.)\nWhen I defend, you may kill a friendly gear to give me +2[Might] this turn."
+      "rulesText": "[1], [T]: Play a Bomb gear token to a battlefield. (It has [Deploy]. When it dies, deal 2 to an enemy there and kill your other Bombs there.)\nWhen I defend, you may kill a friendly gear to give me +2 [S] this turn."
     },
     {
       "id": "rad-112a",
@@ -41166,7 +41166,7 @@
         "Zaun",
         "Yordle"
       ],
-      "rulesText": "[1],[Tap]: Play a Bomb gear token to a battlefield. (It has [Deploy]. When it dies deal 2 to an enemy there and kill your other Bombs there.)\nWhen I defend, you may kill a friendly gear to give me +2[Might] this turn."
+      "rulesText": "[1], [T]: Play a Bomb gear token to a battlefield.\nWhen I defend, you may kill a friendly gear to give me +2 [S] this turn."
     },
     {
       "id": "rad-113",
@@ -41191,7 +41191,7 @@
       "overnumbered": false,
       "altArt": false,
       "tags": [],
-      "rulesText": "[Deflect] (Opponents must pay [Rune] to choose me with a spell of ability.)\n[Tap]: Choose an opponent. They must move a unit they control to my battlefield."
+      "rulesText": "[Deflect] (Opponents must pay [A] to choose me with a spell or ability.)\n[T]: Choose an opponent. They must move a unit they control to my battlefield."
     },
     {
       "id": "rad-114",
@@ -41221,7 +41221,7 @@
         "RIven",
         "Noxus"
       ],
-      "rulesText": "When another friendly unit becomes exhausted, give me +1 [might] this turn.\nExhaust a friendly unit: Ready a unit. Use this ability only once per turn."
+      "rulesText": "When another friendly unit becomes exhausted, give me +1 [S] this turn.\nExhaust a friendly unit: Ready a unit. Use this ability only once each turn."
     },
     {
       "id": "rad-114a",
@@ -41251,7 +41251,7 @@
         "RIven",
         "Noxus"
       ],
-      "rulesText": "When another friendly unit becomes exhausted, give me +1 [might] this turn.\nExhaust a friendly unit: Ready a unit. Use this ability only once per turn."
+      "rulesText": "When another friendly unit is exhausted, give me +1 [S] this turn.\nExhaust a friendly unit: Ready a unit. Use this ability only once each turn."
     },
     {
       "id": "rad-115",
@@ -41328,7 +41328,7 @@
       "overnumbered": false,
       "altArt": false,
       "tags": [],
-      "rulesText": null
+      "rulesText": "[Reaction] (Play any time, even before spells and abilities resolve.)\nChoose a battlefield. Give friendly units there [Shield 2] this turn. (+2 [S] while they're defenders.)"
     },
     {
       "id": "rad-118",
@@ -41381,7 +41381,7 @@
         "Demacia",
         "Dog"
       ],
-      "rulesText": null
+      "rulesText": "[Deathknell][>] Play a 1 [S] Bird unit token with [Deflect] to your base. (When I die, get the effect. Opponents must pay [A] to choose a [Deflect] unit with a spell or ability.)"
     },
     {
       "id": "rad-120",
@@ -41408,7 +41408,7 @@
       "tags": [
         "Piltover"
       ],
-      "rulesText": "When you play a card with Energy cost [7] or more, you may play me from your trash for [Rune]."
+      "rulesText": "When you play a card with Energy cost [7] or more, you may play me from your trash for [Order]."
     },
     {
       "id": "rad-121",
@@ -41615,7 +41615,7 @@
       "tags": [
         "Demacia"
       ],
-      "rulesText": null
+      "rulesText": "[Tank] (I must be assigned combat damage first.)\nWhile there are 2 or more other friendly units and/or gear at my battlefield, I have +2 [S]."
     },
     {
       "id": "rad-129",
@@ -41667,7 +41667,7 @@
       "tags": [
         "Demacia"
       ],
-      "rulesText": null
+      "rulesText": "When a friendly gear at a battlefield dies, you may pay [1] to return it to its owner's hand."
     },
     {
       "id": "rad-131",
@@ -41749,7 +41749,7 @@
         "Jarvan IV",
         "Demacia"
       ],
-      "rulesText": "[Assault] (+1 [Might] while I'm an attacker.)\n[Tank] (I must be assigned combat damage first.)\nWhen I attack, you may move a unit you control to my battlefield."
+      "rulesText": "[Assault]\n[Tank]\nWhen I attack, you may move a unit you control to my battlefield."
     },
     {
       "id": "rad-133",
@@ -41776,7 +41776,7 @@
       "overnumbered": false,
       "altArt": false,
       "tags": [],
-      "rulesText": "[Assault] (+1 [S] while I'm an attacker.)\n[Tank] (I must be assigned combat damage first.)\nWhen I attack, you may move a unit you control to my battlefield."
+      "rulesText": "[Assault] (+1 [S] while I'm attacking.)\n[Tank] (I must be assigned combat damage first.)\nWhen I attack, you may move a unit you control to my battlefield."
     },
     {
       "id": "rad-134",
@@ -42108,7 +42108,7 @@
       "tags": [
         "Mordekaiser"
       ],
-      "rulesText": "When you play me or when I attack, you may discard 1 to kill a unit or gear."
+      "rulesText": "[Reaction][>] Banish a unit or gear from your trash, [T]: [Add] [A]. Spend this Power only to play units or gear. (Abilities that add resources can't be reacted to.)"
     },
     {
       "id": "rad-144",
@@ -42363,7 +42363,7 @@
       "tags": [
         "Seraphine"
       ],
-      "rulesText": null
+      "rulesText": "Choose two —Deal 2 to a unit.Play two 1 [S] Recruit unit tokens.Give up to two units each +1 [S] this turn.Look at the top 2 cards of your Main Deck, draw 1 and recycle the other."
     },
     {
       "id": "rad-153",
@@ -42421,7 +42421,7 @@
       "tags": [
         "Evelynn"
       ],
-      "rulesText": "[Reaction] (Play at any time, even before spells and abilities resolve.)\nThe next unit you play this turn (even from face down) can be played to any battlefield. When you play it, [Buff] it. (Give it a +1 [Might] buff if it doesn't have one.)"
+      "rulesText": "[Reaction] (Play any time, even before spells and abilities resolve.)\nThe next unit you play this turn (even from face down) can be played to any battlefield. When you play it, [Buff] it. (Give it a +1 [S] buff if it doesn't have one.)"
     },
     {
       "id": "rad-155",
@@ -42502,7 +42502,7 @@
       "overnumbered": false,
       "altArt": false,
       "tags": [],
-      "rulesText": null
+      "rulesText": "When you hide a card here, play a Gold gear token exhausted. (It has \"[Reaction][>] Kill this, [T]: [Add] [A].\")"
     },
     {
       "id": "rad-158",
@@ -42525,7 +42525,7 @@
       "overnumbered": false,
       "altArt": false,
       "tags": [],
-      "rulesText": null
+      "rulesText": "[A][A]: Draw 1. Each player may use this ability once on their turn (even if they don't control this battlefield)."
     },
     {
       "id": "rad-159",
@@ -42617,7 +42617,7 @@
       "overnumbered": false,
       "altArt": false,
       "tags": [],
-      "rulesText": null
+      "rulesText": "When you conquer here, the next unit you play this turn has [Accelerate]. (You may pay [1] and a Power of its Domain as an additional cost to have it enter ready.)"
     },
     {
       "id": "rad-163",
@@ -42640,7 +42640,7 @@
       "overnumbered": false,
       "altArt": false,
       "tags": [],
-      "rulesText": null
+      "rulesText": "For each player, the first unit or gear they play here on their turn costs [1] less."
     },
     {
       "id": "rad-164",
@@ -42766,7 +42766,7 @@
       "tags": [
         "Ekko"
       ],
-      "rulesText": "As an additional cost to play me, return a friendly unit to its owner's hand.\n[Ganking] (I can move from battlefield to battlefield.)"
+      "rulesText": "[Empower] — [1], [T]\nDisempower me, [T]: Reduce the cost of the next unit you play this turn by [2][A] and give it \"Kill me at end of turn.\""
     },
     {
       "id": "rad-168-star",
@@ -42794,7 +42794,7 @@
       "tags": [
         "Ekko"
       ],
-      "rulesText": "As an additional cost to play me, return a friendly unit to its owner's hand.\n[Ganking] (I can move from battlefield to battlefield.)"
+      "rulesText": "[Empower] — [1], [T] (Use only if not Empowered.)\nDisempower me, [T]: Reduce the cost of the next unit you play this turn by [2][A] and give it \"Kill me at end of turn.\""
     },
     {
       "id": "rad-169",
@@ -42853,7 +42853,7 @@
         "overnumbered",
         "showcase"
       ],
-      "rulesText": "When you play me, play a Bomb gear token to a battlefield. (It has [Deploy]. When it dies, deal 2 to an enemy there and kill your other Bombs there.)\nAbilities of friendly gear deal 1 Bonus Damage."
+      "rulesText": "[1][A], [T]: Play a Bomb gear token to a battlefield. (It has [Deploy]. When it dies, deal 2 to an enemy there and kill your other Bombs there.)"
     },
     {
       "id": "rad-170",
@@ -42881,7 +42881,7 @@
       "tags": [
         "Mordekaiser"
       ],
-      "rulesText": "When you play me or when I attack, you may discard 1 to kill a unit or gear."
+      "rulesText": "[Reaction][>] Banish a unit or gear from your trash, [T]: [Add] [A]. Spend this Power to play units or gear."
     },
     {
       "id": "rad-170-star",
@@ -42909,7 +42909,7 @@
       "tags": [
         "Mordekaiser"
       ],
-      "rulesText": "When you play me or when I attack, you may discard 1 to kill a unit or gear."
+      "rulesText": "[Reaction][>] Banish a unit or gear from your trash, [T]: [Add] [A]. Spend this Power only to play units or gear. (Abilities that add resources can't be reacted to.)"
     },
     {
       "id": "rad-171",
@@ -42967,7 +42967,7 @@
         "overnumbered",
         "showcase"
       ],
-      "rulesText": "Once each turn, while I'm at a battlefield, you may pay [1][A] less to play a gear."
+      "rulesText": "At the start of your Main Phase, you may pay [1] to choose a friendly gear. It becomes a unit gear with Might equal to its Energy cost until you choose another gear with me."
     },
     {
       "id": "rad-172",
@@ -43312,7 +43312,7 @@
         "Zaun",
         "overnumbered"
       ],
-      "rulesText": "I enter ready.\n[Assault] (+1 while I'm an attacker.)\n[Action] Discard 1, [1] [Fury]: Banish me, then play me to your base, ignoring my cost."
+      "rulesText": "I enter ready.\n[Assault]\n[Action][>] Discard 1, [1][Fury]: Banish me, then play me to your base, ignoring my cost."
     },
     {
       "id": "rad-178",
