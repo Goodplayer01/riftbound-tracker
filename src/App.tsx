@@ -542,7 +542,9 @@ function CardTile({
   variant,
   onOpen,
   onBump,
+  children,
 }: {
+  children?: ReactNode
   c: Card
   o: { qty: number; foil: number }
   lang: Lang
@@ -605,6 +607,7 @@ function CardTile({
             </div>
           )}
         </div>
+        {children}
       </div>
     </article>
   )
@@ -722,6 +725,7 @@ export default function App() {
   const [dragOverSale, setDragOverSale] = useState(false)
   const [dragRejectSale, setDragRejectSale] = useState(false)
   const [dragOverBorrow, setDragOverBorrow] = useState(false)
+  const [dragOverWish, setDragOverWish] = useState(false)
   const [dragRejectBorrow, setDragRejectBorrow] = useState(false)
   const [deckNotice, setDeckNotice] = useState<string | null>(null)
   const deckDragged = useRef(false)
@@ -1701,6 +1705,7 @@ export default function App() {
     setDragRejectSale(false)
     setDragOverBorrow(false)
     setDragRejectBorrow(false)
+    setDragOverWish(false)
   }
 
   function onSaleCartDragOver(e: ReactDragEvent) {
@@ -2853,81 +2858,112 @@ export default function App() {
           const ids = Object.keys(wish)
           const total = ids.reduce((s, id) => s + ownedLineEur(wish[id], priceBook?.cards[id]), 0)
           const query = q.trim().toLowerCase()
-          const pick = cards.filter((c) => (!setFilter || c.set === setFilter) && (!query || c.name.toLowerCase().includes(query) || (c.subtitle || '').toLowerCase().includes(query) || c.code.toLowerCase().includes(query))).slice(0, 120)
+          const pick = cards.filter((c) => (!setFilter || c.set === setFilter) && matchesSharedFilters(c, query)).slice(0, 120)
           return (
-            <>
-              <div className="toolbar">
-                <button className="btn" onClick={() => setWishOpen(false)}><Icon name="arrow-left" />{t(lang, 'collection.back')}</button>
-                <h2 className="section-title grow" style={{ margin: 0 }}>{t(lang, 'wish.title')}</h2>
-                <span className="deck-list-count">{t(lang, 'wish.total', { eur: total.toFixed(2) })}</span>
-              </div>
-              <div className="split deck-split">
-                <section className="panel col-fill">
-                  <div className="list">
-                    {ids.length === 0 && <div className="empty">{t(lang, 'wish.empty')}</div>}
+            <div className="split deck-split">
+              <section className="panel col-fill">
+                <div className="toolbar">
+                  <button className="btn" onClick={() => setWishOpen(false)}><Icon name="arrow-left" />{t(lang, 'collection.back')}</button>
+                  <h2 style={{ margin: 0 }}>{t(lang, 'wish.title')}</h2>
+                  <span className="deck-list-count">{ids.length} {cardWord(lang, ids.length)}</span>
+                  <span style={{ flex: 1 }} />
+                  <span className="deck-list-count">{t(lang, 'wish.total', { eur: total.toFixed(2) })}</span>
+                </div>
+                <div
+                  className={`list borrow-drop${dragOverWish ? ' drag-over' : ''}`}
+                  onDragOver={(e) => { e.preventDefault(); e.dataTransfer.dropEffect = 'copy'; setDragOverWish(true) }}
+                  onDragLeave={(e) => { if (!(e.currentTarget as HTMLElement).contains(e.relatedTarget as Node | null)) setDragOverWish(false) }}
+                  onDrop={(e) => {
+                    e.preventDefault()
+                    setDragOverWish(false)
+                    const id = e.dataTransfer.getData('text/riftbound-card') || e.dataTransfer.getData('text/plain')
+                    if (byId.has(id)) bumpWish(id, 'qty', 1)
+                  }}
+                >
+                  {ids.length === 0 && <div className="empty">{t(lang, 'wish.empty')}</div>}
+                  <div className="grid">
                     {ids.map((id) => {
                       const c = byId.get(id)
-                      const w = wish[id]
-                      const pe = priceBook?.cards[id]
+                      if (!c) return null
                       return (
-                        <div key={id} className="list-item deck-card-row" onMouseEnter={(e) => showCardPreview(e, c?.image)} onMouseMove={(e) => showCardPreview(e, c?.image)} onMouseLeave={hideCardPreview}>
-                          <DeckThumb src={c?.image} onOpen={c ? () => openCardLightbox(c) : undefined} openTitle={t(lang, 'card.enlarge')} zoomIcon />
-                          <div className="grow">
-                            <button type="button" className="name name-link" title={t(lang, 'price.openCm')} disabled={!pe?.cmUrl} onClick={() => openCm(pe)}>{c ? displayCardName(c) : id}</button>
-                            <div className="sub">{c ? `${c.code} · ${c.setName || c.set}` : ''}</div>
-                            <PriceBits entry={pe} lang={lang} />
+                        <CardTile key={id} c={c} o={wish[id]} lang={lang} priceEntry={priceBook?.cards[id]} variant="catalog" onOpen={openCardLightbox} onBump={bumpWish}>
+                          <div className="row">
+                            <button type="button" className="btn small primary" onClick={() => gotWish(id)}><Icon name="check" />{t(lang, 'wish.got')}</button>
+                            <button
+                              type="button"
+                              className="btn icon small danger deck-trash"
+                              title={t(lang, 'borrowed.removeCard')}
+                              aria-label={t(lang, 'borrowed.removeCard')}
+                              onClick={() => setDeckConfirm({ kind: 'wish', id, name: displayCardName(c) })}
+                            ><Icon name="trash-2" size={14} /></button>
                           </div>
-                          <div className="qty" title={t(lang, 'qty.normal')}>
-                            <button type="button" onClick={() => bumpWish(id, 'qty', -1)}>−</button>
-                            <b>{w.qty}</b>
-                            <button type="button" onClick={() => bumpWish(id, 'qty', 1)}>+</button>
-                          </div>
-                          <div className="qty" title={t(lang, 'qty.foil')}>
-                            <button type="button" onClick={() => bumpWish(id, 'foil', -1)}>−</button>
-                            <b>{w.foil}F</b>
-                            <button type="button" onClick={() => bumpWish(id, 'foil', 1)}>+</button>
-                          </div>
-                          <button type="button" className="btn small primary" onClick={() => gotWish(id)}><Icon name="check" />{t(lang, 'wish.got')}</button>
-                          <button
-                            type="button"
-                            className="btn icon danger deck-trash deck-card-trash"
-                            title={t(lang, 'borrowed.removeCard')}
-                            aria-label={t(lang, 'borrowed.removeCard')}
-                            onClick={() => setDeckConfirm({ kind: 'wish', id, name: c ? displayCardName(c) : id })}
-                          >
-                            <Icon name="trash-2" size={16} />
-                          </button>
-                        </div>
+                        </CardTile>
                       )
                     })}
                   </div>
-                </section>
-                <section className="panel col-fill">
-                  <div className="toolbar">
-                    <SearchInput wrapClassName="grow" lang={lang} placeholder={t(lang, 'decks.search')} value={q} onChange={setQ} />
-                    <select className="select" style={{ maxWidth: 160 }} value={setFilter} onChange={(e) => setSetFilter(e.target.value)}>
-                      <option value="">{t(lang, 'catalog.allSets')}</option>
-                      {Object.entries(sets).map(([sid, name]) => (
-                        <option key={sid} value={sid}>{name}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div className="list">
-                    {pick.map((c) => (
-                      <div key={c.id} className="list-item picker-card" onMouseEnter={(e) => showCardPreview(e, c.image)} onMouseMove={(e) => showCardPreview(e, c.image)} onMouseLeave={hideCardPreview}>
-                        <DeckThumb src={c.image} onOpen={() => openCardLightbox(c)} openTitle={t(lang, 'card.enlarge')} zoomIcon />
-                        <div className="grow">
-                          <div className="name">{displayCardName(c)}</div>
-                          <div className="sub">{c.code} · x{ownedQty(collection[c.id])}</div>
-                          <PriceBits entry={priceBook?.cards[c.id]} lang={lang} />
-                        </div>
-                        <button className="btn small primary" onClick={() => bumpWish(c.id, 'qty', 1)}><Icon name="plus" />{t(lang, 'decks.add')}</button>
-                      </div>
+                </div>
+              </section>
+              <section className="panel col-fill">
+                <div className="toolbar">
+                  <SearchInput wrapClassName="grow" lang={lang} placeholder={t(lang, 'decks.search')} value={q} onChange={setQ} />
+                  <select className="select" style={{ maxWidth: 160 }} value={setFilter} onChange={(e) => setSetFilter(e.target.value)}>
+                    <option value="">{t(lang, 'catalog.allSets')}</option>
+                    {Object.entries(sets).map(([sid, name]) => (
+                      <option key={sid} value={sid}>{name}</option>
                     ))}
-                  </div>
-                </section>
-              </div>
-            </>
+                  </select>
+                </div>
+                <div className="toolbar">
+                  <RarityMenu
+                    lang={lang}
+                    open={rarityMenuOpen}
+                    setOpen={setRarityMenuOpen}
+                    signed={raritySigned}
+                    setSigned={setRaritySigned}
+                    over={rarityOver}
+                    setOver={setRarityOver}
+                    promo={rarityPromo}
+                    setPromo={setRarityPromo}
+                    ultimate={rarityUltimate}
+                    setUltimate={setRarityUltimate}
+                    menuRef={rarityMenuRef}
+                  />
+                  <AbilityMenu lang={lang} open={abilityMenuOpen} setOpen={setAbilityMenuOpen} value={abilityFilter} onChange={setAbilityFilter} menuRef={abilityMenuRef} />
+                  <DomainFilterRow value={domainFilter} onChange={setDomainFilter} lang={lang} />
+                </div>
+                <div className="list">
+                  {pick.map((c) => (
+                    <div
+                      key={c.id}
+                      className="list-item picker-card"
+                      draggable
+                      onDragStart={(e) => onPickerDragStart(e, c.id)}
+                      onDragEnd={onPickerDragEnd}
+                      onMouseEnter={(e) => showCardPreview(e, c.image)}
+                      onMouseMove={(e) => showCardPreview(e, c.image)}
+                      onMouseLeave={hideCardPreview}
+                    >
+                      <DeckThumb src={c.image} onOpen={() => openCardLightbox(c)} openTitle={t(lang, 'card.enlarge')} />
+                      <div className="grow">
+                        <div className="name-with-ban">
+                          <button
+                            type="button"
+                            className="name name-link"
+                            title={t(lang, 'price.openCm')}
+                            disabled={!priceBook?.cards[c.id]?.cmUrl}
+                            onClick={(e) => { e.stopPropagation(); openCm(priceBook?.cards[c.id]) }}
+                          >{displayName(c)}</button>
+                          <BanBadge status={banStatus(c)} lang={lang} />
+                        </div>
+                        <div className="sub">{c.code} · x{ownedQty(collection[c.id])}{c.energy != null ? ` · E${c.energy}` : ''}</div>
+                        <PriceBits entry={priceBook?.cards[c.id]} lang={lang} />
+                      </div>
+                      <button className="btn small primary" onClick={() => bumpWish(c.id, 'qty', 1)}><Icon name="plus" />{t(lang, 'decks.add')}</button>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            </div>
           )
         })()}
 
