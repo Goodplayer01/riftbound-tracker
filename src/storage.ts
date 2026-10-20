@@ -3,6 +3,7 @@ import type { BorrowedGroup, Deck, Owned } from './types'
 const COLLECTION_KEY = 'rb.collection.v1'
 const DECKS_KEY = 'rb.decks.v1'
 const BORROWED_KEY = 'rb.borrowed.v1'
+const WISH_KEY = 'rb.wishlist.v1'
 
 export type Collection = Record<string, Owned>
 
@@ -40,4 +41,12 @@ export function loadBorrowed(): BorrowedGroup[] {
 
 export function saveBorrowed(groups: BorrowedGroup[]) {
   writeJson(BORROWED_KEY, groups)
+}
+
+export function loadWish(): Collection {
+  return readJson(WISH_KEY, {})
+}
+
+export function saveWish(w: Collection) {
+  writeJson(WISH_KEY, w)
 }

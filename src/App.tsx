@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState, type DragEvent as ReactDragEvent, type MouseEvent as ReactMouseEvent, type PointerEvent as ReactPointerEvent, type ReactNode, type RefObject } from 'react'
 import type { BorrowedCard, BorrowedGroup, Card, Catalog, Deck, DeckSection, PriceBook, PriceEntry } from './types'
-import { loadBorrowed, loadCollection, loadDecks, saveBorrowed, saveCollection, saveDecks, type Collection } from './storage'
+import { loadBorrowed, loadCollection, loadDecks, loadWish, saveBorrowed, saveCollection, saveDecks, saveWish, type Collection } from './storage'
 import { loadLang, saveLang, t, type Lang } from './i18n'
 import { Dopamin } from './Dopamin'
 import { SearchInput } from './SearchInput'
@@ -643,6 +643,8 @@ export default function App() {
   const [decks, setDecks] = useState<Deck[]>([])
   const [borrowed, setBorrowed] = useState<BorrowedGroup[]>([])
   const [activeBorrowedId, setActiveBorrowedId] = useState<string | null>(null)
+  const [wish, setWish] = useState<Collection>(() => loadWish())
+  const [wishOpen, setWishOpen] = useState(false)
   const [borrowImportText, setBorrowImportText] = useState('')
   const [borrowImportOpen, setBorrowImportOpen] = useState(false)
   const [borrowNotice, setBorrowNotice] = useState<string | null>(null)
@@ -696,7 +698,7 @@ export default function App() {
   const [clearSec, setClearSec] = useState<DeckSection | null>(null)
   const [deckUndoOn, setDeckUndoOn] = useState(false)
   const [borrowUndoOn, setBorrowUndoOn] = useState(false)
-  const [deckConfirm, setDeckConfirm] = useState<null | { kind: 'all' } | { kind: 'one'; id: string; name: string } | { kind: 'borrow'; id: string; name: string } | { kind: 'borrowAll' }>(null)
+  const [deckConfirm, setDeckConfirm] = useState<null | { kind: 'all' } | { kind: 'one'; id: string; name: string } | { kind: 'borrow'; id: string; name: string } | { kind: 'borrowAll' } | { kind: 'wish'; id: string; name: string }>(null)
   const [kwExpanded, setKwExpanded] = useState<KeywordId | null>(null)
   const [ocrText, setOcrText] = useState<string | null>(null)
   const [ocrLoading, setOcrLoading] = useState(false)
@@ -760,6 +762,10 @@ export default function App() {
       setBorrowUndoOn(true)
       setBorrowed([])
       setActiveBorrowedId(null)
+      return
+    }
+    if (pending.kind === 'wish') {
+      setWish((prev) => { const n = { ...prev }; delete n[pending.id]; return n })
       return
     }
     if (pending.kind === 'borrow') {
@@ -975,6 +981,7 @@ export default function App() {
   useEffect(() => saveCollection(collection), [collection])
   useEffect(() => saveDecks(decks), [decks])
   useEffect(() => saveBorrowed(borrowed), [borrowed])
+  useEffect(() => saveWish(wish), [wish])
 
   const cards = catalog?.cards || []
   const sets = catalog?.sets || {}
@@ -1188,8 +1195,21 @@ export default function App() {
     return setProgress.find((s) => s.id === binderView) || null
   }, [binderView, setProgress])
 
-  function bump(id: string, field: 'qty' | 'foil', delta: number) {
-    setCollection((prev) => {
+  function bumpWish(id: string, field: 'qty' | 'foil', delta: number) {
+    bump(id, field, delta, setWish)
+  }
+
+  /** Got it: wanted copies go into the collection, entry leaves the wishlist. */
+  function gotWish(id: string) {
+    const w = wish[id]
+    if (!w) return
+    bump(id, 'qty', w.qty || 0)
+    bump(id, 'foil', w.foil || 0)
+    setWish((prev) => { const n = { ...prev }; delete n[id]; return n })
+  }
+
+  function bump(id: string, field: 'qty' | 'foil', delta: number, set = setCollection) {
+    set((prev) => {
       const cur = prev[id] || { qty: 0, foil: 0 }
       const next = { ...cur, [field]: Math.max(0, (cur[field] || 0) + delta) }
       const copy = { ...prev }
@@ -2701,7 +2721,7 @@ export default function App() {
       </header>
 
       <main className={`main${tab === 'stores' ? ' main-stores' : ''}${tab === 'collection' && binderView != null ? ' main-binder' : ''}${tab === 'dopamin' ? ' main-dopamin' : ''}`}>
-        {tab === 'collection' && binderView == null && (
+        {tab === 'collection' && binderView == null && !wishOpen && (
           <>
             <div className="toolbar">
               <div className="grow">
@@ -2737,6 +2757,9 @@ export default function App() {
               </label>
               <button type="button" className="btn" onClick={() => setQuickOpen((v) => !v)}>
                 <Icon name="zap" />{t(lang, 'collection.quickImport')}
+              </button>
+              <button type="button" className="btn" onClick={() => { setWishOpen(true); setQ(''); setSetFilter('') }}>
+                <Icon name="heart" />{t(lang, 'wish.title')}
               </button>
             </div>
             {quickOpen && (
@@ -2825,6 +2848,88 @@ export default function App() {
             </div>
           </>
         )}
+
+        {tab === 'collection' && binderView == null && wishOpen && (() => {
+          const ids = Object.keys(wish)
+          const total = ids.reduce((s, id) => s + ownedLineEur(wish[id], priceBook?.cards[id]), 0)
+          const query = q.trim().toLowerCase()
+          const pick = cards.filter((c) => (!setFilter || c.set === setFilter) && (!query || c.name.toLowerCase().includes(query) || (c.subtitle || '').toLowerCase().includes(query) || c.code.toLowerCase().includes(query))).slice(0, 120)
+          return (
+            <>
+              <div className="toolbar">
+                <button className="btn" onClick={() => setWishOpen(false)}><Icon name="arrow-left" />{t(lang, 'collection.back')}</button>
+                <h2 className="section-title grow" style={{ margin: 0 }}>{t(lang, 'wish.title')}</h2>
+                <span className="deck-list-count">{t(lang, 'wish.total', { eur: total.toFixed(2) })}</span>
+              </div>
+              <div className="split deck-split">
+                <section className="panel col-fill">
+                  <div className="list">
+                    {ids.length === 0 && <div className="empty">{t(lang, 'wish.empty')}</div>}
+                    {ids.map((id) => {
+                      const c = byId.get(id)
+                      const w = wish[id]
+                      const pe = priceBook?.cards[id]
+                      return (
+                        <div key={id} className="list-item deck-card-row" onMouseEnter={(e) => showCardPreview(e, c?.image)} onMouseMove={(e) => showCardPreview(e, c?.image)} onMouseLeave={hideCardPreview}>
+                          <DeckThumb src={c?.image} onOpen={c ? () => openCardLightbox(c) : undefined} openTitle={t(lang, 'card.enlarge')} zoomIcon />
+                          <div className="grow">
+                            <button type="button" className="name name-link" title={t(lang, 'price.openCm')} disabled={!pe?.cmUrl} onClick={() => openCm(pe)}>{c ? displayCardName(c) : id}</button>
+                            <div className="sub">{c ? `${c.code} · ${c.setName || c.set}` : ''}</div>
+                            <PriceBits entry={pe} lang={lang} />
+                          </div>
+                          <div className="qty" title={t(lang, 'qty.normal')}>
+                            <button type="button" onClick={() => bumpWish(id, 'qty', -1)}>−</button>
+                            <b>{w.qty}</b>
+                            <button type="button" onClick={() => bumpWish(id, 'qty', 1)}>+</button>
+                          </div>
+                          <div className="qty" title={t(lang, 'qty.foil')}>
+                            <button type="button" onClick={() => bumpWish(id, 'foil', -1)}>−</button>
+                            <b>{w.foil}F</b>
+                            <button type="button" onClick={() => bumpWish(id, 'foil', 1)}>+</button>
+                          </div>
+                          <button type="button" className="btn small primary" onClick={() => gotWish(id)}><Icon name="check" />{t(lang, 'wish.got')}</button>
+                          <button
+                            type="button"
+                            className="btn icon danger deck-trash deck-card-trash"
+                            title={t(lang, 'borrowed.removeCard')}
+                            aria-label={t(lang, 'borrowed.removeCard')}
+                            onClick={() => setDeckConfirm({ kind: 'wish', id, name: c ? displayCardName(c) : id })}
+                          >
+                            <Icon name="trash-2" size={16} />
+                          </button>
+                        </div>
+                      )
+                    })}
+                  </div>
+                </section>
+                <section className="panel col-fill">
+                  <div className="toolbar">
+                    <SearchInput wrapClassName="grow" lang={lang} placeholder={t(lang, 'decks.search')} value={q} onChange={setQ} />
+                    <select className="select" style={{ maxWidth: 160 }} value={setFilter} onChange={(e) => setSetFilter(e.target.value)}>
+                      <option value="">{t(lang, 'catalog.allSets')}</option>
+                      {Object.entries(sets).map(([sid, name]) => (
+                        <option key={sid} value={sid}>{name}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="list">
+                    {pick.map((c) => (
+                      <div key={c.id} className="list-item picker-card" onMouseEnter={(e) => showCardPreview(e, c.image)} onMouseMove={(e) => showCardPreview(e, c.image)} onMouseLeave={hideCardPreview}>
+                        <DeckThumb src={c.image} onOpen={() => openCardLightbox(c)} openTitle={t(lang, 'card.enlarge')} zoomIcon />
+                        <div className="grow">
+                          <div className="name">{displayCardName(c)}</div>
+                          <div className="sub">{c.code} · x{ownedQty(collection[c.id])}</div>
+                          <PriceBits entry={priceBook?.cards[c.id]} lang={lang} />
+                        </div>
+                        <button className="btn small primary" onClick={() => bumpWish(c.id, 'qty', 1)}><Icon name="plus" />{t(lang, 'decks.add')}</button>
+                      </div>
+                    ))}
+                  </div>
+                </section>
+              </div>
+            </>
+          )
+        })()}
 
         {tab === 'collection' && binderView != null && (
           <div className="binder-view">
@@ -3935,6 +4040,8 @@ export default function App() {
                   ? t(lang, 'borrowed.deleteAllConfirm')
                   : deckConfirm.kind === 'borrow'
                     ? t(lang, 'borrowed.deleteConfirm', { name: deckConfirm.name })
+                    : deckConfirm.kind === 'wish'
+                    ? t(lang, 'wish.deleteConfirm', { name: deckConfirm.name })
                     : t(lang, 'decks.deleteOneConfirm', { name: deckConfirm.name })}
             </p>
             <div className="confirm-actions">
@@ -4027,6 +4134,9 @@ export default function App() {
                 <BanBadge status={banStatus(cardLightbox)} lang={lang} />
               </div>
               <p className="sub">{cardLightbox.code} · {cardLightbox.setName || cardLightbox.set}</p>
+              <button type="button" className={`chip ${wish[cardLightbox.id] ? 'active' : ''}`} onClick={() => bumpWish(cardLightbox.id, 'qty', 1)}>
+                <Icon name="heart" />{t(lang, 'wish.add')}{wish[cardLightbox.id] ? ` (${wish[cardLightbox.id].qty + wish[cardLightbox.id].foil})` : ''}
+              </button>
               <p className="help" style={{ marginTop: 4 }}>{t(lang, rulesSource === 'catalog' ? 'card.enlargeHintCatalog' : 'card.enlargeHint')}</p>
               <dl className="card-lightbox-dl">
                 <div><dt>{t(lang, 'card.types')}</dt><dd>{(cardLightbox.types || []).join(', ') || '—'}</dd></div>
