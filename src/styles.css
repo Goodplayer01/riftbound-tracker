@@ -1872,3 +1872,5 @@ button.card-lightbox-title-link:hover {
 }
 .search-clear:hover { color: var(--accent); background: rgba(212,175,55,.12); }
 .stores-query-wrap { flex: 1 1 180px; min-width: 140px; }
+.row.row-center { justify-content: center; }
+.foil-star { margin-left: 3px; font-size: 10px; color: #d7b4ff; opacity: .8; vertical-align: 1px; }

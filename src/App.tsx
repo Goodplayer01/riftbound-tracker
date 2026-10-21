@@ -73,6 +73,24 @@ function uid() {
   return crypto.randomUUID()
 }
 
+/** Rare and up (plus alt, overnumbered, signed) only exist as foil: one counter, stored as foil. */
+const FOIL_ONLY_RARITIES = new Set(['Rare', 'Epic', 'Showcase', 'Ultimate Rare'])
+function isFoilOnly(c: Card) {
+  return FOIL_ONLY_RARITIES.has(c.rarity || '') || !!(c.altArt || c.signed || c.overnumbered)
+}
+
+/** Moves normal copies of foil only cards to foil. Returns the same object when nothing changes. */
+function foldFoilOnly(col: Collection, byId: Map<string, Card>): Collection {
+  let out = col
+  for (const [id, o] of Object.entries(col)) {
+    const c = byId.get(id)
+    if (!c || !o.qty || !isFoilOnly(c)) continue
+    if (out === col) out = { ...col }
+    out[id] = { ...o, qty: 0, foil: (o.foil || 0) + o.qty }
+  }
+  return out
+}
+
 function ownedQty(o?: { qty: number; foil: number }) {
   return (o?.qty || 0) + (o?.foil || 0)
 }
@@ -150,9 +168,13 @@ function priceLabel(p?: PriceEntry) {
   return { low, high, avg30, foil, cmId: p.cmId || null, cmUrl: p.cmUrl || null }
 }
 
-function PriceBits({ entry, lang, showHigh = false }: { entry?: PriceEntry; lang: Lang; showHigh?: boolean }) {
+function PriceBits({ entry, lang, showHigh = false, foilOnly = false }: { entry?: PriceEntry; lang: Lang; showHigh?: boolean; foilOnly?: boolean }) {
   const pl = priceLabel(entry)
   if (!pl || (!pl.low && !pl.avg30 && !pl.high && !pl.foil)) return null
+  if (foilOnly) {
+    const p = fmtEur(entry?.foilLow || entry?.foilTrend || entry?.low || entry?.trend || null)
+    return <div className="price">{p ? <span className="foil" title={t(lang, 'price.foil')}>ab {p}</span> : <span className="na">ab --</span>}</div>
+  }
   return (
     <div className="price">
       {pl.low ? <span title={t(lang, 'price.low')}>ab {pl.low}</span> : <span className="na">ab --</span>}
@@ -554,7 +576,7 @@ function CardTile({
   onBump: (id: string, field: 'qty' | 'foil', delta: number) => void
 }) {
   const n = ownedQty(o)
-  const showFoil = !(c.signed || c.overnumbered) || o.foil > 0
+  const foilOnly = isFoilOnly(c)
   const ownedClass = variant === 'binder' ? (n ? 'owned' : 'missing') : (n ? 'owned' : '')
   return (
     <article className={`card ${ownedClass}${c.signed || c.overnumbered ? ' shimmer' : ''}`}>
@@ -592,21 +614,29 @@ function CardTile({
           <BanBadge status={banStatus(c)} lang={lang} />
         </div>
         <div className="sub">{c.code} | {c.set} | {(c.types || []).join('/') || '-'} | {(c.domains || []).join('/') || '-'}</div>
-        <PriceBits entry={priceEntry} lang={lang} showHigh />
+        <PriceBits entry={priceEntry} lang={lang} showHigh={!foilOnly} foilOnly={foilOnly} />
+        {foilOnly ? (
+          <div className="row row-center">
+            <div className="qty" title={t(lang, 'qty.foil')}>
+              <button onClick={() => onBump(c.id, 'foil', -1)}>-</button>
+              <b className={variant === 'binder' ? (o.foil > 0 ? 'ok' : 'muted') : undefined}>{o.foil + o.qty}<span className="foil-star" aria-hidden="true">★</span></b>
+              <button onClick={() => onBump(c.id, 'foil', 1)}>+</button>
+            </div>
+          </div>
+        ) : (
         <div className="row">
           <div className="qty" title={t(lang, 'qty.normal')}>
             <button onClick={() => onBump(c.id, 'qty', -1)}>-</button>
             <b className={variant === 'binder' ? (o.qty > 0 ? 'ok' : 'muted') : undefined}>{o.qty}</b>
             <button onClick={() => onBump(c.id, 'qty', 1)}>+</button>
           </div>
-          {showFoil && (
-            <div className="qty" title={t(lang, 'qty.foil')}>
-              <button onClick={() => onBump(c.id, 'foil', -1)}>-</button>
-              <b className={variant === 'binder' ? (o.foil > 0 ? 'ok' : 'muted') : 'ok'}>{o.foil}F</b>
-              <button onClick={() => onBump(c.id, 'foil', 1)}>+</button>
-            </div>
-          )}
+          <div className="qty" title={t(lang, 'qty.foil')}>
+            <button onClick={() => onBump(c.id, 'foil', -1)}>-</button>
+            <b className={variant === 'binder' ? (o.foil > 0 ? 'ok' : 'muted') : 'ok'}>{o.foil}F</b>
+            <button onClick={() => onBump(c.id, 'foil', 1)}>+</button>
+          </div>
         </div>
+        )}
         {children}
       </div>
     </article>
@@ -1046,6 +1076,13 @@ export default function App() {
     for (const c of cards) m.set(c.id, c)
     return m
   }, [cards])
+
+  // One time fold (and after imports): normal copies of foil only cards become foil.
+  useEffect(() => {
+    if (!byId.size) return
+    setCollection((prev) => foldFoilOnly(prev, byId))
+    setWish((prev) => foldFoilOnly(prev, byId))
+  }, [byId, collection, wish])
 
   useEffect(() => {
     if (!cards.length) return
