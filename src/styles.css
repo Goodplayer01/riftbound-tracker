@@ -231,7 +231,7 @@ textarea.field { min-height: 160px; resize: vertical; font-family: ui-monospace,
 .split { display: grid; grid-template-columns: 1.2fr .8fr; gap: 14px; }
 @media (max-width: 960px) { .split { grid-template-columns: 1fr; } .chrome { margin-left: auto; } }
 
-.list { display: grid; gap: 8px; }
+.list { display: grid; gap: 8px; align-content: start; }
 .list-item {
   display: flex; gap: 10px; align-items: center; justify-content: space-between;
   padding: 10px; border: 1px solid var(--border); border-radius: 12px; background: var(--panel2);
@@ -659,6 +659,7 @@ textarea.field { min-height: 160px; resize: vertical; font-family: ui-monospace,
 }
 @media (max-width: 960px) {
   .split.deck-split { grid-template-rows: minmax(0, 1fr) minmax(0, 1fr); }
+  .split.deck-split.pool-hidden { grid-template-rows: minmax(0, 1fr); }
 }
 
 /* Deck list thumbs + floating card preview */
@@ -764,14 +765,11 @@ textarea.field { min-height: 160px; resize: vertical; font-family: ui-monospace,
 }
 
 
-/* Sales cart: checkbox + thumb + name + qty, no empty stretch */
-.sale-cart .deck-card-row {
-  grid-template-columns: auto auto minmax(0, 1fr) auto;
-  gap: 8px 10px;
-}
-.sale-cart .deck-thumb,
-.sale-cart .deck-thumb-wrap { width: 51px; height: 72px; }
-.sale-cart .deck-card-row .grow { min-width: 0; }
+/* Card search panel hidden: main area takes the full width */
+.split.deck-split.pool-hidden { grid-template-columns: minmax(0, 1fr); }
+.split.deck-split.pool-hidden > .panel:last-child { display: none; }
+.sale-cart .row { align-items: center; }
+.sale-check { gap: 6px; cursor: pointer; }
 
 .sale-check {
   display: flex;

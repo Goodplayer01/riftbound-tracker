@@ -565,8 +565,11 @@ function CardTile({
   onOpen,
   onBump,
   children,
+  qtyRow,
 }: {
   children?: ReactNode
+  /** Replaces the owned counters (sales cart uses its own stepper). */
+  qtyRow?: ReactNode
   c: Card
   o: { qty: number; foil: number }
   lang: Lang
@@ -615,7 +618,7 @@ function CardTile({
         </div>
         <div className="sub">{c.code} | {c.set} | {(c.types || []).join('/') || '-'} | {(c.domains || []).join('/') || '-'}</div>
         <PriceBits entry={priceEntry} lang={lang} showHigh={!foilOnly} foilOnly={foilOnly} />
-        {foilOnly ? (
+        {qtyRow ?? (foilOnly ? (
           <div className="row row-center">
             <div className="qty" title={t(lang, 'qty.foil')}>
               <button onClick={() => onBump(c.id, 'foil', -1)}>-</button>
@@ -636,7 +639,7 @@ function CardTile({
             <button onClick={() => onBump(c.id, 'foil', 1)}>+</button>
           </div>
         </div>
-        )}
+        ))}
         {children}
       </div>
     </article>
@@ -752,10 +755,10 @@ export default function App() {
   const [dragOverSection, setDragOverSection] = useState<DeckSection | null>(null)
   const [dragRejectSection, setDragRejectSection] = useState<DeckSection | null>(null)
   const [draggingCardId, setDraggingCardId] = useState<string | null>(null)
-  const [dragOverSale, setDragOverSale] = useState(false)
-  const [dragRejectSale, setDragRejectSale] = useState(false)
+  const [dragOverCart, setDragOverCart] = useState<'sale' | 'wish' | null>(null)
+  const [dragRejectCart, setDragRejectCart] = useState<'sale' | 'wish' | null>(null)
+  const [poolHidden, setPoolHidden] = useState(() => localStorage.getItem('rb.poolHidden') === '1')
   const [dragOverBorrow, setDragOverBorrow] = useState(false)
-  const [dragOverWish, setDragOverWish] = useState(false)
   const [dragRejectBorrow, setDragRejectBorrow] = useState(false)
   const [deckNotice, setDeckNotice] = useState<string | null>(null)
   const deckDragged = useRef(false)
@@ -1379,7 +1382,6 @@ export default function App() {
 
   const saleSelectedEntries = Object.entries(saleList).filter(([id, q]) => q > 0 && saleSelected[id])
   const saleSelectedCount = saleSelectedEntries.length
-  const saleSelectedCopies = saleSelectedEntries.reduce((sum, [, q]) => sum + q, 0)
   const saleQuery = saleQ.trim().toLowerCase()
   const saleHits = ownedCards.filter((c) => {
     if (!saleQuery) return true
@@ -1738,57 +1740,63 @@ export default function App() {
     setDraggingCardId(null)
     setDragOverSection(null)
     setDragRejectSection(null)
-    setDragOverSale(false)
-    setDragRejectSale(false)
+    setDragOverCart(null)
+    setDragRejectCart(null)
     setDragOverBorrow(false)
     setDragRejectBorrow(false)
-    setDragOverWish(false)
   }
 
-  function onSaleCartDragOver(e: ReactDragEvent) {
-    const types = Array.from(e.dataTransfer.types || [])
-    const raw = types.includes('text/riftbound-card') || types.includes('text/plain') || !!draggingCardId
-    if (!raw) return
-    e.preventDefault()
-    const id = draggingCardId
-    if (id && saleRemaining(id) <= 0) {
-      e.dataTransfer.dropEffect = 'none'
-      setDragOverSale(false)
-      setDragRejectSale(true)
-      return
+  /** Shared drop zone (same motion as deck sections) for the sales cart and the wishlist. */
+  function cartDrop(kind: 'sale' | 'wish', canAdd: (id: string) => boolean, add: (id: string) => void) {
+    const reject = () => {
+      setDragRejectCart(kind)
+      window.setTimeout(() => setDragRejectCart((cur) => (cur === kind ? null : cur)), 450)
     }
-    e.dataTransfer.dropEffect = 'copy'
-    setDragRejectSale(false)
-    setDragOverSale(true)
-  }
-
-  function onSaleCartDragLeave(e: ReactDragEvent) {
-    const related = e.relatedTarget as Node | null
-    if (related && (e.currentTarget as HTMLElement).contains(related)) return
-    setDragOverSale(false)
-    setDragRejectSale(false)
-  }
-
-  function onSaleCartDrop(e: ReactDragEvent) {
-    e.preventDefault()
-    e.stopPropagation()
-    const cardId = e.dataTransfer.getData('text/riftbound-card') || e.dataTransfer.getData('text/plain')
-    setDragOverSale(false)
-    setDragRejectSale(false)
-    if (!cardId) return
-    if (ownedQty(collection[cardId]) <= 0 || saleRemaining(cardId) <= 0) {
-      setDragRejectSale(true)
-      window.setTimeout(() => setDragRejectSale(false), 450)
-      return
+    return {
+      className: `list sale-cart${dragOverCart === kind ? ' drag-over' : ''}${dragRejectCart === kind ? ' drag-reject' : ''}`,
+      onDragOver: (e: ReactDragEvent) => {
+        const types = Array.from(e.dataTransfer.types || [])
+        if (!types.includes('text/riftbound-card') && !types.includes('text/plain') && !draggingCardId) return
+        e.preventDefault()
+        if (draggingCardId && !canAdd(draggingCardId)) {
+          e.dataTransfer.dropEffect = 'none'
+          setDragOverCart(null)
+          setDragRejectCart(kind)
+          return
+        }
+        e.dataTransfer.dropEffect = 'copy'
+        setDragRejectCart(null)
+        setDragOverCart(kind)
+      },
+      onDragLeave: (e: ReactDragEvent) => {
+        const related = e.relatedTarget as Node | null
+        if (related && (e.currentTarget as HTMLElement).contains(related)) return
+        setDragOverCart(null)
+        setDragRejectCart(null)
+      },
+      onDrop: (e: ReactDragEvent) => {
+        e.preventDefault()
+        e.stopPropagation()
+        const cardId = e.dataTransfer.getData('text/riftbound-card') || e.dataTransfer.getData('text/plain')
+        setDragOverCart(null)
+        setDragRejectCart(null)
+        if (!cardId || !canAdd(cardId)) return reject()
+        add(cardId)
+      },
     }
-    addToSale(cardId, 1)
   }
 
-  function saleCartDropClass() {
-    const parts = ['list', 'sale-cart']
-    if (dragOverSale) parts.push('drag-over')
-    if (dragRejectSale) parts.push('drag-reject')
-    return parts.join(' ')
+  function poolToggle() {
+    return (
+      <button
+        type="button"
+        className={`chip${poolHidden ? '' : ' active'}`}
+        title={t(lang, poolHidden ? 'pool.show' : 'pool.hide')}
+        onClick={() => setPoolHidden((v) => { localStorage.setItem('rb.poolHidden', v ? '0' : '1'); return !v })}
+      >
+        <Icon name="search" />{t(lang, poolHidden ? 'pool.show' : 'pool.hide')}
+      </button>
+    )
   }
 
   function onBorrowDragOver(e: ReactDragEvent) {
@@ -2897,7 +2905,7 @@ export default function App() {
           const query = q.trim().toLowerCase()
           const pick = cards.filter((c) => (!setFilter || c.set === setFilter) && matchesSharedFilters(c, query)).slice(0, 120)
           return (
-            <div className="split deck-split">
+            <div className={`split deck-split${poolHidden ? ' pool-hidden' : ''}`}>
               <section className="panel col-fill">
                 <div className="toolbar">
                   <button className="btn" onClick={() => setWishOpen(false)}><Icon name="arrow-left" />{t(lang, 'collection.back')}</button>
@@ -2905,18 +2913,9 @@ export default function App() {
                   <span className="deck-list-count">{ids.length} {cardWord(lang, ids.length)}</span>
                   <span style={{ flex: 1 }} />
                   <span className="deck-list-count">{t(lang, 'wish.total', { eur: total.toFixed(2) })}</span>
+                  {poolToggle()}
                 </div>
-                <div
-                  className={`list borrow-drop${dragOverWish ? ' drag-over' : ''}`}
-                  onDragOver={(e) => { e.preventDefault(); e.dataTransfer.dropEffect = 'copy'; setDragOverWish(true) }}
-                  onDragLeave={(e) => { if (!(e.currentTarget as HTMLElement).contains(e.relatedTarget as Node | null)) setDragOverWish(false) }}
-                  onDrop={(e) => {
-                    e.preventDefault()
-                    setDragOverWish(false)
-                    const id = e.dataTransfer.getData('text/riftbound-card') || e.dataTransfer.getData('text/plain')
-                    if (byId.has(id)) bumpWish(id, 'qty', 1)
-                  }}
-                >
+                <div {...cartDrop('wish', (id) => byId.has(id), (id) => bumpWish(id, 'qty', 1))}>
                   {ids.length === 0 && <div className="empty">{t(lang, 'wish.empty')}</div>}
                   <div className="grid">
                     {ids.map((id) => {
@@ -3198,13 +3197,11 @@ export default function App() {
         )}
 
         {tab === 'sales' && (
-          <div className="split deck-split">
+          <div className={`split deck-split${poolHidden ? ' pool-hidden' : ''}`}>
             <section className="panel col-fill">
               <div className="toolbar">
-                <h2 style={{ margin: 0, flex: 1 }}>{t(lang, 'sales.cart')}</h2>
-                {saleSelectedCount > 0 && (
-                  <span className="sub">{t(lang, 'sales.selected', { cards: saleSelectedCount, copies: saleSelectedCopies, cardWord: cardWord(lang, saleSelectedCount), copyWord: copyWord(lang, saleSelectedCopies) })}</span>
-                )}
+                <h2 style={{ margin: 0 }}>{t(lang, 'sales.cart')}</h2>
+                <span className="deck-list-count" style={{ flex: 1 }}>{t(lang, 'wish.total', { eur: Object.entries(saleList).reduce((sum, [id, n]) => { const c = byId.get(id); return sum + (c ? ownedLineEur(isFoilOnly(c) ? { foil: n } : { qty: n }, priceBook?.cards[id]) : 0) }, 0).toFixed(2) })}</span>
                 <button
                   className="btn primary"
                   disabled={saleSelectedCount === 0}
@@ -3213,54 +3210,55 @@ export default function App() {
                 >
                   <Icon name="badge-check" />{t(lang, 'sales.markSold')}{saleSelectedCount > 0 ? ` (${saleSelectedCount})` : ''}
                 </button>
+                {poolToggle()}
               </div>
               {saleReport && <p className="help">{saleReport}</p>}
-              <div
-                className={`list ${saleCartDropClass()}`}
-                onDragOver={onSaleCartDragOver}
-                onDragLeave={onSaleCartDragLeave}
-                onDrop={onSaleCartDrop}
-              >
+              <div {...cartDrop('sale', (id) => ownedQty(collection[id]) > 0 && saleRemaining(id) > 0, (id) => addToSale(id, 1))}>
                 {Object.keys(saleList).length === 0 && (
                   <div className="empty">{t(lang, 'sales.emptyCart')}</div>
                 )}
-                {Object.entries(saleList).map(([id, qty]) => {
-                  const c = byId.get(id)
-                  if (!c) return null
-                  const have = ownedQty(collection[id])
-                  return (
-                    <div
-                      key={id}
-                      className="list-item deck-card-row"
-                      onMouseEnter={(e) => showCardPreview(e, c.image)}
-                      onMouseMove={(e) => showCardPreview(e, c.image)}
-                      onMouseLeave={hideCardPreview}
-                    >
-                      <label className="sale-check" onClick={(e) => e.stopPropagation()} title={t(lang, 'sales.selectForSale')}>
-                        <input
-                          type="checkbox"
-                          checked={!!saleSelected[id]}
-                          onChange={() => toggleSaleSelected(id)}
-                        />
-                      </label>
-                      <DeckThumb src={c.image} onOpen={() => openCardLightbox(c)} openTitle={t(lang, 'card.enlarge')} zoomIcon />
-                      <div className="grow">
-                        <div className="name">{displayName(c)}</div>
-                        <div className="sub">{c.code} · {t(lang, 'decks.owns', { have })}</div>
-                      </div>
-                      <div className="qty" onClick={(e) => e.stopPropagation()}>
-                        <button type="button" onClick={() => bumpSale(id, -1)}>−</button>
-                        <input
-                          className="field"
-                          style={{ width: 48, textAlign: 'center', padding: '4px 6px' }}
-                          value={qty}
-                          onChange={(e) => setSaleQty(id, Number(e.target.value))}
-                        />
-                        <button type="button" onClick={() => bumpSale(id, 1)} disabled={qty >= have}>+</button>
-                      </div>
-                    </div>
-                  )
-                })}
+                <div className="grid">
+                  {Object.entries(saleList).map(([id, qty]) => {
+                    const c = byId.get(id)
+                    if (!c) return null
+                    const have = ownedQty(collection[id])
+                    const line = ownedLineEur(isFoilOnly(c) ? { foil: qty } : { qty }, priceBook?.cards[id])
+                    return (
+                      <CardTile
+                        key={id}
+                        c={c}
+                        o={collection[id] || { qty: 0, foil: 0 }}
+                        lang={lang}
+                        priceEntry={priceBook?.cards[id]}
+                        variant="catalog"
+                        onOpen={openCardLightbox}
+                        onBump={() => {}}
+                        qtyRow={
+                          <div className="row row-center">
+                            <div className="qty">
+                              <button type="button" onClick={() => bumpSale(id, -1)}>-</button>
+                              <input
+                                className="field"
+                                style={{ width: 44, textAlign: 'center', padding: '2px 4px' }}
+                                value={qty}
+                                onChange={(e) => setSaleQty(id, Number(e.target.value))}
+                              />
+                              <button type="button" onClick={() => bumpSale(id, 1)} disabled={qty >= have}>+</button>
+                            </div>
+                          </div>
+                        }
+                      >
+                        <div className="row">
+                          <label className="sale-check" title={t(lang, 'sales.selectForSale')}>
+                            <input type="checkbox" checked={!!saleSelected[id]} onChange={() => toggleSaleSelected(id)} />
+                            <span className="sub">{t(lang, 'decks.owns', { have })}</span>
+                          </label>
+                          <b>{line.toFixed(2)} EUR</b>
+                        </div>
+                      </CardTile>
+                    )
+                  })}
+                </div>
               </div>
             </section>
             <section className="panel col-fill">
@@ -3333,7 +3331,7 @@ export default function App() {
         )}
 
         {tab === 'decks' && (
-          <div className="split deck-split">
+          <div className={`split deck-split${poolHidden ? ' pool-hidden' : ''}`}>
             <section className="panel deck-list-panel">
               <div className="toolbar">
                 <h2 style={{ margin: 0 }}>{t(lang, 'decks.title')}</h2>
@@ -3346,6 +3344,7 @@ export default function App() {
                   <Icon name="trash-2" />{t(lang, 'decks.deleteAll')}
                 </button>
                 <button className="btn primary" onClick={newDeck}><Icon name="plus" />{t(lang, 'decks.new')}</button>
+                {poolToggle()}
               </div>
               <div className="deck-accordion" style={{ marginBottom: 12 }}>
                 {decks.length === 0 && <div className="empty">{t(lang, 'decks.empty')}</div>}
