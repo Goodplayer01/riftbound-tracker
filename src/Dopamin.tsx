@@ -3,7 +3,7 @@ import { Icon } from './Icon'
 import type { Card, PriceBook } from './types'
 import { t, type Lang } from './i18n'
 import { displayCardName } from './deckHelpers'
-import { boosterSets, pullChance, rollPack, type PackSlot } from './dopamin'
+import { boosterSets, pullChance, rollPack, type PackSlot } from './dopaminPacks'
 
 type Face = 'down' | 'hold' | 'up'
 type Phase = 'sealed' | 'tear' | 'open'
