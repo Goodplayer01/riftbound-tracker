@@ -1,0 +1,44 @@
+name: Release
+
+# Builds the Windows installer and publishes a GitHub release for the
+# version in package.json. Start it from Actions > Release > Run workflow.
+on:
+  workflow_dispatch:
+    inputs:
+      notes:
+        description: Release-Text
+        required: false
+        default: ''
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - run: npm run dist -- --publish never
+
+      - name: Publish release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NOTES: ${{ inputs.notes }}
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          gh release create "v$VERSION" \
+            --target "$GITHUB_SHA" \
+            --title "v$VERSION" \
+            --notes "${NOTES:-v$VERSION}" \
+            "release/RiftboundTracker-Setup-$VERSION.exe" \
+            "release/RiftboundTracker-Setup-$VERSION.exe.blockmap" \
+            release/latest.yml
