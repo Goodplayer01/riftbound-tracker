@@ -8,6 +8,8 @@ Variants of one name are matched by idProduct order: base, alt (a), SP/ON, signe
 import collections, json, sys
 from pathlib import Path
 
+from sanitize_prices import sanitize
+
 ROOT = Path(__file__).resolve().parents[1]
 CM = Path(sys.argv[1] if len(sys.argv) > 1 else '/tmp/cm')
 RAD, PROMO = 6659, 6921
@@ -61,6 +63,7 @@ for cid, pid in match.items():
         e['cmUrl'] = slugs[str(pid)].split('?')[0] + '?language=1'
     else:
         e.setdefault('cmUrl', None)
+print('dropped_outliers=', sanitize(book))
 (ROOT / 'public/prices.json').write_text(json.dumps(doc, indent=2, ensure_ascii=False) + '\n')
 print(f'matched={len(match)} priced={sum(1 for p in match.values() if pg.get(p, {}).get("low") is not None)} '
       f'urls={sum(1 for p in match.values() if str(p) in slugs)} skipped={skipped}')

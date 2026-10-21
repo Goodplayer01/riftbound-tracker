@@ -31,6 +31,8 @@ from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 from datetime import datetime, timezone
 from pathlib import Path
 
+from sanitize_prices import sanitize
+
 ROOT = Path(__file__).resolve().parents[1]
 PRICES_PATH = ROOT / "public" / "prices.json"
 CARDS_PATH = ROOT / "public" / "cards.json"
@@ -151,6 +153,8 @@ def main() -> None:
     # Touch cards without prices? leave missing (RAD spoilers etc.)
     unmatched = [cid for cid in cards if cid not in book]
     print(f"updated={updated} batch_miss={missing} catalog_without_price={len(unmatched)}")
+
+    print(f"dropped_outliers={sanitize(book)}")
 
     PRICES_PATH.write_text(
         json.dumps(prices_doc, indent=2, ensure_ascii=False) + "\n",

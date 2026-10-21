@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-28T18:17:30.720Z",
+  "updatedAt": "2026-10-21T22:40:20.045Z",
   "currency": "EUR",
   "source": "tcg-cardmarket-api",
   "cards": {
@@ -1418,7 +1418,7 @@
       "avg30": 0.09,
       "trend": 0.08,
       "foilLow": null,
-      "foilTrend": 0,
+      "foilTrend": null,
       "cmId": "847277",
       "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Origins/Body-Rune-V1-Common",
       "languageId": 1
@@ -2936,7 +2936,7 @@
     "ogn-303-298": {
       "low": 1349.9,
       "avg30": null,
-      "trend": 0,
+      "trend": null,
       "foilLow": 1349.9,
       "foilTrend": 3138.38,
       "cmId": "847508",
@@ -3006,7 +3006,7 @@
     "ogn-305-star-298": {
       "low": 350,
       "avg30": null,
-      "trend": 0,
+      "trend": null,
       "foilLow": 350,
       "foilTrend": 1021.46,
       "cmId": "847512",
@@ -3126,7 +3126,7 @@
     "ogn-308-star-298": {
       "low": 350,
       "avg30": null,
-      "trend": 0,
+      "trend": null,
       "foilLow": 350,
       "foilTrend": 655.66,
       "cmId": "847518",
@@ -3206,7 +3206,7 @@
     "ogn-310-star-298": {
       "low": 300,
       "avg30": null,
-      "trend": 0,
+      "trend": null,
       "foilLow": 300,
       "foilTrend": 693.35,
       "cmId": "847522",
@@ -3248,7 +3248,7 @@
       "avg30": 0.09,
       "trend": 0.1,
       "foilLow": 0.3,
-      "foilTrend": 0,
+      "foilTrend": null,
       "cmId": "847474",
       "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Origins/Sprite",
       "languageId": 1
@@ -3498,7 +3498,7 @@
       "avg30": 1.29,
       "trend": 1.2,
       "foilLow": null,
-      "foilTrend": 0,
+      "foilTrend": null,
       "cmId": "847523",
       "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Proving-Grounds/Annie-Fiery-V1-Epic",
       "languageId": 1
@@ -3508,7 +3508,7 @@
       "avg30": 0.26,
       "trend": 0.35,
       "foilLow": null,
-      "foilTrend": 0,
+      "foilTrend": null,
       "cmId": "847524",
       "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Proving-Grounds/Firestorm",
       "languageId": 1
@@ -3518,7 +3518,7 @@
       "avg30": 0.5,
       "trend": 0.39,
       "foilLow": null,
-      "foilTrend": 0,
+      "foilTrend": null,
       "cmId": "847525",
       "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Proving-Grounds/Incinerate",
       "languageId": 1
@@ -3528,7 +3528,7 @@
       "avg30": 0.6,
       "trend": 0.51,
       "foilLow": null,
-      "foilTrend": 0,
+      "foilTrend": null,
       "cmId": "847526",
       "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Proving-Grounds/Master-Yi-Meditative-V1-Rare",
       "languageId": 1
@@ -3538,7 +3538,7 @@
       "avg30": 0.22,
       "trend": 0.17,
       "foilLow": null,
-      "foilTrend": 0,
+      "foilTrend": null,
       "cmId": "847527",
       "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Proving-Grounds/Zephyr-Sage",
       "languageId": 1
@@ -3548,7 +3548,7 @@
       "avg30": 0.78,
       "trend": 0.6,
       "foilLow": null,
-      "foilTrend": 0,
+      "foilTrend": null,
       "cmId": "847528",
       "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Proving-Grounds/Lux-Illuminated-V1-Rare",
       "languageId": 1
@@ -3558,7 +3558,7 @@
       "avg30": 0.51,
       "trend": 0.5,
       "foilLow": null,
-      "foilTrend": 0,
+      "foilTrend": null,
       "cmId": "847529",
       "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Proving-Grounds/Garen-Rugged-V1-Rare",
       "languageId": 1
@@ -3568,7 +3568,7 @@
       "avg30": 0.19,
       "trend": 0.17,
       "foilLow": null,
-      "foilTrend": 0,
+      "foilTrend": null,
       "cmId": "847530",
       "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Proving-Grounds/Gentlemens-Duel",
       "languageId": 1
@@ -3578,7 +3578,7 @@
       "avg30": 1.49,
       "trend": 1.38,
       "foilLow": null,
-      "foilTrend": 0,
+      "foilTrend": null,
       "cmId": "847531",
       "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Proving-Grounds/Master-Yi-Honed-V1-Epic",
       "languageId": 1
@@ -3588,7 +3588,7 @@
       "avg30": 3.93,
       "trend": 2.77,
       "foilLow": null,
-      "foilTrend": 0,
+      "foilTrend": null,
       "cmId": "847532",
       "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Proving-Grounds/Annie-Stubborn-V1-Rare",
       "languageId": 1
@@ -3598,7 +3598,7 @@
       "avg30": 2.49,
       "trend": 2.36,
       "foilLow": null,
-      "foilTrend": 0,
+      "foilTrend": null,
       "cmId": "847533",
       "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Proving-Grounds/Flash",
       "languageId": 1
@@ -3608,7 +3608,7 @@
       "avg30": 1.04,
       "trend": 1.21,
       "foilLow": null,
-      "foilTrend": 0,
+      "foilTrend": null,
       "cmId": "847534",
       "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Proving-Grounds/Blast-of-Power",
       "languageId": 1
@@ -3618,7 +3618,7 @@
       "avg30": 0.73,
       "trend": 0.71,
       "foilLow": null,
-      "foilTrend": 0,
+      "foilTrend": null,
       "cmId": "847535",
       "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Proving-Grounds/Garen-Commander-V1-Epic",
       "languageId": 1
@@ -3628,7 +3628,7 @@
       "avg30": 2.7,
       "trend": 2.45,
       "foilLow": null,
-      "foilTrend": 0,
+      "foilTrend": null,
       "cmId": "847536",
       "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Proving-Grounds/Lux-Crownguard-V1-Epic",
       "languageId": 1
@@ -3638,7 +3638,7 @@
       "avg30": 1.56,
       "trend": 1.04,
       "foilLow": null,
-      "foilTrend": 0,
+      "foilTrend": null,
       "cmId": "847537",
       "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Proving-Grounds/Recruit-the-Vanguard",
       "languageId": 1
@@ -3648,7 +3648,7 @@
       "avg30": 0.14,
       "trend": 0.18,
       "foilLow": 0.3,
-      "foilTrend": 0,
+      "foilTrend": null,
       "cmId": "847538",
       "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Proving-Grounds/Vanguard-Attendant",
       "languageId": 1
@@ -3658,7 +3658,7 @@
       "avg30": 8.23,
       "trend": 7.51,
       "foilLow": null,
-      "foilTrend": 0,
+      "foilTrend": null,
       "cmId": "847539",
       "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Proving-Grounds/Annie-Dark-Child-V1-Rare",
       "languageId": 1
@@ -3668,7 +3668,7 @@
       "avg30": 0.73,
       "trend": 0.6,
       "foilLow": null,
-      "foilTrend": 0,
+      "foilTrend": null,
       "cmId": "847540",
       "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Proving-Grounds/Tibbers-V1-Epic",
       "languageId": 1
@@ -3678,7 +3678,7 @@
       "avg30": 17.83,
       "trend": 19.24,
       "foilLow": null,
-      "foilTrend": 0,
+      "foilTrend": null,
       "cmId": "847541",
       "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Proving-Grounds/Master-Yi-Wuju-Bladesman-V1-Rare",
       "languageId": 1
@@ -3688,7 +3688,7 @@
       "avg30": 0.72,
       "trend": 0.89,
       "foilLow": null,
-      "foilTrend": 0,
+      "foilTrend": null,
       "cmId": "847542",
       "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Proving-Grounds/Highlander-V1-Epic",
       "languageId": 1
@@ -3698,7 +3698,7 @@
       "avg30": 8.6,
       "trend": 6.76,
       "foilLow": null,
-      "foilTrend": 0,
+      "foilTrend": null,
       "cmId": "847543",
       "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Proving-Grounds/Lux-Lady-of-Luminosity-V1-Rare",
       "languageId": 1
@@ -3708,7 +3708,7 @@
       "avg30": 0.89,
       "trend": 0.86,
       "foilLow": null,
-      "foilTrend": 0,
+      "foilTrend": null,
       "cmId": "847544",
       "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Proving-Grounds/Final-Spark-V1-Epic",
       "languageId": 1
@@ -3718,7 +3718,7 @@
       "avg30": 1.16,
       "trend": 1.16,
       "foilLow": null,
-      "foilTrend": 0,
+      "foilTrend": null,
       "cmId": "847545",
       "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Proving-Grounds/Garen-Might-of-Demacia-V1-Rare",
       "languageId": 1
@@ -3728,7 +3728,7 @@
       "avg30": 0.5,
       "trend": 0.55,
       "foilLow": null,
-      "foilTrend": 0,
+      "foilTrend": null,
       "cmId": "847546",
       "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Proving-Grounds/Decisive-Strike-V1-Epic",
       "languageId": 1
@@ -3768,7 +3768,7 @@
       "avg30": 0.11,
       "trend": 0.11,
       "foilLow": null,
-      "foilTrend": 0,
+      "foilTrend": null,
       "cmId": "867001",
       "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Spiritforged/Gold",
       "languageId": 1
@@ -4386,7 +4386,7 @@
     "sfd-225-star-221": {
       "low": 835,
       "avg30": null,
-      "trend": 0,
+      "trend": null,
       "foilLow": 835,
       "foilTrend": 2013.97,
       "cmId": "867004",
@@ -4646,7 +4646,7 @@
     "sfd-228-star-221": {
       "low": 249,
       "avg30": null,
-      "trend": 0,
+      "trend": null,
       "foilLow": 249,
       "foilTrend": 378.52,
       "cmId": "867006",
@@ -5096,7 +5096,7 @@
     "sfd-233-star-221": {
       "low": 390,
       "avg30": null,
-      "trend": 0,
+      "trend": null,
       "foilLow": 390,
       "foilTrend": 582.91,
       "cmId": "867009",
@@ -5766,7 +5766,7 @@
     "sfd-239-star-221": {
       "low": 475,
       "avg30": null,
-      "trend": 0,
+      "trend": null,
       "foilLow": 475,
       "foilTrend": 809.23,
       "cmId": "867013",
@@ -6416,7 +6416,7 @@
     "sfd-223-star-221": {
       "low": 835,
       "avg30": null,
-      "trend": 0,
+      "trend": null,
       "foilLow": 835,
       "foilTrend": 1708.22,
       "cmId": "867002",
@@ -6446,7 +6446,7 @@
     "sfd-227-star-221": {
       "low": 2799,
       "avg30": null,
-      "trend": 0,
+      "trend": null,
       "foilLow": 2799,
       "foilTrend": 4048.68,
       "cmId": "867005",
@@ -6456,7 +6456,7 @@
     "sfd-227-221": {
       "low": 300,
       "avg30": null,
-      "trend": 0,
+      "trend": null,
       "foilLow": 300,
       "foilTrend": 466.51,
       "cmId": "866974",
@@ -6476,7 +6476,7 @@
     "sfd-230-star-221": {
       "low": 550,
       "avg30": null,
-      "trend": 0,
+      "trend": null,
       "foilLow": 550,
       "foilTrend": 1243.06,
       "cmId": "867007",
@@ -6516,7 +6516,7 @@
     "sfd-232-221": {
       "low": 40,
       "avg30": null,
-      "trend": 0,
+      "trend": null,
       "foilLow": 40,
       "foilTrend": 51.4,
       "cmId": "866979",
@@ -6536,7 +6536,7 @@
     "sfd-235-star-221": {
       "low": 269.95,
       "avg30": null,
-      "trend": 0,
+      "trend": null,
       "foilLow": 269.95,
       "foilTrend": 541.3,
       "cmId": "867010",
@@ -6556,7 +6556,7 @@
     "sfd-236-star-221": {
       "low": 225,
       "avg30": null,
-      "trend": 0,
+      "trend": null,
       "foilLow": 225,
       "foilTrend": 443.58,
       "cmId": "867011",
@@ -6576,7 +6576,7 @@
     "sfd-237-star-221": {
       "low": 180,
       "avg30": null,
-      "trend": 0,
+      "trend": null,
       "foilLow": 180,
       "foilTrend": 385.66,
       "cmId": "867012",
@@ -6596,7 +6596,7 @@
     "sfd-238-221": {
       "low": 28,
       "avg30": null,
-      "trend": 0,
+      "trend": null,
       "foilLow": 28,
       "foilTrend": 43.63,
       "cmId": "866985",
@@ -6618,7 +6618,7 @@
       "avg30": 0.1,
       "trend": 0.13,
       "foilLow": null,
-      "foilTrend": 0,
+      "foilTrend": null,
       "cmId": "886609",
       "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Unleashed/Baron-Pit",
       "languageId": 1
@@ -6648,7 +6648,7 @@
       "avg30": 0.11,
       "trend": 0.02,
       "foilLow": null,
-      "foilTrend": 0,
+      "foilTrend": null,
       "cmId": "886240",
       "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Unleashed/Brush",
       "languageId": 1
@@ -6678,7 +6678,7 @@
       "avg30": 0.1,
       "trend": 0.16,
       "foilLow": null,
-      "foilTrend": 0,
+      "foilTrend": null,
       "cmId": "886236",
       "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Unleashed/Gold",
       "languageId": 1
@@ -6698,7 +6698,7 @@
       "avg30": 0.08,
       "trend": 0.09,
       "foilLow": null,
-      "foilTrend": 0,
+      "foilTrend": null,
       "cmId": "886239",
       "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Unleashed/Reflection",
       "languageId": 1
@@ -6718,7 +6718,7 @@
       "avg30": 0.06,
       "trend": 0.05,
       "foilLow": null,
-      "foilTrend": 0,
+      "foilTrend": null,
       "cmId": "886237",
       "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Unleashed/Sprite",
       "languageId": 1
@@ -6738,7 +6738,7 @@
       "avg30": 0.07,
       "trend": 0.05,
       "foilLow": null,
-      "foilTrend": 0,
+      "foilTrend": null,
       "cmId": "886241",
       "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Unleashed/XP-Tracker",
       "languageId": 1
@@ -8306,7 +8306,7 @@
     "unl-238-219": {
       "low": 950,
       "avg30": null,
-      "trend": 0,
+      "trend": null,
       "foilLow": 950,
       "foilTrend": 2435.07,
       "cmId": "884237",
@@ -8756,7 +8756,7 @@
     "unl-227-star-219": {
       "low": 400,
       "avg30": null,
-      "trend": 0,
+      "trend": null,
       "foilLow": 400,
       "foilTrend": 626.67,
       "cmId": "885570",
@@ -8796,7 +8796,7 @@
     "unl-228-star-219": {
       "low": 450,
       "avg30": null,
-      "trend": 0,
+      "trend": null,
       "foilLow": 450,
       "foilTrend": 752.03,
       "cmId": "885571",
@@ -8836,7 +8836,7 @@
     "unl-229-star-219": {
       "low": 399.99,
       "avg30": null,
-      "trend": 0,
+      "trend": null,
       "foilLow": 399.99,
       "foilTrend": 799.29,
       "cmId": "885568",
@@ -8916,7 +8916,7 @@
     "unl-231-star-219": {
       "low": 325,
       "avg30": null,
-      "trend": 0,
+      "trend": null,
       "foilLow": 325,
       "foilTrend": 513.84,
       "cmId": "884224",
@@ -8996,7 +8996,7 @@
     "unl-233-star-219": {
       "low": 250,
       "avg30": null,
-      "trend": 0,
+      "trend": null,
       "foilLow": 250,
       "foilTrend": 452.03,
       "cmId": "884228",
@@ -9116,7 +9116,7 @@
     "unl-236-star-219": {
       "low": 300,
       "avg30": null,
-      "trend": 0,
+      "trend": null,
       "foilLow": 300,
       "foilTrend": 491.13,
       "cmId": "884234",
@@ -9156,7 +9156,7 @@
     "unl-237-star-219": {
       "low": 230,
       "avg30": null,
-      "trend": 0,
+      "trend": null,
       "foilLow": 230,
       "foilTrend": 402.31,
       "cmId": "884236",
@@ -9418,7 +9418,7 @@
       "avg30": 0.06,
       "trend": 0.07,
       "foilLow": null,
-      "foilTrend": 0,
+      "foilTrend": null,
       "cmId": "898154",
       "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Vendetta/Fury-Rune-V1-Common",
       "languageId": 1
@@ -9448,7 +9448,7 @@
       "avg30": 0.07,
       "trend": 0.03,
       "foilLow": null,
-      "foilTrend": 0,
+      "foilTrend": null,
       "cmId": "898155",
       "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Vendetta/Calm-Rune-V1-Common",
       "languageId": 1
@@ -9478,7 +9478,7 @@
       "avg30": 0.07,
       "trend": 0.05,
       "foilLow": null,
-      "foilTrend": 0,
+      "foilTrend": null,
       "cmId": "898156",
       "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Vendetta/Mind-Rune-V1-Common",
       "languageId": 1
@@ -9508,7 +9508,7 @@
       "avg30": 0.07,
       "trend": 0.08,
       "foilLow": null,
-      "foilTrend": 0,
+      "foilTrend": null,
       "cmId": "898157",
       "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Vendetta/Body-Rune-V1-Common",
       "languageId": 1
@@ -9528,7 +9528,7 @@
       "avg30": 0.12,
       "trend": 0.07,
       "foilLow": null,
-      "foilTrend": 0,
+      "foilTrend": null,
       "cmId": "898151",
       "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Vendetta/Recruit",
       "languageId": 1
@@ -9548,7 +9548,7 @@
       "avg30": 0.07,
       "trend": 0.05,
       "foilLow": null,
-      "foilTrend": 0,
+      "foilTrend": null,
       "cmId": "898158",
       "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Vendetta/Chaos-Rune-V1-Common",
       "languageId": 1
@@ -9578,7 +9578,7 @@
       "avg30": 0.08,
       "trend": 0.06,
       "foilLow": null,
-      "foilTrend": 0,
+      "foilTrend": null,
       "cmId": "898159",
       "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Vendetta/Order-Rune-V1-Common",
       "languageId": 1
@@ -9696,7 +9696,7 @@
     "ven-186-166": {
       "low": 100,
       "avg30": null,
-      "trend": 0,
+      "trend": null,
       "foilLow": 100,
       "foilTrend": 102.22,
       "cmId": "898175",
@@ -10616,7 +10616,7 @@
     "ven-177-166": {
       "low": 48,
       "avg30": null,
-      "trend": 0,
+      "trend": null,
       "foilLow": 48,
       "foilTrend": 58.61,
       "cmId": "898131",
@@ -11246,7 +11246,7 @@
     "ven-190-star-166": {
       "low": 259.95,
       "avg30": null,
-      "trend": 0,
+      "trend": null,
       "foilLow": 259.95,
       "foilTrend": 240.04,
       "cmId": "898162",
@@ -11256,7 +11256,7 @@
     "ven-190-166": {
       "low": 34.3,
       "avg30": null,
-      "trend": 0,
+      "trend": null,
       "foilLow": 34.3,
       "foilTrend": 37.14,
       "cmId": "898142",
@@ -11286,7 +11286,7 @@
     "ven-191-star-166": {
       "low": 820,
       "avg30": null,
-      "trend": 0,
+      "trend": null,
       "foilLow": 820,
       "foilTrend": 956.65,
       "cmId": "898163",
@@ -11296,7 +11296,7 @@
     "ven-191-166": {
       "low": 97.01,
       "avg30": null,
-      "trend": 0,
+      "trend": null,
       "foilLow": 97.01,
       "foilTrend": 145.05,
       "cmId": "898143",
@@ -11326,7 +11326,7 @@
     "ven-192-star-166": {
       "low": 299.69,
       "avg30": null,
-      "trend": 0,
+      "trend": null,
       "foilLow": 299.69,
       "foilTrend": 551.53,
       "cmId": "898164",
@@ -11366,7 +11366,7 @@
     "ven-193-star-166": {
       "low": 320,
       "avg30": null,
-      "trend": 0,
+      "trend": null,
       "foilLow": 320,
       "foilTrend": 338.55,
       "cmId": "898165",
@@ -11376,7 +11376,7 @@
     "ven-193-166": {
       "low": 52.8,
       "avg30": null,
-      "trend": 0,
+      "trend": null,
       "foilLow": 52.8,
       "foilTrend": 57.82,
       "cmId": "898145",
@@ -11446,7 +11446,7 @@
     "ven-195-star-166": {
       "low": 649,
       "avg30": null,
-      "trend": 0,
+      "trend": null,
       "foilLow": 649,
       "foilTrend": 706.69,
       "cmId": "898167",
@@ -11486,7 +11486,7 @@
     "ven-196-star-166": {
       "low": 360,
       "avg30": null,
-      "trend": 0,
+      "trend": null,
       "foilLow": 360,
       "foilTrend": 339.85,
       "cmId": "898168",
@@ -11526,7 +11526,7 @@
     "ven-197-star-166": {
       "low": 695,
       "avg30": null,
-      "trend": 0,
+      "trend": null,
       "foilLow": 695,
       "foilTrend": 685.47,
       "cmId": "898169",
@@ -11696,7 +11696,7 @@
     "ven-174-166": {
       "low": 99,
       "avg30": null,
-      "trend": 0,
+      "trend": null,
       "foilLow": 99,
       "foilTrend": 133.47,
       "cmId": "898128",
@@ -11706,7 +11706,7 @@
     "ven-175-166": {
       "low": 70,
       "avg30": null,
-      "trend": 0,
+      "trend": null,
       "foilLow": 70,
       "foilTrend": 76.42,
       "cmId": "898129",
@@ -11736,7 +11736,7 @@
     "ven-180-166": {
       "low": 45.12,
       "avg30": null,
-      "trend": 0,
+      "trend": null,
       "foilLow": 45.12,
       "foilTrend": 56.94,
       "cmId": "898134",
@@ -11866,7 +11866,7 @@
     "ogn-197b-nexus": {
       "low": 595,
       "avg30": null,
-      "trend": 0,
+      "trend": null,
       "foilLow": 595,
       "foilTrend": 1404.6,
       "cmId": "856102",
@@ -11888,7 +11888,7 @@
       "avg30": 0.08,
       "trend": 0.1,
       "foilLow": null,
-      "foilTrend": 0,
+      "foilTrend": null,
       "cmId": "847547",
       "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Origins/Buff",
       "languageId": 1
@@ -11898,7 +11898,7 @@
       "avg30": 0.07,
       "trend": 0.11,
       "foilLow": null,
-      "foilTrend": 0,
+      "foilTrend": null,
       "cmId": "872478",
       "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Spiritforged/Fury-Rune",
       "languageId": 1
@@ -11918,7 +11918,7 @@
       "avg30": 0.12,
       "trend": 0.13,
       "foilLow": null,
-      "foilTrend": 0,
+      "foilTrend": null,
       "cmId": "872479",
       "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Spiritforged/Calm-Rune",
       "languageId": 1
@@ -11938,7 +11938,7 @@
       "avg30": 0.09,
       "trend": 0.1,
       "foilLow": null,
-      "foilTrend": 0,
+      "foilTrend": null,
       "cmId": "872480",
       "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Spiritforged/Mind-Rune",
       "languageId": 1
@@ -11958,7 +11958,7 @@
       "avg30": 0.08,
       "trend": 0.09,
       "foilLow": null,
-      "foilTrend": 0,
+      "foilTrend": null,
       "cmId": "872481",
       "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Spiritforged/Body-Rune",
       "languageId": 1
@@ -11978,7 +11978,7 @@
       "avg30": 0.11,
       "trend": 0.09,
       "foilLow": null,
-      "foilTrend": 0,
+      "foilTrend": null,
       "cmId": "872482",
       "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Spiritforged/Chaos-Rune",
       "languageId": 1
@@ -11998,7 +11998,7 @@
       "avg30": 0.11,
       "trend": 0.07,
       "foilLow": null,
-      "foilTrend": 0,
+      "foilTrend": null,
       "cmId": "872483",
       "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Spiritforged/Order-Rune",
       "languageId": 1
@@ -12018,7 +12018,7 @@
       "avg30": 0.07,
       "trend": 0.07,
       "foilLow": null,
-      "foilTrend": 0,
+      "foilTrend": null,
       "cmId": "866999",
       "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Spiritforged/Mech",
       "languageId": 1
@@ -12028,7 +12028,7 @@
       "avg30": 0.16,
       "trend": 0.15,
       "foilLow": null,
-      "foilTrend": 0,
+      "foilTrend": null,
       "cmId": "867000",
       "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Spiritforged/Sand-Soldier",
       "languageId": 1
@@ -12048,7 +12048,7 @@
       "avg30": 0.09,
       "trend": 0.07,
       "foilLow": null,
-      "foilTrend": 0,
+      "foilTrend": null,
       "cmId": "888470",
       "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Unleashed/Fury-Rune-V2-Showcase",
       "languageId": 1
@@ -12068,7 +12068,7 @@
       "avg30": 0.1,
       "trend": 0.07,
       "foilLow": null,
-      "foilTrend": 0,
+      "foilTrend": null,
       "cmId": "888471",
       "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Unleashed/Calm-Rune-V2-Showcase",
       "languageId": 1
@@ -12088,7 +12088,7 @@
       "avg30": 0.1,
       "trend": 0.07,
       "foilLow": null,
-      "foilTrend": 0,
+      "foilTrend": null,
       "cmId": "888472",
       "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Unleashed/Mind-Rune-V2-Showcase",
       "languageId": 1
@@ -12108,7 +12108,7 @@
       "avg30": 0.09,
       "trend": 0.05,
       "foilLow": null,
-      "foilTrend": 0,
+      "foilTrend": null,
       "cmId": "888473",
       "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Unleashed/Body-Rune-V2-Showcase",
       "languageId": 1
@@ -12128,7 +12128,7 @@
       "avg30": 0.08,
       "trend": 0.08,
       "foilLow": null,
-      "foilTrend": 0,
+      "foilTrend": null,
       "cmId": "888474",
       "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Unleashed/Chaos-Rune-V2-Showcase",
       "languageId": 1
@@ -12148,7 +12148,7 @@
       "avg30": 0.09,
       "trend": 0.06,
       "foilLow": null,
-      "foilTrend": 0,
+      "foilTrend": null,
       "cmId": "888475",
       "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Unleashed/Order-Rune-V2-Showcase",
       "languageId": 1
@@ -12158,7 +12158,7 @@
       "avg30": 0.11,
       "trend": 0.08,
       "foilLow": null,
-      "foilTrend": 0,
+      "foilTrend": null,
       "cmId": "898150",
       "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Vendetta/Empowered",
       "languageId": 1
@@ -12168,7 +12168,7 @@
       "avg30": 0.11,
       "trend": 0.11,
       "foilLow": null,
-      "foilTrend": 0,
+      "foilTrend": null,
       "cmId": "898152",
       "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Vendetta/Shadow-Clone",
       "languageId": 1
@@ -12178,7 +12178,7 @@
       "avg30": 0.16,
       "trend": 0.08,
       "foilLow": null,
-      "foilTrend": 0,
+      "foilTrend": null,
       "cmId": "898153",
       "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Vendetta/Tentacle",
       "languageId": 1
@@ -13778,7 +13778,7 @@
       "avg30": 0.09,
       "trend": 0.12,
       "foilLow": null,
-      "foilTrend": 0,
+      "foilTrend": null,
       "cmId": "886238",
       "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Unleashed/Bird",
       "languageId": 1
@@ -13888,7 +13888,7 @@
       "avg30": null,
       "trend": 0.3,
       "foilLow": 0.25,
-      "foilTrend": 0,
+      "foilTrend": null,
       "cmId": "917209",
       "languageId": 1,
       "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Banner-of-Conquest?language=1"
@@ -13948,7 +13948,7 @@
       "avg30": null,
       "trend": 0.25,
       "foilLow": 0.25,
-      "foilTrend": 0,
+      "foilTrend": null,
       "cmId": "917210",
       "languageId": 1,
       "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Bilgewater-Tracker?language=1"
@@ -13976,7 +13976,7 @@
     "rad-109": {
       "low": 0.95,
       "avg30": null,
-      "trend": 0,
+      "trend": null,
       "foilLow": 0.95,
       "foilTrend": 2,
       "cmId": "917310",
@@ -14058,7 +14058,7 @@
       "avg30": null,
       "trend": 0.25,
       "foilLow": 0.28,
-      "foilTrend": 0,
+      "foilTrend": null,
       "cmId": "917212",
       "languageId": 1,
       "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Lingering-Animus?language=1"
@@ -14137,7 +14137,7 @@
       "low": 0.25,
       "avg30": null,
       "trend": null,
-      "foilLow": 10000,
+      "foilLow": null,
       "foilTrend": null,
       "cmId": "917214",
       "languageId": 1,
@@ -14187,8 +14187,8 @@
       "low": 0.5,
       "avg30": null,
       "trend": 0.75,
-      "foilLow": 10000,
-      "foilTrend": 0,
+      "foilLow": null,
+      "foilTrend": null,
       "cmId": "917217",
       "languageId": 1,
       "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Runeblade-Anvil?language=1"
@@ -14207,8 +14207,8 @@
       "low": 0.75,
       "avg30": null,
       "trend": 0.9,
-      "foilLow": 10000,
-      "foilTrend": 0,
+      "foilLow": null,
+      "foilTrend": null,
       "cmId": "917219",
       "languageId": 1,
       "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Shimmering-Swimmer?language=1"
@@ -14236,7 +14236,7 @@
     "rad-016": {
       "low": 0.45,
       "avg30": null,
-      "trend": 0,
+      "trend": null,
       "foilLow": 0.45,
       "foilTrend": 1,
       "cmId": "917221",
@@ -14246,7 +14246,7 @@
     "rad-017": {
       "low": 0.6,
       "avg30": null,
-      "trend": 0,
+      "trend": null,
       "foilLow": 0.6,
       "foilTrend": 0.9,
       "cmId": "917222",
@@ -14276,7 +14276,7 @@
     "rad-020": {
       "low": 0.9,
       "avg30": null,
-      "trend": 0,
+      "trend": null,
       "foilLow": 0.9,
       "foilTrend": 3,
       "cmId": "917225",
@@ -14358,7 +14358,7 @@
       "avg30": null,
       "trend": 0.25,
       "foilLow": 0.25,
-      "foilTrend": 0,
+      "foilTrend": null,
       "cmId": "917231",
       "languageId": 1,
       "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Blossoming-Dreamroot?language=1"
@@ -14377,7 +14377,7 @@
       "low": 0.25,
       "avg30": null,
       "trend": null,
-      "foilLow": 10000,
+      "foilLow": null,
       "foilTrend": null,
       "cmId": "917233",
       "languageId": 1,
@@ -14398,7 +14398,7 @@
       "avg30": null,
       "trend": 0.3,
       "foilLow": 0.4,
-      "foilTrend": 0,
+      "foilTrend": null,
       "cmId": "917235",
       "languageId": 1,
       "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Ki-Burst?language=1"
@@ -14407,8 +14407,8 @@
       "low": 0.25,
       "avg30": null,
       "trend": 0.25,
-      "foilLow": 10000,
-      "foilTrend": 0,
+      "foilLow": null,
+      "foilTrend": null,
       "cmId": "917236",
       "languageId": 1,
       "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Life-from-Stone?language=1"
@@ -14417,7 +14417,7 @@
       "low": 0.25,
       "avg30": null,
       "trend": null,
-      "foilLow": 10000,
+      "foilLow": null,
       "foilTrend": null,
       "cmId": "917237",
       "languageId": 1,
@@ -14438,7 +14438,7 @@
       "avg30": null,
       "trend": 0.75,
       "foilLow": 1,
-      "foilTrend": 0,
+      "foilTrend": null,
       "cmId": "917420",
       "languageId": 1,
       "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Battle-Preparations?language=1"
@@ -14448,7 +14448,7 @@
       "avg30": null,
       "trend": 0.5,
       "foilLow": 0.9,
-      "foilTrend": 0,
+      "foilTrend": null,
       "cmId": "917238",
       "languageId": 1,
       "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Command-Attack?language=1"
@@ -14457,8 +14457,8 @@
       "low": 0.5,
       "avg30": null,
       "trend": 0.5,
-      "foilLow": 10000,
-      "foilTrend": 0,
+      "foilLow": null,
+      "foilTrend": null,
       "cmId": "917239",
       "languageId": 1,
       "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Hunker-Down?language=1"
@@ -14468,7 +14468,7 @@
       "avg30": null,
       "trend": 0.5,
       "foilLow": 0.45,
-      "foilTrend": 0,
+      "foilTrend": null,
       "cmId": "917240",
       "languageId": 1,
       "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Invigorating-Bloom?language=1"
@@ -14478,7 +14478,7 @@
       "avg30": null,
       "trend": 0.5,
       "foilLow": 0.4,
-      "foilTrend": 0,
+      "foilTrend": null,
       "cmId": "917241",
       "languageId": 1,
       "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Storm-Raptor?language=1"
@@ -14487,7 +14487,7 @@
       "low": 0.25,
       "avg30": null,
       "trend": null,
-      "foilLow": 10000,
+      "foilLow": null,
       "foilTrend": null,
       "cmId": "917242",
       "languageId": 1,
@@ -14516,7 +14516,7 @@
     "rad-041": {
       "low": 1.5,
       "avg30": null,
-      "trend": 0,
+      "trend": null,
       "foilLow": 1.5,
       "foilTrend": 2.89,
       "cmId": "917246",
@@ -14546,7 +14546,7 @@
     "rad-043": {
       "low": 2.4,
       "avg30": null,
-      "trend": 0,
+      "trend": null,
       "foilLow": 2.4,
       "foilTrend": 2.95,
       "cmId": "917247",
@@ -14556,7 +14556,7 @@
     "rad-043a": {
       "low": 17,
       "avg30": null,
-      "trend": 0,
+      "trend": null,
       "foilLow": 17,
       "foilTrend": 16,
       "cmId": "917248",
@@ -14608,7 +14608,7 @@
       "avg30": null,
       "trend": 0.25,
       "foilLow": 0.28,
-      "foilTrend": 0,
+      "foilTrend": null,
       "cmId": "917252",
       "languageId": 1,
       "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Fanfare?language=1"
@@ -14637,7 +14637,7 @@
       "low": 0.25,
       "avg30": null,
       "trend": null,
-      "foilLow": 10000,
+      "foilLow": null,
       "foilTrend": null,
       "cmId": "917255",
       "languageId": 1,
@@ -14648,7 +14648,7 @@
       "avg30": null,
       "trend": 0.3,
       "foilLow": 0.28,
-      "foilTrend": 0,
+      "foilTrend": null,
       "cmId": "917256",
       "languageId": 1,
       "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Parallel-Convergence?language=1"
@@ -14717,8 +14717,8 @@
       "low": 0.25,
       "avg30": null,
       "trend": 0.5,
-      "foilLow": 10000,
-      "foilTrend": 0,
+      "foilLow": null,
+      "foilTrend": null,
       "cmId": "917262",
       "languageId": 1,
       "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Riptide-Mage?language=1"
@@ -14727,7 +14727,7 @@
       "low": 0.25,
       "avg30": null,
       "trend": null,
-      "foilLow": 10000,
+      "foilLow": null,
       "foilTrend": null,
       "cmId": "917263",
       "languageId": 1,
@@ -14738,7 +14738,7 @@
       "avg30": null,
       "trend": 0.5,
       "foilLow": 0.45,
-      "foilTrend": 0,
+      "foilTrend": null,
       "cmId": "917264",
       "languageId": 1,
       "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/The-Empyrean?language=1"
@@ -14746,7 +14746,7 @@
     "rad-061": {
       "low": 0.65,
       "avg30": null,
-      "trend": 0,
+      "trend": null,
       "foilLow": 0.65,
       "foilTrend": 1,
       "cmId": "917265",
@@ -14858,7 +14858,7 @@
       "avg30": null,
       "trend": 0.25,
       "foilLow": 0.28,
-      "foilTrend": 0,
+      "foilTrend": null,
       "cmId": "917274",
       "languageId": 1,
       "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Hold-Em?language=1"
@@ -14866,8 +14866,8 @@
     "rad-071": {
       "low": 0.25,
       "avg30": null,
-      "trend": 0,
-      "foilLow": 10000,
+      "trend": null,
+      "foilLow": null,
       "foilTrend": 0.28,
       "cmId": "917275",
       "languageId": 1,
@@ -14878,7 +14878,7 @@
       "avg30": null,
       "trend": 0.25,
       "foilLow": 0.3,
-      "foilTrend": 0,
+      "foilTrend": null,
       "cmId": "917276",
       "languageId": 1,
       "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Overloaded-Traveler?language=1"
@@ -14888,7 +14888,7 @@
       "avg30": null,
       "trend": 0.25,
       "foilLow": 0.25,
-      "foilTrend": 0,
+      "foilTrend": null,
       "cmId": "917277",
       "languageId": 1,
       "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Pillaged-Armory?language=1"
@@ -14917,8 +14917,8 @@
       "low": 0.25,
       "avg30": null,
       "trend": 0.25,
-      "foilLow": 10000,
-      "foilTrend": 0,
+      "foilLow": null,
+      "foilTrend": null,
       "cmId": "917280",
       "languageId": 1,
       "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Sneaky-Zeebles?language=1"
@@ -14927,7 +14927,7 @@
       "low": 0.25,
       "avg30": null,
       "trend": null,
-      "foilLow": 10000,
+      "foilLow": null,
       "foilTrend": null,
       "cmId": "917281",
       "languageId": 1,
@@ -14968,7 +14968,7 @@
       "avg30": null,
       "trend": 0.5,
       "foilLow": 0.9,
-      "foilTrend": 0,
+      "foilTrend": null,
       "cmId": "917283",
       "languageId": 1,
       "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Elnuk-Herd?language=1"
@@ -14987,7 +14987,7 @@
       "low": 0.5,
       "avg30": null,
       "trend": null,
-      "foilLow": 10000,
+      "foilLow": null,
       "foilTrend": null,
       "cmId": "917285",
       "languageId": 1,
@@ -14996,7 +14996,7 @@
     "rad-084": {
       "low": 0.49,
       "avg30": null,
-      "trend": 0,
+      "trend": null,
       "foilLow": 0.49,
       "foilTrend": 0.75,
       "cmId": "917286",
@@ -15006,7 +15006,7 @@
     "rad-085": {
       "low": 0.4,
       "avg30": null,
-      "trend": 0,
+      "trend": null,
       "foilLow": 0.4,
       "foilTrend": 0.91,
       "cmId": "917287",
@@ -15026,7 +15026,7 @@
     "rad-086": {
       "low": 0.25,
       "avg30": null,
-      "trend": 0,
+      "trend": null,
       "foilLow": 0.25,
       "foilTrend": 0.9,
       "cmId": "917288",
@@ -15056,7 +15056,7 @@
     "rad-087": {
       "low": 0.29,
       "avg30": null,
-      "trend": 0,
+      "trend": null,
       "foilLow": 0.29,
       "foilTrend": 1.65,
       "cmId": "917290",
@@ -15158,7 +15158,7 @@
       "avg30": null,
       "trend": 0.3,
       "foilLow": 0.45,
-      "foilTrend": 0,
+      "foilTrend": null,
       "cmId": "917298",
       "languageId": 1,
       "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Momentary-Companion?language=1"
@@ -15207,7 +15207,7 @@
       "low": 0.25,
       "avg30": null,
       "trend": null,
-      "foilLow": 10000,
+      "foilLow": null,
       "foilTrend": null,
       "cmId": "917303",
       "languageId": 1,
@@ -15257,8 +15257,8 @@
       "low": 0.5,
       "avg30": null,
       "trend": 0.83,
-      "foilLow": 10000,
-      "foilTrend": 0,
+      "foilLow": null,
+      "foilTrend": null,
       "cmId": "917306",
       "languageId": 1,
       "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Reckless-Innovator?language=1"
@@ -15276,7 +15276,7 @@
     "rad-107": {
       "low": 1,
       "avg30": null,
-      "trend": 0,
+      "trend": null,
       "foilLow": 1,
       "foilTrend": 1.95,
       "cmId": "917308",
@@ -15416,7 +15416,7 @@
     "rad-119": {
       "low": 0.25,
       "avg30": null,
-      "trend": 0,
+      "trend": null,
       "foilLow": 0.45,
       "foilTrend": 0.28,
       "cmId": "917322",
@@ -15438,7 +15438,7 @@
       "avg30": null,
       "trend": 0.3,
       "foilLow": 0.45,
-      "foilTrend": 0,
+      "foilTrend": null,
       "cmId": "917324",
       "languageId": 1,
       "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/One-Two-Punch?language=1"
@@ -15487,7 +15487,7 @@
       "low": 0.25,
       "avg30": null,
       "trend": null,
-      "foilLow": 10000,
+      "foilLow": null,
       "foilTrend": null,
       "cmId": "917327",
       "languageId": 1,
@@ -15518,7 +15518,7 @@
       "avg30": null,
       "trend": 0.9,
       "foilLow": 25,
-      "foilTrend": 0,
+      "foilTrend": null,
       "cmId": "917330",
       "languageId": 1,
       "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Trifarian-Captain?language=1"
@@ -15546,7 +15546,7 @@
     "rad-132": {
       "low": 0.49,
       "avg30": null,
-      "trend": 0,
+      "trend": null,
       "foilLow": 0.9,
       "foilTrend": 0.9,
       "cmId": "917333",
@@ -15626,7 +15626,7 @@
     "rad-139": {
       "low": 0.3,
       "avg30": null,
-      "trend": 0,
+      "trend": null,
       "foilLow": 0.3,
       "foilTrend": 0.9,
       "cmId": "917341",
@@ -15656,7 +15656,7 @@
     "rad-140": {
       "low": 14,
       "avg30": null,
-      "trend": 0,
+      "trend": null,
       "foilLow": 14,
       "foilTrend": 25,
       "cmId": "917342",
@@ -15666,7 +15666,7 @@
     "rad-141": {
       "low": 0.3,
       "avg30": null,
-      "trend": 0,
+      "trend": null,
       "foilLow": 0.3,
       "foilTrend": 0.9,
       "cmId": "917343",
@@ -15676,7 +15676,7 @@
     "rad-169": {
       "low": 200,
       "avg30": null,
-      "trend": 0,
+      "trend": null,
       "foilLow": 200,
       "foilTrend": 180,
       "cmId": "917370",
@@ -15706,7 +15706,7 @@
     "rad-143": {
       "low": 0.19,
       "avg30": null,
-      "trend": 0,
+      "trend": null,
       "foilLow": 0.19,
       "foilTrend": 0.9,
       "cmId": "917345",
@@ -15746,7 +15746,7 @@
     "rad-145": {
       "low": 0.25,
       "avg30": null,
-      "trend": 0,
+      "trend": null,
       "foilLow": 0.25,
       "foilTrend": 0.9,
       "cmId": "917347",
@@ -15786,7 +15786,7 @@
     "rad-147": {
       "low": 0.25,
       "avg30": null,
-      "trend": 0,
+      "trend": null,
       "foilLow": 0.25,
       "foilTrend": 0.9,
       "cmId": "917349",
@@ -15846,7 +15846,7 @@
     "rad-151": {
       "low": 0.25,
       "avg30": null,
-      "trend": 0,
+      "trend": null,
       "foilLow": 0.25,
       "foilTrend": 0.9,
       "cmId": "917352",
@@ -15886,7 +15886,7 @@
     "rad-153": {
       "low": 0.19,
       "avg30": null,
-      "trend": 0,
+      "trend": null,
       "foilLow": 0.19,
       "foilTrend": 0.9,
       "cmId": "917354",
@@ -15896,7 +15896,7 @@
     "rad-175": {
       "low": 209.98,
       "avg30": null,
-      "trend": 0,
+      "trend": null,
       "foilLow": 209.98,
       "foilTrend": 210,
       "cmId": "917375",
@@ -15916,7 +15916,7 @@
     "rad-155": {
       "low": 0.3,
       "avg30": null,
-      "trend": 0,
+      "trend": null,
       "foilLow": 0.3,
       "foilTrend": 0.85,
       "cmId": "917356",
@@ -15957,7 +15957,7 @@
       "low": 0.75,
       "avg30": null,
       "trend": null,
-      "foilLow": 10000,
+      "foilLow": null,
       "foilTrend": null,
       "cmId": "917359",
       "languageId": 1,
@@ -15987,7 +15987,7 @@
       "low": 0.25,
       "avg30": null,
       "trend": null,
-      "foilLow": 10000,
+      "foilLow": null,
       "foilTrend": null,
       "cmId": "917362",
       "languageId": 1,
@@ -15997,7 +15997,7 @@
       "low": 0.75,
       "avg30": null,
       "trend": null,
-      "foilLow": 10000,
+      "foilLow": null,
       "foilTrend": null,
       "cmId": "917363",
       "languageId": 1,
@@ -16017,7 +16017,7 @@
       "low": 0.75,
       "avg30": null,
       "trend": null,
-      "foilLow": 10000,
+      "foilLow": null,
       "foilTrend": null,
       "cmId": "917365",
       "languageId": 1,
