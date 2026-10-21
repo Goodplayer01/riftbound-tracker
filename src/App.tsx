@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type DragEvent as ReactDragEvent, type MouseEvent as ReactMouseEvent, type PointerEvent as ReactPointerEvent, type ReactNode, type RefObject } from 'react'
+import { fetchRemotePrices, loadBundledPrices, loadCachedPrices, newerPriceBook } from './prices'
 import type { BorrowedCard, BorrowedGroup, Card, Catalog, Deck, DeckSection, PriceBook, PriceEntry } from './types'
 import { loadBorrowed, loadCollection, loadDecks, loadWish, saveBorrowed, saveCollection, saveDecks, saveWish, type Collection } from './storage'
 import { loadLang, saveLang, t, type Lang } from './i18n'
@@ -1005,10 +1006,11 @@ export default function App() {
       })
       .then((data: Catalog) => setCatalog(data))
       .catch((e: Error) => setError(e.message))
-    fetch(new URL('prices.json', window.location.href))
-      .then((r) => (r.ok ? r.json() : null))
-      .then((data: PriceBook | null) => { if (data) setPriceBook(data) })
-      .catch(() => {})
+    // Bundled prices.json first, then the live copy from GitHub; newest updatedAt wins.
+    const keepNewer = (b: PriceBook | null) => { if (b) setPriceBook((prev) => newerPriceBook(prev, b)) }
+    keepNewer(loadCachedPrices())
+    loadBundledPrices().then(keepNewer)
+    fetchRemotePrices().then(keepNewer)
     fetch(new URL('card-keywords.json', window.location.href))
       .then((r) => (r.ok ? r.json() : null))
       .then((data: CardKeywordBook | null) => { if (data?.byCardId) setCardKeywordBook(data) })
