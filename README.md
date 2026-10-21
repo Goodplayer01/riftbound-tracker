@@ -16,14 +16,20 @@ Windows SmartScreen might complain the first time because the installer isn't si
 
 - Binders per set: OGN, OGS, SFD, UNL, VEN and RAD. Nexus Night binders can be hidden
 - Progress per rarity so you see what's still missing
-- Normal and foil counts for every card
+- Normal and foil counts for every card. Cards that only exist as foil get a single counter
 - Quick import: paste card codes or a whole deck list
 - CSV import and export
+
+**Wishlist**
+
+- Cards you still want, shown as tiles like in the catalogue
+- Drag cards in from the search on the right, the same way as in the deck builder
+- Total value of the list, and a Got it button that moves a card into your collection
 
 **Catalogue**
 
 - Every card in the game
-- Filters for set, type, rarity, domains and owned only
+- Filters for set, type, rarity, domains, abilities like Hidden, and owned only
 - Search with an X to clear it in one click
 - Card detail with a big zoomed scan and the rules text you can actually read
 - Battlefields are shown sideways in the detail view so the text is straight
@@ -31,7 +37,7 @@ Windows SmartScreen might complain the first time because the installer isn't si
 
 **Prices**
 
-- Cardmarket prices from the English listings: low, 30 day average and foil
+- Cardmarket prices from the English listings: low, 30 day average and foil, Radiance included
 - Total value of your collection in EUR
 - Click a card name to open it on Cardmarket
 
@@ -39,6 +45,7 @@ Windows SmartScreen might complain the first time because the installer isn't si
 
 - Legend, Champion, Main Deck (39), Battlefields, Runes and Sideboard, with the usual limits
 - Find a Legend by typing the champion name
+- Drag cards from the search list into a deck section
 - Shows which copies you're missing and what they cost
 - Import and export deck lists as text
 - Drag decks around to sort them
@@ -48,7 +55,7 @@ Windows SmartScreen might complain the first time because the installer isn't si
 
 **Sales**
 
-Put cards you want to sell in a cart and mark them as sold when they're gone.
+Put cards you want to sell in a cart by dragging them in, pasting a list or clicking the cart button. Each card shows its price and the cart shows the total. Mark them as sold when they're gone and your collection is updated. You can't add more copies than you own.
 
 **Borrowed**
 
@@ -61,6 +68,8 @@ Riftbound shops in Germany on a map with a radius around you, contact info, and 
 **Dopamin**
 
 Open simulated booster packs for each set with the real pack art. Cards flip one at a time, with price and pull chance, and a counter shows how many packs you've opened. The odds only use what Riot has published, nothing made up.
+
+In the wishlist, sales and deck builder you can hide the card search on the right to get more room.
 
 The app runs in German or English.
 
