@@ -1,7 +1,15 @@
+import { CM_LANGUAGE, CONDITION_FACTOR, type CopyGroup } from './copies'
 import type { Card, PriceEntry } from './types'
 
 /** One export row: a card and how many copies (normal / foil). */
-export type CmLine = { card: Card; qty: number; foil: number; price?: PriceEntry | null }
+export type CmLine = {
+  card: Card
+  qty: number
+  foil: number
+  price?: PriceEntry | null
+  /** Language and condition of the copies; without it every copy is English NM. */
+  groups?: Pick<CopyGroup, 'foil' | 'n' | 'lang' | 'cond'>[]
+}
 
 /** Cardmarket product name, e.g. "Darius - Trifarian". */
 export function cmName(c: Card) {
@@ -59,23 +67,27 @@ function csvCell(v: string | number) {
   return /[;"\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s
 }
 
-/** Stock list as CSV with Cardmarket product ids (idProduct), English, Near Mint, priced at the trend. */
+/** Stock list as CSV with Cardmarket product ids (idProduct), language and condition per copy
+ *  (English NM when unknown), priced at the trend minus the usual condition discount. */
 export function stockCsv(lines: CmLine[]) {
   const rows = [['idProduct', 'Count', 'Name', 'Expansion', 'Language', 'Condition', 'isFoil', 'Price'].join(';')]
   for (const l of lines) {
-    for (const foil of [false, true]) {
-      const n = foil ? l.foil : l.qty
-      if (n <= 0) continue
-      const u = sellUnit(l.price, foil)
+    const groups = l.groups ?? [
+      { foil: false, n: l.qty, lang: 'EN' as const, cond: 'NM' as const },
+      { foil: true, n: l.foil, lang: 'EN' as const, cond: 'NM' as const },
+    ]
+    for (const g of groups) {
+      if (g.n <= 0) continue
+      const u = sellUnit(l.price, g.foil)
       rows.push([
         l.price?.cmId ?? '',
-        n,
+        g.n,
         cmName(l.card),
         cmExpansion(l.card, l.price),
-        'English',
-        'NM',
-        foil ? 'true' : 'false',
-        u != null ? u.toFixed(2) : '',
+        CM_LANGUAGE[g.lang],
+        g.cond,
+        g.foil ? 'true' : 'false',
+        u != null ? (u * CONDITION_FACTOR[g.cond]).toFixed(2) : '',
       ].map(csvCell).join(';'))
     }
   }

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type DragEvent as ReactDragEvent, type MouseEvent as ReactMouseEvent, type PointerEvent as ReactPointerEvent, type ReactNode, type RefObject } from 'react'
 import { fetchRemotePrices, loadBundledPrices, loadCachedPrices, newerPriceBook } from './prices'
 import type { BorrowedCard, BorrowedGroup, Card, Catalog, Deck, DeckSection, PriceBook, PriceEntry } from './types'
-import { loadBorrowed, loadCollection, loadDecks, loadSales, loadWish, saveBorrowed, saveCollection, saveDecks, saveSales, saveWish, type Collection } from './storage'
+import { backupOnce, loadAlertsSeen, loadBorrowed, loadCollection, loadCopies, loadDecks, loadSales, loadWish, loadWishTargets, saveAlertsSeen, saveBorrowed, saveCollection, saveCopies, saveDecks, saveSales, saveWish, saveWishTargets, type Collection } from './storage'
 import { csvSeparator, ownedQty, splitCsv, subtractOwnedCopies } from './collection'
 import { fmtEur, loadLang, saveLang, t, type Lang } from './i18n'
 import { Dopamin } from './Dopamin'
@@ -69,7 +69,9 @@ import { downloadSharePng, renderDeckShareCanvas } from './deckScreenshot'
 import { Icon } from './Icon'
 import { sellText, stockCsv, wantsText, type CmLine } from './cardmarket'
 import { historyPoints, loadPriceHistory, type PriceHistoryFile } from './priceHistory'
-import { ValueHistory } from './ValueHistory'
+import { ValueHistory, type InvestRow } from './ValueHistory'
+import { CONDITION_FACTOR, cardEur, cardInvest, copyGroups, fitCopyBook, soldGroups, unitEur, type CopyBook, type CopyLot } from './copies'
+import { CopyEditor, MoneyInput, fmtSignedEur } from './CopyEditor'
 
 type Tab = 'collection' | 'catalog' | 'sales' | 'decks' | 'borrowed' | 'stores' | 'dopamin'
 
@@ -81,6 +83,11 @@ function uid() {
 const FOIL_ONLY_RARITIES = new Set(['Rare', 'Epic', 'Showcase', 'Ultimate Rare'])
 function isFoilOnly(c: Card) {
   return FOIL_ONLY_RARITIES.has(c.rarity || '') || !!(c.altArt || c.signed || c.overnumbered)
+}
+
+/** At least one foil copy (every copy of a foil only card is foil). */
+function hasFoilCopy(c: Card, o?: { qty: number; foil: number }) {
+  return (o?.foil || 0) > 0 || (isFoilOnly(c) && ownedQty(o) > 0)
 }
 
 /** Moves normal copies of foil only cards to foil. Returns the same object when nothing changes. */
@@ -660,7 +667,10 @@ export default function App() {
   const langMenuRef = useRef<HTMLDivElement | null>(null)
   const [catalog, setCatalog] = useState<Catalog | null>(null)
   const [error, setError] = useState<string | null>(null)
-  const [collection, setCollection] = useState<Collection>(loadCollection)
+  const [collection, setCollection] = useState<Collection>(() => { backupOnce(); return loadCollection() })
+  const [copies, setCopies] = useState<CopyBook>(loadCopies)
+  const [wishTargets, setWishTargets] = useState<Record<string, number>>(loadWishTargets)
+  const [alertsSeen, setAlertsSeen] = useState<Record<string, number>>(loadAlertsSeen)
   const [decks, setDecks] = useState<Deck[]>(loadDecks)
   const [borrowed, setBorrowed] = useState<BorrowedGroup[]>(loadBorrowed)
   const [activeBorrowedId, setActiveBorrowedId] = useState<string | null>(() => borrowed[0]?.id ?? null)
@@ -669,7 +679,7 @@ export default function App() {
   const [valueOpen, setValueOpen] = useState(false)
   const [priceHistory, setPriceHistory] = useState<PriceHistoryFile | null>(null)
   /** Cardmarket export dialog (wishlist wants text, sales list + CSV). */
-  const [cmExport, setCmExport] = useState<{ title: string; help: string; text: string; csv?: string } | null>(null)
+  const [cmExport, setCmExport] = useState<{ title: string; help: string; text: string; csv?: string; wants?: CmLine[] } | null>(null)
   const [cmCopied, setCmCopied] = useState(false)
   const [borrowImportText, setBorrowImportText] = useState('')
   const [borrowImportOpen, setBorrowImportOpen] = useState(false)
@@ -740,6 +750,7 @@ export default function App() {
   const [hideNexusNight, setHideNexusNight] = useState<boolean>(() => loadHideNexusNight())
   const [binderOwnedOnly, setBinderOwnedOnly] = useState(false)
   const [binderMissing, setBinderMissing] = useState(false)
+  const [binderMissingFoil, setBinderMissingFoil] = useState(false)
   const [binderRarity, setBinderRarity] = useState<string | null>(null)
   const [domainFilter, setDomainFilter] = useState<string[]>([])
   const [dragOverSection, setDragOverSection] = useState<DeckSection | null>(null)
@@ -793,6 +804,7 @@ export default function App() {
     }
     if (pending.kind === 'wish') {
       setWish((prev) => { const n = { ...prev }; delete n[pending.id]; return n })
+      dropWishTarget(pending.id)
       return
     }
     if (pending.kind === 'borrow') {
@@ -1005,6 +1017,9 @@ export default function App() {
   useEffect(() => saveBorrowed(borrowed), [borrowed])
   useEffect(() => saveWish(wish), [wish])
   useEffect(() => saveSales(saleList), [saleList])
+  useEffect(() => saveCopies(copies), [copies])
+  useEffect(() => saveWishTargets(wishTargets), [wishTargets])
+  useEffect(() => saveAlertsSeen(alertsSeen), [alertsSeen])
 
   const cards = catalog?.cards || []
   const sets = catalog?.sets || {}
@@ -1073,6 +1088,19 @@ export default function App() {
     setWish((prev) => foldFoilOnly(prev, byId))
   }, [byId, collection, wish])
 
+  function foilOnlyId(id: string) {
+    const c = byId.get(id)
+    return c ? isFoilOnly(c) : false
+  }
+
+  // Copy details follow the counts: sold or removed copies drop their details too.
+  // An empty collection is skipped so a failed load never wipes the details.
+  useEffect(() => {
+    if (!byId.size || Object.keys(collection).length === 0) return
+    setCopies((prev) => fitCopyBook(prev, collection, foilOnlyId))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [byId, collection])
+
   useEffect(() => {
     if (!cards.length) return
     setDecks((prev) => {
@@ -1132,14 +1160,47 @@ export default function App() {
     for (const [id, o] of Object.entries(collection)) {
       const p = priceBook.cards[id]
       if (!p) continue
-      const add = ownedLineEur(o, p)
+      const add = cardEur(copies[id], o, foilOnlyId(id), p)
       if (add > 0) {
         sum += add
         priced += 1
       }
     }
     return { sum, priced }
-  }, [collection, priceBook])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [collection, copies, priceBook, byId])
+
+  /** Collection with every copy weighted by its condition factor, for the value history line. */
+  const weightedCollection = useMemo(() => {
+    const out: Collection = {}
+    for (const [id, o] of Object.entries(collection)) {
+      if (!copies[id]) { out[id] = o; continue }
+      const w = { qty: 0, foil: 0 }
+      for (const g of copyGroups(copies[id], o, foilOnlyId(id))) w[g.foil ? 'foil' : 'qty'] += g.n * CONDITION_FACTOR[g.cond]
+      out[id] = w
+    }
+    return out
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [collection, copies, byId])
+
+  /** Purchase price vs. worth today, for copies with a purchase price. */
+  const invest = useMemo(() => {
+    let copiesN = 0
+    let paid = 0
+    let worth = 0
+    const rows: InvestRow[] = []
+    for (const [id, lots] of Object.entries(copies)) {
+      const card = byId.get(id)
+      if (!card || !lots.some((l) => l.buy != null)) continue
+      const r = cardInvest(lots, collection[id], isFoilOnly(card), priceBook?.cards[id])
+      if (!r.copies) continue
+      copiesN += r.copies
+      paid += r.paid
+      worth += r.worth
+      rows.push({ card, ...r })
+    }
+    return { copies: copiesN, paid, worth, rows }
+  }, [copies, collection, byId, priceBook])
 
   const pricePoints = useMemo(() => historyPoints(priceHistory, priceBook), [priceHistory, priceBook])
 
@@ -1149,19 +1210,28 @@ export default function App() {
     const rest = Object.keys(sets).filter((id) => !knownSet.has(id))
     let order = [...known, ...rest]
     if (hideNexusNight) order = order.filter((id) => !String(id).endsWith('-NN'))
-    const out: { id: string; name: string; total: number; owned: number; pct: number; eur: number | null }[] = []
+    const out: { id: string; name: string; total: number; owned: number; pct: number; eur: number | null; foilOwned: number; missingEur: number | null }[] = []
     for (const id of order) {
       const setCards = cards.filter((c) => c.set === id)
       let owned = 0
+      let foilOwned = 0
       let eur = 0
       let eurAny = false
+      let missingEur = 0
+      let missingAny = false
       for (const c of setCards) {
         const o = collection[c.id]
         const n = ownedQty(o)
-        if (n <= 0) continue
+        if (hasFoilCopy(c, o)) foilOwned += 1
+        if (n <= 0) {
+          // What it costs to finish the set: one copy of every missing card.
+          const u = unitEur(priceBook?.cards[c.id], isFoilOnly(c))
+          if (u != null) { missingEur += u; missingAny = true }
+          continue
+        }
         owned += 1
         if (!priceBook) continue
-        const add = ownedLineEur(o, priceBook.cards[c.id])
+        const add = cardEur(copies[c.id], o, isFoilOnly(c), priceBook.cards[c.id])
         if (add > 0) {
           eur += add
           eurAny = true
@@ -1175,10 +1245,12 @@ export default function App() {
         owned,
         pct: total ? Math.round((owned / total) * 100) : 0,
         eur: eurAny ? eur : null,
+        foilOwned,
+        missingEur: missingAny ? missingEur : null,
       })
     }
     return out
-  }, [cards, sets, collection, priceBook, hideNexusNight])
+  }, [cards, sets, collection, copies, priceBook, hideNexusNight])
 
   const binderCards = useMemo(() => {
     if (binderView == null) return [] as Card[]
@@ -1193,11 +1265,12 @@ export default function App() {
       const n = ownedQty(collection[c.id])
       if (binderOwnedOnly && n <= 0) return false
       if (binderMissing && n > 0) return false
+      if (binderMissingFoil && hasFoilCopy(c, collection[c.id])) return false
       if (binderRarity && (c.rarity || 'Other') !== binderRarity) return false
       return matchesSharedFilters(c, query)
     })
     return [...list].sort((a, b) => a.cn - b.cn || a.code.localeCompare(b.code))
-  }, [binderView, cards, collection, q, binderOwnedOnly, binderMissing, binderRarity, domainFilter, raritySigned, rarityOver, rarityPromo, rarityUltimate, abilityFilter, legendIds])
+  }, [binderView, cards, collection, q, binderOwnedOnly, binderMissing, binderMissingFoil, binderRarity, domainFilter, raritySigned, rarityOver, rarityPromo, rarityUltimate, abilityFilter, legendIds])
 
   const rarityBySet = useMemo(() => {
     const out: Record<string, { rarity: string; total: number; owned: number }[]> = {}
@@ -1231,6 +1304,90 @@ export default function App() {
     bump(id, field, delta, setWish)
   }
 
+  function dropWishTarget(id: string) {
+    setWishTargets((prev) => { if (!(id in prev)) return prev; const n = { ...prev }; delete n[id]; return n })
+  }
+
+  function setWishTarget(id: string, eur: number | null) {
+    if (eur == null || eur <= 0) dropWishTarget(id)
+    else setWishTargets((prev) => ({ ...prev, [id]: eur }))
+  }
+
+  /** Price per copy the wishlist entry is about: foil when only foil is wanted (or the card is foil only). */
+  function wishUnit(id: string) {
+    const c = byId.get(id)
+    const w = wish[id]
+    if (!c || !w) return null
+    return unitEur(priceBook?.cards[id], isFoilOnly(c) || ((w.foil || 0) > 0 && !(w.qty || 0)))
+  }
+
+  /** Wishlist cards at or below their target price, with the price now. */
+  const wishHits = useMemo(() => {
+    const m = new Map<string, number>()
+    if (!priceBook) return m
+    for (const [id, target] of Object.entries(wishTargets)) {
+      const u = wishUnit(id)
+      if (u != null && u <= target) m.set(id, u)
+    }
+    return m
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [wishTargets, wish, priceBook, byId])
+
+  /** Hits the user has not seen yet, or that got cheaper since. */
+  const newWishHits = useMemo(
+    () => [...wishHits].filter(([id, u]) => alertsSeen[id] == null || u < alertsSeen[id]),
+    [wishHits, alertsSeen],
+  )
+
+  // Seen prices of cards that went back above the target are forgotten, so the next drop alerts again.
+  useEffect(() => {
+    if (!priceBook || !byId.size) return
+    setAlertsSeen((prev) => {
+      const stale = Object.keys(prev).filter((id) => !wishHits.has(id))
+      if (!stale.length) return prev
+      const n = { ...prev }
+      for (const id of stale) delete n[id]
+      return n
+    })
+  }, [wishHits, priceBook, byId])
+
+  function markAlertsSeen() {
+    if (!newWishHits.length) return
+    setAlertsSeen((prev) => {
+      const n = { ...prev }
+      for (const [id, u] of wishHits) n[id] = u
+      return n
+    })
+  }
+
+  // One desktop notification per new hit. Waits a moment so the live prices can replace the cached ones first.
+  const notifiedRef = useRef(new Set<string>())
+  useEffect(() => {
+    const fresh = newWishHits.filter(([id, u]) => !notifiedRef.current.has(`${id}:${u}`))
+    if (!fresh.length || typeof Notification === 'undefined') return
+    const timer = window.setTimeout(() => {
+      for (const [id, u] of fresh) notifiedRef.current.add(`${id}:${u}`)
+      const names = fresh.map(([id]) => { const c = byId.get(id); return c ? displayCardName(c) : id })
+      const body = fresh.length === 1
+        ? t(lang, 'alert.notifyOne', { name: names[0], eur: fmtEur(lang, fresh[0][1]) ?? '' })
+        : t(lang, 'alert.notifyMany', { n: fresh.length, names: names.slice(0, 3).join(', ') + (names.length > 3 ? ' …' : '') })
+      try {
+        const note = new Notification(t(lang, 'alert.notifyTitle'), { body, icon: publicAsset('icon.png'), silent: false })
+        note.onclick = () => { window.focus(); setTab('collection'); setBinderView(null); setValueOpen(false); setWishOpen(true) }
+      } catch {
+        // No notifications (permission or platform): the in-app banner still shows.
+      }
+    }, 4000)
+    return () => window.clearTimeout(timer)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [newWishHits])
+
+  // Opening the wishlist counts as seeing its alerts.
+  useEffect(() => {
+    if (wishOpen) markAlertsSeen()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [wishOpen, newWishHits])
+
   /** Got it: wanted copies go into the collection, entry leaves the wishlist. */
   function gotWish(id: string) {
     const w = wish[id]
@@ -1238,6 +1395,7 @@ export default function App() {
     bump(id, 'qty', w.qty || 0)
     bump(id, 'foil', w.foil || 0)
     setWish((prev) => { const n = { ...prev }; delete n[id]; return n })
+    dropWishTarget(id)
   }
 
   function bump(id: string, field: 'qty' | 'foil', delta: number, set = setCollection) {
@@ -1514,11 +1672,52 @@ export default function App() {
     setCmExport({ title: t(lang, 'cm.wantsTitle'), help: t(lang, 'cm.wantsHelp'), text: wantsText(lines) })
   }
 
+  /** Missing cards of the open set (current rarity filter), as a Cardmarket wants list. */
+  function binderMissingCards(foil: boolean) {
+    if (!binderView || binderView === 'owned') return []
+    return cards
+      .filter((c) => c.set === binderView && (!binderRarity || (c.rarity || 'Other') === binderRarity))
+      .filter((c) => (foil ? !hasFoilCopy(c, collection[c.id]) : ownedQty(collection[c.id]) <= 0))
+      .sort((a, b) => a.cn - b.cn || a.code.localeCompare(b.code))
+  }
+
+  function openMissingExport() {
+    const foil = binderMissingFoil
+    const list = binderMissingCards(foil)
+    const lines: CmLine[] = list.map((card) => {
+      const asFoil = foil || isFoilOnly(card)
+      return { card, qty: asFoil ? 0 : 1, foil: asFoil ? 1 : 0, price: priceBook?.cards[card.id] }
+    })
+    const cost = lines.reduce((s, l) => s + (unitEur(l.price, l.foil > 0) ?? 0), 0)
+    setCmCopied(false)
+    setCmExport({
+      title: t(lang, foil ? 'missing.titleFoil' : 'missing.title', { set: sets[binderView || ''] || binderView || '' }),
+      help: t(lang, 'missing.help', { n: lines.length, eur: fmtEur(lang, cost) ?? '' }),
+      text: wantsText(lines),
+      wants: lines.length ? lines : undefined,
+    })
+  }
+
+  /** Puts the missing cards on the wishlist (one copy each; foil when it is about foils). */
+  function missingToWish(lines: CmLine[]) {
+    setWish((prev) => {
+      const n = { ...prev }
+      for (const l of lines) {
+        const cur = n[l.card.id] || { qty: 0, foil: 0 }
+        if (l.foil > 0) n[l.card.id] = { ...cur, foil: Math.max(cur.foil, 1) }
+        else n[l.card.id] = { ...cur, qty: Math.max(cur.qty, 1) }
+      }
+      return n
+    })
+  }
+
   function openSellExport() {
     const lines: CmLine[] = Object.entries(saleList).flatMap(([id, n]) => {
       const card = byId.get(id)
       if (!card) return []
-      return [{ card, qty: isFoilOnly(card) ? 0 : n, foil: isFoilOnly(card) ? n : 0, price: priceBook?.cards[id] }]
+      const foil = isFoilOnly(card)
+      const groups = soldGroups(copies[id], collection[id], foil, foil, n)
+      return [{ card, qty: foil ? 0 : n, foil: foil ? n : 0, price: priceBook?.cards[id], groups }]
     })
     setCmCopied(false)
     setCmExport({
@@ -2430,6 +2629,15 @@ export default function App() {
     setCardLightbox(c)
   }
 
+  function setCardLots(id: string, lots: CopyLot[]) {
+    setCopies((prev) => {
+      const n = { ...prev }
+      if (lots.length) n[id] = lots
+      else delete n[id]
+      return n
+    })
+  }
+
   function closeCardLightbox() {
     setCardLightbox(null)
   }
@@ -2708,6 +2916,9 @@ export default function App() {
             <button key={id} type="button" className={`side-item ${tab === id ? 'active' : ''}`} aria-current={tab === id ? 'page' : undefined} onClick={() => setTab(id)}>
               <Icon name={icon} />
               <span className="side-label">{t(lang, key)}</span>
+              {id === 'collection' && newWishHits.length > 0 && (
+                <span className="side-badge" title={t(lang, 'alert.notifyTitle')}>{newWishHits.length}</span>
+              )}
             </button>
           ))}
         </nav>
@@ -2863,16 +3074,34 @@ export default function App() {
                 {bulkReport && <p className="help">{bulkReport}</p>}
               </div>
             )}
+            {newWishHits.length > 0 && (
+              <div className="deck-notice alert-notice" role="status">
+                <span><Icon name="bell" /> {t(lang, newWishHits.length === 1 ? 'alert.bannerOne' : 'alert.bannerMany', { n: newWishHits.length })}</span>
+                <button type="button" className="btn small" onClick={() => { setWishOpen(true); setQ(''); setSetFilter('') }}>{t(lang, 'alert.show')}</button>
+              </div>
+            )}
+            {invest.copies > 0 && (
+              <button type="button" className="invest-strip" onClick={() => setValueOpen(true)} title={t(lang, 'value.open')}>
+                <Icon name="tag" />
+                <span>{t(lang, 'invest.strip', { n: invest.copies, paid: fmtEur(lang, invest.paid) ?? '', worth: fmtEur(lang, invest.worth) ?? '' })}</span>
+                <b className={invest.worth - invest.paid >= 0 ? 'value-up' : 'value-down'}>{fmtSignedEur(lang, invest.worth - invest.paid)}</b>
+              </button>
+            )}
             <div className="binder-grid">
               {setProgress.map((s) => (
-                <button key={s.id} type="button" className="binder-tile" onClick={() => { setBinderView(s.id); setBinderRarity(null); setQ(''); setBinderOwnedOnly(false); setBinderMissing(false) }}>
+                <button key={s.id} type="button" className="binder-tile" onClick={() => { setBinderView(s.id); setBinderRarity(null); setQ(''); setBinderOwnedOnly(false); setBinderMissing(false); setBinderMissingFoil(false) }}>
                   <div className="binder-tile-head">
                     <div className="binder-tile-meta">
                       <div className="binder-code">{s.id}</div>
                       <div className="binder-name">{s.name}</div>
                       <div className="binder-progress">{s.owned} / {s.total} ({s.pct}%)</div>
                       <div className="binder-bar"><span style={{ width: `${s.pct}%` }} /></div>
+                      <div className="binder-progress binder-foil">{t(lang, 'collection.foils', { owned: s.foilOwned, total: s.total })}</div>
+                      <div className="binder-bar binder-bar-foil"><span style={{ width: `${s.total ? Math.round((s.foilOwned / s.total) * 100) : 0}%` }} /></div>
                       {s.eur != null && <div className="binder-eur">~{fmtEur(lang, s.eur)}</div>}
+                      {s.missingEur != null && s.owned < s.total && (
+                        <div className="binder-progress">{t(lang, 'collection.missingEur', { eur: fmtEur(lang, s.missingEur) ?? '' })}</div>
+                      )}
                     </div>
                     {SET_ART_IDS.has(s.id) && (
                       <img
@@ -2902,6 +3131,7 @@ export default function App() {
                             setQ('')
                             setBinderOwnedOnly(false)
                             setBinderMissing(false)
+                            setBinderMissingFoil(false)
                           }}
                           onKeyDown={(e) => {
                             if (e.key !== 'Enter' && e.key !== ' ') return
@@ -2912,6 +3142,7 @@ export default function App() {
                             setQ('')
                             setBinderOwnedOnly(false)
                             setBinderMissing(false)
+                            setBinderMissingFoil(false)
                           }}
                         >
                           <span className="rarity-label">{row.rarity}</span>
@@ -2923,7 +3154,7 @@ export default function App() {
                   </div>
                 </button>
               ))}
-              <button type="button" className="binder-tile binder-tile-owned" onClick={() => { setBinderView('owned'); setBinderRarity(null); setQ(''); setBinderOwnedOnly(false); setBinderMissing(false) }}>
+              <button type="button" className="binder-tile binder-tile-owned" onClick={() => { setBinderView('owned'); setBinderRarity(null); setQ(''); setBinderOwnedOnly(false); setBinderMissing(false); setBinderMissingFoil(false) }}>
                 <div className="binder-code">ALL</div>
                 <div className="binder-name">{t(lang, 'collection.allOwned')}</div>
                 <div className="binder-progress">{totals.unique} Unique | {totals.copies} {t(lang, 'bulk.copies')}</div>
@@ -2939,6 +3170,8 @@ export default function App() {
             points={pricePoints}
             collection={collection}
             byId={byId}
+            invest={invest}
+            weighted={weightedCollection}
             onBack={() => setValueOpen(false)}
             onOpenCard={openCardLightbox}
           />
@@ -2958,6 +3191,7 @@ export default function App() {
                   <span className="deck-list-count">{ids.length} {cardWord(lang, ids.length)}</span>
                   <span style={{ flex: 1 }} />
                   <span className="deck-list-count">{t(lang, 'wish.total', { eur: fmtEur(lang, total) ?? '' })}</span>
+                  {wishHits.size > 0 && <span className="deck-list-count alert-count"><Icon name="bell" /> {t(lang, 'alert.count', { n: wishHits.size })}</span>}
                   <button type="button" className="btn" disabled={ids.length === 0} onClick={openWantsExport}><Icon name="external-link" />{t(lang, 'cm.wantsBtn')}</button>
                   {poolToggle()}
                 </div>
@@ -2969,6 +3203,13 @@ export default function App() {
                       if (!c) return null
                       return (
                         <CardTile key={id} c={c} o={wish[id]} lang={lang} priceEntry={priceBook?.cards[id]} variant="catalog" onOpen={openCardLightbox} onBump={bumpWish}>
+                          <div className={`wish-alert${wishHits.has(id) ? ' hit' : ''}`}>
+                            <span className="wish-alert-label"><Icon name="bell" size={13} />{t(lang, 'alert.below')}</span>
+                            <MoneyInput lang={lang} value={wishTargets[id] ?? null} label={t(lang, 'alert.target')} placeholder={t(lang, 'alert.targetPh')} onChange={(v) => setWishTarget(id, v)} />
+                          </div>
+                          {wishHits.has(id) && (
+                            <div className="wish-alert-hit">{t(lang, 'alert.hit', { eur: fmtEur(lang, wishHits.get(id)) ?? '' })}</div>
+                          )}
                           <div className="row">
                             <button type="button" className="btn small positive" onClick={() => gotWish(id)}><Icon name="check" />{t(lang, 'wish.got')}</button>
                             <button
@@ -2994,6 +3235,13 @@ export default function App() {
                       <option key={sid} value={sid}>{name}</option>
                     ))}
                   </select>
+                  <button
+                    type="button"
+                    className="btn icon ghost"
+                    title={t(lang, 'pool.hide')}
+                    aria-label={t(lang, 'pool.hide')}
+                    onClick={() => { localStorage.setItem('rb.poolHidden', '1'); setPoolHidden(true) }}
+                  ><Icon name="x" /></button>
                 </div>
                 <div className="toolbar">
                   <RarityMenu
@@ -3060,7 +3308,13 @@ export default function App() {
                     : `${activeBinderProgress?.id || binderView} - ${activeBinderProgress?.name || sets[binderView] || binderView}`}
                 </div>
                 {activeBinderProgress && (
-                  <div className="sub">{activeBinderProgress.owned}/{activeBinderProgress.total} ({activeBinderProgress.pct}%)</div>
+                  <div className="sub">
+                    {activeBinderProgress.owned}/{activeBinderProgress.total} ({activeBinderProgress.pct}%)
+                    {' · '}{t(lang, 'collection.foils', { owned: activeBinderProgress.foilOwned, total: activeBinderProgress.total })}
+                    {activeBinderProgress.missingEur != null && activeBinderProgress.owned < activeBinderProgress.total && (
+                      <>{' · '}{t(lang, 'collection.missingEur', { eur: fmtEur(lang, activeBinderProgress.missingEur) ?? '' })}</>
+                    )}
+                  </div>
                 )}
                 {binderView && binderView !== 'owned' && (rarityBySet[binderView] || []).length > 0 && (
                   <div className="rarity-block rarity-block-inline">
@@ -3104,7 +3358,7 @@ export default function App() {
               <button
                 type="button"
                 className={`chip ${binderOwnedOnly ? 'active' : ''}`}
-                onClick={() => { setBinderOwnedOnly((v) => !v); if (!binderOwnedOnly) setBinderMissing(false) }}
+                onClick={() => { setBinderOwnedOnly((v) => !v); if (!binderOwnedOnly) { setBinderMissing(false); setBinderMissingFoil(false) } }}
               >
                 <Icon name="check" />{t(lang, 'collection.ownedOnly')}
               </button>
@@ -3112,9 +3366,23 @@ export default function App() {
                 <button
                   type="button"
                   className={`chip ${binderMissing ? 'active' : ''}`}
-                  onClick={() => { setBinderMissing((v) => !v); if (!binderMissing) setBinderOwnedOnly(false) }}
+                  onClick={() => { setBinderMissing((v) => !v); if (!binderMissing) { setBinderOwnedOnly(false); setBinderMissingFoil(false) } }}
                 >
                   <Icon name="list-x" />{t(lang, 'collection.missing')}
+                </button>
+              )}
+              {binderView !== 'owned' && (
+                <button
+                  type="button"
+                  className={`chip ${binderMissingFoil ? 'active' : ''}`}
+                  onClick={() => { setBinderMissingFoil((v) => !v); if (!binderMissingFoil) { setBinderOwnedOnly(false); setBinderMissing(false) } }}
+                >
+                  <Icon name="list-x" />{t(lang, 'collection.missingFoil')}
+                </button>
+              )}
+              {binderView !== 'owned' && (
+                <button type="button" className="btn" onClick={openMissingExport} title={t(lang, 'missing.btnTitle')}>
+                  <Icon name="external-link" />{t(lang, binderMissingFoil ? 'missing.btnFoil' : 'missing.btn')}
                 </button>
               )}
               <RarityMenu
@@ -4144,6 +4412,14 @@ export default function App() {
                   <Icon name="file-down" />{t(lang, 'cm.csv')}
                 </button>
               )}
+              {cmExport.wants && cmExport.wants.length > 0 && (
+                <button type="button" className="btn small" onClick={() => { missingToWish(cmExport.wants!); setCmExport({ ...cmExport, wants: [] }) }}>
+                  <Icon name="heart" />{t(lang, 'missing.toWish')}
+                </button>
+              )}
+              {cmExport.wants && cmExport.wants.length === 0 && (
+                <span className="sub" style={{ alignSelf: 'center' }}><Icon name="check" /> {t(lang, 'missing.added')}</span>
+              )}
               <button type="button" className="btn small primary" onClick={() => void copyCmExport()}>
                 <Icon name={cmCopied ? 'check' : 'copy'} />{cmCopied ? t(lang, 'decks.copied') : t(lang, 'decks.copy')}
               </button>
@@ -4285,6 +4561,21 @@ export default function App() {
               <button type="button" className={`chip ${wish[cardLightbox.id] ? 'active' : ''}`} onClick={() => bumpWish(cardLightbox.id, 'qty', 1)}>
                 <Icon name="heart" />{t(lang, 'wish.add')}{wish[cardLightbox.id] ? ` (${wish[cardLightbox.id].qty + wish[cardLightbox.id].foil})` : ''}
               </button>
+              {wish[cardLightbox.id] && (
+                <div className={`wish-alert${wishHits.has(cardLightbox.id) ? ' hit' : ''}`}>
+                  <span className="wish-alert-label"><Icon name="bell" size={13} />{t(lang, 'alert.below')}</span>
+                  <MoneyInput lang={lang} value={wishTargets[cardLightbox.id] ?? null} label={t(lang, 'alert.target')} placeholder={t(lang, 'alert.targetPh')} onChange={(v) => setWishTarget(cardLightbox.id, v)} />
+                  {wishHits.has(cardLightbox.id) && <span className="wish-alert-hit">{t(lang, 'alert.hit', { eur: fmtEur(lang, wishHits.get(cardLightbox.id)) ?? '' })}</span>}
+                </div>
+              )}
+              <CopyEditor
+                lang={lang}
+                owned={collection[cardLightbox.id]}
+                lots={copies[cardLightbox.id] || []}
+                foilOnly={isFoilOnly(cardLightbox)}
+                price={priceBook?.cards[cardLightbox.id]}
+                onChange={(lots) => setCardLots(cardLightbox.id, lots)}
+              />
               <p className="help" style={{ marginTop: 4 }}>{t(lang, rulesSource === 'catalog' ? 'card.enlargeHintCatalog' : 'card.enlargeHint')}</p>
               <dl className="card-lightbox-dl">
                 <div><dt>{t(lang, 'card.types')}</dt><dd>{(cardLightbox.types || []).join(', ') || '—'}</dd></div>
