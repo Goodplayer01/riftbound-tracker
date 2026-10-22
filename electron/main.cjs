@@ -316,7 +316,7 @@ ipcMain.handle('net:fetchImageDataUrl', async (_e, url) => {
     const res = await fetch(url, {
       headers: {
         Accept: 'image/*,*/*',
-        'User-Agent': 'DeakrixRiftboundTracker/' + app.getVersion() + ' (card OCR)',
+        'User-Agent': 'DeakrixRiftboundTracker/' + app.getVersion() + ' (card images)',
       },
       signal: AbortSignal.timeout(15000),
     })

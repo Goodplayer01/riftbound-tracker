@@ -11,9 +11,7 @@ import {
   keywordsForCard,
   setCardKeywordBook,
   type CardKeywordBook,
-  type KeywordId,
 } from './keywords'
-import { ocrCardText } from './ocr'
 import { parseBulkTokens, resolveToken } from './parseBulk'
 import {
   SECTION_CAPS,
@@ -207,7 +205,7 @@ function ZoomMark({ title, onOpen, tiny }: { title: string; onOpen: () => void; 
   )
 }
 
-function DeckThumb({ src, onOpen, openTitle, zoomIcon, lg }: { src?: string | null; onOpen?: () => void; openTitle?: string; zoomIcon?: boolean; lg?: boolean }) {
+function DeckThumb({ cardId, src, onOpen, openTitle, zoomIcon, lg }: { cardId?: string; src?: string | null; onOpen?: () => void; openTitle?: string; zoomIcon?: boolean; lg?: boolean }) {
   const zoom = onOpen ? ' art-zoomable' : ''
   const size = lg ? ' deck-thumb-lg' : ''
   const open = onOpen
@@ -216,6 +214,7 @@ function DeckThumb({ src, onOpen, openTitle, zoomIcon, lg }: { src?: string | nu
         title: openTitle,
         'aria-label': openTitle,
         onClick: (e: ReactMouseEvent) => { e.stopPropagation(); onOpen() },
+        'data-card-id': cardId,
       }
     : {}
   const node = src ? (
@@ -318,6 +317,9 @@ function ownedLineEur(o: { qty?: number; foil?: number } | undefined, p?: PriceE
   if (foil > 0 && foilUnit != null) add += foil * foilUnit
   return add
 }
+
+/** Official card errata, baked by scripts/bake_errata.mjs. */
+type CardErrata = { newText: string; oldText: string; source: string }
 
 function openCm(p?: PriceEntry | null) {
   const raw = p?.cmUrl
@@ -588,7 +590,7 @@ function CardTile({
   const foilOnly = isFoilOnly(c)
   const ownedClass = variant === 'binder' ? (n ? 'owned' : 'missing') : (n ? 'owned' : '')
   return (
-    <article className={`card ${ownedClass}${c.signed || c.overnumbered ? ' shimmer' : ''}`}>
+    <article className={`card ${ownedClass}${c.signed || c.overnumbered ? ' shimmer' : ''}`} data-card-id={c.id}>
       <div
         className="art art-zoomable"
         style={{ backgroundImage: c.image ? `url(${c.image})` : undefined }}
@@ -765,16 +767,15 @@ export default function App() {
   const [cardPreview, setCardPreview] = useState<{ src: string; x: number; y: number } | null>(null)
   const [cardLightbox, setCardLightbox] = useState<Card | null>(null)
   const [bfTurn, setBfTurn] = useState(false)
+  /** Lightbox art is hidden until fully loaded, so a half drawn PNG never shows. */
+  const [artReady, setArtReady] = useState(false)
+  const [lbNav, setLbNav] = useState<{ prev?: Card; next?: Card }>({})
   const [clearSec, setClearSec] = useState<DeckSection | null>(null)
   const [deckUndoOn, setDeckUndoOn] = useState(false)
   const [borrowUndoOn, setBorrowUndoOn] = useState(false)
   const [deckConfirm, setDeckConfirm] = useState<null | { kind: 'all' } | { kind: 'one'; id: string; name: string } | { kind: 'borrow'; id: string; name: string } | { kind: 'borrowAll' } | { kind: 'wish'; id: string; name: string }>(null)
-  const [kwExpanded, setKwExpanded] = useState<KeywordId | null>(null)
-  const [ocrText, setOcrText] = useState<string | null>(null)
-  const [ocrLoading, setOcrLoading] = useState(false)
-  const [ocrEmpty, setOcrEmpty] = useState(false)
-  /** 'catalog' = baked Riot rulesText; 'ocr' = tesseract fallback */
-  const [rulesSource, setRulesSource] = useState<'catalog' | 'ocr' | null>(null)
+  /** Official errata by lower case "name" or "name, subtitle" (public/card-errata.json). */
+  const [errata, setErrata] = useState<Record<string, CardErrata>>({})
   const [appVersion, setAppVersion] = useState('')
   const [updateInfo, setUpdateInfo] = useState<{ status: string; version?: string; message?: string; percent?: number } | null>(null)
   const [isFullScreen, setIsFullScreen] = useState(false)
@@ -1044,6 +1045,10 @@ export default function App() {
       .then((r) => (r.ok ? r.json() : null))
       .then((data: CardKeywordBook | null) => { if (data?.byCardId) setCardKeywordBook(data) })
       .catch(() => {})
+    fetch(new URL('card-errata.json', window.location.href))
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data: { byName?: Record<string, CardErrata> } | null) => { if (data?.byName) setErrata(data.byName) })
+      .catch(() => {})
   }, [])
 
   useEffect(() => saveCollection(collection), [collection])
@@ -1058,6 +1063,9 @@ export default function App() {
   const cards = catalog?.cards || []
   const sets = catalog?.sets || {}
   const priceBook = useMemo(() => zeroPlainRunes(rawPriceBook, cards), [rawPriceBook, cards])
+  // Units are errata'd as "Name, Subtitle"; spells carry a champion subtitle but are listed by name.
+  const errataFor = (c: Card): CardErrata | undefined =>
+    (c.subtitle ? errata[`${c.name}, ${c.subtitle}`.toLowerCase()] : undefined) || errata[c.name.toLowerCase()]
   const legendIds = useMemo(() => legendIdentityByName(cards, priceBook), [cards, priceBook])
   const allTypes = useMemo(() => {
     const s = new Set<string>()
@@ -2254,7 +2262,7 @@ export default function App() {
                 onMouseMove={(e) => showCardPreview(e, c.image)}
                 onMouseLeave={hideCardPreview}
               >
-                <DeckThumb src={c.image} onOpen={() => openCardLightbox(c)} openTitle={t(lang, 'card.enlarge')} zoomIcon />
+                <DeckThumb cardId={c.id} src={c.image} onOpen={() => openCardLightbox(c)} openTitle={t(lang, 'card.enlarge')} zoomIcon />
                 <div className="grow">
                   <div className="name-with-ban">
                     <button
@@ -2611,6 +2619,14 @@ export default function App() {
   useEffect(() => {
     if (!cardLightbox && !clearSec && deckExportText == null && !sharePreview && !cmExport) return
     const onKey = (e: KeyboardEvent) => {
+      const onTop = cmExport || sharePreview || deckExportText != null || clearSec
+      if ((e.key === 'ArrowLeft' || e.key === 'ArrowRight') && cardLightbox && !onTop) {
+        if ((e.target as HTMLElement).closest('input, textarea, select')) return
+        e.preventDefault()
+        const to = e.key === 'ArrowRight' ? lbNav.next : lbNav.prev
+        if (to) openCardLightbox(to)
+        return
+      }
       if (e.key !== 'Escape') return
       if (cmExport) setCmExport(null)
       else if (sharePreview) setSharePreview(null)
@@ -2620,73 +2636,30 @@ export default function App() {
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [cardLightbox, clearSec, deckExportText, sharePreview, cmExport])
-
-  useEffect(() => {
-    if (!cardLightbox) {
-      setOcrText(null)
-      setOcrLoading(false)
-      setOcrEmpty(false)
-      setRulesSource(null)
-      return
-    }
-    const baked = (cardLightbox.rulesText || '').trim()
-    if (baked) {
-      setOcrLoading(false)
-      setOcrText(baked)
-      setOcrEmpty(false)
-      setRulesSource('catalog')
-      return
-    }
-    // Runes / blank official text: don't OCR empty text boxes into gibberish
-    const types = cardLightbox.types || []
-    const runeOnly = types.length > 0 && types.every((t) => t === 'Rune')
-    if (runeOnly) {
-      setOcrLoading(false)
-      setOcrText(null)
-      setOcrEmpty(true)
-      setRulesSource(null)
-      return
-    }
-    let cancelled = false
-    const cardId = cardLightbox.id
-    const image = cardLightbox.image
-    if (!image) {
-      setOcrLoading(false)
-      setOcrText(null)
-      setOcrEmpty(true)
-      setRulesSource(null)
-      return
-    }
-    setRulesSource('ocr')
-    setOcrLoading(true)
-    setOcrText(null)
-    setOcrEmpty(false)
-    void ocrCardText(cardId, image).then((res) => {
-      if (cancelled) return
-      setOcrLoading(false)
-      setOcrText(res.text || null)
-      setOcrEmpty(res.empty || !res.text)
-    }).catch(() => {
-      if (cancelled) return
-      setOcrLoading(false)
-      setOcrText(null)
-      setOcrEmpty(true)
-    })
-    return () => { cancelled = true }
-  }, [cardLightbox])
+  }, [cardLightbox, clearSec, deckExportText, sharePreview, cmExport, lbNav])
 
   function openCardLightbox(c: Card) {
     setCardPreview(null)
-    setKwExpanded(null)
-    setOcrText(null)
-    setOcrEmpty(false)
-    setRulesSource(null)
     setBfTurn(false)
-    const hasBaked = !!(c.rulesText && c.rulesText.trim())
-    setOcrLoading(!hasBaked && !!c.image)
+    setArtReady(false)
     setCardLightbox(c)
   }
+
+  /**
+   * Previous/next card of the list the open card sits in: every card opener carries
+   * data-card-id, and the list is the closest ancestor that holds more than one.
+   */
+  useEffect(() => {
+    if (!cardLightbox) return setLbNav({})
+    const outside = (el: Element) => !el.closest('.card-lightbox')
+    const self = [...document.querySelectorAll(`[data-card-id="${CSS.escape(cardLightbox.id)}"]`)].find(outside)
+    let box = self?.parentElement
+    while (box && box.querySelectorAll('[data-card-id]').length < 2) box = box.parentElement
+    if (!box) return setLbNav({})
+    const ids = [...new Set([...box.querySelectorAll<HTMLElement>('[data-card-id]')].filter(outside).map((el) => el.dataset.cardId))]
+    const i = ids.indexOf(cardLightbox.id)
+    setLbNav({ prev: byId.get(ids[i - 1] || ''), next: byId.get(ids[i + 1] || '') })
+  }, [cardLightbox, byId])
 
   function setCardLots(id: string, lots: CopyLot[]) {
     setCopies((prev) => {
@@ -3319,7 +3292,7 @@ export default function App() {
                       onMouseMove={(e) => showCardPreview(e, c.image)}
                       onMouseLeave={hideCardPreview}
                     >
-                      <DeckThumb src={c.image} onOpen={() => openCardLightbox(c)} openTitle={t(lang, 'card.enlarge')} />
+                      <DeckThumb cardId={c.id} src={c.image} onOpen={() => openCardLightbox(c)} openTitle={t(lang, 'card.enlarge')} />
                       <div className="grow">
                         <div className="name-with-ban">
                           <button
@@ -3623,7 +3596,7 @@ export default function App() {
                       onMouseMove={(e) => showCardPreview(e, c.image)}
                       onMouseLeave={hideCardPreview}
                     >
-                      <DeckThumb src={c.image} onOpen={() => openCardLightbox(c)} openTitle={t(lang, 'card.enlarge')} zoomIcon />
+                      <DeckThumb cardId={c.id} src={c.image} onOpen={() => openCardLightbox(c)} openTitle={t(lang, 'card.enlarge')} zoomIcon />
                       <div className="grow">
                         <button
                           type="button"
@@ -3879,7 +3852,7 @@ export default function App() {
                       onMouseMove={(e) => showCardPreview(e, c.image)}
                       onMouseLeave={hideCardPreview}
                     >
-                      <DeckThumb src={c.image} onOpen={() => openCardLightbox(c)} openTitle={t(lang, 'card.enlarge')} />
+                      <DeckThumb cardId={c.id} src={c.image} onOpen={() => openCardLightbox(c)} openTitle={t(lang, 'card.enlarge')} />
                       <div className="grow">
                         <div className="name-with-ban">
                           <button
@@ -4073,7 +4046,7 @@ export default function App() {
                                   onMouseMove={(e) => showCardPreview(e, img)}
                                   onMouseLeave={hideCardPreview}
                                 >
-                                  <DeckThumb src={img} onOpen={c ? () => openCardLightbox(c) : undefined} openTitle={t(lang, 'card.enlarge')} zoomIcon />
+                                  <DeckThumb cardId={c?.id} src={img} onOpen={c ? () => openCardLightbox(c) : undefined} openTitle={t(lang, 'card.enlarge')} zoomIcon />
                                   <div className="grow">
                                     <button
                                       type="button"
@@ -4174,7 +4147,7 @@ export default function App() {
                         onMouseMove={(e) => showCardPreview(e, c.image)}
                         onMouseLeave={hideCardPreview}
                       >
-                        <DeckThumb src={c.image} onOpen={() => openCardLightbox(c)} openTitle={t(lang, 'card.enlarge')} zoomIcon />
+                        <DeckThumb cardId={c.id} src={c.image} onOpen={() => openCardLightbox(c)} openTitle={t(lang, 'card.enlarge')} zoomIcon />
                         <div className="grow">
                           <div className="name-with-ban">
                             <button
@@ -4538,6 +4511,21 @@ export default function App() {
           aria-label={t(lang, 'card.enlarge')}
           onClick={closeCardLightbox}
         >
+          {(lbNav.prev || lbNav.next) && (['prev', 'next'] as const).map((dir) => (
+            <button
+              key={dir}
+              type="button"
+              className={`card-lightbox-nav ${dir}`}
+              disabled={!lbNav[dir]}
+              title={t(lang, `card.${dir}`)}
+              aria-label={t(lang, `card.${dir}`)}
+              onClick={(e) => {
+                e.stopPropagation()
+                const to = lbNav[dir]
+                if (to) openCardLightbox(to)
+              }}
+            ><Icon name={dir === 'prev' ? 'chevron-left' : 'chevron-right'} size={22} /></button>
+          ))}
           <div className="card-lightbox-inner" onClick={(e) => e.stopPropagation()}>
             <button
               type="button"
@@ -4546,13 +4534,17 @@ export default function App() {
               title={t(lang, 'card.enlargeClose')}
               aria-label={t(lang, 'card.enlargeClose')}
             ><Icon name="x" size={18} /></button>
-            <div className="card-lightbox-art">
+            <div className="card-lightbox-left">
+            <div className={`card-lightbox-art${artReady ? '' : ' loading'}`}>
               {cardLightbox.image ? (
                 <img
+                  key={cardLightbox.id}
                   src={cardLightbox.image}
                   alt={displayName(cardLightbox)}
                   className={bfTurn ? 'bf-on' : undefined}
+                  onError={() => setArtReady(true)}
                   onLoad={(e) => {
+                    setArtReady(true)
                     const im = e.currentTarget
                     const types = cardLightbox.types || []
                     const supers = cardLightbox.superTypes || []
@@ -4563,6 +4555,26 @@ export default function App() {
               ) : (
                 <div className="card-lightbox-noart">{t(lang, 'card.noArt')}</div>
               )}
+            </div>
+            {(() => {
+              const e = errataFor(cardLightbox)
+              if (!e) return null
+              return (
+                <div className="card-errata">
+                  <div className="card-errata-head">
+                    <strong>{t(lang, 'card.errata')}</strong>
+                    <button type="button" className="card-errata-src" onClick={() => openLink(e.source)}>
+                      {t(lang, 'card.errataSource')}<Icon name="external-link" size={12} />
+                    </button>
+                  </div>
+                  <p className="card-errata-text"><RulesText text={e.newText} /></p>
+                  <details className="card-errata-old">
+                    <summary>{t(lang, 'card.errataPrinted')}</summary>
+                    <p className="card-errata-text"><RulesText text={e.oldText} /></p>
+                  </details>
+                </div>
+              )
+            })()}
             </div>
             <div className="card-lightbox-meta">
               <div className="name-with-ban">
@@ -4579,6 +4591,22 @@ export default function App() {
                 <BanBadge status={banStatus(cardLightbox)} lang={lang} />
               </div>
               <p className="sub">{cardLightbox.code} · {cardLightbox.setName || cardLightbox.set}</p>
+              <div className="card-facts">
+                {cardLightbox.energy != null && (
+                  <span className="card-fact" title={t(lang, 'card.energy')}><RulesText text={`[${cardLightbox.energy}]`} /></span>
+                )}
+                {cardLightbox.might != null && (
+                  <span className="card-fact" title={t(lang, 'card.might')}><RulesText text={`[S] ${cardLightbox.might}`} /></span>
+                )}
+                {(cardLightbox.domains || []).map((d) => (
+                  <span key={d} className="card-fact" title={t(lang, 'card.domains')}>
+                    {RUNE_ICON[d === 'Chaos' ? 'C' : d] && <RulesText text={`[${d === 'Chaos' ? 'C' : d}]`} />}{d}
+                  </span>
+                ))}
+                {[...(cardLightbox.types || []), cardLightbox.rarity].filter(Boolean).map((x) => (
+                  <span key={x} className="card-fact">{x}</span>
+                ))}
+              </div>
               {(() => {
                 const pl = priceLabel(lang, priceBook?.cards[cardLightbox.id])
                 const foilOnly = isFoilOnly(cardLightbox)
@@ -4614,66 +4642,23 @@ export default function App() {
                 price={priceBook?.cards[cardLightbox.id]}
                 onChange={(lots) => setCardLots(cardLightbox.id, lots)}
               />
-              <dl className="card-lightbox-dl">
-                <div><dt>{t(lang, 'card.types')}</dt><dd>{(cardLightbox.types || []).join(', ') || '—'}</dd></div>
-                <div><dt>{t(lang, 'card.domains')}</dt><dd>{(cardLightbox.domains || []).join(', ') || '—'}</dd></div>
-                <div><dt>{t(lang, 'card.rarity')}</dt><dd>{cardLightbox.rarity || '—'}</dd></div>
-                <div><dt>{t(lang, 'card.energy')}</dt><dd>{cardLightbox.energy != null ? cardLightbox.energy : '—'}</dd></div>
-                <div><dt>{t(lang, 'card.might')}</dt><dd>{cardLightbox.might != null ? cardLightbox.might : '—'}</dd></div>
-              </dl>
-              <div className="card-ocr">
-                <div className="card-ocr-head">
-                  <strong>{t(lang, rulesSource === 'catalog' ? 'card.rulesTitle' : 'card.ocrTitle')}</strong>
-                  <span className="card-ocr-note">{t(lang, rulesSource === 'catalog' ? 'card.rulesNote' : 'card.ocrNote')}</span>
-                </div>
-                {ocrLoading && (
-                  <p className="card-ocr-status">{t(lang, 'card.ocrLoading')}</p>
-                )}
-                {!ocrLoading && ocrEmpty && (
-                  <p className="card-ocr-status muted">{t(lang, 'card.ocrEmpty')}</p>
-                )}
-                {!ocrLoading && ocrText && rulesSource === 'catalog' && (
-                  <div className="card-ocr-text"><RulesText text={ocrText} /></div>
-                )}
-                {!ocrLoading && ocrText && rulesSource !== 'catalog' && (
-                  <pre className="card-ocr-text">{ocrText}</pre>
-                )}
-              </div>
               {(() => {
-                const fromOcr = ocrText ? detectKeywordsInText(ocrText) : []
-                const fromBook = keywordsForCard(cardLightbox)
-                const merged: KeywordId[] = []
-                const seen = new Set<KeywordId>()
-                for (const id of [...fromOcr, ...fromBook]) {
-                  if (!seen.has(id)) { seen.add(id); merged.push(id) }
-                }
-                if (!merged.length) return null
+                // Errata text first: it is the wording the keywords are judged by.
+                const text = errataFor(cardLightbox)?.newText || cardLightbox.rulesText || ''
+                const kws = [...new Set([...detectKeywordsInText(text), ...keywordsForCard(cardLightbox)])]
+                if (!kws.length) return null
                 return (
-                  <div className="card-keywords card-keywords-mini">
+                  <div className="card-keywords">
                     <div className="card-keywords-head">
                       <strong>{t(lang, 'card.keywords')}</strong>
-                      <span className="card-keywords-hint">{t(lang, 'card.keywordsHint')}</span>
                     </div>
                     <ul className="card-keywords-list">
-                      {merged.map((id) => {
-                        const open = kwExpanded === id
-                        return (
-                          <li key={id} className="card-keyword on-card">
-                            <button
-                              type="button"
-                              className="card-keyword-toggle"
-                              aria-expanded={open}
-                              onClick={() => setKwExpanded(open ? null : id)}
-                            >
-                              <span className="card-keyword-name">{t(lang, `kw.${id}.name`)}</span>
-                              <span className="card-keyword-chev">{open ? '▾' : '▸'}</span>
-                            </button>
-                            {open && (
-                              <p className="card-keyword-blurb">{t(lang, `kw.${id}.blurb`)}</p>
-                            )}
-                          </li>
-                        )
-                      })}
+                      {kws.map((id) => (
+                        <li key={id} className="card-keyword on-card">
+                          <span className="card-keyword-name">{t(lang, `kw.${id}.name`)}</span>
+                          <p className="card-keyword-blurb"><RulesText text={t(lang, `kw.${id}.blurb`)} /></p>
+                        </li>
+                      ))}
                     </ul>
                   </div>
                 )

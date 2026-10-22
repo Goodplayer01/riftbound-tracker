@@ -37,6 +37,7 @@ jobs:
           node --experimental-strip-types scripts/check_v080.mjs
           node --experimental-strip-types scripts/check_copies.mjs
           node --experimental-strip-types scripts/check-dopamin.mjs
+          node scripts/check_errata.mjs
 
       - run: npm run dist -- --publish never
 

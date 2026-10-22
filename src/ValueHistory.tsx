@@ -134,7 +134,7 @@ export function ValueHistory(props: {
         <h3>{title}</h3>
         {list.length === 0 && <div className="empty">{t(lang, 'invest.none')}</div>}
         {list.map((r) => (
-          <button key={r.card.id} type="button" className="mover-row" onClick={() => props.onOpenCard(r.card)}>
+          <button key={r.card.id} type="button" className="mover-row" data-card-id={r.card.id} onClick={() => props.onOpenCard(r.card)}>
             {r.card.image ? <img src={r.card.image} alt="" loading="lazy" /> : <span className="mover-img" />}
             <span className="mover-name">
               <b>{r.card.name}</b>
@@ -158,7 +158,7 @@ export function ValueHistory(props: {
         <h3>{title}</h3>
         {list.length === 0 && <div className="empty">{t(lang, 'value.noMovers')}</div>}
         {list.map((m) => (
-          <button key={`${m.card.id}-${m.foil}`} type="button" className="mover-row" onClick={() => props.onOpenCard(m.card)}>
+          <button key={`${m.card.id}-${m.foil}`} type="button" className="mover-row" data-card-id={m.card.id} onClick={() => props.onOpenCard(m.card)}>
             {m.card.image ? <img src={m.card.image} alt="" loading="lazy" /> : <span className="mover-img" />}
             <span className="mover-name">
               <b>{m.card.name}</b>
