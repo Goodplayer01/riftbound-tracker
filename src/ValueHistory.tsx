@@ -9,6 +9,9 @@ type Range = '30' | '90' | '365' | 'all'
 
 type Mover = { card: Card; foil: boolean; copies: number; from: number; to: number; delta: number }
 
+/** Copies of one card with a purchase price: what they cost and what they are worth today. */
+export type InvestRow = { card: Card; copies: number; paid: number; worth: number }
+
 const W = 760
 const H = 220
 const PAD = { top: 16, right: 16, bottom: 26, left: 64 }
@@ -38,7 +41,10 @@ export function ValueHistory(props: {
   lang: Lang
   points: PricePoint[]
   collection: Collection
+  /** Copies weighted by condition (an EX copy counts 0.85), for the value line. */
+  weighted: Collection
   byId: Map<string, Card>
+  invest: { copies: number; paid: number; worth: number; rows: InvestRow[] }
   onBack: () => void
   onOpenCard: (c: Card) => void
 }) {
@@ -56,7 +62,7 @@ export function ValueHistory(props: {
     return before ? [before, ...inRange] : inRange
   }, [points, range])
 
-  const series = useMemo(() => shown.map((p) => ({ at: p.at, eur: valueAt(p, collection) })), [shown, collection])
+  const series = useMemo(() => shown.map((p) => ({ at: p.at, eur: valueAt(p, props.weighted) })), [shown, props.weighted])
 
   const movers = useMemo(() => {
     if (shown.length < 2) return { up: [] as Mover[], down: [] as Mover[] }
@@ -112,6 +118,36 @@ export function ValueHistory(props: {
     let best = 0
     chart.pts.forEach((p, i) => { if (Math.abs(p.x - mx) < Math.abs(chart.pts[best].x - mx)) best = i })
     setHover(best)
+  }
+
+  const investLists = useMemo(() => {
+    const rows = [...props.invest.rows].sort((a, b) => (b.worth - b.paid) - (a.worth - a.paid))
+    return {
+      up: rows.filter((r) => r.worth - r.paid >= 0).slice(0, 10),
+      down: rows.filter((r) => r.worth - r.paid < 0).reverse().slice(0, 10),
+    }
+  }, [props.invest])
+
+  function investList(title: string, list: InvestRow[], cls: string) {
+    return (
+      <section className="panel value-movers">
+        <h3>{title}</h3>
+        {list.length === 0 && <div className="empty">{t(lang, 'invest.none')}</div>}
+        {list.map((r) => (
+          <button key={r.card.id} type="button" className="mover-row" onClick={() => props.onOpenCard(r.card)}>
+            {r.card.image ? <img src={r.card.image} alt="" loading="lazy" /> : <span className="mover-img" />}
+            <span className="mover-name">
+              <b>{r.card.name}</b>
+              <span className="sub">{r.card.code} · {r.copies}x</span>
+            </span>
+            <span className="mover-price">
+              <span className="sub">{fmtEur(lang, r.paid)} → {fmtEur(lang, r.worth)}</span>
+              <b className={cls}>{fmtSigned(lang, r.worth - r.paid)} <span className="sub">{fmtPct(lang, pct(r.paid, r.worth))}</span></b>
+            </span>
+          </button>
+        ))}
+      </section>
+    )
   }
 
   const hp = chart && hover != null ? chart.pts[hover] : null
@@ -199,6 +235,35 @@ export function ValueHistory(props: {
         {moverList(t(lang, 'value.up'), movers.up, 'value-up')}
         {moverList(t(lang, 'value.down'), movers.down, 'value-down')}
       </div>
+
+      <section className="panel value-chart-panel">
+        <h3 style={{ margin: 0 }}>{t(lang, 'invest.title')}</h3>
+        {props.invest.copies > 0 ? (
+          <div className="value-stats">
+            <div>
+              <div className="sub">{t(lang, 'invest.paid', { n: props.invest.copies })}</div>
+              <div className="value-big">{fmtEur(lang, props.invest.paid)}</div>
+            </div>
+            <div>
+              <div className="sub">{t(lang, 'invest.worth')}</div>
+              <div className="value-big">~{fmtEur(lang, props.invest.worth)}</div>
+            </div>
+            <div>
+              <div className="sub">{t(lang, 'invest.delta')}</div>
+              <div className={`value-big ${props.invest.worth >= props.invest.paid ? 'value-up' : 'value-down'}`}>
+                {fmtSigned(lang, props.invest.worth - props.invest.paid)} <span className="value-pct">{fmtPct(lang, pct(props.invest.paid, props.invest.worth))}</span>
+              </div>
+            </div>
+          </div>
+        ) : null}
+        <p className="help" style={{ margin: 0 }}>{t(lang, 'invest.help')}</p>
+      </section>
+      {props.invest.copies > 0 && (
+        <div className="value-movers-row">
+          {investList(t(lang, 'invest.up'), investLists.up, 'value-up')}
+          {investList(t(lang, 'invest.down'), investLists.down, 'value-down')}
+        </div>
+      )}
     </div>
   )
 }
