@@ -494,14 +494,17 @@ textarea.field { min-height: 160px; resize: vertical; font-family: ui-monospace,
 .binder-head-title { margin: 0; font-size: 20px; font-weight: 700; letter-spacing: -.02em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
 .binder-head .sub { font-size: 13px; white-space: nowrap; font-variant-numeric: tabular-nums; }
 .binder-search { margin-left: auto; flex: 0 1 300px; min-width: 180px; }
-.binder-toolbar {
+.filter-bar {
   flex: 0 0 auto; gap: 6px; margin-bottom: 14px;
   padding-bottom: 12px; border-bottom: 1px solid var(--border);
 }
-.binder-toolbar .chip, .binder-toolbar .btn { min-height: 30px; padding: 0 12px; font-size: 12.5px; }
-.binder-toolbar .domain-row { min-height: 30px; }
-.binder-toolbar .domain-btn { width: 26px; height: 26px; }
-.binder-toolbar .domain-btn img { width: 22px; height: 22px; }
+/* Search row above a filter bar: keep the two rows visually together. */
+.toolbar:has(+ .filter-bar) { margin-bottom: 10px; }
+.filter-bar .chip, .filter-bar .btn { min-height: 30px; padding: 0 12px; font-size: 12.5px; }
+.toolbar.filter-bar .lang-trigger { height: 30px; padding: 0 12px; font-size: 12.5px; }
+.toolbar.filter-bar .domain-row { min-height: 30px; padding: 0 4px; }
+.filter-bar .domain-btn { width: 26px; height: 26px; }
+.filter-bar .domain-btn img { width: 22px; height: 22px; }
 .toolbar-sep { width: 1px; height: 20px; background: var(--border-strong); margin: 0 4px; }
 .rarity-chip {
   position: relative; display: inline-flex; align-items: center; gap: 6px;
@@ -512,7 +515,7 @@ textarea.field { min-height: 160px; resize: vertical; font-family: ui-monospace,
 .rarity-chip:hover { background: var(--fill-hover); }
 .rarity-chip.active { background: var(--fill-hover); box-shadow: inset 0 0 0 1.5px rgb(255 255 255 / .55); }
 .rarity-chip .rarity-count { color: var(--muted); font-variant-numeric: tabular-nums; }
-.rarity-chip .rarity-track { position: absolute; left: 0; right: 0; bottom: 0; height: 2px; border-radius: 0; background: transparent; box-shadow: none; }
+.rarity-chip .rarity-track { display: block; width: 28px; height: 4px; background: rgb(255 255 255 / .12); box-shadow: none; }
 
 .chip {
   min-height: 34px; border: 0; background: var(--fill);
@@ -603,8 +606,8 @@ textarea.field { min-height: 160px; resize: vertical; font-family: ui-monospace,
 .deck-sec-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 460px), 1fr)); gap: 12px; align-items: start; }
 .deck-sec {
   min-width: 0;
-  border: 1px solid transparent; border-radius: 14px; padding: 12px 14px;
-  background: rgb(255 255 255 / .04); cursor: pointer;
+  border: 1px solid var(--border); border-radius: 14px; padding: 12px 14px;
+  background: transparent; cursor: pointer;
 }
 .deck-sec.active {
   border-color: rgb(var(--primary-rgb) / .6);
@@ -725,6 +728,11 @@ textarea.field { min-height: 160px; resize: vertical; font-family: ui-monospace,
 .deck-thumb-wrap .deck-thumb { width: 100%; height: 100%; }
 .deck-thumb.deck-thumb-lg,
 .deck-thumb-wrap.deck-thumb-lg { width: 68px; height: 96px; }
+/* The open deck shows its legend big: it is the deck's identity. */
+.deck-acc-item.expanded .deck-acc-head .deck-thumb-lg { width: 112px; height: 156px; border-radius: 10px; box-shadow: 0 8px 24px rgb(0 0 0 / .45); }
+.deck-card-row .deck-thumb, .deck-card-row .deck-thumb-wrap { width: 44px; height: 62px; }
+.deck-sec-legend .deck-card-row .deck-thumb, .deck-sec-legend .deck-card-row .deck-thumb-wrap,
+.deck-sec-champion .deck-card-row .deck-thumb, .deck-sec-champion .deck-card-row .deck-thumb-wrap { width: 72px; height: 100px; }
 .list-item .grow { min-width: 0; }
 .card-float-preview {
   position: fixed;
@@ -877,11 +885,13 @@ textarea.field { min-height: 160px; resize: vertical; font-family: ui-monospace,
 .deck-acc-body {
   padding: 6px 12px 12px;
   display: grid; gap: 8px;
-  border-top: 1px solid rgb(var(--border-rgb) / .8);
+  border-top: 1px solid var(--border);
 }
 .deck-acc-title {
   display: flex; align-items: center; gap: 8px; min-width: 0; flex-wrap: wrap;
 }
+.deck-acc-item.expanded .deck-acc-head { align-items: flex-start; padding: 14px 16px; }
+.deck-acc-item.expanded .deck-acc-title { row-gap: 10px; align-self: center; }
 .deck-acc-name-input {
   flex: 1 1 140px;
   min-width: 0;
@@ -1848,7 +1858,6 @@ button.card-lightbox-title-link:hover {
 .deck-header-btn,
 .deck-share-btn {
   flex-shrink: 0;
-  margin-left: 4px;
   padding: 4px 10px;
   font-size: 12px;
   position: relative;
@@ -1859,10 +1868,11 @@ button.card-lightbox-title-link:hover {
   max-width: min(96vw, 1200px);
   max-height: 94vh;
   overflow: hidden;
-  padding: 12px 14px 16px;
-  background: #141414;
-  border: 1px solid rgb(var(--primary-rgb) / .35);
-  border-radius: 10px;
+  padding: 16px 18px 18px;
+  background: var(--material);
+  backdrop-filter: var(--blur);
+  box-shadow: var(--shadow-lg);
+  border-radius: 20px;
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -1879,7 +1889,7 @@ button.card-lightbox-title-link:hover {
 }
 .deck-share-toolbar h2 {
   margin: 0;
-  font-size: 15px;
+  font-size: 17px;
   font-weight: 600;
   flex: 1;
   min-width: 0;
@@ -1894,8 +1904,8 @@ button.card-lightbox-title-link:hover {
 .deck-share-img-wrap {
   overflow: auto;
   max-height: calc(94vh - 64px);
-  border-radius: 6px;
-  background: #1c1c1c;
+  border-radius: 12px;
+  background: #0f0f11;
   position: relative;
   z-index: 0;
   flex: 1;

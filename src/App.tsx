@@ -257,13 +257,13 @@ function publicAsset(rel: string) {
 }
 
 const DOMAIN_ICON: Record<(typeof DOMAINS)[number], string> = {
-  Fury: publicAsset('domains/fury.png'),
-  Calm: publicAsset('domains/calm.png'),
-  Mind: publicAsset('domains/mind.png'),
-  Body: publicAsset('domains/body.png'),
-  Chaos: publicAsset('domains/chaos.png'),
-  Order: publicAsset('domains/order.png'),
-  Colorless: publicAsset('domains/colorless.png'),
+  Fury: publicAsset('domains/fury.svg'),
+  Calm: publicAsset('domains/calm.svg'),
+  Mind: publicAsset('domains/mind.svg'),
+  Body: publicAsset('domains/body.svg'),
+  Chaos: publicAsset('domains/chaos.svg'),
+  Order: publicAsset('domains/order.svg'),
+  Colorless: publicAsset('domains/colorless.svg'),
 }
 
 /** Official Display / box art under public/sets/{CODE}.png (Riot Merch). */
@@ -318,12 +318,12 @@ function openCm(p?: PriceEntry | null) {
 
 
 const RUNE_ICON: Record<string, string> = {
-  Fury: publicAsset('domains/fury.png'),
-  Calm: publicAsset('domains/calm.png'),
-  Mind: publicAsset('domains/mind.png'),
-  Body: publicAsset('domains/body.png'),
-  Order: publicAsset('domains/order.png'),
-  C: publicAsset('domains/chaos.png'),
+  Fury: publicAsset('domains/fury.svg'),
+  Calm: publicAsset('domains/calm.svg'),
+  Mind: publicAsset('domains/mind.svg'),
+  Body: publicAsset('domains/body.svg'),
+  Order: publicAsset('domains/order.svg'),
+  C: publicAsset('domains/chaos.svg'),
 }
 
 /** Bracket shorthand from the rules bake → printed symbols. Unknown brackets stay text. */
@@ -2132,7 +2132,7 @@ export default function App() {
   }
 
   function sectionDropClass(sec: DeckSection, locked = false) {
-    const parts = ['deck-sec']
+    const parts = ['deck-sec', `deck-sec-${sec}`]
     if (activeSection === sec) parts.push('active')
     if (dragOverSection === sec) parts.push('drag-over')
     if (dragRejectSection === sec) parts.push('drag-reject')
@@ -3326,7 +3326,7 @@ export default function App() {
                 onChange={setQ}
               />
             </div>
-            <div className="toolbar binder-toolbar">
+            <div className="toolbar filter-bar">
               {binderView !== 'owned' && (rarityBySet[binderView] || []).map((row) => {
                 const pct = row.total ? Math.round((row.owned / row.total) * 100) : 0
                 const active = binderRarity === row.rarity
@@ -3446,6 +3446,22 @@ export default function App() {
                   <option key={ty} value={ty}>{ty}</option>
                 ))}
               </select>
+              <button className="btn" onClick={exportCsv}><Icon name="file-down" />{t(lang, 'catalog.csvExport')}</button>
+              <label className="btn">
+                <Icon name="file-up" />{t(lang, 'catalog.csvImport')}
+                <input
+                  type="file"
+                  accept=".csv,text/csv"
+                  hidden
+                  onChange={(e) => {
+                    const f = e.target.files?.[0]
+                    if (f) importCsv(f)
+                    e.target.value = ''
+                  }}
+                />
+              </label>
+            </div>
+            <div className="toolbar filter-bar">
               <RarityMenu
                 lang={lang}
                 open={rarityMenuOpen}
@@ -3461,24 +3477,10 @@ export default function App() {
                 menuRef={rarityMenuRef}
               />
               <AbilityMenu lang={lang} open={abilityMenuOpen} setOpen={setAbilityMenuOpen} value={abilityFilter} onChange={setAbilityFilter} menuRef={abilityMenuRef} />
-              <label className="pill">
-                <input type="checkbox" checked={ownedOnly} onChange={(e) => setOwnedOnly(e.target.checked)} /> {t(lang, 'catalog.ownedOnly')}
-              </label>
+              <button type="button" className={`chip ${ownedOnly ? 'active' : ''}`} aria-pressed={ownedOnly} onClick={() => setOwnedOnly((v) => !v)}>
+                <Icon name="check" />{t(lang, 'catalog.ownedOnly')}
+              </button>
               <DomainFilterRow value={domainFilter} onChange={setDomainFilter} lang={lang} />
-              <button className="btn" onClick={exportCsv}><Icon name="file-down" />{t(lang, 'catalog.csvExport')}</button>
-              <label className="btn">
-                <Icon name="file-up" />{t(lang, 'catalog.csvImport')}
-                <input
-                  type="file"
-                  accept=".csv,text/csv"
-                  hidden
-                  onChange={(e) => {
-                    const f = e.target.files?.[0]
-                    if (f) importCsv(f)
-                    e.target.value = ''
-                  }}
-                />
-              </label>
             </div>
 
             <div className="grid">
@@ -3697,7 +3699,7 @@ export default function App() {
                           onPointerDown={(e) => onDeckReorderPointerDown(e, d.id)}
                         >⠿</span>
                         <span className="deck-acc-chevron" aria-hidden>{expanded ? '▾' : '▸'}</span>
-                        {legendImg && <DeckThumb src={legendImg} lg={!expanded} />}
+                        {legendImg && <DeckThumb src={legendImg} lg />}
                         <div className="grow deck-acc-title">
                           {expanded ? (
                             <input

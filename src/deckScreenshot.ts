@@ -1,9 +1,11 @@
 import type { Card, Deck, DeckCard } from './types'
 import { sectionOf } from './deckHelpers'
 
-const BG = '#1c1c1c'
-const GOLD = '#c9a227'
-const BADGE_BG = 'rgba(0,0,0,0.78)'
+// Same palette as the app: near-black canvas, amber accent, Apple grey for secondary text.
+const BG = '#0f0f11'
+const AMBER = '#f5a623'
+const MUTED = '#98989f'
+const FONT = '"Inter Variable", system-ui, sans-serif'
 /** Fixed 3× logical layout so exported PNG stays crisp on all displays. */
 const RENDER_SCALE = 3
 const DOMAINS = new Set(['Fury', 'Calm', 'Mind', 'Body', 'Chaos', 'Order', 'Colorless'])
@@ -84,17 +86,21 @@ function drawQtyBadge(
   qty: number,
 ) {
   if (qty <= 1) return
-  const label = `x${qty}`
-  ctx.font = 'bold 12px system-ui, sans-serif'
+  const label = `×${qty}`
+  ctx.font = `800 13px ${FONT}`
   const tw = ctx.measureText(label).width
-  const bw = tw + 10
-  const bh = 17
-  const bx = x + (w - bw) / 2
-  const by = y + h - bh - 4
-  ctx.fillStyle = BADGE_BG
-  roundRect(ctx, bx, by, bw, bh, 8)
+  const bw = tw + 14
+  const bh = 20
+  const bx = x + w - bw - 5
+  const by = y + h - bh - 5
+  ctx.save()
+  ctx.shadowColor = 'rgba(0,0,0,0.6)'
+  ctx.shadowBlur = 6
+  ctx.fillStyle = AMBER
+  roundRect(ctx, bx, by, bw, bh, 10)
   ctx.fill()
-  ctx.fillStyle = '#fff'
+  ctx.restore()
+  ctx.fillStyle = '#1c1306'
   ctx.textAlign = 'center'
   ctx.textBaseline = 'middle'
   ctx.fillText(label, bx + bw / 2, by + bh / 2 + 0.5)
@@ -110,11 +116,20 @@ function drawCard(
   w: number,
   h: number,
   qty: number,
+  radius = 6,
 ) {
   ctx.save()
-  roundRect(ctx, x, y, w, h, 5)
+  ctx.shadowColor = 'rgba(0,0,0,0.55)'
+  ctx.shadowBlur = 12
+  ctx.shadowOffsetY = 4
+  ctx.fillStyle = '#26262a'
+  roundRect(ctx, x, y, w, h, radius)
+  ctx.fill()
+  ctx.restore()
+  ctx.save()
+  roundRect(ctx, x, y, w, h, radius)
   ctx.clip()
-  ctx.fillStyle = '#2a2a2a'
+  ctx.fillStyle = '#26262a'
   ctx.fillRect(x, y, w, h)
   if (img) drawCover(ctx, img, x + w / 2, y + h / 2, w, h)
   ctx.restore()
@@ -147,6 +162,23 @@ function drawBattlefieldBanner(
     } else drawCover(ctx, img, x + w / 2, y + h / 2, w, h)
   }
   ctx.restore()
+}
+
+/** Small uppercase section label with an optional amber count, top-aligned at y. */
+function drawLabel(ctx: CanvasRenderingContext2D, text: string, count: number | null, x: number, y: number) {
+  ctx.textBaseline = 'top'
+  ctx.font = `700 12px ${FONT}`
+  ctx.letterSpacing = '1.2px'
+  ctx.fillStyle = MUTED
+  const label = text.toUpperCase()
+  ctx.fillText(label, x, y)
+  if (count != null) {
+    const w = ctx.measureText(label).width
+    ctx.fillStyle = AMBER
+    ctx.fillText(String(count), x + w + 8, y)
+  }
+  ctx.letterSpacing = '0px'
+  ctx.textBaseline = 'alphabetic'
 }
 
 function safeFileName(name: string) {
@@ -192,48 +224,39 @@ export async function renderDeckShareCanvas(
     await Promise.all(
       [...domainCounts.keys()].map(async (d) => {
         if (!DOMAINS.has(d)) return
-        domainImgs.set(d, await loadUrl(`${import.meta.env.BASE_URL}domains/${d.toLowerCase()}.png`))
+        domainImgs.set(d, await loadUrl(`${import.meta.env.BASE_URL}domains/${d.toLowerCase()}.svg`))
       }),
     )
 
-    const pad = 20
-    const brandH = 28
-    const leftW = 200
-    const gap = 14
+    const pad = 28
+    const headerH = 58
+    const labelH = 24
+    const leftW = 210
+    const gap = 24
     const cardW = 110
     const cardH = 154
-    const cardGap = 6
+    const cardGap = 8
     const cols = 8
     const mainRows = Math.max(1, Math.ceil(Math.max(mainGrid.length, 1) / cols))
     const sideRows = sideboard.length ? Math.ceil(sideboard.length / cols) : 0
 
-    const legendH = 280
-    // Gold rimmed domain icons (same public/domains assets as filter chips).
-    const domainIcon = 40
-    const domainRim = 2.5
-    const domainLabelGap = 6
-    const domainItemGap = 18
-    const domainRowH = domainCounts.size ? domainIcon + 4 : 0
-    const bfH = 52
-    const bfGap = 6
+    const legendH = Math.round(leftW * 1039 / 744)
+    const domainIcon = 34
+    const domainRowH = domainCounts.size ? labelH + domainIcon : 0
+    const bfH = 56
+    const bfGap = 8
     const leftStack =
       legendH +
-      (domainRowH ? 12 + domainRowH : 0) +
-      (battlefields.length ? 10 + battlefields.length * (bfH + bfGap) - bfGap : 0)
+      (domainRowH ? 20 + domainRowH : 0) +
+      (battlefields.length ? 20 + labelH + battlefields.length * (bfH + bfGap) - bfGap : 0)
 
-    const mainBlockH = mainGrid.length ? mainRows * (cardH + cardGap) - cardGap : 40
-    const sideLabelH = 28
-    const sideBlockH = sideboard.length ? sideRows * (cardH + cardGap) - cardGap : 0
+    const mainBlockH = labelH + (mainGrid.length ? mainRows * (cardH + cardGap) - cardGap : 40)
+    const sideBlockH = sideboard.length ? 24 + labelH + sideRows * (cardH + cardGap) - cardGap : 0
 
     const rightW = cols * (cardW + cardGap) - cardGap
     const width = pad * 2 + leftW + gap + rightW
-    const contentTop = pad + brandH + 10
-    const mainBottom = contentTop + mainBlockH
-    const leftBottom = contentTop + leftStack
-    // Sideboard sits under the main deck grid only (right column), not under max(left, main).
-    const sideTop = mainBottom + 14
-    const sideEnd = sideTop + sideLabelH + (sideboard.length ? 10 + sideBlockH : 0)
-    const height = Math.max(leftBottom, sideEnd) + pad
+    const contentTop = pad + headerH + 18
+    const height = contentTop + Math.max(leftStack, mainBlockH + sideBlockH) + pad
 
     const canvas = document.createElement('canvas')
     canvas.width = Math.round(width * RENDER_SCALE)
@@ -246,108 +269,91 @@ export async function renderDeckShareCanvas(
 
     ctx.fillStyle = BG
     ctx.fillRect(0, 0, width, height)
+    const glow = ctx.createRadialGradient(0, 0, 0, 0, 0, width * 0.6)
+    glow.addColorStop(0, 'rgba(245,166,35,0.10)')
+    glow.addColorStop(1, 'rgba(245,166,35,0)')
+    ctx.fillStyle = glow
+    ctx.fillRect(0, 0, width, height)
 
-    const brand = `${(deck.name || 'Deck').trim()} · Deakrix`
-    ctx.fillStyle = '#fff'
-    ctx.font = '600 15px system-ui, sans-serif'
-    ctx.fillText(brand, pad, pad + 18)
+    // Header: deck name, legend + card count underneath, brand on the right.
+    ctx.textBaseline = 'alphabetic'
+    ctx.fillStyle = '#f5f5f7'
+    ctx.font = `700 26px ${FONT}`
+    ctx.fillText((deck.name || 'Deck').trim(), pad, pad + 26)
+    const total = deck.cards.reduce((n, c) => n + c.qty, 0)
+    const legendName = legend ? byId.get(legend.id)?.name : undefined
+    ctx.fillStyle = MUTED
+    ctx.font = `500 14px ${FONT}`
+    ctx.fillText([legendName, `${total} cards`].filter(Boolean).join('  ·  '), pad, pad + 50)
+    ctx.textAlign = 'right'
+    ctx.fillStyle = AMBER
+    ctx.font = `700 14px ${FONT}`
+    ctx.fillText('DEAKRIX', width - pad, pad + 26)
+    ctx.fillStyle = MUTED
+    ctx.font = `500 12px ${FONT}`
+    ctx.fillText('Riftbound Tracker', width - pad, pad + 46)
+    ctx.textAlign = 'left'
+    ctx.fillStyle = 'rgba(255,255,255,0.08)'
+    ctx.fillRect(pad, pad + headerH + 2, width - pad * 2, 1)
 
-    let lx = pad
+    const lx = pad
     let ly = contentTop
 
     if (legend) {
-      drawCard(ctx, imgMap.get(legend.id) || null, lx, ly, leftW, legendH, 0)
-      ly += legendH + 8
+      drawCard(ctx, imgMap.get(legend.id) || null, lx, ly, leftW, legendH, 0, 10)
     } else {
-      ctx.fillStyle = '#333'
-      roundRect(ctx, lx, ly, leftW, 72, 5)
+      ctx.fillStyle = '#26262a'
+      roundRect(ctx, lx, ly, leftW, legendH, 10)
       ctx.fill()
-      ly += 80
     }
+    ly += legendH
 
     if (domainCounts.size) {
+      ly += 20
+      drawLabel(ctx, 'Runes', null, lx, ly)
+      ly += labelH
       let dx = lx
       for (const [dom, n] of domainCounts) {
-        const cx = dx + domainIcon / 2
-        const cy = ly + domainIcon / 2
-        const r = domainIcon / 2
-        // Soft disc + gold rim (Piltover Archive chip look; art from public/domains).
-        ctx.beginPath()
-        ctx.arc(cx, cy, r, 0, Math.PI * 2)
-        ctx.fillStyle = '#141414'
-        ctx.fill()
         const dimg = domainImgs.get(dom)
-        if (dimg) {
-          ctx.save()
-          ctx.beginPath()
-          ctx.arc(cx, cy, r - domainRim, 0, Math.PI * 2)
-          ctx.clip()
-          ctx.drawImage(dimg, dx + 1, ly + 1, domainIcon - 2, domainIcon - 2)
-          ctx.restore()
-        }
-        ctx.beginPath()
-        ctx.arc(cx, cy, r - domainRim / 2, 0, Math.PI * 2)
-        ctx.strokeStyle = GOLD
-        ctx.lineWidth = domainRim
-        ctx.stroke()
-        ctx.fillStyle = '#fff'
-        ctx.font = 'bold 14px system-ui, sans-serif'
+        if (dimg) ctx.drawImage(dimg, dx, ly, domainIcon, domainIcon)
+        ctx.fillStyle = '#f5f5f7'
+        ctx.font = `700 15px ${FONT}`
         ctx.textBaseline = 'middle'
-        const qtyLabel = `x${n}`
-        ctx.fillText(qtyLabel, dx + domainIcon + domainLabelGap, cy + 0.5)
+        const qtyLabel = `×${n}`
+        ctx.fillText(qtyLabel, dx + domainIcon + 6, ly + domainIcon / 2 + 1)
         const tw = ctx.measureText(qtyLabel).width
         ctx.textBaseline = 'alphabetic'
-        dx += domainIcon + domainLabelGap + tw + domainItemGap
+        dx += domainIcon + 6 + tw + 18
       }
-      ly += domainRowH + 12
+      ly += domainIcon
     }
 
-    for (const bf of battlefields) {
-      drawBattlefieldBanner(ctx, imgMap.get(bf.id) || null, lx, ly, leftW, bfH)
-      ly += bfH + bfGap
+    if (battlefields.length) {
+      ly += 20
+      drawLabel(ctx, 'Battlefields', battlefields.length, lx, ly)
+      ly += labelH
+      for (const bf of battlefields) {
+        drawBattlefieldBanner(ctx, imgMap.get(bf.id) || null, lx, ly, leftW, bfH)
+        ly += bfH + bfGap
+      }
     }
 
     const rx = pad + leftW + gap
-    const ry = contentTop
     const drawGrid = (cards: DeckCard[], top: number) =>
       cards.forEach((dc, i) => {
         const x = rx + (i % cols) * (cardW + cardGap)
         const y = top + Math.floor(i / cols) * (cardH + cardGap)
         drawCard(ctx, imgMap.get(dc.id) || null, x, y, cardW, cardH, dc.qty)
       })
-    if (!mainGrid.length) {
-      ctx.fillStyle = '#666'
-      ctx.font = '13px system-ui, sans-serif'
-      ctx.fillText('Main', rx, ry + 16)
-    } else {
-      drawGrid(mainGrid, ry)
+    const mainCount = mainGrid.reduce((n, c) => n + c.qty, 0)
+    drawLabel(ctx, 'Main deck', mainCount, rx, contentTop)
+    drawGrid(mainGrid, contentTop + labelH)
+
+    if (sideboard.length) {
+      const sideTop = contentTop + mainBlockH + 24
+      drawLabel(ctx, 'Sideboard', sideboard.reduce((n, c) => n + c.qty, 0), rx, sideTop)
+      drawGrid(sideboard, sideTop + labelH)
     }
-
-    // Gold divider + SIDEBOARD label span the right column only (under main grid).
-    const lineY = sideTop
-    const rightMid = rx + rightW / 2
-    ctx.strokeStyle = GOLD
-    ctx.lineWidth = 1.5
-    ctx.beginPath()
-    ctx.moveTo(rx, lineY)
-    ctx.lineTo(rx + rightW, lineY)
-    ctx.stroke()
-    const sideLabel = 'SIDEBOARD'
-    ctx.font = 'bold 11px system-ui, sans-serif'
-    const sw = ctx.measureText(sideLabel).width + 16
-    ctx.fillStyle = BG
-    ctx.fillRect(rightMid - sw / 2, lineY - 10, sw, 20)
-    ctx.strokeStyle = GOLD
-    roundRect(ctx, rightMid - sw / 2, lineY - 10, sw, 20, 4)
-    ctx.stroke()
-    ctx.fillStyle = GOLD
-    ctx.textAlign = 'center'
-    ctx.textBaseline = 'middle'
-    ctx.fillText(sideLabel, rightMid, lineY)
-    ctx.textAlign = 'left'
-    ctx.textBaseline = 'alphabetic'
-
-    drawGrid(sideboard, lineY + 16)
 
     const fileName = `${safeFileName(deck.name)}_share.png`
     const dataUrl = canvas.toDataURL('image/png')
