@@ -3299,62 +3299,53 @@ export default function App() {
 
         {tab === 'collection' && binderView != null && (
           <div className="binder-view">
-            <div className="toolbar binder-toolbar">
-              <button className="btn" onClick={() => { setBinderView(null); setBinderRarity(null) }}><Icon name="arrow-left" />{t(lang, 'collection.back')}</button>
-              <div className="grow">
-                <div className="section-title">
-                  {binderView === 'owned'
-                    ? t(lang, 'collection.allOwned')
-                    : `${activeBinderProgress?.id || binderView} - ${activeBinderProgress?.name || sets[binderView] || binderView}`}
-                </div>
-                {activeBinderProgress && (
-                  <div className="sub">
-                    {activeBinderProgress.owned}/{activeBinderProgress.total} ({activeBinderProgress.pct}%)
-                    {' · '}{t(lang, 'collection.foils', { owned: activeBinderProgress.foilOwned, total: activeBinderProgress.total })}
-                    {activeBinderProgress.missingEur != null && activeBinderProgress.owned < activeBinderProgress.total && (
-                      <>{' · '}{t(lang, 'collection.missingEur', { eur: fmtEur(lang, activeBinderProgress.missingEur) ?? '' })}</>
-                    )}
-                  </div>
-                )}
-                {binderView && binderView !== 'owned' && (rarityBySet[binderView] || []).length > 0 && (
-                  <div className="rarity-block rarity-block-inline">
-                    <div className="rarity-heading">{t(lang, 'collection.byRarity')}</div>
-                    {(rarityBySet[binderView] || []).map((row) => {
-                      const pct = row.total ? Math.round((row.owned / row.total) * 100) : 0
-                      const active = binderRarity === row.rarity
-                      return (
-                        <div
-                          key={row.rarity}
-                          role="button"
-                          tabIndex={0}
-                          title={active ? t(lang, 'collection.clearFilter') : t(lang, 'collection.filterRarity', { rarity: row.rarity })}
-                          className={`rarity-row ${raritySlug(row.rarity)}${active ? ' active' : ''}`}
-                          onClick={() => setBinderRarity((cur) => (cur === row.rarity ? null : row.rarity))}
-                          onKeyDown={(e) => {
-                            if (e.key !== 'Enter' && e.key !== ' ') return
-                            e.preventDefault()
-                            setBinderRarity((cur) => (cur === row.rarity ? null : row.rarity))
-                          }}
-                        >
-                          <span className="rarity-label">{row.rarity}</span>
-                          <div className="rarity-track"><span style={{ width: `${pct}%` }} /></div>
-                          <span className="rarity-count">{row.owned} / {row.total}</span>
-                        </div>
-                      )
-                    })}
-                  </div>
-                )}
-                {binderView === 'owned' && (
-                  <div className="sub">{totals.unique} Unique | {totals.copies} {t(lang, 'bulk.copies')}</div>
-                )}
-              </div>
+            <div className="binder-head">
+              <button type="button" className="btn icon" title={t(lang, 'collection.back')} aria-label={t(lang, 'collection.back')} onClick={() => { setBinderView(null); setBinderRarity(null) }}><Icon name="arrow-left" /></button>
+              <h2 className="binder-head-title">
+                {binderView === 'owned'
+                  ? t(lang, 'collection.allOwned')
+                  : `${activeBinderProgress?.id || binderView} - ${activeBinderProgress?.name || sets[binderView] || binderView}`}
+              </h2>
+              {activeBinderProgress && (
+                <span className="sub">
+                  {activeBinderProgress.owned}/{activeBinderProgress.total} ({activeBinderProgress.pct}%)
+                  {' · '}{t(lang, 'collection.foils', { owned: activeBinderProgress.foilOwned, total: activeBinderProgress.total })}
+                  {activeBinderProgress.missingEur != null && activeBinderProgress.owned < activeBinderProgress.total && (
+                    <>{' · '}{t(lang, 'collection.missingEur', { eur: fmtEur(lang, activeBinderProgress.missingEur) ?? '' })}</>
+                  )}
+                </span>
+              )}
+              {binderView === 'owned' && (
+                <span className="sub">{totals.unique} Unique | {totals.copies} {t(lang, 'bulk.copies')}</span>
+              )}
               <SearchInput
-                wrapClassName="grow"
+                wrapClassName="binder-search"
                 lang={lang}
                 placeholder={t(lang, 'collection.search')}
                 value={q}
                 onChange={setQ}
               />
+            </div>
+            <div className="toolbar binder-toolbar">
+              {binderView !== 'owned' && (rarityBySet[binderView] || []).map((row) => {
+                const pct = row.total ? Math.round((row.owned / row.total) * 100) : 0
+                const active = binderRarity === row.rarity
+                return (
+                  <button
+                    key={row.rarity}
+                    type="button"
+                    aria-pressed={active}
+                    title={active ? t(lang, 'collection.clearFilter') : t(lang, 'collection.filterRarity', { rarity: row.rarity })}
+                    className={`rarity-chip ${raritySlug(row.rarity)}${active ? ' active' : ''}`}
+                    onClick={() => setBinderRarity((cur) => (cur === row.rarity ? null : row.rarity))}
+                  >
+                    <span className="rarity-label">{row.rarity}</span>
+                    <span className="rarity-count">{row.owned}/{row.total}</span>
+                    <span className="rarity-track"><span style={{ width: `${pct}%` }} /></span>
+                  </button>
+                )
+              })}
+              {binderView !== 'owned' && (rarityBySet[binderView] || []).length > 0 && <span className="toolbar-sep" aria-hidden="true" />}
               <button
                 type="button"
                 className={`chip ${binderOwnedOnly ? 'active' : ''}`}

@@ -3,16 +3,17 @@
   /* Apple-style graphite (macOS dark mode) with Dante's amber as the accent. */
   --bg-rgb: 28 28 30;
   --bg: rgb(var(--bg-rgb));
-  --bg-deep: #141416;
+  /* Three clear levels like iOS grouped dark: near-black canvas, raised sidebar, lifted cards. */
+  --bg-deep: #0b0b0d;
   --bg-glow: var(--bg);
-  --sidebar: rgb(40 40 43 / .72);
-  --panel: #2c2c2e;
-  --panel2: #3a3a3c;
+  --sidebar: rgb(30 30 33 / .86);
+  --panel: #222225;
+  --panel2: #2e2e32;
   --track: #48484a;
-  --fill: rgb(120 120 128 / .24);
-  --fill-hover: rgb(120 120 128 / .34);
+  --fill: rgb(120 120 128 / .26);
+  --fill-hover: rgb(120 120 128 / .38);
   --border-rgb: 255 255 255;
-  --border: rgb(var(--border-rgb) / .09);
+  --border: rgb(var(--border-rgb) / .1);
   --border-strong: rgb(var(--border-rgb) / .16);
   --border-gold: rgb(var(--primary-rgb) / .55);
   --text: #f5f5f7;
@@ -117,7 +118,7 @@ a { color: var(--accent2); }
 }
 .side-item .ico { width: 17px; height: 17px; color: var(--primary); }
 .side-item:hover { background: rgb(255 255 255 / .06); }
-.side-item.active { background: rgb(255 255 255 / .11); }
+.side-item.active { background: var(--primary-soft); color: var(--accent2); }
 .side-item.active .ico { color: var(--accent2); }
 .side-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
 .side-footer { display: grid; gap: 10px; padding: 12px 6px 0; border-top: 1px solid var(--border); }
@@ -127,7 +128,7 @@ button.side-value:hover { color: var(--primary); }
 .side-actions { display: flex; align-items: center; gap: 6px; min-width: 0; }
 .maker-credit { color: var(--muted); font-size: 11px; font-weight: 500; opacity: .7; }
 
-.content { display: grid; grid-template-rows: auto minmax(0, 1fr); min-width: 0; min-height: 0; background: rgb(var(--bg-rgb) / .92); }
+.content { display: grid; grid-template-rows: auto minmax(0, 1fr); min-width: 0; min-height: 0; background: transparent; }
 /* Unified title bar: an empty drag strip with the Windows caption buttons. */
 .top {
   position: relative; height: 34px; flex-shrink: 0;
@@ -243,7 +244,7 @@ button.side-value:hover { color: var(--primary); }
 }
 .card {
   background: var(--panel); border: 0; border-radius: var(--r-lg); overflow: hidden;
-  box-shadow: var(--shadow), inset 0 0 0 1px rgb(255 255 255 / .06); display: flex; flex-direction: column;
+  box-shadow: var(--shadow), inset 0 0 0 1px rgb(255 255 255 / .08); display: flex; flex-direction: column;
   position: relative;
   transition: transform .2s var(--ease), box-shadow .2s var(--ease);
 }
@@ -284,7 +285,7 @@ button.side-value:hover { color: var(--primary); }
 .qty-label { font-size: 10.5px; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
 
 .panel {
-  background: rgb(44 44 46 / .72);
+  background: var(--panel);
   border: 0; border-radius: var(--r-lg); padding: 20px;
   box-shadow: var(--shadow), inset 0 0 0 1px rgb(255 255 255 / .06);
 }
@@ -324,9 +325,6 @@ textarea.field { min-height: 160px; resize: vertical; font-family: ui-monospace,
 .name-link:disabled { cursor: default; opacity: 0.95; }
 .rarity-block {
   margin-top: 8px; display: grid; gap: 4px;
-}
-.rarity-block-inline {
-  margin-top: 10px; max-width: 420px;
 }
 .rarity-heading {
   font-size: 11px; letter-spacing: .1em; text-transform: uppercase;
@@ -491,14 +489,30 @@ textarea.field { min-height: 160px; resize: vertical; font-family: ui-monospace,
   border-radius: 999px;
 }
 
+/* Set view header: one title row, one compact filter row, so the cards get the space. */
+.binder-head { display: flex; align-items: center; gap: 12px; flex: 0 0 auto; margin-bottom: 10px; min-width: 0; }
+.binder-head-title { margin: 0; font-size: 20px; font-weight: 700; letter-spacing: -.02em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.binder-head .sub { font-size: 13px; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.binder-search { margin-left: auto; flex: 0 1 300px; min-width: 180px; }
 .binder-toolbar {
-  position: static;
-  flex: 0 0 auto;
-  background: transparent;
-  padding: 0;
-  margin-top: 0;
-  border-bottom: none;
+  flex: 0 0 auto; gap: 6px; margin-bottom: 14px;
+  padding-bottom: 12px; border-bottom: 1px solid var(--border);
 }
+.binder-toolbar .chip, .binder-toolbar .btn { min-height: 30px; padding: 0 12px; font-size: 12.5px; }
+.binder-toolbar .domain-row { min-height: 30px; }
+.binder-toolbar .domain-btn { width: 26px; height: 26px; }
+.binder-toolbar .domain-btn img { width: 22px; height: 22px; }
+.toolbar-sep { width: 1px; height: 20px; background: var(--border-strong); margin: 0 4px; }
+.rarity-chip {
+  position: relative; display: inline-flex; align-items: center; gap: 6px;
+  min-height: 30px; padding: 0 12px; border: 0; border-radius: 999px;
+  background: var(--fill); font-size: 12.5px; overflow: hidden;
+  transition: background-color .15s var(--ease), box-shadow .15s var(--ease);
+}
+.rarity-chip:hover { background: var(--fill-hover); }
+.rarity-chip.active { background: var(--fill-hover); box-shadow: inset 0 0 0 1.5px rgb(255 255 255 / .55); }
+.rarity-chip .rarity-count { color: var(--muted); font-variant-numeric: tabular-nums; }
+.rarity-chip .rarity-track { position: absolute; left: 0; right: 0; bottom: 0; height: 2px; border-radius: 0; background: transparent; box-shadow: none; }
 
 .chip {
   min-height: 34px; border: 0; background: var(--fill);
@@ -1148,7 +1162,7 @@ textarea.field { min-height: 160px; resize: vertical; font-family: ui-monospace,
   gap: 8px;
   align-items: center;
   padding: 10px 12px;
-  background: rgb(44 44 46 / .72);
+  background: var(--panel);
   border: 0;
   border-radius: var(--r-lg);
   box-shadow: var(--shadow), inset 0 0 0 1px rgb(255 255 255 / .06);
