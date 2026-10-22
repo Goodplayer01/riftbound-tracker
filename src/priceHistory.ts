@@ -1,3 +1,4 @@
+import { unitEur } from './copies'
 import type { PriceBook, PriceEntry } from './types'
 
 /** public/price-history.json, written by scripts/bake_price_history.py.
@@ -47,9 +48,7 @@ export async function loadPriceHistory(): Promise<PriceHistoryFile | null> {
 
 /** Same unit prices as the collection value (low, else trend; foil falls back to normal). */
 export function unitPrices(p: PriceEntry) {
-  const n = p.low ?? p.trend
-  const f = p.foilLow ?? p.foilTrend ?? n
-  return { n, f }
+  return { n: unitEur(p, false), f: unitEur(p, true) }
 }
 
 /** History points oldest first, plus the loaded price book when it is newer than the last point. */

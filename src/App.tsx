@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type DragEvent as ReactDragEvent, type MouseEvent as ReactMouseEvent, type PointerEvent as ReactPointerEvent, type ReactNode, type RefObject } from 'react'
+import { useDeferredValue, useEffect, useMemo, useRef, useState, type DragEvent as ReactDragEvent, type MouseEvent as ReactMouseEvent, type PointerEvent as ReactPointerEvent, type ReactNode, type RefObject } from 'react'
 import { fetchRemotePrices, loadBundledPrices, loadCachedPrices, newerPriceBook } from './prices'
 import type { BorrowedCard, BorrowedGroup, Card, Catalog, Deck, DeckSection, PriceBook, PriceEntry } from './types'
 import { backupOnce, loadAlertsSeen, loadBorrowed, loadCollection, loadCopies, loadDecks, loadSales, loadWish, loadWishTargets, saveAlertsSeen, saveBorrowed, saveCollection, saveCopies, saveDecks, saveSales, saveWish, saveWishTargets, type Collection } from './storage'
@@ -290,8 +290,8 @@ function ownedLineEur(o: { qty?: number; foil?: number } | undefined, p?: PriceE
   const qty = o.qty || 0
   const foil = o.foil || 0
   if (qty <= 0 && foil <= 0) return 0
-  const unit = p.low != null ? p.low : p.trend
-  const foilUnit = p.foilLow != null ? p.foilLow : p.foilTrend != null ? p.foilTrend : unit
+  const unit = unitEur(p, false)
+  const foilUnit = unitEur(p, true)
   let add = 0
   if (qty > 0 && unit != null) add += qty * unit
   if (foil > 0 && foilUnit != null) add += foil * foilUnit
@@ -309,11 +309,13 @@ function openCm(p?: PriceEntry | null) {
   } catch {
     /* keep raw */
   }
-  if (window.riftbound?.openExternal) {
-    void window.riftbound.openExternal(url)
-  } else {
-    window.open(url, '_blank', 'noopener,noreferrer')
-  }
+  openLink(url)
+}
+
+/** Opens in the system browser (or mail app) from Electron, a new tab in a plain browser. */
+function openLink(url: string) {
+  if (window.riftbound?.openExternal) void window.riftbound.openExternal(url)
+  else window.open(url, '_blank', 'noopener,noreferrer')
 }
 
 
@@ -1127,13 +1129,15 @@ export default function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cards, byId])
 
+  // Filter on a deferred copy so typing stays responsive while 1600+ tiles re-render.
+  const deferredQ = useDeferredValue(q)
   const filtered = useMemo(() => {
-    const query = q.trim().toLowerCase()
+    const query = deferredQ.trim().toLowerCase()
     return cards.filter((c) => {
       if (ownedOnly && ownedQty(collection[c.id]) <= 0) return false
       return matchesFilters(c, query)
     })
-  }, [cards, q, setFilter, typeFilter, domainFilter, raritySigned, rarityOver, rarityPromo, rarityUltimate, abilityFilter, ownedOnly, collection, legendIds])
+  }, [cards, deferredQ, setFilter, typeFilter, domainFilter, raritySigned, rarityOver, rarityPromo, rarityUltimate, abilityFilter, ownedOnly, collection, legendIds])
 
   const ownedCards = useMemo(
     () => cards.filter((c) => ownedQty(collection[c.id]) > 0),
@@ -1252,9 +1256,24 @@ export default function App() {
     return out
   }, [cards, sets, collection, copies, priceBook, hideNexusNight])
 
+  // Rebuilt only when what the tiles show changes, not on every keystroke.
+  // bump and openCardLightbox only call state setters, so the captured versions stay correct.
+  const catalogGrid = useMemo(() => filtered.map((c) => (
+    <CardTile
+      key={c.id}
+      c={c}
+      o={collection[c.id] || { qty: 0, foil: 0 }}
+      lang={lang}
+      priceEntry={priceBook?.cards[c.id]}
+      variant="catalog"
+      onOpen={openCardLightbox}
+      onBump={bump}
+    />
+  )), [filtered, collection, lang, priceBook])
+
   const binderCards = useMemo(() => {
     if (binderView == null) return [] as Card[]
-    const query = q.trim().toLowerCase()
+    const query = deferredQ.trim().toLowerCase()
     let list: Card[]
     if (binderView === 'owned') {
       list = cards.filter((c) => ownedQty(collection[c.id]) > 0)
@@ -1270,7 +1289,7 @@ export default function App() {
       return matchesSharedFilters(c, query)
     })
     return [...list].sort((a, b) => a.cn - b.cn || a.code.localeCompare(b.code))
-  }, [binderView, cards, collection, q, binderOwnedOnly, binderMissing, binderMissingFoil, binderRarity, domainFilter, raritySigned, rarityOver, rarityPromo, rarityUltimate, abilityFilter, legendIds])
+  }, [binderView, cards, collection, deferredQ, binderOwnedOnly, binderMissing, binderMissingFoil, binderRarity, domainFilter, raritySigned, rarityOver, rarityPromo, rarityUltimate, abilityFilter, legendIds])
 
   const rarityBySet = useMemo(() => {
     const out: Record<string, { rarity: string; total: number; owned: number }[]> = {}
@@ -2522,11 +2541,6 @@ export default function App() {
     }
   }
 
-  function openStoreLink(url: string) {
-    if (window.riftbound?.openExternal) void window.riftbound.openExternal(url)
-    else window.open(url, '_blank', 'noopener,noreferrer')
-  }
-
   function setStoreKmFromUi(raw: number) {
     setStoreKm(clampStoreRadiusKm(raw))
   }
@@ -3483,23 +3497,7 @@ export default function App() {
               <DomainFilterRow value={domainFilter} onChange={setDomainFilter} lang={lang} />
             </div>
 
-            <div className="grid">
-              {filtered.map((c) => {
-                const o = collection[c.id] || { qty: 0, foil: 0 }
-                return (
-                  <CardTile
-                    key={c.id}
-                    c={c}
-                    o={o}
-                    lang={lang}
-                    priceEntry={priceBook?.cards[c.id]}
-                    variant="catalog"
-                    onOpen={openCardLightbox}
-                    onBump={bump}
-                  />
-                )
-              })}
-            </div>
+            <div className="grid">{catalogGrid}</div>
           </>
         )}
 
@@ -4253,7 +4251,7 @@ export default function App() {
               <button
                 type="button"
                 className="btn"
-                onClick={() => openStoreLink(STORE_LOCATOR_URL)}
+                onClick={() => openLink(STORE_LOCATOR_URL)}
               ><Icon name="external-link" />{t(lang, 'stores.openOfficial')}</button>
             </div>
             <p className="help stores-help">{t(lang, 'stores.help')}</p>
@@ -4300,16 +4298,16 @@ export default function App() {
                         {h.email && (
                           <div className="store-contact">
                             {t(lang, 'stores.email')}:{' '}
-                            <a href={`mailto:${h.email}`} onClick={(e) => { e.preventDefault(); openStoreLink(`mailto:${h.email}`) }}>{h.email}</a>
+                            <a href={`mailto:${h.email}`} onClick={(e) => { e.preventDefault(); openLink(`mailto:${h.email}`) }}>{h.email}</a>
                           </div>
                         )}
                         <div className="store-actions">
                           {h.website && (
-                            <button type="button" className="btn small" onClick={() => openStoreLink(websiteUrl(h.website!))}>
+                            <button type="button" className="btn small" onClick={() => openLink(websiteUrl(h.website!))}>
                               <Icon name="external-link" />{t(lang, 'stores.website')}
                             </button>
                           )}
-                          <button type="button" className="btn small" onClick={() => openStoreLink(mapsUrl(h))}>
+                          <button type="button" className="btn small" onClick={() => openLink(mapsUrl(h))}>
                             <Icon name="map-pinned" />{t(lang, 'stores.maps')}
                           </button>
                         </div>

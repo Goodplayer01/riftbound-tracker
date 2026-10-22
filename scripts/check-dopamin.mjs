@@ -1,8 +1,6 @@
 import { readFileSync } from 'node:fs'
-import { createJiti } from 'jiti'
+import { rollPack, boosterSets, pullChance } from '../src/dopaminPacks.ts'
 
-const jiti = createJiti(import.meta.url)
-const { rollPack, boosterSets, pullChance } = jiti('../src/dopaminPacks.ts')
 const cards = JSON.parse(readFileSync(new URL('../public/cards.json', import.meta.url))).cards
 
 function assert(cond, msg) {

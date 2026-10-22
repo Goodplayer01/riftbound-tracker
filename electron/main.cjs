@@ -135,8 +135,14 @@ function createWindow() {
   }
 
   mainWindow.webContents.setWindowOpenHandler(({ url }) => {
-    shell.openExternal(url)
+    if (/^https?:\/\//i.test(url)) shell.openExternal(url)
     return { action: 'deny' }
+  })
+
+  // Plain links (e.g. the map's attribution) would load inside the frameless window with no way back.
+  mainWindow.webContents.on('will-navigate', (e, url) => {
+    e.preventDefault()
+    if (/^https?:\/\//i.test(url)) shell.openExternal(url)
   })
 
   mainWindow.on('maximize', pushFullscreenState)
@@ -330,7 +336,7 @@ ipcMain.handle('net:fetchImageDataUrl', async (_e, url) => {
 })
 
 ipcMain.handle('shell:openExternal', async (_e, url) => {
-  if (typeof url !== 'string' || !/^https?:\/\//i.test(url)) return { ok: false }
+  if (typeof url !== 'string' || !/^(https?:\/\/|mailto:)/i.test(url)) return { ok: false }
   await shell.openExternal(url)
   return { ok: true }
 })
