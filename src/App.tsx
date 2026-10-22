@@ -85,19 +85,40 @@ function isFoilOnly(c: Card) {
   return FOIL_ONLY_RARITIES.has(c.rarity || '') || !!(c.altArt || c.signed || c.overnumbered)
 }
 
+/** Plain runes (not alt art) are bulk: no foil version, worth 0 €. */
+function isPlainRune(c: Card) {
+  return (c.types || []).includes('Rune') && !isFoilOnly(c)
+}
+
+/** Plain rune prices as 0 € (no foil price), so every value and total ignores them. */
+function zeroPlainRunes(book: PriceBook | null, cards: Card[]): PriceBook | null {
+  if (!book) return book
+  const out = { ...book.cards }
+  for (const c of cards) {
+    const p = out[c.id]
+    if (p && isPlainRune(c)) out[c.id] = { ...p, low: 0, trend: 0, high: null, avg30: null, foilLow: null, foilTrend: null }
+  }
+  return { ...book, cards: out }
+}
+
 /** At least one foil copy (every copy of a foil only card is foil). */
 function hasFoilCopy(c: Card, o?: { qty: number; foil: number }) {
   return (o?.foil || 0) > 0 || (isFoilOnly(c) && ownedQty(o) > 0)
 }
 
-/** Moves normal copies of foil only cards to foil. Returns the same object when nothing changes. */
+/** Moves normal copies of foil only cards to foil, and foil plain runes to normal. Returns the same object when nothing changes. */
 function foldFoilOnly(col: Collection, byId: Map<string, Card>): Collection {
   let out = col
   for (const [id, o] of Object.entries(col)) {
     const c = byId.get(id)
-    if (!c || !o.qty || !isFoilOnly(c)) continue
-    if (out === col) out = { ...col }
-    out[id] = { ...o, qty: 0, foil: (o.foil || 0) + o.qty }
+    if (!c) continue
+    if (o.qty && isFoilOnly(c)) {
+      if (out === col) out = { ...col }
+      out[id] = { ...o, qty: 0, foil: (o.foil || 0) + o.qty }
+    } else if (o.foil && isPlainRune(c)) {
+      if (out === col) out = { ...col }
+      out[id] = { ...o, qty: (o.qty || 0) + o.foil, foil: 0 }
+    }
   }
   return out
 }
@@ -614,6 +635,17 @@ function CardTile({
               </div>
             </div>
           </div>
+        ) : isPlainRune(c) ? (
+          <div className="qty-group qty-group-single">
+            <div className="qty-col">
+              <span className="qty-label">{t(lang, 'qty.normal')}</span>
+              <div className="qty">
+                <button aria-label={`${t(lang, 'qty.normal')} −1`} onClick={() => onBump(c.id, 'qty', -1)}>−</button>
+                <b className={o.qty > 0 ? 'have' : undefined}>{o.qty}</b>
+                <button aria-label={`${t(lang, 'qty.normal')} +1`} onClick={() => onBump(c.id, 'qty', 1)}>+</button>
+              </div>
+            </div>
+          </div>
         ) : (
         <div className="qty-group">
           <div className="qty-col">
@@ -746,7 +778,7 @@ export default function App() {
   const [appVersion, setAppVersion] = useState('')
   const [updateInfo, setUpdateInfo] = useState<{ status: string; version?: string; message?: string; percent?: number } | null>(null)
   const [isFullScreen, setIsFullScreen] = useState(false)
-  const [priceBook, setPriceBook] = useState<PriceBook | null>(null)
+  const [rawPriceBook, setPriceBook] = useState<PriceBook | null>(null)
   // null = binder dashboard; 'owned' = all owned; set code = that set binder
   const [binderView, setBinderView] = useState<string | null>(null)
   const [hideNexusNight, setHideNexusNight] = useState<boolean>(() => loadHideNexusNight())
@@ -1025,6 +1057,7 @@ export default function App() {
 
   const cards = catalog?.cards || []
   const sets = catalog?.sets || {}
+  const priceBook = useMemo(() => zeroPlainRunes(rawPriceBook, cards), [rawPriceBook, cards])
   const legendIds = useMemo(() => legendIdentityByName(cards, priceBook), [cards, priceBook])
   const allTypes = useMemo(() => {
     const s = new Set<string>()
@@ -1206,7 +1239,18 @@ export default function App() {
     return { copies: copiesN, paid, worth, rows }
   }, [copies, collection, byId, priceBook])
 
-  const pricePoints = useMemo(() => historyPoints(priceHistory, priceBook), [priceHistory, priceBook])
+  const pricePoints = useMemo(() => {
+    const points = historyPoints(priceHistory, priceBook)
+    // Older snapshots still carry rune prices; drop them so plain runes add nothing there too.
+    for (const c of cards) {
+      if (!isPlainRune(c)) continue
+      for (const p of points) {
+        delete p.n[c.id]
+        delete p.f[c.id]
+      }
+    }
+    return points
+  }, [priceHistory, priceBook, cards])
 
   const setProgress = useMemo(() => {
     const known = BINDER_SET_ORDER.filter((id) => id in sets)
@@ -1214,7 +1258,7 @@ export default function App() {
     const rest = Object.keys(sets).filter((id) => !knownSet.has(id))
     let order = [...known, ...rest]
     if (hideNexusNight) order = order.filter((id) => !String(id).endsWith('-NN'))
-    const out: { id: string; name: string; total: number; owned: number; pct: number; eur: number | null; foilOwned: number; missingEur: number | null }[] = []
+    const out: { id: string; name: string; total: number; owned: number; pct: number; eur: number | null; foilOwned: number; foilTotal: number; missingEur: number | null }[] = []
     for (const id of order) {
       const setCards = cards.filter((c) => c.set === id)
       let owned = 0
@@ -1250,6 +1294,7 @@ export default function App() {
         pct: total ? Math.round((owned / total) * 100) : 0,
         eur: eurAny ? eur : null,
         foilOwned,
+        foilTotal: setCards.filter((c) => !isPlainRune(c)).length,
         missingEur: missingAny ? missingEur : null,
       })
     }
@@ -1284,7 +1329,7 @@ export default function App() {
       const n = ownedQty(collection[c.id])
       if (binderOwnedOnly && n <= 0) return false
       if (binderMissing && n > 0) return false
-      if (binderMissingFoil && hasFoilCopy(c, collection[c.id])) return false
+      if (binderMissingFoil && (isPlainRune(c) || hasFoilCopy(c, collection[c.id]))) return false
       if (binderRarity && (c.rarity || 'Other') !== binderRarity) return false
       return matchesSharedFilters(c, query)
     })
@@ -1696,7 +1741,7 @@ export default function App() {
     if (!binderView || binderView === 'owned') return []
     return cards
       .filter((c) => c.set === binderView && (!binderRarity || (c.rarity || 'Other') === binderRarity))
-      .filter((c) => (foil ? !hasFoilCopy(c, collection[c.id]) : ownedQty(collection[c.id]) <= 0))
+      .filter((c) => (foil ? !isPlainRune(c) && !hasFoilCopy(c, collection[c.id]) : ownedQty(collection[c.id]) <= 0))
       .sort((a, b) => a.cn - b.cn || a.code.localeCompare(b.code))
   }
 
@@ -3097,8 +3142,8 @@ export default function App() {
                       <div className="binder-name">{s.name}</div>
                       <div className="binder-progress">{s.owned} / {s.total} ({s.pct}%)</div>
                       <div className="binder-bar"><span style={{ width: `${s.pct}%` }} /></div>
-                      <div className="binder-progress binder-foil">{t(lang, 'collection.foils', { owned: s.foilOwned, total: s.total })}</div>
-                      <div className="binder-bar binder-bar-foil"><span style={{ width: `${s.total ? Math.round((s.foilOwned / s.total) * 100) : 0}%` }} /></div>
+                      <div className="binder-progress binder-foil">{t(lang, 'collection.foils', { owned: s.foilOwned, total: s.foilTotal })}</div>
+                      <div className="binder-bar binder-bar-foil"><span style={{ width: `${s.foilTotal ? Math.round((s.foilOwned / s.foilTotal) * 100) : 0}%` }} /></div>
                       {s.eur != null && <div className="binder-eur">~{fmtEur(lang, s.eur)}</div>}
                       {s.missingEur != null && s.owned < s.total && (
                         <div className="binder-progress">{t(lang, 'collection.missingEur', { eur: fmtEur(lang, s.missingEur) ?? '' })}</div>
@@ -3310,7 +3355,7 @@ export default function App() {
               {activeBinderProgress && (
                 <span className="sub">
                   {activeBinderProgress.owned}/{activeBinderProgress.total} ({activeBinderProgress.pct}%)
-                  {' · '}{t(lang, 'collection.foils', { owned: activeBinderProgress.foilOwned, total: activeBinderProgress.total })}
+                  {' · '}{t(lang, 'collection.foils', { owned: activeBinderProgress.foilOwned, total: activeBinderProgress.foilTotal })}
                   {activeBinderProgress.missingEur != null && activeBinderProgress.owned < activeBinderProgress.total && (
                     <>{' · '}{t(lang, 'collection.missingEur', { eur: fmtEur(lang, activeBinderProgress.missingEur) ?? '' })}</>
                   )}
