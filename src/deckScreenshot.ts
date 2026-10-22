@@ -233,13 +233,7 @@ export async function renderDeckShareCanvas(
     const labelH = 24
     const leftW = 210
     const gap = 24
-    const cardW = 110
-    const cardH = 154
     const cardGap = 8
-    const cols = 8
-    const mainRows = Math.max(1, Math.ceil(Math.max(mainGrid.length, 1) / cols))
-    const sideRows = sideboard.length ? Math.ceil(sideboard.length / cols) : 0
-
     const legendH = Math.round(leftW * 1039 / 744)
     const domainIcon = 34
     const domainRowH = domainCounts.size ? labelH + domainIcon : 0
@@ -250,6 +244,26 @@ export async function renderDeckShareCanvas(
       legendH +
       (domainRowH ? 20 + domainRowH : 0) +
       (battlefields.length ? 20 + labelH + battlefields.length * (bfH + bfGap) - bfGap : 0)
+
+    // Pick the column count that gives the largest cards while main deck + sideboard
+    // fit next to the left stack, so the grid fills the space whatever the copy count.
+    const sideExtra = sideboard.length ? 24 + labelH : 0
+    let cols = 8
+    let cardW = 70
+    for (let c = 6; c <= 12; c++) {
+      const rows = Math.max(1, Math.ceil(mainGrid.length / c)) + Math.ceil(sideboard.length / c)
+      const gaps = (rows - (sideboard.length ? 2 : 1)) * cardGap
+      const byHeight = ((leftStack - labelH - sideExtra - gaps) / rows) * 744 / 1039
+      const byWidth = (1200 + cardGap) / c - cardGap
+      const w = Math.floor(Math.min(150, byHeight, byWidth))
+      if (w > cardW) {
+        cols = c
+        cardW = w
+      }
+    }
+    const cardH = Math.round(cardW * 1039 / 744)
+    const mainRows = Math.max(1, Math.ceil(mainGrid.length / cols))
+    const sideRows = Math.ceil(sideboard.length / cols)
 
     const mainBlockH = labelH + (mainGrid.length ? mainRows * (cardH + cardGap) - cardGap : 40)
     const sideBlockH = sideboard.length ? 24 + labelH + sideRows * (cardH + cardGap) - cardGap : 0
