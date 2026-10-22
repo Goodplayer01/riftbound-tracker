@@ -3698,32 +3698,45 @@ export default function App() {
                         >⠿</span>
                         <span className="deck-acc-chevron" aria-hidden>{expanded ? '▾' : '▸'}</span>
                         {legendImg && <DeckThumb src={legendImg} lg />}
-                        <div className="grow deck-acc-title">
-                          {expanded ? (
-                            <input
-                              className="field deck-acc-name-input"
-                              value={d.name}
-                              onChange={(e) => updateDeck((deck) => ({ ...deck, name: e.target.value }))}
-                              onClick={(e) => e.stopPropagation()}
-                              onKeyDown={(e) => e.stopPropagation()}
-                              aria-label={t(lang, 'decks.rename')}
-                            />
-                          ) : (
-                            <span className="name">{d.name}</span>
-                          )}
-                          <span className="deck-acc-count">· {deckCount(d)} Karten</span>
-                          {expanded && (
-                            <span style={{ display: 'contents' }} onClick={(e) => e.stopPropagation()} onKeyDown={(e) => e.stopPropagation()}>
-                              <button
-                                type="button"
-                                className="btn small deck-header-btn"
-                                onClick={openDeckExport}
-                              >
+                        {expanded ? (
+                          <div className="grow deck-hero" onClick={(e) => e.stopPropagation()} onKeyDown={(e) => e.stopPropagation()}>
+                            <div className="deck-hero-title">
+                              <input
+                                className="deck-hero-name"
+                                value={d.name}
+                                onChange={(e) => updateDeck((deck) => ({ ...deck, name: e.target.value }))}
+                                aria-label={t(lang, 'decks.rename')}
+                              />
+                              <span className="deck-acc-count">{deckCount(d)} {cardWord(lang, deckCount(d))}</span>
+                            </div>
+                            {sums && (
+                              <div className="deck-hero-stats">
+                                <div className="deck-stat">
+                                  <span>{t(lang, 'decks.totalLow')}</span>
+                                  <b>{sums.priced > 0 ? fmtEur(lang, sums.deckLow) : '—'}</b>
+                                  {sums.priced > 0 && sums.priced < deckCount(d) && <small>{t(lang, 'decks.partialPrice')}</small>}
+                                </div>
+                                {missCopies > 0 && (
+                                  <div className="deck-stat deck-stat-warn">
+                                    <span>{t(lang, 'decks.missingCopies')}</span>
+                                    <b>{sums.missingPriced > 0 ? fmtEur(lang, sums.missingLow) : '—'}</b>
+                                    <small>{missCopies} {t(lang, 'bulk.copies')}</small>
+                                  </div>
+                                )}
+                              </div>
+                            )}
+                            <div className="deck-hero-actions">
+                              {isDeckComplete(d.cards) && (
+                                <button type="button" className="btn small primary" disabled={deckShotBusy} onClick={() => void openDeckShare(d)}>
+                                  <Icon name="share-2" />{deckShotBusy ? t(lang, 'decks.shareBusy') : t(lang, 'decks.share')}
+                                </button>
+                              )}
+                              <button type="button" className="btn small" onClick={openDeckExport}>
                                 <Icon name="download" />{t(lang, 'decks.export')}
                               </button>
                               <button
                                 type="button"
-                                className="btn small deck-header-btn"
+                                className="btn small"
                                 onClick={() => {
                                   setDeckImportOpen((v) => !v)
                                   setDeckImportText('')
@@ -3731,20 +3744,23 @@ export default function App() {
                               >
                                 <Icon name="upload" />{t(lang, 'decks.import')}
                               </button>
-                              {isDeckComplete(d.cards) && (
-                                <button
-                                  type="button"
-                                  className="btn small deck-share-btn"
-                                  disabled={deckShotBusy}
-                                  onClick={() => void openDeckShare(d)}
-                                  >
-                                  <Icon name="share-2" />{deckShotBusy ? t(lang, 'decks.shareBusy') : t(lang, 'decks.share')}
-                                </button>
-                              )}
-                            </span>
-                          )}
-                        </div>
-                        {expanded && <span className="pill ok">{t(lang, 'decks.active')}</span>}
+                              <button
+                                type="button"
+                                className="btn small icon danger deck-trash deck-hero-delete"
+                                title={t(lang, 'decks.delete')}
+                                aria-label={t(lang, 'decks.delete')}
+                                onClick={() => setDeckConfirm({ kind: 'one', id: d.id, name: d.name })}
+                              >
+                                <Icon name="trash-2" size={16} />
+                              </button>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="grow deck-acc-title">
+                            <span className="name">{d.name}</span>
+                            <span className="deck-acc-count">· {deckCount(d)} {cardWord(lang, deckCount(d))}</span>
+                          </div>
+                        )}
                         {!expanded && (
                           <button
                             type="button"
@@ -3763,36 +3779,6 @@ export default function App() {
                       </div>
                       {expanded && (
                         <div className="deck-acc-body">
-                          <div className="deck-acc-summary-row">
-                            {sums && (
-                              <div className="deck-price-sums help">
-                                <div>
-                                  <b>{t(lang, 'decks.totalLow')}</b>{' '}
-                                  {sums.priced > 0 ? fmtEur(lang, sums.deckLow) : '—'}
-                                  {sums.priced > 0 && sums.priced < deckCount(d) ? t(lang, 'decks.partialPrice') : ''}
-                                </div>
-                                {missCopies > 0 && (
-                                  <div>
-                                    <b>{t(lang, 'decks.missingCopies')}</b>{' '}
-                                    {sums.missingPriced > 0 ? fmtEur(lang, sums.missingLow) : '—'}
-                                    {` (${missCopies} ${t(lang, 'bulk.copies')})`}
-                                  </div>
-                                )}
-                              </div>
-                            )}
-                            <button
-                              type="button"
-                              className="btn icon danger deck-trash"
-                              title={t(lang, 'decks.delete')}
-                              aria-label={t(lang, 'decks.delete')}
-                              onClick={(e) => {
-                                e.stopPropagation()
-                                setDeckConfirm({ kind: 'one', id: d.id, name: d.name })
-                              }}
-                            >
-                              <Icon name="trash-2" size={16} />
-                            </button>
-                          </div>
                           {renderOpenDeck()}
                         </div>
                       )}

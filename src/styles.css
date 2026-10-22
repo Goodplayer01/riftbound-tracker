@@ -835,12 +835,6 @@ textarea.field { min-height: 160px; resize: vertical; font-family: ui-monospace,
   gap: 8px;
   align-items: flex-start;
 }
-.deck-price-sums {
-  flex: 1 1 auto;
-  min-width: 0;
-  line-height: 1.45;
-  margin: 0;
-}
 .deck-card-row .price {
   margin-top: 2px;
   font-size: 0.85em;
@@ -891,7 +885,31 @@ textarea.field { min-height: 160px; resize: vertical; font-family: ui-monospace,
   display: flex; align-items: center; gap: 8px; min-width: 0; flex-wrap: wrap;
 }
 .deck-acc-item.expanded .deck-acc-head { align-items: flex-start; padding: 14px 16px; }
-.deck-acc-item.expanded .deck-acc-title { row-gap: 10px; align-self: center; }
+/* Open deck header: legend art left, then name, key numbers and actions stacked to its height. */
+.deck-hero {
+  display: flex; flex-direction: column; justify-content: space-between; gap: 12px;
+  align-self: stretch; min-width: 0; padding: 2px 0; cursor: default;
+}
+.deck-hero-title { display: flex; align-items: baseline; gap: 10px; min-width: 0; }
+.deck-hero-name {
+  field-sizing: content; min-width: 4ch; max-width: 100%;
+  font-size: 24px; font-weight: 700; letter-spacing: -.02em; line-height: 1.2;
+  background: transparent; border: 0; border-radius: 8px; padding: 2px 8px; margin-left: -8px;
+  outline: none; transition: background-color .15s var(--ease), box-shadow .15s var(--ease);
+}
+.deck-hero-name:hover { background: var(--fill); }
+.deck-hero-name:focus { background: var(--fill); box-shadow: 0 0 0 3px rgb(var(--primary-rgb) / .45); }
+.deck-hero-stats { display: flex; gap: 10px; flex-wrap: wrap; }
+.deck-stat {
+  display: grid; gap: 1px; min-width: 150px; padding: 8px 14px;
+  border-radius: 12px; background: var(--fill);
+}
+.deck-stat span { font-size: 11px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); }
+.deck-stat b { font-size: 19px; font-weight: 700; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
+.deck-stat small { font-size: 12px; color: var(--muted); }
+.deck-stat-warn b { color: var(--warn); }
+.deck-hero-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.deck-hero-delete { margin-left: auto; }
 .deck-acc-name-input {
   flex: 1 1 140px;
   min-width: 0;
@@ -1855,15 +1873,6 @@ button.card-lightbox-title-link:hover {
 }
 
 /* Share preview (Piltover Archive style) */
-.deck-header-btn,
-.deck-share-btn {
-  flex-shrink: 0;
-  padding: 4px 10px;
-  font-size: 12px;
-  position: relative;
-  z-index: 1;
-  pointer-events: auto;
-}
 .deck-share-lightbox .deck-share-inner {
   max-width: min(96vw, 1200px);
   max-height: 94vh;
