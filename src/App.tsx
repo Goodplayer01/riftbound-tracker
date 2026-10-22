@@ -4534,6 +4534,23 @@ export default function App() {
                 <BanBadge status={banStatus(cardLightbox)} lang={lang} />
               </div>
               <p className="sub">{cardLightbox.code} · {cardLightbox.setName || cardLightbox.set}</p>
+              {(() => {
+                const pl = priceLabel(lang, priceBook?.cards[cardLightbox.id])
+                const foilOnly = isFoilOnly(cardLightbox)
+                const tiles = [
+                  !foilOnly && pl?.low && { k: 'card.priceLow', v: pl.low },
+                  !foilOnly && pl?.avg30 && { k: 'card.priceAvg', v: pl.avg30 },
+                  pl?.foil && { k: 'card.priceFoil', v: pl.foil },
+                ].filter(Boolean) as { k: string; v: string }[]
+                if (!tiles.length) return <p className="card-ocr-status muted">{t(lang, 'card.noPrice')}</p>
+                return (
+                  <div className="card-price-tiles">
+                    {tiles.map((x) => (
+                      <div key={x.k} className="deck-stat"><span>{t(lang, x.k)}</span><b>{x.v}</b></div>
+                    ))}
+                  </div>
+                )
+              })()}
               <button type="button" className={`chip ${wish[cardLightbox.id] ? 'active' : ''}`} onClick={() => bumpWish(cardLightbox.id, 'qty', 1)}>
                 <Icon name="heart" />{t(lang, 'wish.add')}{wish[cardLightbox.id] ? ` (${wish[cardLightbox.id].qty + wish[cardLightbox.id].foil})` : ''}
               </button>
@@ -4552,7 +4569,6 @@ export default function App() {
                 price={priceBook?.cards[cardLightbox.id]}
                 onChange={(lots) => setCardLots(cardLightbox.id, lots)}
               />
-              <p className="help" style={{ marginTop: 4 }}>{t(lang, rulesSource === 'catalog' ? 'card.enlargeHintCatalog' : 'card.enlargeHint')}</p>
               <dl className="card-lightbox-dl">
                 <div><dt>{t(lang, 'card.types')}</dt><dd>{(cardLightbox.types || []).join(', ') || '—'}</dd></div>
                 <div><dt>{t(lang, 'card.domains')}</dt><dd>{(cardLightbox.domains || []).join(', ') || '—'}</dd></div>

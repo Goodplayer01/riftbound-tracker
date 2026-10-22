@@ -2051,3 +2051,6 @@ input[type="checkbox"] { accent-color: var(--primary); }
 
 /* Long blocks (copies, rules text) must not squeeze each other inside the scrolling column. */
 .card-lightbox-meta > * { flex-shrink: 0; }
+/* Card detail: market prices as tiles, same look as the deck header numbers. */
+.card-price-tiles { display: flex; gap: 8px; flex-wrap: wrap; }
+.card-price-tiles .deck-stat { flex: 1 1 0; min-width: 96px; }

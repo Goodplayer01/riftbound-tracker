@@ -99,7 +99,7 @@ export function CopyEditor({ lang, owned, lots, foilOnly, price, onChange }: {
     <div className="copy-editor">
       <div className="card-ocr-head">
         <strong>{t(lang, 'copies.title')}</strong>
-        <span className="card-ocr-note">{t(lang, 'copies.note')}</span>
+        {total > 0 && <span className="card-ocr-note">{t(lang, 'copies.note')}</span>}
       </div>
       {total === 0 ? (
         <p className="card-ocr-status muted">{t(lang, 'copies.none')}</p>
