@@ -67,6 +67,9 @@ import {
 } from './handTester'
 import { downloadSharePng, renderDeckShareCanvas } from './deckScreenshot'
 import { Icon } from './Icon'
+import { sellText, stockCsv, wantsText, type CmLine } from './cardmarket'
+import { historyPoints, loadPriceHistory, type PriceHistoryFile } from './priceHistory'
+import { ValueHistory } from './ValueHistory'
 
 type Tab = 'collection' | 'catalog' | 'sales' | 'decks' | 'borrowed' | 'stores' | 'dopamin'
 
@@ -663,6 +666,11 @@ export default function App() {
   const [activeBorrowedId, setActiveBorrowedId] = useState<string | null>(() => borrowed[0]?.id ?? null)
   const [wish, setWish] = useState<Collection>(() => loadWish())
   const [wishOpen, setWishOpen] = useState(false)
+  const [valueOpen, setValueOpen] = useState(false)
+  const [priceHistory, setPriceHistory] = useState<PriceHistoryFile | null>(null)
+  /** Cardmarket export dialog (wishlist wants text, sales list + CSV). */
+  const [cmExport, setCmExport] = useState<{ title: string; help: string; text: string; csv?: string } | null>(null)
+  const [cmCopied, setCmCopied] = useState(false)
   const [borrowImportText, setBorrowImportText] = useState('')
   const [borrowImportOpen, setBorrowImportOpen] = useState(false)
   const [borrowNotice, setBorrowNotice] = useState<string | null>(null)
@@ -985,6 +993,7 @@ export default function App() {
     keepNewer(loadCachedPrices())
     loadBundledPrices().then(keepNewer)
     fetchRemotePrices().then(keepNewer)
+    loadPriceHistory().then(setPriceHistory)
     fetch(new URL('card-keywords.json', window.location.href))
       .then((r) => (r.ok ? r.json() : null))
       .then((data: CardKeywordBook | null) => { if (data?.byCardId) setCardKeywordBook(data) })
@@ -1131,6 +1140,8 @@ export default function App() {
     }
     return { sum, priced }
   }, [collection, priceBook])
+
+  const pricePoints = useMemo(() => historyPoints(priceHistory, priceBook), [priceHistory, priceBook])
 
   const setProgress = useMemo(() => {
     const known = BINDER_SET_ORDER.filter((id) => id in sets)
@@ -1492,6 +1503,40 @@ export default function App() {
       setTab('collection')
     }
     reader.readAsText(file)
+  }
+
+  function openWantsExport() {
+    const lines: CmLine[] = Object.entries(wish).flatMap(([id, o]) => {
+      const card = byId.get(id)
+      return card ? [{ card, qty: o.qty || 0, foil: o.foil || 0, price: priceBook?.cards[id] }] : []
+    })
+    setCmCopied(false)
+    setCmExport({ title: t(lang, 'cm.wantsTitle'), help: t(lang, 'cm.wantsHelp'), text: wantsText(lines) })
+  }
+
+  function openSellExport() {
+    const lines: CmLine[] = Object.entries(saleList).flatMap(([id, n]) => {
+      const card = byId.get(id)
+      if (!card) return []
+      return [{ card, qty: isFoilOnly(card) ? 0 : n, foil: isFoilOnly(card) ? n : 0, price: priceBook?.cards[id] }]
+    })
+    setCmCopied(false)
+    setCmExport({
+      title: t(lang, 'cm.sellTitle'),
+      help: t(lang, 'cm.sellHelp'),
+      text: sellText(lines, (eur) => fmtEur(lang, eur)),
+      csv: stockCsv(lines),
+    })
+  }
+
+  async function copyCmExport() {
+    if (!cmExport) return
+    try {
+      await navigator.clipboard.writeText(cmExport.text)
+      setCmCopied(true)
+    } catch {
+      setCmCopied(false)
+    }
   }
 
   function download(name: string, content: string) {
@@ -2306,17 +2351,18 @@ export default function App() {
   }, [storeKm, storeCenter, storeAllGermany])
 
   useEffect(() => {
-    if (!cardLightbox && !clearSec && deckExportText == null && !sharePreview) return
+    if (!cardLightbox && !clearSec && deckExportText == null && !sharePreview && !cmExport) return
     const onKey = (e: KeyboardEvent) => {
       if (e.key !== 'Escape') return
-      if (sharePreview) setSharePreview(null)
+      if (cmExport) setCmExport(null)
+      else if (sharePreview) setSharePreview(null)
       else if (deckExportText != null) setDeckExportText(null)
       else if (clearSec) setClearSec(null)
       else setCardLightbox(null)
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [cardLightbox, clearSec, deckExportText, sharePreview])
+  }, [cardLightbox, clearSec, deckExportText, sharePreview, cmExport])
 
   useEffect(() => {
     if (!cardLightbox) {
@@ -2668,7 +2714,12 @@ export default function App() {
         <div className="side-footer no-drag">
           <div className="side-stats">
             {collectionValue && (
-              <div className="side-value" title={t(lang, 'stats.valueTitle')}>~{fmtEur(lang, collectionValue.sum)}</div>
+              <button
+                type="button"
+                className="side-value"
+                title={`${t(lang, 'stats.valueTitle')} · ${t(lang, 'value.open')}`}
+                onClick={() => { setTab('collection'); setBinderView(null); setWishOpen(false); setValueOpen(true) }}
+              >~{fmtEur(lang, collectionValue.sum)}</button>
             )}
             <div>{t(lang, 'stats.line1', { unique: totals.unique, copies: totals.copies })}</div>
             <div>{t(lang, 'stats.line2', { catalog: totals.catalog })}</div>
@@ -2751,7 +2802,7 @@ export default function App() {
         </header>
 
       <main className={`main${tab === 'stores' ? ' main-stores' : ''}${tab === 'collection' && binderView != null ? ' main-binder' : ''}${tab === 'dopamin' ? ' main-dopamin' : ''}`}>
-        {tab === 'collection' && binderView == null && !wishOpen && (
+        {tab === 'collection' && binderView == null && !wishOpen && !valueOpen && (
           <>
             <div className="toolbar">
               <div className="grow">
@@ -2790,6 +2841,9 @@ export default function App() {
               </button>
               <button type="button" className="btn" onClick={() => { setWishOpen(true); setQ(''); setSetFilter('') }}>
                 <Icon name="heart" />{t(lang, 'wish.title')}
+              </button>
+              <button type="button" className="btn" onClick={() => setValueOpen(true)}>
+                <Icon name="trending-up" />{t(lang, 'value.open')}
               </button>
             </div>
             {quickOpen && (
@@ -2879,6 +2933,17 @@ export default function App() {
           </>
         )}
 
+        {tab === 'collection' && binderView == null && !wishOpen && valueOpen && (
+          <ValueHistory
+            lang={lang}
+            points={pricePoints}
+            collection={collection}
+            byId={byId}
+            onBack={() => setValueOpen(false)}
+            onOpenCard={openCardLightbox}
+          />
+        )}
+
         {tab === 'collection' && binderView == null && wishOpen && (() => {
           const ids = Object.keys(wish)
           const total = ids.reduce((s, id) => s + ownedLineEur(wish[id], priceBook?.cards[id]), 0)
@@ -2893,6 +2958,7 @@ export default function App() {
                   <span className="deck-list-count">{ids.length} {cardWord(lang, ids.length)}</span>
                   <span style={{ flex: 1 }} />
                   <span className="deck-list-count">{t(lang, 'wish.total', { eur: fmtEur(lang, total) ?? '' })}</span>
+                  <button type="button" className="btn" disabled={ids.length === 0} onClick={openWantsExport}><Icon name="external-link" />{t(lang, 'cm.wantsBtn')}</button>
                   {poolToggle()}
                 </div>
                 <div {...cartDrop('wish', (id) => byId.has(id), (id) => bumpWish(id, 'qty', 1))}>
@@ -3190,6 +3256,7 @@ export default function App() {
                 >
                   <Icon name="badge-check" />{t(lang, 'sales.markSold')}{saleSelectedCount > 0 ? ` (${saleSelectedCount})` : ''}
                 </button>
+                <button type="button" className="btn" disabled={Object.keys(saleList).length === 0} onClick={openSellExport}><Icon name="file-down" />{t(lang, 'cm.sellBtn')}</button>
                 {poolToggle()}
               </div>
               {saleReport && <p className="help">{saleReport}</p>}
@@ -3563,7 +3630,7 @@ export default function App() {
         )}
 
         {tab === 'borrowed' && (
-          <div className="split deck-split">
+          <div className={`split deck-split${poolHidden ? ' pool-hidden' : ''}`}>
             <section className="panel deck-list-panel">
               <div className="toolbar">
                 <h2 style={{ margin: 0 }}>{t(lang, 'borrowed.title')}</h2>
@@ -3584,6 +3651,7 @@ export default function App() {
                   }}
                 ><Icon name="upload" />{t(lang, 'borrowed.import')}</button>
                 <button className="btn primary" onClick={newBorrowedGroup}><Icon name="plus" />{t(lang, 'borrowed.new')}</button>
+                {poolToggle()}
               </div>
               <p className="help">{t(lang, 'borrowed.help')}</p>
               <div className="deck-accordion">
@@ -4052,6 +4120,33 @@ export default function App() {
             </div>
             <div className="deck-share-img-wrap">
               <img src={sharePreview.dataUrl} alt={sharePreview.fileName} />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {cmExport && (
+        <div
+          className="card-lightbox"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="cm-export-title"
+          onClick={() => setCmExport(null)}
+        >
+          <div className="panel confirm-box deck-export-box" onClick={(e) => e.stopPropagation()}>
+            <h2 id="cm-export-title">{cmExport.title}</h2>
+            <p className="help">{cmExport.help}</p>
+            <textarea className="field" readOnly rows={12} value={cmExport.text} onFocus={(e) => e.currentTarget.select()} />
+            <div className="confirm-actions">
+              <button type="button" className="btn small" onClick={() => setCmExport(null)}><Icon name="x" />{t(lang, 'decks.exportClose')}</button>
+              {cmExport.csv != null && (
+                <button type="button" className="btn small" onClick={() => download('riftbound-cardmarket.csv', '\ufeff' + cmExport.csv)}>
+                  <Icon name="file-down" />{t(lang, 'cm.csv')}
+                </button>
+              )}
+              <button type="button" className="btn small primary" onClick={() => void copyCmExport()}>
+                <Icon name={cmCopied ? 'check' : 'copy'} />{cmCopied ? t(lang, 'decks.copied') : t(lang, 'decks.copy')}
+              </button>
             </div>
           </div>
         </div>
