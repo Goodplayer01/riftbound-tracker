@@ -16,6 +16,8 @@ Windows SmartScreen might complain the first time because the installer isn't si
 
 - Binders per set: OGN, OGS, SFD, UNL, VEN and RAD. Nexus Night binders can be hidden
 - Progress per rarity so you see what's still missing
+- Foil progress per set, what the missing cards would cost, and a missing list for Cardmarket or the wishlist
+- Language, condition and purchase price per copy, with profit or loss against today's price
 - Normal and foil counts for every card. Cards that only exist as foil get a single counter
 - Quick import: paste card codes or a whole deck list
 - CSV import and export
@@ -26,6 +28,7 @@ Windows SmartScreen might complain the first time because the installer isn't si
 - Copy the list in Cardmarket's wants format and paste it into a Cardmarket wants list
 - Drag cards in from the search on the right, the same way as in the deck builder
 - Total value of the list, and a Got it button that moves a card into your collection
+- Price alerts: set a target price per card and get a notification when it drops below
 
 **Catalogue**
 
