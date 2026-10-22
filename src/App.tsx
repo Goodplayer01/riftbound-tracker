@@ -2641,15 +2641,15 @@ export default function App() {
 
   return (
     <div className="app">
-      <header className="top titlebar">
-        <div className="brand">
+      <aside className="sidebar">
+        <div className="brand titlebar">
           <img className="brand-dante" src={publicAsset('dante.png')} alt="Dante" />
           <div className="brand-text">
-            <div className="brand-title">Deakrix <span>Riftbound Tracker</span></div>
-            <div className="maker-credit">made by Stefan</div>
+            <div className="brand-title">Deakrix</div>
+            <div className="brand-sub">Riftbound Tracker</div>
           </div>
         </div>
-        <nav className="tabs no-drag">
+        <nav className="side-nav no-drag" aria-label="Navigation">
           {([
             ['collection', 'tab.collection', 'album'],
             ['catalog', 'tab.catalog', 'layout-grid'],
@@ -2659,93 +2659,96 @@ export default function App() {
             ['stores', 'tab.stores', 'store'],
             ['dopamin', 'tab.dopamin', 'booster-open'],
           ] as const).map(([id, key, icon]) => (
-            <button key={id} className={`tab ${tab === id ? 'active' : ''}`} onClick={() => setTab(id)}>
+            <button key={id} type="button" className={`side-item ${tab === id ? 'active' : ''}`} aria-current={tab === id ? 'page' : undefined} onClick={() => setTab(id)}>
               <Icon name={icon} />
-              <span className="tab-label">{t(lang, key)}</span>
+              <span className="side-label">{t(lang, key)}</span>
             </button>
           ))}
         </nav>
-        <div className="stats no-drag" style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-          <span className="stats-lines">
-            <span>{t(lang, 'stats.line1', { unique: totals.unique, copies: totals.copies })}</span>
-            <span>{t(lang, 'stats.line2', { catalog: totals.catalog })}</span>
-          </span>
-          {collectionValue && (
-            <span className="value-pill" title={t(lang, 'stats.valueTitle')}>
-              ~{fmtEur(lang, collectionValue.sum)}
-            </span>
-          )}
-          <div className={`lang-menu${langMenuOpen ? ' open' : ''}`} ref={langMenuRef}>
+        <div className="side-footer no-drag">
+          <div className="side-stats">
+            {collectionValue && (
+              <div className="side-value" title={t(lang, 'stats.valueTitle')}>~{fmtEur(lang, collectionValue.sum)}</div>
+            )}
+            <div>{t(lang, 'stats.line1', { unique: totals.unique, copies: totals.copies })}</div>
+            <div>{t(lang, 'stats.line2', { catalog: totals.catalog })}</div>
+          </div>
+          <div className="side-actions">
+            <div className={`lang-menu${langMenuOpen ? ' open' : ''}`} ref={langMenuRef}>
+              <button
+                type="button"
+                className={`lang-trigger${langMenuOpen ? ' open' : ''}`}
+                title={t(lang, 'lang.label')}
+                aria-label={t(lang, 'lang.label')}
+                aria-haspopup="menu"
+                aria-expanded={langMenuOpen}
+                onClick={() => setLangMenuOpen((o) => !o)}
+              >
+                <img className="lang-flag" src={lang === 'de' ? 'flags/de.svg' : 'flags/gb.svg'} alt="" width={18} height={12} />
+                <svg className="lang-caret" width="10" height="6" viewBox="0 0 10 6" aria-hidden="true">
+                  <path d="M1 1l4 4 4-4" stroke="currentColor" strokeWidth="1.4" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </button>
+              {langMenuOpen && (
+                <div className="lang-dropdown" role="menu" aria-label={t(lang, 'lang.label')}>
+                  <button
+                    type="button"
+                    role="menuitemradio"
+                    aria-checked={lang === 'de'}
+                    className={`lang-option${lang === 'de' ? ' active' : ''}`}
+                    onClick={() => setAppLang('de')}
+                  >
+                    <img className="lang-flag" src="flags/de.svg" alt="" width={18} height={12} />
+                    <span>{t(lang, 'lang.de')}</span>
+                  </button>
+                  <button
+                    type="button"
+                    role="menuitemradio"
+                    aria-checked={lang === 'en'}
+                    className={`lang-option${lang === 'en' ? ' active' : ''}`}
+                    onClick={() => setAppLang('en')}
+                  >
+                    <img className="lang-flag" src="flags/gb.svg" alt="" width={18} height={12} />
+                    <span>{t(lang, 'lang.en')}</span>
+                  </button>
+                </div>
+              )}
+            </div>
             <button
               type="button"
-              className={`lang-trigger${langMenuOpen ? ' open' : ''}`}
-              title={t(lang, 'lang.label')}
-              aria-label={t(lang, 'lang.label')}
-              aria-haspopup="menu"
-              aria-expanded={langMenuOpen}
-              onClick={() => setLangMenuOpen((o) => !o)}
+              className={`version-btn${updateInfo?.status ? ` status-${updateInfo.status}` : ' status-not-available'}`}
+              title={updateTitle()}
+              onClick={onVersionClick}
+              disabled={updateInfo?.status === 'downloading' || updateInfo?.status === 'checking'}
             >
-              <img className="lang-flag" src={lang === 'de' ? 'flags/de.svg' : 'flags/gb.svg'} alt="" width={18} height={12} />
-              <svg className="lang-caret" width="10" height="6" viewBox="0 0 10 6" aria-hidden="true">
-                <path d="M1 1l4 4 4-4" stroke="currentColor" strokeWidth="1.4" fill="none" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
+              {updateInfo?.status === 'downloading' && (
+                <span className="dl-bar" style={{ width: `${Math.min(100, Math.max(0, updateInfo.percent ?? 0))}%` }} />
+              )}
+              <span className="dl-label">{updateLabel()}</span>
             </button>
-            {langMenuOpen && (
-              <div className="lang-dropdown" role="menu" aria-label={t(lang, 'lang.label')}>
-                <button
-                  type="button"
-                  role="menuitemradio"
-                  aria-checked={lang === 'de'}
-                  className={`lang-option${lang === 'de' ? ' active' : ''}`}
-                  onClick={() => setAppLang('de')}
-                >
-                  <img className="lang-flag" src="flags/de.svg" alt="" width={18} height={12} />
-                  <span>{t(lang, 'lang.de')}</span>
-                </button>
-                <button
-                  type="button"
-                  role="menuitemradio"
-                  aria-checked={lang === 'en'}
-                  className={`lang-option${lang === 'en' ? ' active' : ''}`}
-                  onClick={() => setAppLang('en')}
-                >
-                  <img className="lang-flag" src="flags/gb.svg" alt="" width={18} height={12} />
-                  <span>{t(lang, 'lang.en')}</span>
-                </button>
-              </div>
-            )}
           </div>
+          <div className="maker-credit">made by Stefan</div>
         </div>
-        <div className="chrome no-drag">
-          <button
-            type="button"
-            className={`version-btn${updateInfo?.status ? ` status-${updateInfo.status}` : ' status-not-available'}`}
-            title={updateTitle()}
-            onClick={onVersionClick}
-            disabled={updateInfo?.status === 'downloading' || updateInfo?.status === 'checking'}
-          >
-            {updateInfo?.status === 'downloading' && (
-              <span className="dl-bar" style={{ width: `${Math.min(100, Math.max(0, updateInfo.percent ?? 0))}%` }} />
-            )}
-            <span className="dl-label">{updateLabel()}</span>
-          </button>
-        </div>
-        <div className="win-controls no-drag">
-          <button type="button" className="win-btn" title={t(lang, 'win.minimize')} aria-label={t(lang, 'win.minimize')} onClick={() => window.riftbound?.windowMinimize?.()}>
-            <svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><path d="M1 5h8" stroke="currentColor" strokeWidth="1.2" fill="none" /></svg>
-          </button>
-          <button type="button" className="win-btn" title={isFullScreen ? t(lang, 'win.windowed') : t(lang, 'win.fullscreen')} aria-label={isFullScreen ? t(lang, 'win.windowed') : t(lang, 'win.fullscreen')} onClick={toggleFullscreen}>
-            {isFullScreen ? (
-              <svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><path d="M2.5 3.5h5v5h-5zM3.5 2.5h5v5" stroke="currentColor" strokeWidth="1.1" fill="none" /></svg>
-            ) : (
-              <svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><rect x="1.5" y="1.5" width="7" height="7" stroke="currentColor" strokeWidth="1.2" fill="none" /></svg>
-            )}
-          </button>
-          <button type="button" className="win-btn win-close" title={t(lang, 'win.close')} aria-label={t(lang, 'win.close')} onClick={() => window.riftbound?.windowClose?.()}>
-            <svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><path d="M2 2l6 6M8 2L2 8" stroke="currentColor" strokeWidth="1.2" fill="none" /></svg>
-          </button>
-        </div>
-      </header>
+      </aside>
+
+      <div className="content">
+        <header className="top titlebar">
+          <div className="win-controls no-drag">
+            <button type="button" className="win-btn" title={t(lang, 'win.minimize')} aria-label={t(lang, 'win.minimize')} onClick={() => window.riftbound?.windowMinimize?.()}>
+              <svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><path d="M1 5h8" stroke="currentColor" strokeWidth="1.2" fill="none" /></svg>
+            </button>
+            <button type="button" className="win-btn" title={isFullScreen ? t(lang, 'win.windowed') : t(lang, 'win.fullscreen')} aria-label={isFullScreen ? t(lang, 'win.windowed') : t(lang, 'win.fullscreen')} onClick={toggleFullscreen}>
+              {isFullScreen ? (
+                <svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><path d="M2.5 3.5h5v5h-5zM3.5 2.5h5v5" stroke="currentColor" strokeWidth="1.1" fill="none" /></svg>
+              ) : (
+                <svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><rect x="1.5" y="1.5" width="7" height="7" stroke="currentColor" strokeWidth="1.2" fill="none" /></svg>
+              )}
+            </button>
+            <button type="button" className="win-btn win-close" title={t(lang, 'win.close')} aria-label={t(lang, 'win.close')} onClick={() => window.riftbound?.windowClose?.()}>
+              <svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><path d="M2 2l6 6M8 2L2 8" stroke="currentColor" strokeWidth="1.2" fill="none" /></svg>
+            </button>
+          </div>
+        </header>
 
       <main className={`main${tab === 'stores' ? ' main-stores' : ''}${tab === 'collection' && binderView != null ? ' main-binder' : ''}${tab === 'dopamin' ? ' main-dopamin' : ''}`}>
         {tab === 'collection' && binderView == null && !wishOpen && (
@@ -4016,6 +4019,7 @@ export default function App() {
         {tab === 'dopamin' && catalog && <Dopamin cards={catalog.cards} lang={lang} prices={priceBook} />}
 
       </main>
+      </div>
 
       {sharePreview && (
         <div

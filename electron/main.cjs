@@ -130,7 +130,7 @@ function createWindow() {
     maximizable: false,
     fullscreenable: true,
     title: 'Deakrix Riftbound Tracker',
-    backgroundColor: '#0a0c10',
+    backgroundColor: '#1c1c1e',
     frame: false,
     autoHideMenuBar: true,
     icon: icon && !icon.isEmpty() ? icon : iconPath || undefined,
