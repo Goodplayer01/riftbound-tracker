@@ -23,6 +23,7 @@ Windows SmartScreen might complain the first time because the installer isn't si
 **Wishlist**
 
 - Cards you still want, shown as tiles like in the catalogue
+- Copy the list in Cardmarket's wants format and paste it into a Cardmarket wants list
 - Drag cards in from the search on the right, the same way as in the deck builder
 - Total value of the list, and a Got it button that moves a card into your collection
 
@@ -41,6 +42,7 @@ Windows SmartScreen might complain the first time because the installer isn't si
 - Total value of your collection in EUR
 - Click a card name to open it on Cardmarket
 - Prices refresh every time the app starts, you don't need a new version for that
+- Value history: a chart of what your collection was worth at each price update, plus the cards that went up or down the most
 
 **Decks**
 
@@ -56,7 +58,7 @@ Windows SmartScreen might complain the first time because the installer isn't si
 
 **Sales**
 
-Put cards you want to sell in a cart by dragging them in, pasting a list or clicking the cart button. Each card shows its price and the cart shows the total. Mark them as sold when they're gone and your collection is updated. You can't add more copies than you own.
+Put cards you want to sell in a cart by dragging them in, pasting a list or clicking the cart button. Each card shows its price and the cart shows the total. Mark them as sold when they're gone and your collection is updated. You can't add more copies than you own. Export the cart as a list with trend prices or as a CSV with Cardmarket product ids.
 
 **Borrowed**
 
