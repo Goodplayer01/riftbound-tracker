@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Icon } from './Icon'
 import type { Card, PriceBook } from './types'
-import { t, type Lang } from './i18n'
+import { fmtEur, t, type Lang } from './i18n'
 import { displayCardName } from './deckHelpers'
 import { boosterSets, pullChance, rollPack, type PackSlot } from './dopaminPacks'
 
@@ -52,12 +52,11 @@ function fmtChance(p: number) {
   return `${text}%`
 }
 
-function slotPrice(slot: PackSlot, prices: PriceBook | null) {
+function slotPrice(slot: PackSlot, prices: PriceBook | null, lang: Lang) {
   const p = prices?.cards[slot.card.id]
   if (!p) return null
   const n = slot.foil ? (p.foilLow ?? p.foilTrend) : p.low
-  if (n == null || Number.isNaN(n)) return null
-  return `${n.toFixed(2)} EUR`
+  return fmtEur(lang, n)
 }
 
 export function Dopamin({ cards, lang, prices }: { cards: Card[]; lang: Lang; prices: PriceBook | null }) {
@@ -152,7 +151,7 @@ export function Dopamin({ cards, lang, prices }: { cards: Card[]; lang: Lang; pr
   const up = face === 'up' && !!slot
   const done = phase === 'open' && !!pack && idx === pack.length - 1 && face === 'up'
   const kind = slot ? holdKind(slot.card.rarity) : ''
-  const price = up && slot ? slotPrice(slot, prices) : null
+  const price = up && slot ? slotPrice(slot, prices, lang) : null
   const chance = up && slot && setId ? pullChance(cards, setId, slot) : null
 
   if (!chosen) {

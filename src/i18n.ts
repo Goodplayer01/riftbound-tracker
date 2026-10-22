@@ -20,6 +20,17 @@ export function saveLang(lang: Lang) {
   }
 }
 
+const eurFormat = {
+  de: new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }),
+  en: new Intl.NumberFormat('en-IE', { style: 'currency', currency: 'EUR' }),
+}
+
+/** Display only: "0,02 €" in German, "€0.02" in English. CSV export keeps plain numbers. */
+export function fmtEur(lang: Lang, n: number | null | undefined) {
+  if (n == null || Number.isNaN(n)) return null
+  return eurFormat[lang].format(n)
+}
+
 type Vars = Record<string, string | number>
 
 const de: Record<string, string> = {
@@ -74,7 +85,7 @@ const de: Record<string, string> = {
   'wish.add': 'Auf die Wunschliste',
   'wish.got': 'Erhalten',
   'wish.empty': 'Noch keine Karten auf der Wunschliste. Füge rechts Karten hinzu.',
-  'wish.total': 'Gesamtwert ~{eur} EUR',
+  'wish.total': 'Gesamtwert ~{eur}',
   'pool.hide': 'Suche ausblenden',
   'pool.show': 'Suche einblenden',
   'wish.deleteConfirm': 'Willst du "{name}" wirklich von der Wunschliste entfernen?',
@@ -111,6 +122,7 @@ const de: Record<string, string> = {
   'price.high': 'Höchster Preis',
   'price.avg30': '30 Tage Durchschnitt',
   'price.foil': 'Foil Low',
+  'price.from': 'ab',
   'qty.normal': 'Normal',
   'qty.foil': 'Foil',
 
@@ -195,6 +207,7 @@ const de: Record<string, string> = {
   'decks.owns': 'besitzt {have}',
   'decks.addToCollection': 'Sammlung',
   'decks.add': 'Hinzufügen',
+  'decks.addSection': '+ {section} hinzufügen',
   'decks.reorder': 'Deck verschieben',
   'decks.banned': 'Gebannt',
   'decks.banned2v2': 'Gebannt (2v2)',
@@ -423,7 +436,7 @@ const en: Record<string, string> = {
   'wish.add': 'Add to wishlist',
   'wish.got': 'Got it',
   'wish.empty': 'No cards on your wishlist yet. Add cards on the right.',
-  'wish.total': 'Total value ~{eur} EUR',
+  'wish.total': 'Total value ~{eur}',
   'pool.hide': 'Hide search',
   'pool.show': 'Show search',
   'wish.deleteConfirm': 'Do you really wanna remove "{name}" from your wishlist?',
@@ -460,6 +473,7 @@ const en: Record<string, string> = {
   'price.high': 'Highest price',
   'price.avg30': '30 day average',
   'price.foil': 'Foil Low',
+  'price.from': 'from',
   'qty.normal': 'Normal',
   'qty.foil': 'Foil',
 
@@ -544,6 +558,7 @@ const en: Record<string, string> = {
   'decks.owns': 'owns {have}',
   'decks.addToCollection': 'Collection',
   'decks.add': 'Add',
+  'decks.addSection': '+ Add {section}',
   'decks.reorder': 'Move deck',
   'decks.banned': 'Banned',
   'decks.banned2v2': 'Banned (2v2)',

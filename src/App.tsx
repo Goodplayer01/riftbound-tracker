@@ -3,7 +3,7 @@ import { fetchRemotePrices, loadBundledPrices, loadCachedPrices, newerPriceBook 
 import type { BorrowedCard, BorrowedGroup, Card, Catalog, Deck, DeckSection, PriceBook, PriceEntry } from './types'
 import { loadBorrowed, loadCollection, loadDecks, loadSales, loadWish, saveBorrowed, saveCollection, saveDecks, saveSales, saveWish, type Collection } from './storage'
 import { csvSeparator, ownedQty, splitCsv, subtractOwnedCopies } from './collection'
-import { loadLang, saveLang, t, type Lang } from './i18n'
+import { fmtEur, loadLang, saveLang, t, type Lang } from './i18n'
 import { Dopamin } from './Dopamin'
 import { SearchInput } from './SearchInput'
 import {
@@ -16,7 +16,6 @@ import {
 import { ocrCardText } from './ocr'
 import { parseBulkTokens, resolveToken } from './parseBulk'
 import {
-  SECTION_ADD_LABEL,
   SECTION_CAPS,
   SECTION_LABEL,
   SECTION_ORDER,
@@ -133,33 +132,28 @@ function copyWord(lang: Lang, n: number) {
   return lang === 'de' ? (n === 1 ? 'Kopie' : 'Kopien') : (n === 1 ? 'copy' : 'copies')
 }
 
-function fmtEur(n: number | null | undefined) {
-  if (n == null || Number.isNaN(n)) return null
-  return `${n.toFixed(2)}€`
-}
-
-function priceLabel(p?: PriceEntry) {
+function priceLabel(lang: Lang, p?: PriceEntry) {
   if (!p) return null
-  const low = fmtEur(p.low)
-  const high = fmtEur(p.high ?? null)
-  const avg30 = fmtEur(p.avg30 ?? null)
-  const foil = fmtEur(p.foilLow) || fmtEur(p.foilTrend)
+  const low = fmtEur(lang, p.low)
+  const high = fmtEur(lang, p.high ?? null)
+  const avg30 = fmtEur(lang, p.avg30 ?? null)
+  const foil = fmtEur(lang, p.foilLow) || fmtEur(lang, p.foilTrend)
   return { low, high, avg30, foil, cmId: p.cmId || null, cmUrl: p.cmUrl || null }
 }
 
 function PriceBits({ entry, lang, showHigh = false, foilOnly = false }: { entry?: PriceEntry; lang: Lang; showHigh?: boolean; foilOnly?: boolean }) {
-  const pl = priceLabel(entry)
+  const pl = priceLabel(lang, entry)
   if (!pl || (!pl.low && !pl.avg30 && !pl.high && !pl.foil)) return null
   if (foilOnly) {
-    const p = fmtEur(entry?.foilLow || entry?.foilTrend || entry?.low || entry?.trend || null)
-    return <div className="price">{p ? <span className="foil" title={t(lang, 'price.foil')}>ab {p}</span> : <span className="na">ab --</span>}</div>
+    const p = fmtEur(lang, entry?.foilLow || entry?.foilTrend || entry?.low || entry?.trend || null)
+    return <div className="price">{p ? <span className="foil" title={t(lang, 'price.foil')}>{t(lang, 'price.from')} {p}</span> : <span className="na">{t(lang, 'price.from')} –</span>}</div>
   }
   return (
     <div className="price">
-      {pl.low ? <span title={t(lang, 'price.low')}>ab {pl.low}</span> : <span className="na">ab --</span>}
+      {pl.low ? <span title={t(lang, 'price.low')}>{t(lang, 'price.from')} {pl.low}</span> : <span className="na">{t(lang, 'price.from')} –</span>}
       {showHigh && pl.high ? <span className="high" title={t(lang, 'price.high')}>max {pl.high}</span> : null}
       {pl.avg30 ? <span className="avg30" title={t(lang, 'price.avg30')}>Ø30 {pl.avg30}</span> : null}
-      {pl.foil ? <span className="foil" title={t(lang, 'price.foil')}>F {pl.foil}</span> : null}
+      {pl.foil ? <span className="foil" title={t(lang, 'price.foil')}>Foil {pl.foil}</span> : null}
     </div>
   )
 }
@@ -595,27 +589,36 @@ function CardTile({
           >{displayCardName(c)}</button>
           <BanBadge status={banStatus(c)} lang={lang} />
         </div>
-        <div className="sub">{c.code} | {c.set} | {(c.types || []).join('/') || '-'} | {(c.domains || []).join('/') || '-'}</div>
+        <div className="sub">{c.code} · {(c.types || []).join('/') || '-'} · {(c.domains || []).join('/') || '-'}</div>
         <PriceBits entry={priceEntry} lang={lang} showHigh={!foilOnly} foilOnly={foilOnly} />
         {qtyRow ?? (foilOnly ? (
-          <div className="row row-center">
-            <div className="qty" title={t(lang, 'qty.foil')}>
-              <button onClick={() => onBump(c.id, 'foil', -1)}>-</button>
-              <b className={variant === 'binder' ? (o.foil > 0 ? 'ok' : 'muted') : undefined}>{o.foil + o.qty}<span className="foil-star" aria-hidden="true">★</span></b>
-              <button onClick={() => onBump(c.id, 'foil', 1)}>+</button>
+          <div className="qty-group qty-group-single">
+            <div className="qty-col">
+              <span className="qty-label">{t(lang, 'qty.foil')}<span className="foil-star" aria-hidden="true">★</span></span>
+              <div className="qty">
+                <button aria-label={`${t(lang, 'qty.foil')} −1`} onClick={() => onBump(c.id, 'foil', -1)}>−</button>
+                <b className={o.foil + o.qty > 0 ? 'have' : undefined}>{o.foil + o.qty}</b>
+                <button aria-label={`${t(lang, 'qty.foil')} +1`} onClick={() => onBump(c.id, 'foil', 1)}>+</button>
+              </div>
             </div>
           </div>
         ) : (
-        <div className="row">
-          <div className="qty" title={t(lang, 'qty.normal')}>
-            <button onClick={() => onBump(c.id, 'qty', -1)}>-</button>
-            <b className={variant === 'binder' ? (o.qty > 0 ? 'ok' : 'muted') : undefined}>{o.qty}</b>
-            <button onClick={() => onBump(c.id, 'qty', 1)}>+</button>
+        <div className="qty-group">
+          <div className="qty-col">
+            <span className="qty-label">{t(lang, 'qty.normal')}</span>
+            <div className="qty">
+              <button aria-label={`${t(lang, 'qty.normal')} −1`} onClick={() => onBump(c.id, 'qty', -1)}>−</button>
+              <b className={o.qty > 0 ? 'have' : undefined}>{o.qty}</b>
+              <button aria-label={`${t(lang, 'qty.normal')} +1`} onClick={() => onBump(c.id, 'qty', 1)}>+</button>
+            </div>
           </div>
-          <div className="qty" title={t(lang, 'qty.foil')}>
-            <button onClick={() => onBump(c.id, 'foil', -1)}>-</button>
-            <b className={variant === 'binder' ? (o.foil > 0 ? 'ok' : 'muted') : 'ok'}>{o.foil}F</b>
-            <button onClick={() => onBump(c.id, 'foil', 1)}>+</button>
+          <div className="qty-col">
+            <span className="qty-label">{t(lang, 'qty.foil')}</span>
+            <div className="qty">
+              <button aria-label={`${t(lang, 'qty.foil')} −1`} onClick={() => onBump(c.id, 'foil', -1)}>−</button>
+              <b className={o.foil > 0 ? 'have' : undefined}>{o.foil}</b>
+              <button aria-label={`${t(lang, 'qty.foil')} +1`} onClick={() => onBump(c.id, 'foil', 1)}>+</button>
+            </div>
           </div>
         </div>
         ))}
@@ -1763,7 +1766,8 @@ export default function App() {
     return (
       <button
         type="button"
-        className={`chip${poolHidden ? '' : ' active'}`}
+        className="btn"
+        aria-pressed={!poolHidden}
         title={t(lang, poolHidden ? 'pool.show' : 'pool.hide')}
         onClick={() => setPoolHidden((v) => { localStorage.setItem('rb.poolHidden', v ? '0' : '1'); return !v })}
       >
@@ -2012,7 +2016,7 @@ export default function App() {
               setActiveSection(sec)
             }}
           >
-            {locked ? t(lang, 'decks.legendLocked') : SECTION_ADD_LABEL[sec]}
+            {locked ? t(lang, 'decks.legendLocked') : t(lang, 'decks.addSection', { section: SECTION_LABEL[sec] })}
           </button>
         )}
       </div>
@@ -2668,7 +2672,7 @@ export default function App() {
           </span>
           {collectionValue && (
             <span className="value-pill" title={t(lang, 'stats.valueTitle')}>
-              ~{collectionValue.sum.toFixed(2)} EUR
+              ~{fmtEur(lang, collectionValue.sum)}
             </span>
           )}
           <div className={`lang-menu${langMenuOpen ? ' open' : ''}`} ref={langMenuRef}>
@@ -2811,7 +2815,7 @@ export default function App() {
                       <div className="binder-name">{s.name}</div>
                       <div className="binder-progress">{s.owned} / {s.total} ({s.pct}%)</div>
                       <div className="binder-bar"><span style={{ width: `${s.pct}%` }} /></div>
-                      {s.eur != null && <div className="binder-eur">~{s.eur.toFixed(2)} EUR</div>}
+                      {s.eur != null && <div className="binder-eur">~{fmtEur(lang, s.eur)}</div>}
                     </div>
                     {SET_ART_IDS.has(s.id) && (
                       <img
@@ -2885,7 +2889,7 @@ export default function App() {
                   <h2 style={{ margin: 0 }}>{t(lang, 'wish.title')}</h2>
                   <span className="deck-list-count">{ids.length} {cardWord(lang, ids.length)}</span>
                   <span style={{ flex: 1 }} />
-                  <span className="deck-list-count">{t(lang, 'wish.total', { eur: total.toFixed(2) })}</span>
+                  <span className="deck-list-count">{t(lang, 'wish.total', { eur: fmtEur(lang, total) ?? '' })}</span>
                   {poolToggle()}
                 </div>
                 <div {...cartDrop('wish', (id) => byId.has(id), (id) => bumpWish(id, 'qty', 1))}>
@@ -2897,7 +2901,7 @@ export default function App() {
                       return (
                         <CardTile key={id} c={c} o={wish[id]} lang={lang} priceEntry={priceBook?.cards[id]} variant="catalog" onOpen={openCardLightbox} onBump={bumpWish}>
                           <div className="row">
-                            <button type="button" className="btn small primary" onClick={() => gotWish(id)}><Icon name="check" />{t(lang, 'wish.got')}</button>
+                            <button type="button" className="btn small positive" onClick={() => gotWish(id)}><Icon name="check" />{t(lang, 'wish.got')}</button>
                             <button
                               type="button"
                               className="btn icon small danger deck-trash"
@@ -2967,7 +2971,7 @@ export default function App() {
                         <div className="sub">{c.code} · x{ownedQty(collection[c.id])}{c.energy != null ? ` · E${c.energy}` : ''}</div>
                         <PriceBits entry={priceBook?.cards[c.id]} lang={lang} />
                       </div>
-                      <button className="btn small primary" onClick={() => bumpWish(c.id, 'qty', 1)}><Icon name="plus" />{t(lang, 'decks.add')}</button>
+                      <button className="btn small add" onClick={() => bumpWish(c.id, 'qty', 1)}><Icon name="plus" />{t(lang, 'decks.add')}</button>
                     </div>
                   ))}
                 </div>
@@ -3174,7 +3178,7 @@ export default function App() {
             <section className="panel col-fill">
               <div className="toolbar">
                 <h2 style={{ margin: 0 }}>{t(lang, 'sales.cart')}</h2>
-                <span className="deck-list-count" style={{ flex: 1 }}>{t(lang, 'wish.total', { eur: Object.entries(saleList).reduce((sum, [id, n]) => { const c = byId.get(id); return sum + (c ? ownedLineEur(isFoilOnly(c) ? { foil: n } : { qty: n }, priceBook?.cards[id]) : 0) }, 0).toFixed(2) })}</span>
+                <span className="deck-list-count" style={{ flex: 1 }}>{t(lang, 'wish.total', { eur: fmtEur(lang, Object.entries(saleList).reduce((sum, [id, n]) => { const c = byId.get(id); return sum + (c ? ownedLineEur(isFoilOnly(c) ? { foil: n } : { qty: n }, priceBook?.cards[id]) : 0) }, 0)) ?? '' })}</span>
                 <button
                   className="btn primary"
                   disabled={saleSelectedCount === 0}
@@ -3226,7 +3230,7 @@ export default function App() {
                             <input type="checkbox" checked={!!saleSelected[id]} onChange={() => toggleSaleSelected(id)} />
                             <span className="sub">{t(lang, 'decks.owns', { have })}</span>
                           </label>
-                          <b>{line.toFixed(2)} EUR</b>
+                          <b>{fmtEur(lang, line)}</b>
                         </div>
                       </CardTile>
                     )
@@ -3270,7 +3274,7 @@ export default function App() {
                         <div className="sub">{c.code} · x{have}{room < have ? t(lang, 'sales.inCart', { n: have - room }) : ''}</div>
                         <PriceBits entry={priceBook?.cards[c.id]} lang={lang} />
                       </div>
-                      <button className="btn small primary" disabled={room <= 0} onClick={() => addToSale(c.id, 1)} title={t(lang, 'sales.toCart')} aria-label={t(lang, 'sales.toCart')}>
+                      <button className="btn small add" disabled={room <= 0} onClick={() => addToSale(c.id, 1)} title={t(lang, 'sales.toCart')} aria-label={t(lang, 'sales.toCart')}>
                         <Icon name="shopping-cart" />
                       </button>
                     </div>
@@ -3435,13 +3439,13 @@ export default function App() {
                               <div className="deck-price-sums help">
                                 <div>
                                   <b>{t(lang, 'decks.totalLow')}</b>{' '}
-                                  {sums.priced > 0 ? fmtEur(sums.deckLow) : '—'}
+                                  {sums.priced > 0 ? fmtEur(lang, sums.deckLow) : '—'}
                                   {sums.priced > 0 && sums.priced < deckCount(d) ? t(lang, 'decks.partialPrice') : ''}
                                 </div>
                                 {missCopies > 0 && (
                                   <div>
                                     <b>{t(lang, 'decks.missingCopies')}</b>{' '}
-                                    {sums.missingPriced > 0 ? fmtEur(sums.missingLow) : '—'}
+                                    {sums.missingPriced > 0 ? fmtEur(lang, sums.missingLow) : '—'}
                                     {` (${missCopies} ${t(lang, 'bulk.copies')})`}
                                   </div>
                                 )}
@@ -3532,7 +3536,7 @@ export default function App() {
                         <PriceBits entry={priceBook?.cards[c.id]} lang={lang} />
                       </div>
                       <button
-                        className="btn small primary"
+                        className="btn small add"
                         disabled={
                           sectionCount(activeDeck.cards, activeSection) >= SECTION_CAPS[activeSection]
                           || (sectionNeedsLegend(activeSection) && !hasLegend(activeDeck.cards))
@@ -3829,7 +3833,7 @@ export default function App() {
                           <PriceBits entry={priceBook?.cards[c.id]} lang={lang} />
                         </div>
                         <button
-                          className="btn small primary"
+                          className="btn small add"
                           disabled={!activeBorrowed || room <= 0}
                           title={room <= 0 ? t(lang, 'borrowed.noAvail') : undefined}
                           onClick={() => bumpBorrowedCard(c.id, 1)}
@@ -3889,7 +3893,7 @@ export default function App() {
               </div>
               <button
                 type="button"
-                className={`btn${storeAllGermany ? ' primary' : ''}`}
+                className={`btn${storeAllGermany ? ' on' : ''}`}
                 aria-pressed={storeAllGermany}
                 disabled={storeBusy}
                 onClick={() => {
@@ -3906,7 +3910,7 @@ export default function App() {
               ><Icon name="globe" />{t(lang, 'stores.allGermany')}</button>
               <button
                 type="button"
-                className={`btn${storeStockOnly ? ' primary' : ''}`}
+                className={`btn${storeStockOnly ? ' on' : ''}`}
                 aria-pressed={storeStockOnly}
                 title={t(lang, 'stores.stockOnlyHint')}
                 onClick={() => setStoreStockOnly((v) => !v)}

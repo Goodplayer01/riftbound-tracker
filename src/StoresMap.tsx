@@ -105,9 +105,9 @@ export function StoresMap({ center, radiusKm, hits, emptyHint, fitHits = false }
     if (!circleRef.current) {
       circleRef.current = L.circle([lat, lng], {
         radius: meters,
-        color: '#d4af37',
+        color: '#e0a33a',
         weight: 2,
-        fillColor: '#d4af37',
+        fillColor: '#e0a33a',
         fillOpacity: 0.12,
       }).addTo(map)
     } else {

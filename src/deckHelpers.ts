@@ -32,15 +32,6 @@ export const SECTION_LABEL: Record<DeckSection, string> = {
   rune: 'Runes',
 }
 
-export const SECTION_ADD_LABEL: Record<DeckSection, string> = {
-  legend: '+ Add Legend',
-  champion: '+ Add Champion',
-  main: '+ Add Main Deck',
-  battlefield: '+ Add Battlefields',
-  sideboard: '+ Add Sideboard',
-  rune: '+ Add Runes',
-}
-
 const SECTION_HEADER: Record<string, DeckSection> = {
   legend: 'legend',
   legende: 'legend',
