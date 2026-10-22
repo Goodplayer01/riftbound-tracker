@@ -15,7 +15,8 @@ Windows SmartScreen might complain the first time because the installer isn't si
 **Collection**
 
 - Binders per set: OGN, OGS, SFD, UNL, VEN and RAD. Nexus Night binders can be hidden
-- Progress per rarity so you see what's still missing
+- Progress per rarity so you see what's still missing. In a set, click a rarity to show only those cards
+- Filters for owned, missing and missing foils in each set
 - Foil progress per set, what the missing cards would cost, and a missing list for Cardmarket or the wishlist
 - Language, condition and purchase price per copy, with profit or loss against today's price
 - Normal and foil counts for every card. Cards that only exist as foil get a single counter
@@ -52,11 +53,11 @@ Windows SmartScreen might complain the first time because the installer isn't si
 - Legend, Champion, Main Deck (39), Battlefields, Runes and Sideboard, with the usual limits
 - Find a Legend by typing the champion name
 - Drag cards from the search list into a deck section
-- Shows which copies you're missing and what they cost
+- The open deck shows its Legend big, with the deck's value and what the missing copies would cost. Click the missing tile to list those cards and add them to your collection
 - Import and export deck lists as text
 - Drag decks around to sort them
 - Delete asks first, and Delete all can be undone until you close the app
-- Once a deck is full you get a Share button that makes a clean image of the whole deck
+- Once a deck is full you get a Share button that makes a clean image of the whole deck: Legend, runes, battlefields, main deck and sideboard with counts
 - Hand tester with mulligan
 
 **Sales**
@@ -75,9 +76,13 @@ Riftbound shops in Germany on a map with a radius around you, contact info, and 
 
 Open simulated booster packs for each set with the real pack art. Cards flip one at a time, with price and pull chance, and a counter shows how many packs you've opened. The odds only use what Riot has published, nothing made up.
 
-In the wishlist, sales and deck builder you can hide the card search on the right to get more room.
+**Look and feel**
 
-The app runs in German or English.
+- Dark design in the style of macOS, with Dante's amber as the accent color
+- Domain icons drawn for the app, sharp at every size
+- The window button maximizes the app and leaves the Windows taskbar visible
+- In the wishlist, sales and deck builder you can hide the card search on the right to get more room
+- The app runs in German or English
 
 ## Feedback
 
@@ -89,4 +94,4 @@ This is a fan project. It's not affiliated with or endorsed by Riot Games or UVS
 
 ## Credits
 
-Icons are from [Lucide](https://lucide.dev) (ISC License, Copyright (c) Lucide Icons and Contributors). The torn booster pack icon on the Dopamin tab is my own drawing in the same style.
+Icons are from [Lucide](https://lucide.dev) (ISC License, Copyright (c) Lucide Icons and Contributors). The torn booster pack icon on the Dopamin tab is my own drawing in the same style. The domain icons were drawn for this app and are not Riot's artwork.
