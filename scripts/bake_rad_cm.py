@@ -17,11 +17,11 @@ ALIAS = {'Evelynn, in Control': 'Evelynn, In Control', 'Ziggs, Short-Fused': 'Zi
          'Riven Deserter': 'Riven, Deserter', "K'Sante Pride of Nazumah": "K'Sante, Pride of Nazumah",
          "Hunter's Circle": "Hunters' Circle"}
 
-cards = [c for c in json.loads((ROOT / 'public/cards.json').read_text())['cards'] if c['set'] == 'RAD']
-prods = json.loads((CM / 'prod.json').read_text())['products']
-pg = {x['idProduct']: x for x in json.loads((CM / 'pg.json').read_text())['priceGuides']}
+cards = [c for c in json.loads((ROOT / 'public/cards.json').read_text(encoding='utf-8'))['cards'] if c['set'] == 'RAD']
+prods = json.loads((CM / 'prod.json').read_text(encoding='utf-8'))['products']
+pg = {x['idProduct']: x for x in json.loads((CM / 'pg.json').read_text(encoding='utf-8'))['priceGuides']}
 slugs_path = ROOT / 'scripts/cm_rad_slugs.json'
-slugs = json.loads(slugs_path.read_text()) if slugs_path.exists() else {}
+slugs = json.loads(slugs_path.read_text(encoding='utf-8')) if slugs_path.exists() else {}
 
 def nm(c):
     n = c['name'] + (', ' + c['subtitle'] if c.get('subtitle') else '')
@@ -52,7 +52,7 @@ for key, cs in cg.items():
     else:
         skipped += [c['id'] for c in cs]
 
-doc = json.loads((ROOT / 'public/prices.json').read_text())
+doc = json.loads((ROOT / 'public/prices.json').read_text(encoding='utf-8'))
 book = doc['cards']
 for cid, pid in match.items():
     g = pg.get(pid, {})
@@ -64,6 +64,6 @@ for cid, pid in match.items():
     else:
         e.setdefault('cmUrl', None)
 print('dropped_outliers=', sanitize(book))
-(ROOT / 'public/prices.json').write_text(json.dumps(doc, indent=2, ensure_ascii=False) + '\n')
+(ROOT / 'public/prices.json').write_text(json.dumps(doc, indent=2, ensure_ascii=False) + '\n', encoding='utf-8')
 print(f'matched={len(match)} priced={sum(1 for p in match.values() if pg.get(p, {}).get("low") is not None)} '
       f'urls={sum(1 for p in match.values() if str(p) in slugs)} skipped={skipped}')

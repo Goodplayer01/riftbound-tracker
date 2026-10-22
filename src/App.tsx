@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useRef, useState, type DragEvent as ReactDragEvent, type MouseEvent as ReactMouseEvent, type PointerEvent as ReactPointerEvent, type ReactNode, type RefObject } from 'react'
 import { fetchRemotePrices, loadBundledPrices, loadCachedPrices, newerPriceBook } from './prices'
 import type { BorrowedCard, BorrowedGroup, Card, Catalog, Deck, DeckSection, PriceBook, PriceEntry } from './types'
-import { loadBorrowed, loadCollection, loadDecks, loadWish, saveBorrowed, saveCollection, saveDecks, saveWish, type Collection } from './storage'
+import { loadBorrowed, loadCollection, loadDecks, loadSales, loadWish, saveBorrowed, saveCollection, saveDecks, saveSales, saveWish, type Collection } from './storage'
+import { csvSeparator, ownedQty, splitCsv, subtractOwnedCopies } from './collection'
 import { loadLang, saveLang, t, type Lang } from './i18n'
 import { Dopamin } from './Dopamin'
 import { SearchInput } from './SearchInput'
@@ -92,10 +93,6 @@ function foldFoilOnly(col: Collection, byId: Map<string, Card>): Collection {
   return out
 }
 
-function ownedQty(o?: { qty: number; foil: number }) {
-  return (o?.qty || 0) + (o?.foil || 0)
-}
-
 /** Total lent copies of a card across all borrower groups. */
 function borrowedQtyById(groups: BorrowedGroup[]): Map<string, number> {
   const m = new Map<string, number>()
@@ -114,25 +111,6 @@ function flattenImportCards(cards: { id: string; qty: number }[]): BorrowedCard[
     m.set(c.id, (m.get(c.id) || 0) + c.qty)
   }
   return [...m.entries()].map(([id, qty]) => ({ id, qty }))
-}
-
-/** Reduce non-foil (qty) first, then foil. Never below 0. */
-function subtractOwnedCopies(o: { qty: number; foil: number }, sellQty: number) {
-  const have = ownedQty(o)
-  const want = Math.max(0, Math.floor(sellQty) || 0)
-  const sold = Math.min(want, have)
-  const short = want - sold
-  let rem = sold
-  let qty = o.qty || 0
-  let foil = o.foil || 0
-  const fromNonFoil = Math.min(qty, rem)
-  qty -= fromNonFoil
-  rem -= fromNonFoil
-  if (rem > 0) {
-    const fromFoil = Math.min(foil, rem)
-    foil -= fromFoil
-  }
-  return { qty, foil, sold, short }
 }
 
 
@@ -676,10 +654,10 @@ export default function App() {
   const langMenuRef = useRef<HTMLDivElement | null>(null)
   const [catalog, setCatalog] = useState<Catalog | null>(null)
   const [error, setError] = useState<string | null>(null)
-  const [collection, setCollection] = useState<Collection>({})
-  const [decks, setDecks] = useState<Deck[]>([])
-  const [borrowed, setBorrowed] = useState<BorrowedGroup[]>([])
-  const [activeBorrowedId, setActiveBorrowedId] = useState<string | null>(null)
+  const [collection, setCollection] = useState<Collection>(loadCollection)
+  const [decks, setDecks] = useState<Deck[]>(loadDecks)
+  const [borrowed, setBorrowed] = useState<BorrowedGroup[]>(loadBorrowed)
+  const [activeBorrowedId, setActiveBorrowedId] = useState<string | null>(() => borrowed[0]?.id ?? null)
   const [wish, setWish] = useState<Collection>(() => loadWish())
   const [wishOpen, setWishOpen] = useState(false)
   const [borrowImportText, setBorrowImportText] = useState('')
@@ -714,12 +692,12 @@ export default function App() {
   const [quickOpen, setQuickOpen] = useState(false)
   const [quickMode, setQuickMode] = useState<'codes' | 'list'>('codes')
   const [bulkReport, setBulkReport] = useState<string | null>(null)
-  const [saleList, setSaleList] = useState<Record<string, number>>({})
+  const [saleList, setSaleList] = useState<Record<string, number>>(loadSales)
   const [saleSelected, setSaleSelected] = useState<Record<string, boolean>>({})
   const [saleQ, setSaleQ] = useState('')
   const [salePaste, setSalePaste] = useState('')
   const [saleReport, setSaleReport] = useState<string | null>(null)
-  const [activeDeckId, setActiveDeckId] = useState<string | null>(null)
+  const [activeDeckId, setActiveDeckId] = useState<string | null>(() => decks[0]?.id ?? null)
   const [deckOwnedOnly, setDeckOwnedOnly] = useState(false)
   const [activeSection, setActiveSection] = useState<DeckSection>('main')
   const [deckImportText, setDeckImportText] = useState('')
@@ -992,13 +970,6 @@ export default function App() {
   }, [langMenuOpen, rarityMenuOpen, abilityMenuOpen])
 
   useEffect(() => {
-    setCollection(loadCollection())
-    const d = loadDecks()
-    setDecks(d)
-    if (d[0]) setActiveDeckId(d[0].id)
-    const b = loadBorrowed()
-    setBorrowed(b)
-    if (b[0]) setActiveBorrowedId(b[0].id)
     fetch(new URL('cards.json', window.location.href))
       .then((r) => {
         if (!r.ok) throw new Error('cards.json fehlt')
@@ -1021,6 +992,7 @@ export default function App() {
   useEffect(() => saveDecks(decks), [decks])
   useEffect(() => saveBorrowed(borrowed), [borrowed])
   useEffect(() => saveWish(wish), [wish])
+  useEffect(() => saveSales(saleList), [saleList])
 
   const cards = catalog?.cards || []
   const sets = catalog?.sets || {}
@@ -1499,22 +1471,21 @@ export default function App() {
       const text = String(reader.result || '')
       const lines = text.split(/\r?\n/).filter(Boolean)
       const start = lines[0]?.toLowerCase().includes('id') ? 1 : 0
-      setCollection((prev) => {
-        const next = { ...prev }
-        for (let i = start; i < lines.length; i++) {
-          const cols = splitCsv(lines[i])
-          if (cols.length < 5) continue
-          const [id, , , , qty, foil] = cols
-          const card = byId.get(id) || resolveToken(cols[1] || id, cards)
-          if (!card) continue
-          next[card.id] = {
-            qty: Math.max(0, Number(qty) || 0),
-            foil: Math.max(0, Number(foil) || 0),
-          }
+      const sep = csvSeparator(lines[0] || '')
+      const rows: Collection = {}
+      for (let i = start; i < lines.length; i++) {
+        const cols = splitCsv(lines[i], sep)
+        if (cols.length < 5) continue
+        const [id, , , , qty, foil] = cols
+        const card = byId.get(id) || resolveToken(cols[1] || id, cards)
+        if (!card) continue
+        rows[card.id] = {
+          qty: Math.max(0, Number(qty) || 0),
+          foil: Math.max(0, Number(foil) || 0),
         }
-        return next
-      })
-      setBulkReport(t(lang, 'catalog.csvImported', { name: file.name }))
+      }
+      setCollection((prev) => ({ ...prev, ...rows }))
+      setBulkReport(t(lang, 'catalog.csvImported', { name: file.name, count: Object.keys(rows).length }))
       setTab('collection')
     }
     reader.readAsText(file)
@@ -4290,22 +4261,4 @@ export default function App() {
       )}
     </div>
   )
-}
-
-function splitCsv(line: string): string[] {
-  const out: string[] = []
-  let cur = ''
-  let inQ = false
-  for (let i = 0; i < line.length; i++) {
-    const ch = line[i]
-    if (ch === '"') {
-      if (inQ && line[i + 1] === '"') { cur += '"'; i++; continue }
-      inQ = !inQ
-      continue
-    }
-    if (ch === ',' && !inQ) { out.push(cur); cur = ''; continue }
-    cur += ch
-  }
-  out.push(cur)
-  return out
 }

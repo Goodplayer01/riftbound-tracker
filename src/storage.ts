@@ -50,3 +50,13 @@ export function loadWish(): Collection {
 export function saveWish(w: Collection) {
   writeJson(WISH_KEY, w)
 }
+
+const SALES_KEY = 'rb.sales.v1'
+
+export function loadSales(): Record<string, number> {
+  return readJson(SALES_KEY, {})
+}
+
+export function saveSales(s: Record<string, number>) {
+  writeJson(SALES_KEY, s)
+}

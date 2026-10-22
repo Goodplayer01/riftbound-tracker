@@ -38,7 +38,6 @@ export type StoreHit = {
   products: StoreProduct[] | null
 }
 
-type FetchJson = (url: string) => Promise<{ ok: boolean; data?: unknown; error?: string }>
 
 async function fetchJson(url: string): Promise<unknown> {
   if (typeof window !== 'undefined' && window.riftbound?.fetchJson) {
@@ -293,6 +292,3 @@ export function mapsUrl(hit: StoreHit) {
 export function websiteUrl(raw: string) {
   return /^https?:\/\//i.test(raw) ? raw : `https://${raw}`
 }
-
-/** Unused but kept for typing / future; fetchJson path uses window.riftbound. */
-export type _FetchJson = FetchJson

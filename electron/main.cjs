@@ -349,6 +349,7 @@ ipcMain.handle('net:fetchImageDataUrl', async (_e, url) => {
         Accept: 'image/*,*/*',
         'User-Agent': 'DeakrixRiftboundTracker/' + app.getVersion() + ' (card OCR)',
       },
+      signal: AbortSignal.timeout(15000),
     })
     if (!res.ok) {
       return { ok: false, error: 'HTTP ' + res.status }

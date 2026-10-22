@@ -29,6 +29,8 @@ jobs:
       # package-lock.json only lists the Linux builds of these native packages.
       - run: npm install --no-save @rollup/rollup-win32-x64-msvc@4.63.4 @esbuild/win32-x64@0.28.2
 
+      - run: node --experimental-strip-types scripts/check_v050.mjs && node --experimental-strip-types scripts/check_v080.mjs
+
       - run: npm run dist -- --publish never
 
       - name: Publish release

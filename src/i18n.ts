@@ -104,7 +104,7 @@ const de: Record<string, string> = {
   'catalog.ownedOnly': 'Nur im Besitz',
   'catalog.csvExport': 'CSV Export',
   'catalog.csvImport': 'CSV Import',
-  'catalog.csvImported': 'CSV importiert ({name})',
+  'catalog.csvImported': 'CSV importiert ({name}): {count} Karten übernommen',
 
   'price.openCm': 'Auf Cardmarket öffnen',
   'price.low': 'Niedrigster Preis (ab)',
@@ -453,7 +453,7 @@ const en: Record<string, string> = {
   'catalog.ownedOnly': 'Owned only',
   'catalog.csvExport': 'CSV export',
   'catalog.csvImport': 'CSV import',
-  'catalog.csvImported': 'CSV imported ({name})',
+  'catalog.csvImported': 'CSV imported ({name}): {count} cards updated',
 
   'price.openCm': 'Open on Cardmarket',
   'price.low': 'Lowest price',
