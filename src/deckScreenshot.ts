@@ -243,8 +243,9 @@ export async function renderDeckShareCanvas(
     const legendH = Math.round(leftW * 1039 / 744)
     const domainIcon = 34
     const domainRowH = domainCounts.size ? labelH + domainIcon : 0
-    const bfH = 56
-    const bfGap = 8
+    // Full landscape card (744×1039 on its side); a thin strip cropped away most of the art.
+    const bfH = Math.round(leftW * 744 / 1039)
+    const bfGap = 10
     const leftStack =
       legendH +
       (domainRowH ? 20 + domainRowH : 0) +

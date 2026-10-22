@@ -2700,24 +2700,12 @@ export default function App() {
                   )}
 
                   {(() => {
+                    // Opened from the "Still missing" tile in the deck header.
+                    if (!missingExpanded) return null
                     const under = underOwnedLines(activeDeck)
                     if (!under.length) return null
-                    const totalShort = under.reduce((s, x) => s + x.short, 0)
                     return (
                       <div className="deck-warn">
-                        <div>
-                          <b>{t(lang, 'decks.missingInCollection')}</b>{' '}
-                          {under.length} {cardWord(lang, under.length)} ({totalShort} {copyWord(lang, totalShort)})
-                        </div>
-                        <button
-                          type="button"
-                          className="btn small"
-                          style={{ marginTop: 6 }}
-                          onClick={() => setMissingExpanded((v) => !v)}
-                        >
-                          <Icon name={missingExpanded ? 'chevron-up' : 'chevron-down'} />{t(lang, missingExpanded ? 'decks.hideMissing' : 'decks.showMissing')}
-                        </button>
-                        {missingExpanded && (
                           <div className="deck-warn-list">
                             {under.map((u) => {
                               const img = byId.get(u.id)?.image
@@ -2770,7 +2758,6 @@ export default function App() {
                               )
                             })}
                           </div>
-                        )}
                       </div>
                     )
                   })()}
@@ -3699,12 +3686,14 @@ export default function App() {
                         <span className="deck-acc-chevron" aria-hidden>{expanded ? '▾' : '▸'}</span>
                         {legendImg && <DeckThumb src={legendImg} lg />}
                         {expanded ? (
-                          <div className="grow deck-hero" onClick={(e) => e.stopPropagation()} onKeyDown={(e) => e.stopPropagation()}>
+                          <div className="grow deck-hero">
                             <div className="deck-hero-title">
                               <input
                                 className="deck-hero-name"
                                 value={d.name}
                                 onChange={(e) => updateDeck((deck) => ({ ...deck, name: e.target.value }))}
+                                onClick={(e) => e.stopPropagation()}
+                                onKeyDown={(e) => e.stopPropagation()}
                                 aria-label={t(lang, 'decks.rename')}
                               />
                               <span className="deck-acc-count">{deckCount(d)} {cardWord(lang, deckCount(d))}</span>
@@ -3717,15 +3706,25 @@ export default function App() {
                                   {sums.priced > 0 && sums.priced < deckCount(d) && <small>{t(lang, 'decks.partialPrice')}</small>}
                                 </div>
                                 {missCopies > 0 && (
-                                  <div className="deck-stat deck-stat-warn">
+                                  <button
+                                    type="button"
+                                    className="deck-stat deck-stat-warn"
+                                    aria-expanded={missingExpanded}
+                                    title={t(lang, missingExpanded ? 'decks.hideMissing' : 'decks.showMissing')}
+                                    onClick={(e) => { e.stopPropagation(); setMissingExpanded((v) => !v) }}
+                                    onKeyDown={(e) => e.stopPropagation()}
+                                  >
                                     <span>{t(lang, 'decks.missingCopies')}</span>
                                     <b>{sums.missingPriced > 0 ? fmtEur(lang, sums.missingLow) : '—'}</b>
-                                    <small>{missCopies} {t(lang, 'bulk.copies')}</small>
-                                  </div>
+                                    <small>
+                                      {under.length} {cardWord(lang, under.length)} · {missCopies} {copyWord(lang, missCopies)}
+                                      <Icon name={missingExpanded ? 'chevron-up' : 'chevron-down'} size={14} />
+                                    </small>
+                                  </button>
                                 )}
                               </div>
                             )}
-                            <div className="deck-hero-actions">
+                            <div className="deck-hero-actions" onClick={(e) => e.stopPropagation()} onKeyDown={(e) => e.stopPropagation()}>
                               {isDeckComplete(d.cards) && (
                                 <button type="button" className="btn small primary" disabled={deckShotBusy} onClick={() => void openDeckShare(d)}>
                                   <Icon name="share-2" />{deckShotBusy ? t(lang, 'decks.shareBusy') : t(lang, 'decks.share')}
