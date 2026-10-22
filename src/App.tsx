@@ -3104,10 +3104,10 @@ export default function App() {
                         <div className="binder-progress">{t(lang, 'collection.missingEur', { eur: fmtEur(lang, s.missingEur) ?? '' })}</div>
                       )}
                     </div>
-                    {SET_ART_IDS.has(s.id) && (
+                    {(SET_ART_IDS.has(s.id) || s.id.endsWith('-NN')) && (
                       <img
                         className="binder-set-art"
-                        src={publicAsset(`sets/${s.id}.png`)}
+                        src={publicAsset(s.id.endsWith('-NN') ? 'sets/NN.svg' : `sets/${s.id}.png`)}
                         alt=""
                         loading="lazy"
                         onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none' }}
