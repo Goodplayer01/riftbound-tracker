@@ -1,0 +1,32 @@
+name: Bake card images
+
+# Swaps spoiler images in public/cards.json for Riot's official gallery images
+# and commits the result to main. Start it from Actions > Bake card images > Run workflow.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  bake:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - run: python scripts/bake_images.py
+
+      - name: Commit cards.json
+        run: |
+          if git diff --quiet public/cards.json; then
+            echo "No image changes"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898299+github-actions[bot]@users.noreply.github.com"
+          git commit -am "Official Riot card images from the card gallery"
+          git push
