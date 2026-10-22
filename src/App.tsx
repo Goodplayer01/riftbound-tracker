@@ -3235,6 +3235,13 @@ export default function App() {
                       <option key={sid} value={sid}>{name}</option>
                     ))}
                   </select>
+                  <button
+                    type="button"
+                    className="btn icon ghost"
+                    title={t(lang, 'pool.hide')}
+                    aria-label={t(lang, 'pool.hide')}
+                    onClick={() => { localStorage.setItem('rb.poolHidden', '1'); setPoolHidden(true) }}
+                  ><Icon name="x" /></button>
                 </div>
                 <div className="toolbar">
                   <RarityMenu
