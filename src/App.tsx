@@ -2766,10 +2766,33 @@ export default function App() {
                     if (!missingExpanded) return null
                     const under = underOwnedLines(activeDeck)
                     if (!under.length) return null
+                    // Grouped by set in binder order, by card code inside a set, so the binder can be flipped through.
+                    const setRank = (s: string) => {
+                      const i = (BINDER_SET_ORDER as readonly string[]).indexOf(s)
+                      return i < 0 ? BINDER_SET_ORDER.length : i
+                    }
+                    const groups = new Map<string, typeof under>()
+                    for (const u of [...under].sort((a, b) => {
+                      const ca = byId.get(a.id)
+                      const cb = byId.get(b.id)
+                      return setRank(ca?.set || '') - setRank(cb?.set || '') ||
+                        (ca?.set || '').localeCompare(cb?.set || '') ||
+                        (ca?.code || a.id).localeCompare(cb?.code || b.id, undefined, { numeric: true })
+                    })) {
+                      const s = byId.get(u.id)?.set || ''
+                      groups.set(s, [...(groups.get(s) || []), u])
+                    }
                     return (
                       <div className="deck-warn">
+                        {[...groups].map(([setId, rows]) => (
+                          <div key={setId || '-'} className="deck-warn-set">
+                          <div className="deck-warn-set-head">
+                            <b>{setId || '?'}</b>
+                            {sets[setId] && <span>{sets[setId]}</span>}
+                            <span className="muted">{rows.reduce((n, u) => n + u.short, 0)}×</span>
+                          </div>
                           <div className="deck-warn-list">
-                            {under.map((u) => {
+                            {rows.map((u) => {
                               const img = byId.get(u.id)?.image
                               const pe = priceBook?.cards[u.id]
                               return (
@@ -2801,6 +2824,7 @@ export default function App() {
                                       onClick={() => openCm(pe)}
                                     >{u.name}</button>
                                     <div className="sub">
+                                      {byId.get(u.id)?.code && <>{byId.get(u.id)?.code} · </>}
                                       {t(lang, 'decks.needHave', { need: u.need, have: u.have })}
                                     </div>
                                   </div>
@@ -2821,6 +2845,8 @@ export default function App() {
                               )
                             })}
                           </div>
+                          </div>
+                        ))}
                       </div>
                     )
                   })()}
