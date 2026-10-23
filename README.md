@@ -15,7 +15,9 @@ Windows SmartScreen might complain the first time because the installer isn't si
 **Sets and All owned**
 
 - Sets tab: binders per set: OGN, OGS, SFD, UNL, VEN and RAD. Nexus Night binders can be hidden
-- All owned tab: every card you own in one place, with the decks each card is used in
+- All owned tab: every card you own in one place, sorted by set, with a filter per set
+- Each card shows which of your decks use it
+- Set, ban and errata tags on every card tile
 - Progress per rarity so you see what's still missing. In a set, click a rarity to show only those cards
 - Filters for owned, missing and missing foils in each set
 - Foil progress per set, what the missing cards would cost, and a missing list for Cardmarket or the wishlist
@@ -28,7 +30,7 @@ Windows SmartScreen might complain the first time because the installer isn't si
 
 - Cards you still want, shown as tiles like in the catalogue
 - Copy the list in Cardmarket's wants format and paste it into a Cardmarket wants list
-- Drag cards in from the search on the right, the same way as in the deck builder
+- Drag cards in from the search on the right, the same way as in the deck builder, and drag them out again to remove a copy
 - Total value of the list, and a Got it button that moves a card into your collection
 - Price alerts: set a target price per card and get a notification when it drops below
 
@@ -46,16 +48,18 @@ Windows SmartScreen might complain the first time because the installer isn't si
 
 - Cardmarket prices from Cardmarket's daily price guide: low, 30 day average, trend and foil, Radiance included
 - Total value of your collection in EUR
-- Click a card name to open it on Cardmarket
-- Prices refresh every time the app starts, you don't need a new version for that
+- Click a card name to open it on Cardmarket, in the app's language and filtered to English copies from German sellers
+- Prices are updated every morning and the app picks them up at start, you don't need a new version for that
 - Value history: a chart of what your collection was worth at each price update, plus the cards that went up or down the most
 
 **Decks**
 
 - Legend, Champion, Main Deck (39), Battlefields, Runes and Sideboard, with the usual limits
 - Find a Legend by typing the champion name
-- Drag cards from the search list into a deck section
-- The open deck shows its Legend big, with the deck's value and what the missing copies would cost. Click the missing tile to list those cards and add them to your collection
+- Drag cards from the search list into a deck section, and drag them out again to remove one copy per drag
+- Every deck card shows how many you own and how many the deck needs, with buttons to add or remove normal and foil copies in your collection
+- Runes as one big counter per domain of your Legend
+- The open deck shows its Legend big, with the deck's value and what the missing copies would cost. Click the missing tile to list those cards by set with big images, add them to your collection, or copy them as a Cardmarket wants list
 - Import and export deck lists as text
 - Drag decks around to sort them
 - Delete asks first, and Delete all can be undone until you close the app
@@ -64,11 +68,11 @@ Windows SmartScreen might complain the first time because the installer isn't si
 
 **Sales**
 
-Put cards you want to sell in a cart by dragging them in, pasting a list or clicking the cart button. Each card shows its price and the cart shows the total. Mark them as sold when they're gone and your collection is updated. You can't add more copies than you own. Export the cart as a list with trend prices or as a CSV with Cardmarket product ids.
+Put cards you want to sell in a cart by dragging them in, pasting a list or clicking the cart button, and drag them out again to take them back. Each card shows its price and the cart shows the total. Mark them as sold when they're gone and your collection is updated. You can't add more copies than you own. Export the cart as a list with trend prices or as a CSV with Cardmarket product ids.
 
 **Borrowed**
 
-Keep track of cards you lent to friends, sorted by person. Those copies don't count as available when you build decks.
+Keep track of cards you lent to friends, sorted by person. Drag cards in from the search and out again when you get them back. Those copies don't count as available when you build decks.
 
 **Stores**
 
@@ -82,7 +86,8 @@ Open simulated booster packs for each set with the real pack art. Cards flip one
 
 - Dark design in the style of macOS, with Dante's amber as the accent color
 - Domain icons drawn for the app, sharp at every size
-- The window button maximizes the app and leaves the Windows taskbar visible
+- The window button maximizes the app and leaves the Windows taskbar visible, and the app then uses the full width of the screen
+- Click anywhere on a card to open its detail view, and drag a card from anywhere on its tile
 - In the wishlist, sales and deck builder you can hide the card search on the right to get more room
 - The app runs in German or English
 - Card images load fast: small previews ship with the app, full-size art is cached on your PC after the first view
