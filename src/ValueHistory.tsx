@@ -4,6 +4,7 @@ import { fmtEur, t, type Lang } from './i18n'
 import { valueAt, type PricePoint } from './priceHistory'
 import type { Collection } from './storage'
 import type { Card } from './types'
+import { cardThumb } from './cardImages'
 
 type Range = '30' | '90' | '365' | 'all'
 
@@ -135,7 +136,7 @@ export function ValueHistory(props: {
         {list.length === 0 && <div className="empty">{t(lang, 'invest.none')}</div>}
         {list.map((r) => (
           <button key={r.card.id} type="button" className="mover-row" data-card-id={r.card.id} onClick={() => props.onOpenCard(r.card)}>
-            {r.card.image ? <img src={r.card.image} alt="" loading="lazy" /> : <span className="mover-img" />}
+            {r.card.image ? <img src={cardThumb(r.card)} alt="" loading="lazy" decoding="async" /> : <span className="mover-img" />}
             <span className="mover-name">
               <b>{r.card.name}</b>
               <span className="sub">{r.card.code} · {r.copies}x</span>
@@ -159,7 +160,7 @@ export function ValueHistory(props: {
         {list.length === 0 && <div className="empty">{t(lang, 'value.noMovers')}</div>}
         {list.map((m) => (
           <button key={`${m.card.id}-${m.foil}`} type="button" className="mover-row" data-card-id={m.card.id} onClick={() => props.onOpenCard(m.card)}>
-            {m.card.image ? <img src={m.card.image} alt="" loading="lazy" /> : <span className="mover-img" />}
+            {m.card.image ? <img src={cardThumb(m.card)} alt="" loading="lazy" decoding="async" /> : <span className="mover-img" />}
             <span className="mover-name">
               <b>{m.card.name}</b>
               <span className="sub">{m.card.code}{m.foil ? ' · Foil' : ''} · {m.copies}x</span>

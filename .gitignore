@@ -7,3 +7,6 @@ Thumbs.db
 .env
 .env.*
 tsconfig.tsbuildinfo
+
+# Baked by scripts/bake_thumbs.py in the Release workflow
+public/thumbs/
