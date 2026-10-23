@@ -63,4 +63,6 @@ export type BorrowedGroup = {
   name: string
   cards: BorrowedCard[]
   updatedAt: string
+  /** 'from': cards borrowed from this person (count as owned, marked borrowed). Missing means lent to them. */
+  direction?: 'from'
 }

@@ -13,7 +13,7 @@ Notes for Claude Code working in this repo. The README is the user-facing featur
 
 - Electron 37 + React 19 + Vite 7 + TypeScript. Windows NSIS installer via electron-builder, auto-update via electron-updater from GitHub Releases.
 - `electron/main.cjs`: window, updater, IPC (`net:fetchJson`, `net:fetchImageDataUrl`, `shell:openExternal`, window controls) and the `rbimg://` image cache protocol. `electron/preload.cjs` exposes these to the renderer.
-- `src/App.tsx` holds most of the UI (one big file, ~4800 lines). Helpers live in their own modules (`prices.ts`, `priceHistory.ts`, `copies.ts`, `cardmarket.ts`, `cardImages.ts`, `deckHelpers.ts`, `banlist.ts`, `storage.ts`, ...).
+- `src/App.tsx` holds most of the UI (one big file, ~5100 lines). Helpers live in their own modules (`prices.ts`, `priceHistory.ts`, `copies.ts`, `cardmarket.ts`, `cardImages.ts`, `deckHelpers.ts`, `banlist.ts`, `storage.ts`, ...).
 - Styling in `src/styles.css`: dark "Apple look", graphite surfaces with amber accent, sidebar navigation. Icons from Lucide (`src/Icon.tsx`).
 - No test framework. The `scripts/check_*.mjs` / `check-dopamin.mjs` files are plain assertion scripts that run in the Release workflow.
 - Stefan's PC has no Python (only the Microsoft Store alias), so Python bake scripts run in the GitHub workflows, e.g. `gh workflow run prices.yml --ref <branch>`.
@@ -22,6 +22,8 @@ Notes for Claude Code working in this repo. The README is the user-facing featur
 
 - Sidebar tabs (`Tab` in App.tsx): `collection` is labelled "Sets" (set binders, wishlist, value history); `owned` is "All owned", the owned binder (`binderView === 'owned'`, kept in sync with the tab by an effect) with a set filter (`ownedSet`) and a sort select (`ownedSort`: by set, or by the price of one owned copy, foil price when only foils are owned; not persisted). Then Catalogue, Sales, Decks, Borrowed, Stores, Dopamin.
 - Stores tab has two views (`storeView`): Displays (`src/StoreDisplays.tsx` + `src/displays.ts`, the display price comparison) and the store locator map. Displays reads `sealed.json`, asks the listed shops again live (Shopify `/search/suggest.json`, WooCommerce Store API, both allowed in `net:fetchJson` only for the fixed Riftbound queries) and CardTrader through `net:cardtrader` with the user's token. Title parsing (display / language / set) exists twice, in `displays.ts` and `scripts/bake_sealed.py`: keep both in sync, `scripts/check_displays.mjs` covers the TS side.
+- Borrowed tab: a `BorrowedGroup` without `direction` is lent to that person (copies leave `availableForDecks`); `direction: 'from'` means borrowed from them (copies add to `availableForDecks`, show in All owned with the purple `BorrowedBadge`, never touch `rb.collection.v1`, value or set progress). Export / import format is `src/borrowList.ts` (`qty code name` lines; a lent list pasted into an empty entry turns it into "borrowed from"), covered by `scripts/check_borrow.mjs`.
+- Deck builder rune section: the search list hides plain runes (`isPlainRune`), those have the per-domain counter; only alt art runes are listed.
 - Card tiles are `CardTile`; list rows are `.list-item` (`.deck-card-row` in decks and borrowed, `.picker-card` in the search panels on the right). Clicking a tile or row opens the card detail unless the click hits a button or input (`isControlClick`).
 - Drag and drop: search cards set `text/riftbound-card` and drop into deck sections, wishlist, sales cart and borrowed (`onSectionDrop`, `cartDrop`, `onBorrowDrop`). Cards in those lists drag out with `removeDragProps` (`text/riftbound-remove`): a drop outside the panel marked `data-remove-src` removes one copy.
 - Deck rows: Collection panel (normal / foil steppers, `collectionButtons`) and Owns / Need. The "Still missing" list groups by set and exports a Cardmarket wants list. Runes show one counter per Legend domain.
@@ -35,7 +37,7 @@ npm ci
 npm run dev:app      # Vite + Electron for local development
 npm run build        # tsc --noEmit + vite build (use this to check a change compiles)
 npm run dist         # build + Windows installer into release/
-node --experimental-strip-types scripts/check_v050.mjs   # same for check_v080, check_copies, check-dopamin, check_displays
+node --experimental-strip-types scripts/check_v050.mjs   # same for check_v080, check_copies, check-dopamin, check_displays, check_borrow
 node scripts/check_errata.mjs
 ```
 
@@ -76,6 +78,8 @@ If a shape has to change, add a new versioned key and migrate from the old one.
 - `bake-images.yml` (manual): official Riot card images into `cards.json`.
 
 The cloud sandbox proxy blocks the card image hosts and playriftbound.com, so image and errata baking runs in workflows (or errata get added by hand).
+
+One-off scripts no workflow runs: `bake_rules_text.py` (rules text from the playriftbound.com card gallery into `cards.json`), `bake_rad_cm.py` (maps RAD cards to Cardmarket products, uses `cm_rad_slugs.json`), `rebake_cm_urls.py` (rewrites `cmUrl` to the canonical English form, uses `cm_url_overrides.json`).
 
 ## Conventions
 

@@ -13,6 +13,7 @@ import {
   type CardKeywordBook,
 } from './keywords'
 import { parseBulkTokens, resolveToken } from './parseBulk'
+import { LENT_HEADER, formatBorrowList, parseBorrowList } from './borrowList'
 import {
   SECTION_CAPS,
   SECTION_LABEL,
@@ -123,10 +124,11 @@ function foldFoilOnly(col: Collection, byId: Map<string, Card>): Collection {
   return out
 }
 
-/** Total lent copies of a card across all borrower groups. */
-function borrowedQtyById(groups: BorrowedGroup[]): Map<string, number> {
+/** Total copies per card across the lent groups, or across the borrowed-from groups with `from`. */
+function borrowedQtyById(groups: BorrowedGroup[], from = false): Map<string, number> {
   const m = new Map<string, number>()
   for (const g of groups) {
+    if ((g.direction === 'from') !== from) continue
     for (const c of g.cards) {
       m.set(c.id, (m.get(c.id) || 0) + c.qty)
     }
@@ -153,6 +155,12 @@ function BanBadge({ status, lang }: { status: BanStatus; lang: Lang }) {
       {t(lang, key)}
     </span>
   )
+}
+
+/** Same pill as the ban badge, for copies borrowed from someone. */
+function BorrowedBadge({ n, lang }: { n?: number; lang: Lang }) {
+  if (!n) return null
+  return <span className="ban-badge borrowed-badge">{t(lang, 'borrowed.badge', { n })}</span>
 }
 
 /** Same pill as the ban badge, for cards with official errata. */
@@ -619,8 +627,11 @@ function CardTile({
   errata,
   inDecks,
   dragProps,
+  borrowedIn,
 }: {
   children?: ReactNode
+  /** Copies borrowed from someone (shows the borrowed pill). */
+  borrowedIn?: number
   /** Makes the tile draggable (drag out of a list to remove one copy). */
   dragProps?: { draggable: boolean; onDragStart: (e: ReactDragEvent) => void; onDragEnd: (e: ReactDragEvent) => void }
   /** Names of the decks that use this card. */
@@ -684,6 +695,7 @@ function CardTile({
         <div className="card-tags">
           <SetBadge c={c} /><BanBadge status={banStatus(c)} lang={lang} />
           <ErrataBadge show={!!errata} lang={lang} />
+          <BorrowedBadge n={borrowedIn} lang={lang} />
         </div>
         <div className="sub">{c.code} · {(c.types || []).join('/') || '-'} · {(c.domains || []).join('/') || '-'}</div>
         {inDecks && inDecks.length > 0 && (
@@ -829,6 +841,8 @@ export default function App() {
   const [deckImportText, setDeckImportText] = useState('')
   const [deckImportOpen, setDeckImportOpen] = useState(false)
   const [deckExportText, setDeckExportText] = useState<string | null>(null)
+  /** i18n key of the export dialog title (deck list or borrowed list). */
+  const [exportTitleKey, setExportTitleKey] = useState('decks.exportTitle')
   const [deckExportCopied, setDeckExportCopied] = useState(false)
   const [deckShotBusy, setDeckShotBusy] = useState(false)
   const [sharePreview, setSharePreview] = useState<{ dataUrl: string; fileName: string; exportText: string } | null>(null)
@@ -1293,6 +1307,9 @@ export default function App() {
     () => cards.filter((c) => ownedQty(collection[c.id]) > 0),
     [cards, collection],
   )
+  const borrowedTotals = useMemo(() => borrowedQtyById(borrowed), [borrowed])
+  /** Copies borrowed from other people: shown in All owned and usable in decks, but not part of the collection. */
+  const borrowedInTotals = useMemo(() => borrowedQtyById(borrowed, true), [borrowed])
 
   const totals = useMemo(() => {
     let copies = 0
@@ -1461,12 +1478,12 @@ export default function App() {
     const query = deferredQ.trim().toLowerCase()
     let list: Card[]
     if (binderView === 'owned') {
-      list = cards.filter((c) => ownedQty(collection[c.id]) > 0 && (!ownedSet || c.set === ownedSet))
+      list = cards.filter((c) => (ownedQty(collection[c.id]) > 0 || borrowedInTotals.has(c.id)) && (!ownedSet || c.set === ownedSet))
     } else {
       list = cards.filter((c) => c.set === binderView)
     }
     list = list.filter((c) => {
-      const n = ownedQty(collection[c.id])
+      const n = ownedQty(collection[c.id]) + (binderView === 'owned' ? borrowedInTotals.get(c.id) || 0 : 0)
       if (binderOwnedOnly && n <= 0) return false
       if (binderMissing && n > 0) return false
       if (binderMissingFoil && (isPlainRune(c) || hasFoilCopy(c, collection[c.id]))) return false
@@ -1488,15 +1505,15 @@ export default function App() {
       if (pa == null || pb == null) return (pa == null ? 1 : 0) - (pb == null ? 1 : 0) || bySet(a, b)
       return dir * (pa - pb) || bySet(a, b)
     })
-  }, [binderView, cards, collection, deferredQ, binderOwnedOnly, binderMissing, binderMissingFoil, binderRarity, ownedSet, ownedSort, priceBook, domainFilter, raritySigned, rarityOver, rarityPromo, rarityUltimate, abilityFilter, legendIds])
+  }, [binderView, cards, collection, borrowedInTotals, deferredQ, binderOwnedOnly, binderMissing, binderMissingFoil, binderRarity, ownedSet, ownedSort, priceBook, domainFilter, raritySigned, rarityOver, rarityPromo, rarityUltimate, abilityFilter, legendIds])
 
   /** Sets with owned cards, in binder order, for the All owned set filter. */
   const ownedSets = useMemo(() => {
     const counts = new Map<string, number>()
-    for (const c of cards) if (ownedQty(collection[c.id]) > 0) counts.set(c.set, (counts.get(c.set) || 0) + 1)
+    for (const c of cards) if (ownedQty(collection[c.id]) > 0 || borrowedInTotals.has(c.id)) counts.set(c.set, (counts.get(c.set) || 0) + 1)
     const rank = (s: string) => { const i = (BINDER_SET_ORDER as readonly string[]).indexOf(s); return i < 0 ? BINDER_SET_ORDER.length : i }
     return [...counts].sort(([a], [b]) => rank(a) - rank(b) || a.localeCompare(b))
-  }, [cards, collection])
+  }, [cards, collection, borrowedInTotals])
 
   const rarityBySet = useMemo(() => {
     const out: Record<string, { rarity: string; total: number; owned: number }[]> = {}
@@ -1985,11 +2002,9 @@ export default function App() {
   const activeDeck = decks.find((d) => d.id === activeDeckId) || null
   const activeBorrowed = borrowed.find((g) => g.id === activeBorrowedId) || null
 
-  const borrowedTotals = useMemo(() => borrowedQtyById(borrowed), [borrowed])
-
-  /** Owned copies minus lent-out copies — used for deck missing-copies. */
+  /** Owned copies minus lent-out copies plus borrowed ones — used for deck missing-copies. */
   function availableForDecks(id: string) {
-    return Math.max(0, ownedQty(collection[id]) - (borrowedTotals.get(id) || 0))
+    return Math.max(0, ownedQty(collection[id]) - (borrowedTotals.get(id) || 0)) + (borrowedInTotals.get(id) || 0)
   }
 
   function groupCardCount(g: BorrowedGroup) {
@@ -2017,8 +2032,9 @@ export default function App() {
     )
   }
 
-  /** Copies still free to lend (owned minus all borrower groups). */
+  /** Copies that can still go into the active entry: owned minus all lent copies, no limit when borrowing from someone. */
   function remainingToLend(id: string) {
+    if (activeBorrowed?.direction === 'from') return Infinity
     return Math.max(0, ownedQty(collection[id]) - (borrowedTotals.get(id) || 0))
   }
 
@@ -2033,7 +2049,7 @@ export default function App() {
         const cards = [...g.cards]
         const i = cards.findIndex((c) => c.id === cardId)
         if (delta > 0) {
-          const add = Math.min(delta, room)
+          const add = g.direction === 'from' ? delta : Math.min(delta, room)
           if (add <= 0) return g
           if (i < 0) cards.push({ id: cardId, qty: add })
           else cards[i] = { ...cards[i], qty: cards[i].qty + add }
@@ -2054,14 +2070,17 @@ export default function App() {
 
   function runBorrowImport(text: string) {
     if (!activeBorrowedId) return
-    const result = parseDeckImport(text, cards)
-    const flat = flattenImportCards(result.cards)
+    const result = parseBorrowList(text, cards)
+    const flat = result.cards
+    // Someone else's lent list pasted into an empty entry: these are cards borrowed from them.
+    const fromList = text.trim().startsWith(LENT_HEADER)
     updateBorrowed((g) => {
       const m = new Map(g.cards.map((c) => [c.id, c.qty]))
       for (const c of flat) {
         m.set(c.id, (m.get(c.id) || 0) + c.qty)
       }
-      return { ...g, cards: [...m.entries()].map(([id, qty]) => ({ id, qty })) }
+      const direction = fromList && g.cards.length === 0 ? 'from' : g.direction
+      return { ...g, direction, cards: [...m.entries()].map(([id, qty]) => ({ id, qty })) }
     })
     const copies = flat.reduce((s, c) => s + c.qty, 0)
     const parts: string[] = [
@@ -2507,6 +2526,7 @@ export default function App() {
                     >{displayName(c)}</button>
                     <SetBadge c={c} /><BanBadge status={banStatus(c)} lang={lang} />
                     <ErrataBadge show={!!errataFor(c)} lang={lang} />
+                    <BorrowedBadge n={borrowedInTotals.get(c.id)} lang={lang} />
                   </div>
                   <div className="sub">
                     {c.energy != null ? `E${c.energy} · ` : ''}{c.code}
@@ -2744,6 +2764,7 @@ export default function App() {
   function openDeckExport() {
     if (!activeDeck) return
     setDeckExportCopied(false)
+    setExportTitleKey('decks.exportTitle')
     setDeckExportText(formatDeckList(activeDeck))
   }
 
@@ -3801,6 +3822,7 @@ export default function App() {
                     variant="binder"
                     errata={!!errataFor(c)}
                     inDecks={decksByCard.get(c.id)}
+                    borrowedIn={binderView === 'owned' ? borrowedInTotals.get(c.id) : undefined}
                     onOpen={openCardLightbox}
                     onBump={bump}
                   />
@@ -4193,6 +4215,8 @@ export default function App() {
                 {activeDeck && !(sectionNeedsLegend(activeSection) && !hasLegend(activeDeck.cards)) && cards
                   .filter((c) => {
                     if (!cardFitsSection(c, activeSection)) return false
+                    // Plain runes have their own counter per domain, the list only offers alt art runes.
+                    if (activeSection === 'rune' && isPlainRune(c)) return false
                     if (deckOwnedOnly && ownedQty(collection[c.id]) <= 0) return false
                     if (sectionNeedsLegend(activeSection)) {
                       const domains = getLegendDomains(activeDeck.cards, byId)
@@ -4334,6 +4358,7 @@ export default function App() {
                             <span className="name">{g.name}</span>
                           )}
                           <span className="deck-acc-count">· {t(lang, 'borrowed.cardCount', { n: groupCardCount(g) })}</span>
+                          {!expanded && g.direction === 'from' && <span className="pill">{t(lang, 'borrowed.dirFrom')}</span>}
                         </div>
                         {expanded && <span className="pill ok">{t(lang, 'borrowed.active')}</span>}
                         {!expanded && (
@@ -4355,7 +4380,31 @@ export default function App() {
                       {expanded && (
                         <div className="deck-acc-body">
                           <div className="deck-acc-summary-row">
-                            <div className="grow" />
+                            <div className="grow borrow-direction" role="tablist">
+                              {([undefined, 'from'] as const).map((d) => (
+                                <button
+                                  key={d ?? 'lent'}
+                                  type="button"
+                                  role="tab"
+                                  aria-selected={g.direction === d}
+                                  className={`chip${g.direction === d ? ' active' : ''}`}
+                                  onClick={() => updateBorrowed((group) => ({ ...group, direction: d }))}
+                                >
+                                  <Icon name={d ? 'arrow-down-left' : 'arrow-up-right'} />
+                                  {t(lang, d ? 'borrowed.dirFrom' : 'borrowed.dirLent')}
+                                </button>
+                              ))}
+                            </div>
+                            <button
+                              type="button"
+                              className="btn"
+                              disabled={g.cards.length === 0}
+                              onClick={() => {
+                                setDeckExportCopied(false)
+                                setExportTitleKey('borrowed.exportTitle')
+                                setDeckExportText(formatBorrowList(g.cards, byId, g.name, g.direction !== 'from'))
+                              }}
+                            ><Icon name="download" />{t(lang, 'borrowed.export')}</button>
                             <button
                               type="button"
                               className="btn icon danger deck-trash"
@@ -4432,7 +4481,7 @@ export default function App() {
                                       onClick={() => openCm(priceBook?.cards[bc.id], lang)}
                                     >{c ? displayCardName(c) : bc.id}</button>
                                     <div className="sub">
-                                      {c ? `${c.code} · ` : ''}{t(lang, 'borrowed.ownedAvail', { have, avail })}
+                                      {c ? `${c.code} · ` : ''}{g.direction === 'from' ? t(lang, 'decks.owns', { have }) : t(lang, 'borrowed.ownedAvail', { have, avail })}
                                     </div>
                                   </div>
                                   <div className="qty" onClick={(e) => e.stopPropagation()}>
@@ -4470,7 +4519,7 @@ export default function App() {
             </section>
 
             <section className="panel col-fill">
-              <h2>{t(lang, 'borrowed.cardsTitle')}</h2>
+              <h2>{t(lang, activeBorrowed?.direction === 'from' ? 'borrowed.cardsTitleFrom' : 'borrowed.cardsTitle')}</h2>
               <div className="toolbar">
                 <SearchInput
                   wrapClassName="grow"
@@ -4495,8 +4544,9 @@ export default function App() {
                 {!activeBorrowed && <div className="empty">{t(lang, 'borrowed.pickFirst')}</div>}
                 {activeBorrowed && (() => {
                   const query = q.trim().toLowerCase()
+                  const from = activeBorrowed.direction === 'from'
                   const owned = cards.filter((c) => {
-                    if (ownedQty(collection[c.id]) <= 0) return false
+                    if (!from && ownedQty(collection[c.id]) <= 0) return false
                     if (remainingToLend(c.id) <= 0) return false
                     if (setFilter && c.set !== setFilter) return false
                     if (!query) return true
@@ -4538,7 +4588,7 @@ export default function App() {
                             <ErrataBadge show={!!errataFor(c)} lang={lang} />
                           </div>
                           <div className="sub">
-                            {c.code} · x{have} · {t(lang, 'borrowed.availShort', { n: room })}
+                            {c.code} · x{have}{from ? '' : ` · ${t(lang, 'borrowed.availShort', { n: room })}`}
                             {c.energy != null ? ` · E${c.energy}` : ''}
                           </div>
                           <PriceBits entry={priceBook?.cards[c.id]} lang={lang} />
@@ -4769,6 +4819,7 @@ export default function App() {
                 onClick={() => {
                   if (!sharePreview) return
                   setDeckExportCopied(false)
+                  setExportTitleKey('decks.exportTitle')
                   setDeckExportText(sharePreview.exportText)
                 }}
               >
@@ -4829,7 +4880,7 @@ export default function App() {
           onClick={() => setDeckExportText(null)}
         >
           <div className="panel confirm-box deck-export-box" onClick={(e) => e.stopPropagation()}>
-            <h2 id="deck-export-title">{t(lang, 'decks.exportTitle')}</h2>
+            <h2 id="deck-export-title">{t(lang, exportTitleKey)}</h2>
             <textarea className="field" readOnly rows={12} value={deckExportText} onFocus={(e) => e.currentTarget.select()} />
             <div className="confirm-actions">
               <button type="button" className="btn small" onClick={() => setDeckExportText(null)}><Icon name="x" />{t(lang, 'decks.exportClose')}</button>
