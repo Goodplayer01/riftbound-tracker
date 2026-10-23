@@ -12,9 +12,10 @@ Windows SmartScreen might complain the first time because the installer isn't si
 
 ## What it does
 
-**Collection**
+**Sets and All owned**
 
-- Binders per set: OGN, OGS, SFD, UNL, VEN and RAD. Nexus Night binders can be hidden
+- Sets tab: binders per set: OGN, OGS, SFD, UNL, VEN and RAD. Nexus Night binders can be hidden
+- All owned tab: every card you own in one place, with the decks each card is used in
 - Progress per rarity so you see what's still missing. In a set, click a rarity to show only those cards
 - Filters for owned, missing and missing foils in each set
 - Foil progress per set, what the missing cards would cost, and a missing list for Cardmarket or the wishlist

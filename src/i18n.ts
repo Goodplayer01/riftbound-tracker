@@ -34,7 +34,7 @@ export function fmtEur(lang: Lang, n: number | null | undefined) {
 type Vars = Record<string, string | number>
 
 const de: Record<string, string> = {
-  'tab.collection': 'Sammlung',
+  'tab.collection': 'Sets',
   'tab.catalog': 'Katalog',
   'tab.sales': 'Verkauf',
   'tab.decks': 'Decks',
@@ -73,13 +73,12 @@ const de: Record<string, string> = {
   'load.error': 'Fehler: {message}',
   'load.catalog': 'Lade Riftbound Katalog…',
 
-  'collection.title': 'Sammlung',
+  'collection.title': 'Sets',
   'collection.help': 'Binder eines Sets öffnen, um Karten zu durchsuchen und zu verwalten.',
   'collection.byRarity': 'Nach Seltenheit',
   'collection.filterRarity': '{rarity} filtern',
   'collection.clearFilter': 'Filter entfernen',
   'collection.allOwned': 'Alles im Besitz',
-  'collection.allOwnedHelp': 'Nur Karten im Besitz',
   'collection.back': 'Zurück',
   'wish.title': 'Wunschliste',
   'wish.add': 'Auf die Wunschliste',
@@ -273,6 +272,7 @@ const de: Record<string, string> = {
   'decks.addFoilCopy': 'Eine Foil-Kopie zur Sammlung hinzufügen',
   'decks.removeFoilFromCollection': 'Eine Foil-Kopie aus der Sammlung entfernen',
   'collection.inDecks': 'In Decks',
+  'drag.removeHint': 'Außerhalb der Liste loslassen, um eine Kopie zu entfernen',
   'decks.ownsLabel': 'Besitz',
   'decks.needLabel': 'Benötigt',
   'decks.missingCmTitle': 'Fehlende Karten: {deck}',
@@ -457,7 +457,7 @@ const de: Record<string, string> = {
 }
 
 const en: Record<string, string> = {
-  'tab.collection': 'Collection',
+  'tab.collection': 'Sets',
   'tab.catalog': 'Catalogue',
   'tab.sales': 'Sales',
   'tab.decks': 'Decks',
@@ -496,13 +496,12 @@ const en: Record<string, string> = {
   'load.error': 'Error: {message}',
   'load.catalog': 'Loading Riftbound catalogue…',
 
-  'collection.title': 'Collection',
+  'collection.title': 'Sets',
   'collection.help': 'Open a set binder to browse and manage cards.',
   'collection.byRarity': 'By rarity',
   'collection.filterRarity': 'Filter {rarity}',
   'collection.clearFilter': 'Clear filter',
   'collection.allOwned': 'All owned',
-  'collection.allOwnedHelp': 'Owned cards only',
   'collection.back': 'Back',
   'wish.title': 'Wishlist',
   'wish.add': 'Add to wishlist',
@@ -696,6 +695,7 @@ const en: Record<string, string> = {
   'decks.addFoilCopy': 'Add one foil copy to the collection',
   'decks.removeFoilFromCollection': 'Remove one foil copy from the collection',
   'collection.inDecks': 'In decks',
+  'drag.removeHint': 'Drop outside the list to remove one copy',
   'decks.ownsLabel': 'Owns',
   'decks.needLabel': 'Need',
   'decks.missingCmTitle': 'Missing cards: {deck}',
