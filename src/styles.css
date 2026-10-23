@@ -737,6 +737,8 @@ textarea.field { min-height: 160px; resize: vertical; font-family: ui-monospace,
 /* The open deck shows its legend big: it is the deck's identity. */
 .deck-acc-item.expanded .deck-acc-head .deck-thumb-lg { width: 112px; height: 156px; border-radius: 10px; box-shadow: 0 8px 24px rgb(0 0 0 / .45); }
 .deck-card-row .deck-thumb, .deck-card-row .deck-thumb-wrap { width: 44px; height: 62px; }
+.deck-sec-main .deck-card-row .deck-thumb, .deck-sec-main .deck-card-row .deck-thumb-wrap,
+.deck-sec-sideboard .deck-card-row .deck-thumb, .deck-sec-sideboard .deck-card-row .deck-thumb-wrap { width: 72px; height: 100px; }
 .deck-sec-legend .deck-card-row .deck-thumb, .deck-sec-legend .deck-card-row .deck-thumb-wrap,
 .deck-sec-champion .deck-card-row .deck-thumb, .deck-sec-champion .deck-card-row .deck-thumb-wrap { width: 72px; height: 100px; }
 .list-item .grow { min-width: 0; }
@@ -949,9 +951,39 @@ button.deck-stat:hover { background: var(--fill-hover); }
   background: transparent;
   color: var(--positive);
 }
-.deck-add-collection:hover {
+.deck-add-collection:hover:not(:disabled) {
   border-color: var(--positive);
   background: rgb(var(--positive-rgb) / .1);
+}
+.deck-coll { display: grid; gap: 4px; flex-shrink: 0; }
+.deck-coll-row { display: flex; gap: 4px; }
+.deck-coll-row .deck-add-collection:not(.deck-coll-minus) { flex: 1; justify-content: flex-start; }
+.deck-coll-foil { border-color: rgb(var(--primary-rgb) / .45); color: var(--accent2); }
+.deck-coll-foil:hover:not(:disabled) { border-color: var(--accent2); background: rgb(var(--primary-rgb) / .1); }
+/* Rune deck: one big counter per Legend domain. */
+.rune-tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-bottom: 10px; }
+.rune-tile {
+  display: grid; justify-items: center; gap: 6px; padding: 14px 10px;
+  border: 1px solid var(--border); border-radius: 12px; background: var(--panel2);
+}
+.rune-tile.short { border-color: rgb(var(--danger-rgb) / .5); }
+.rune-tile img { width: 64px; height: 64px; }
+.rune-tile-name { font-weight: 650; font-size: 14px; }
+.rune-tile .qty button { width: 34px; height: 34px; font-size: 18px; }
+.rune-tile .qty b { min-width: 34px; font-size: 18px; color: var(--text); }
+.deck-coll-minus { padding: 5px 6px; border-color: rgb(var(--danger-rgb) / .4); color: var(--danger); }
+.deck-coll-minus:hover:not(:disabled) { border-color: var(--danger); background: rgb(var(--danger-rgb) / .1); }
+.deck-coll-minus:disabled { opacity: .35; cursor: not-allowed; }
+/* Labelled "Owns" / "Need" columns on deck rows. */
+.deck-stat { display: grid; gap: 3px; justify-items: center; flex-shrink: 0; }
+.deck-stat > b { min-width: 32px; text-align: center; font-size: 15px; font-variant-numeric: tabular-nums; }
+.deck-stat > b.have { color: var(--positive); }
+.deck-stat > b.short { color: var(--danger); }
+.deck-warn-tools { margin-bottom: 8px; }
+.ban-badge.set-badge {
+  border-color: rgb(var(--primary-rgb) / .45);
+  background: rgb(var(--primary-rgb) / .12);
+  color: var(--text);
 }
 .deck-legend-swap {
   margin: 10px 0;
