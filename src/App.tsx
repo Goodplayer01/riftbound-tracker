@@ -852,6 +852,7 @@ export default function App() {
   const [binderOwnedOnly, setBinderOwnedOnly] = useState(false)
   /** Set filter in the All owned tab ('' = every set). */
   const [ownedSet, setOwnedSet] = useState('')
+  const [ownedSort, setOwnedSort] = useState<'set' | 'price-desc' | 'price-asc'>('set')
   const [binderMissing, setBinderMissing] = useState(false)
   const [binderMissingFoil, setBinderMissingFoil] = useState(false)
   const [binderRarity, setBinderRarity] = useState<string | null>(null)
@@ -1471,8 +1472,20 @@ export default function App() {
     })
     // All owned mixes sets: keep them in binder order, then by card number.
     const rank = (s: string) => { const i = (BINDER_SET_ORDER as readonly string[]).indexOf(s); return i < 0 ? BINDER_SET_ORDER.length : i }
-    return [...list].sort((a, b) => rank(a.set) - rank(b.set) || a.set.localeCompare(b.set) || a.cn - b.cn || a.code.localeCompare(b.code))
-  }, [binderView, cards, collection, deferredQ, binderOwnedOnly, binderMissing, binderMissingFoil, binderRarity, ownedSet, domainFilter, raritySigned, rarityOver, rarityPromo, rarityUltimate, abilityFilter, legendIds])
+    const bySet = (a: Card, b: Card) => rank(a.set) - rank(b.set) || a.set.localeCompare(b.set) || a.cn - b.cn || a.code.localeCompare(b.code)
+    if (binderView !== 'owned' || ownedSort === 'set') return [...list].sort(bySet)
+    // Price of one copy you own: the foil price if you only have foils (or the card only exists as foil).
+    const price = (c: Card) => {
+      const o = collection[c.id]
+      return unitEur(priceBook?.cards[c.id], isFoilOnly(c) || !(o?.qty || 0))
+    }
+    const dir = ownedSort === 'price-asc' ? 1 : -1
+    return [...list].sort((a, b) => {
+      const pa = price(a), pb = price(b)
+      if (pa == null || pb == null) return (pa == null ? 1 : 0) - (pb == null ? 1 : 0) || bySet(a, b)
+      return dir * (pa - pb) || bySet(a, b)
+    })
+  }, [binderView, cards, collection, deferredQ, binderOwnedOnly, binderMissing, binderMissingFoil, binderRarity, ownedSet, ownedSort, priceBook, domainFilter, raritySigned, rarityOver, rarityPromo, rarityUltimate, abilityFilter, legendIds])
 
   /** Sets with owned cards, in binder order, for the All owned set filter. */
   const ownedSets = useMemo(() => {
@@ -3701,6 +3714,16 @@ export default function App() {
                     </button>
                   ))}
                   <span className="toolbar-sep" aria-hidden="true" />
+                  <select
+                    className="select"
+                    aria-label={t(lang, 'owned.sort')}
+                    value={ownedSort}
+                    onChange={(e) => setOwnedSort(e.target.value as typeof ownedSort)}
+                  >
+                    <option value="set">{t(lang, 'owned.sortSet')}</option>
+                    <option value="price-desc">{t(lang, 'owned.sortPriceDesc')}</option>
+                    <option value="price-asc">{t(lang, 'owned.sortPriceAsc')}</option>
+                  </select>
                 </>
               )}
               {binderView !== 'owned' && (

@@ -13,9 +13,19 @@ Notes for Claude Code working in this repo. The README is the user-facing featur
 
 - Electron 37 + React 19 + Vite 7 + TypeScript. Windows NSIS installer via electron-builder, auto-update via electron-updater from GitHub Releases.
 - `electron/main.cjs`: window, updater, IPC (`net:fetchJson`, `net:fetchImageDataUrl`, `shell:openExternal`, window controls) and the `rbimg://` image cache protocol. `electron/preload.cjs` exposes these to the renderer.
-- `src/App.tsx` holds most of the UI (one big file, ~4700 lines). Helpers live in their own modules (`prices.ts`, `priceHistory.ts`, `copies.ts`, `cardmarket.ts`, `cardImages.ts`, `deckHelpers.ts`, `banlist.ts`, `storage.ts`, ...).
+- `src/App.tsx` holds most of the UI (one big file, ~4800 lines). Helpers live in their own modules (`prices.ts`, `priceHistory.ts`, `copies.ts`, `cardmarket.ts`, `cardImages.ts`, `deckHelpers.ts`, `banlist.ts`, `storage.ts`, ...).
 - Styling in `src/styles.css`: dark "Apple look", graphite surfaces with amber accent, sidebar navigation. Icons from Lucide (`src/Icon.tsx`).
 - No test framework. The `scripts/check_*.mjs` / `check-dopamin.mjs` files are plain assertion scripts that run in the Release workflow.
+- Stefan's PC has no Python (only the Microsoft Store alias), so Python bake scripts run in the GitHub workflows, e.g. `gh workflow run prices.yml --ref <branch>`.
+
+## UI structure
+
+- Sidebar tabs (`Tab` in App.tsx): `collection` is labelled "Sets" (set binders, wishlist, value history); `owned` is "All owned", the owned binder (`binderView === 'owned'`, kept in sync with the tab by an effect) with a set filter (`ownedSet`) and a sort select (`ownedSort`: by set, or by the price of one owned copy, foil price when only foils are owned; not persisted). Then Catalogue, Sales, Decks, Borrowed, Stores, Dopamin.
+- Card tiles are `CardTile`; list rows are `.list-item` (`.deck-card-row` in decks and borrowed, `.picker-card` in the search panels on the right). Clicking a tile or row opens the card detail unless the click hits a button or input (`isControlClick`).
+- Drag and drop: search cards set `text/riftbound-card` and drop into deck sections, wishlist, sales cart and borrowed (`onSectionDrop`, `cartDrop`, `onBorrowDrop`). Cards in those lists drag out with `removeDragProps` (`text/riftbound-remove`): a drop outside the panel marked `data-remove-src` removes one copy.
+- Deck rows: Collection panel (normal / foil steppers, `collectionButtons`) and Owns / Need. The "Still missing" list groups by set and exports a Cardmarket wants list. Runes show one counter per Legend domain.
+- Check `styles.css` before naming a new class. Reusing an existing name (e.g. `.deck-stat`, the deck header value tiles) silently pulls in its styles.
+- To look at a UI change, load `dist/index.html` in a hidden Electron `BrowserWindow` with a throwaway `userData` dir, seed localStorage, click via `executeJavaScript` and save `webContents.capturePage()` (register an `rbimg` handler that forwards to `net.fetch` so card art loads).
 
 ## Commands
 
@@ -31,7 +41,8 @@ node scripts/check_errata.mjs
 ## Data files (public/)
 
 - `cards.json`: all cards (type `Card` in `src/types.ts`). Images point at Riot's official gallery; `scripts/bake_images.py` (workflow "Bake card images") swaps in official art.
-- `prices.json`: Cardmarket prices from the public daily price guide (`downloads.s3.cardmarket.com`, low, 30 day avg, trend, foil), matched by `cmId` (Cardmarket idProduct). The app loads it live from `raw.githubusercontent.com/.../main/public/prices.json` at startup (cached as `rb.prices.remote.v1`), falling back to the bundled copy. New prices therefore need no release, only a push to main. Prices have no per-language split, so a copy's language does not change its value.
+- `prices.json`: Cardmarket prices from the public daily price guide (`downloads.s3.cardmarket.com`, game 22: low, 30 day avg, trend, foil; no max), matched by `cmId` (Cardmarket idProduct). Rows without a `cmId` are matched by expansion and name only when exactly one product fits: Cardmarket's V1/V2/... do not follow idProduct order, so never pick a print by V number. `sanitize_prices.py` drops zero values, outliers and placeholder asks of 5000 EUR+ with no sales. Cardmarket product pages answer scripts with 403, so links can only be checked against `products_singles_22.json`.
+- `cmUrl` is stored canonical (`/en/...?language=1`). The app builds the real link per click in `cmLink`: site locale from the app language, `sellerCountry=7` (Germany) and `language=1` (English copies). The app loads it live from `raw.githubusercontent.com/.../main/public/prices.json` at startup (cached as `rb.prices.remote.v1`), falling back to the bundled copy. New prices therefore need no release, only a push to main. Prices have no per-language split, so a copy's language does not change its value.
 - `price-history.json`: one snapshot per price update, also loaded live from main. Drives the Wertverlauf view (`src/ValueHistory.tsx`).
 - `card-errata.json`: official errata keyed by lower case card name. Baked by `scripts/bake_errata.mjs` from playriftbound.com articles (add new articles to `PAGES`). Shown as a blue "Errata" pill next to the ban badge and under the card in the detail view.
 - `card-keywords.json`, `sets/`, `packs/`, `displays/`, `domains/`, `symbols/`, `flags/`: static assets.
@@ -66,6 +77,6 @@ The cloud sandbox proxy blocks the card image hosts and playriftbound.com, so im
 ## Conventions
 
 - Commit messages: `vX.Y.Z: short summary` for releases, plain summary otherwise.
-- Work on a branch and open a PR; Stefan merges.
+- Work on a branch and open a PR. Merge and release only when Stefan says so ("merge und release"): then bump the version, `gh pr merge <n> --squash --delete-branch`, and start `release.yml`.
 - Cardmarket export: wants list as text, sell list as CSV with `idProduct` and trend price (`src/cardmarket.ts`).
 - Fan project, not affiliated with Riot Games or UVS Games. Domain icons are drawn for the app, not Riot's artwork.
