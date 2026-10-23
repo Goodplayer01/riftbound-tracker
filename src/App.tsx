@@ -72,7 +72,7 @@ import { CONDITION_FACTOR, cardEur, cardInvest, copyGroups, fitCopyBook, soldGro
 import { CopyEditor, MoneyInput, fmtSignedEur } from './CopyEditor'
 import { cardArt, cardThumb, loadThumbIndex, preloadArt, thumbForImage } from './cardImages'
 
-type Tab = 'collection' | 'catalog' | 'sales' | 'decks' | 'borrowed' | 'stores' | 'dopamin'
+type Tab = 'collection' | 'owned' | 'catalog' | 'sales' | 'decks' | 'borrowed' | 'stores' | 'dopamin'
 
 function uid() {
   return crypto.randomUUID()
@@ -1346,6 +1346,20 @@ export default function App() {
     }
     return points
   }, [priceHistory, priceBook, cards])
+
+  // The "All owned" tab is the owned binder; leaving it (or opening it from anywhere) keeps binderView in sync.
+  useEffect(() => {
+    if (tab === 'owned' && binderView !== 'owned') {
+      setBinderView('owned')
+      setBinderRarity(null)
+      setQ('')
+      setBinderOwnedOnly(false)
+      setBinderMissing(false)
+      setBinderMissingFoil(false)
+    } else if (tab !== 'owned' && binderView === 'owned') {
+      setBinderView(null)
+    }
+  }, [tab, binderView])
 
   const decksByCard = useMemo(() => {
     const m = new Map<string, string[]>()
@@ -3191,6 +3205,7 @@ export default function App() {
         <nav className="side-nav no-drag" aria-label="Navigation">
           {([
             ['collection', 'tab.collection', 'album'],
+            ['owned', 'collection.allOwned', 'badge-check'],
             ['catalog', 'tab.catalog', 'layout-grid'],
             ['sales', 'tab.sales', 'coins'],
             ['decks', 'tab.decks', 'layers'],
@@ -3297,7 +3312,7 @@ export default function App() {
           </div>
         </header>
 
-      <main className={`main${tab === 'stores' ? ' main-stores' : ''}${tab === 'collection' && binderView != null ? ' main-binder' : ''}${tab === 'dopamin' ? ' main-dopamin' : ''}`}>
+      <main className={`main${tab === 'stores' ? ' main-stores' : ''}${(tab === 'collection' || tab === 'owned') && binderView != null ? ' main-binder' : ''}${tab === 'dopamin' ? ' main-dopamin' : ''}`}>
         {tab === 'collection' && binderView == null && !wishOpen && !valueOpen && (
           <>
             <div className="toolbar">
@@ -3439,12 +3454,6 @@ export default function App() {
                   </div>
                 </button>
               ))}
-              <button type="button" className="binder-tile binder-tile-owned" onClick={() => { setBinderView('owned'); setBinderRarity(null); setQ(''); setBinderOwnedOnly(false); setBinderMissing(false); setBinderMissingFoil(false) }}>
-                <div className="binder-code">ALL</div>
-                <div className="binder-name">{t(lang, 'collection.allOwned')}</div>
-                <div className="binder-progress">{totals.unique} Unique | {totals.copies} {t(lang, 'bulk.copies')}</div>
-                <p className="help" style={{ margin: '8px 0 0' }}>{t(lang, 'collection.allOwnedHelp')}</p>
-              </button>
             </div>
           </>
         )}
@@ -3595,10 +3604,12 @@ export default function App() {
           )
         })()}
 
-        {tab === 'collection' && binderView != null && (
+        {(tab === 'collection' || tab === 'owned') && binderView != null && (
           <div className="binder-view">
             <div className="binder-head">
-              <button type="button" className="btn icon" title={t(lang, 'collection.back')} aria-label={t(lang, 'collection.back')} onClick={() => { setBinderView(null); setBinderRarity(null) }}><Icon name="arrow-left" /></button>
+              {tab === 'collection' && (
+                <button type="button" className="btn icon" title={t(lang, 'collection.back')} aria-label={t(lang, 'collection.back')} onClick={() => { setBinderView(null); setBinderRarity(null) }}><Icon name="arrow-left" /></button>
+              )}
               <h2 className="binder-head-title">
                 {binderView === 'owned'
                   ? t(lang, 'collection.allOwned')
