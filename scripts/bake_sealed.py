@@ -56,8 +56,13 @@ ONLINE_SHOPS = [
 ]
 
 UA = "riftbound-tracker-bake (+https://github.com/Goodplayer01/riftbound-tracker)"
-DISPLAY_RE = re.compile(r"display|booster\s*box|boosterbox", re.I)
-NOT_DISPLAY_RE = re.compile(r"sleeve|playmat|binder|album|deck\s*box|h[üu]lle|case\b|einzel|single|pack\b(?!.*display)", re.I)
+DISPLAY_RE = re.compile(r"display|booster\s*-?\s*box", re.I)
+NOT_DISPLAY_RE = re.compile(
+    r"sleeve|playmat|binder|album|deck|h[üu]lle|case\b|acryl|bundle|einzel|single|leer|empty|protector|storage", re.I
+)
+PREORDER_RE = re.compile(r"vorbestell|vorverkauf|pre-?order|preorder|pre-?sale", re.I)
+# Sets with displays that have no cards in cards.json yet.
+EXTRA_SETS = {"LEGACY": "Legacy"}
 
 
 def fetch_json(url: str, timeout: int = 60):
@@ -71,9 +76,13 @@ def now_iso() -> str:
 
 
 def set_names() -> dict[str, str]:
-    """Main sets only (no Nexus Night promos): code -> English name."""
+    """Main sets only (no Nexus Night promos, no Proving Grounds): code -> English name."""
     sets = json.loads(CARDS_PATH.read_text(encoding="utf-8"))["sets"]
-    return {code: name for code, name in sets.items() if "-" not in code}
+    out = {code: name for code, name in sets.items() if "-" not in code and code != "OGS"}
+    for code, name in EXTRA_SETS.items():
+        if name not in out.values():
+            out[code] = name
+    return out
 
 
 def set_from_title(title: str, names: dict[str, str]) -> str | None:
@@ -81,17 +90,26 @@ def set_from_title(title: str, names: dict[str, str]) -> str | None:
     return hits[0] if len(hits) == 1 else None
 
 
+LANG_PATTERNS = (
+    ("ZH", r"\b(zh|cn|chn|s-ch|chinese|chinesisch\w*)\b|slim|jumbo"),
+    ("KO", r"\b(ko|kor|korean|koreanisch\w*)\b"),
+    ("JA", r"\b(ja|jp|jap|japanese|japanisch\w*)\b"),
+    ("FR", r"\b(fr|french|franz[öo]sisch\w*|fran[çc]ais)\b"),
+    ("DE", r"\b(de|deutsch\w*|german)\b"),
+    ("EN", r"\b(en|eng|english|englisch\w*)\b"),
+)
+
+
 def lang_from_title(title: str) -> str | None:
-    t = title.lower()
-    for code, pat in (
-        ("EN", r"\b(en|eng|englisch|english|englische)\b"),
-        ("DE", r"\b(de|deutsch|german|deutsche)\b"),
-        ("FR", r"\b(fr|französisch|french|francais|français)\b"),
-        ("ZH", r"\b(zh|cn|chinese|chinesisch)\b"),
-    ):
-        if re.search(pat, t):
+    """Print language from a product title. Chinese first: "Slim"/"Jumbo" displays are Chinese only."""
+    for code, pat in LANG_PATTERNS:
+        if re.search(pat, title, re.I):
             return code
     return None
+
+
+def is_display(title: str) -> bool:
+    return bool(DISPLAY_RE.search(title)) and not NOT_DISPLAY_RE.search(title)
 
 
 # ---------------------------------------------------------------- Cardmarket
@@ -128,7 +146,9 @@ def bake_cardmarket(names: dict[str, str]) -> dict:
             "name": name,
             "set": code,
             "category": p.get("categoryName"),
-            "display": bool(DISPLAY_RE.search(name)) and not NOT_DISPLAY_RE.search(name),
+            "display": is_display(name),
+            # Cardmarket names other prints "(Chinese, Slim)", "(French)"; no suffix = English.
+            "lang": lang_from_title(name) or "EN",
             "low": g.get("low"),
             "avg1": g.get("avg1"),
             "avg7": g.get("avg7"),
@@ -214,13 +234,38 @@ def shopify_offers(origin: str) -> list[dict] | None:
     for p in products:
         title = (p.get("title") or "").strip()
         url = p.get("url") or ""
-        out.append({
+        url = url if url.startswith("http") else origin + url.split("?")[0]
+        offer = {
             "title": title,
             "price": to_eur(p.get("price")),
             "available": p.get("available") if isinstance(p.get("available"), bool) else None,
-            "url": url if url.startswith("http") else origin + url.split("?")[0],
-        })
+            "url": url,
+        }
+        if to_eur(p.get("price_max")) != to_eur(p.get("price_min")):
+            # "Display & Booster" products: the suggest price is the cheapest variant (a single booster).
+            offer = shopify_display_variant(offer)
+            if not offer:
+                continue
+        out.append(offer)
     return out
+
+
+def shopify_display_variant(offer: dict) -> dict | None:
+    """Pick the display variant from /products/<handle>.js (prices in cents)."""
+    try:
+        data = fetch_json(offer["url"].split("?")[0] + ".js", timeout=15)
+    except Exception:
+        return None
+    variants = [v for v in data.get("variants") or [] if is_display(v.get("title") or "")]
+    if len(variants) != 1:
+        return None
+    v = variants[0]
+    return {
+        **offer,
+        "price": to_eur((v.get("price") or 0) / 100),
+        "available": v.get("available") if isinstance(v.get("available"), bool) else None,
+        "url": f"{offer['url'].split('?')[0]}?variant={v.get('id')}",
+    }
 
 
 def woo_offers(origin: str) -> list[dict] | None:
@@ -257,10 +302,13 @@ def probe(shop: tuple[str, str, str | None], names: dict[str, str]):
         keep = []
         for o in offers:
             t = o["title"]
-            if not re.search(r"riftbound|league of legends", t, re.I) or not DISPLAY_RE.search(t) or NOT_DISPLAY_RE.search(t):
+            if not re.search(r"riftbound|league of legends", t, re.I) or not is_display(t):
                 continue
             o["set"] = set_from_title(t, names)
+            if not o["set"] or not o["price"]:
+                continue
             o["lang"] = lang_from_title(t)
+            o["preorder"] = bool(PREORDER_RE.search(t))
             keep.append(o)
         return {"name": name, "url": origin, "city": city, "platform": platform}, keep
     return None, []
@@ -273,8 +321,19 @@ def bake_shops(names: dict[str, str]) -> dict:
     except Exception as e:  # keep the online shops when UVS is down
         print(f"UVS store list failed: {e}")
         local = []
-    known = {u for _, u, _ in candidates}
-    candidates += [s for s in local if s[1] not in known]
+    # Several UVS stores can share one web shop (www. or not, branches): ask it once.
+    known: dict[str, int] = {}
+    merged = []
+    for name, url, city in candidates + local:
+        key = url.replace("://www.", "://")
+        if key in known:
+            prev = merged[known[key]]
+            if city and city not in (prev[2] or ""):
+                merged[known[key]] = (prev[0], prev[1], f"{prev[2]}, {city}" if prev[2] else city)
+            continue
+        known[key] = len(merged)
+        merged.append((name, url, city))
+    candidates = merged
     print(f"shops: {len(candidates)} candidates ({len(local)} from UVS)")
 
     shops, offers = [], []
