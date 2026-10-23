@@ -612,8 +612,11 @@ function CardTile({
   qtyRow,
   errata,
   inDecks,
+  dragProps,
 }: {
   children?: ReactNode
+  /** Makes the tile draggable (drag out of a list to remove one copy). */
+  dragProps?: { draggable: boolean; onDragStart: (e: ReactDragEvent) => void; onDragEnd: (e: ReactDragEvent) => void }
   /** Names of the decks that use this card. */
   inDecks?: string[]
   /** Card has official errata (shows the errata pill next to the name). */
@@ -636,6 +639,7 @@ function CardTile({
       className={`card ${ownedClass}${c.signed || c.overnumbered ? ' shimmer' : ''}`}
       data-card-id={c.id}
       onClick={(e) => { if (!isControlClick(e)) onOpen(c) }}
+      {...dragProps}
     >
       <div
         className="art art-zoomable"
@@ -845,6 +849,32 @@ export default function App() {
   const [dragOverSection, setDragOverSection] = useState<DeckSection | null>(null)
   const [dragRejectSection, setDragRejectSection] = useState<DeckSection | null>(null)
   const [draggingCardId, setDraggingCardId] = useState<string | null>(null)
+  /** Dragging a card out of a list (deck, wishlist, cart, borrowed): dropping it outside that list removes one copy. */
+  const removeDrag = useRef<{ zone: string; remove: () => void } | null>(null)
+  const [removing, setRemoving] = useState(false)
+  useEffect(() => {
+    if (!removing) return
+    const inSource = (e: DragEvent) =>
+      !!(e.target instanceof Element && e.target.closest(`[data-remove-src="${removeDrag.current?.zone}"]`))
+    const over = (e: DragEvent) => {
+      if (inSource(e)) return
+      e.preventDefault()
+      if (e.dataTransfer) e.dataTransfer.dropEffect = 'move'
+    }
+    const drop = (e: DragEvent) => {
+      if (inSource(e)) return
+      e.preventDefault()
+      removeDrag.current?.remove()
+    }
+    window.addEventListener('dragover', over)
+    window.addEventListener('drop', drop)
+    document.body.dataset.removing = removeDrag.current?.zone || ''
+    return () => {
+      window.removeEventListener('dragover', over)
+      window.removeEventListener('drop', drop)
+      delete document.body.dataset.removing
+    }
+  }, [removing])
   const [dragOverCart, setDragOverCart] = useState<'sale' | 'wish' | null>(null)
   const [dragRejectCart, setDragRejectCart] = useState<'sale' | 'wish' | null>(null)
   const [poolHidden, setPoolHidden] = useState(() => localStorage.getItem('rb.poolHidden') === '1')
@@ -2093,6 +2123,33 @@ export default function App() {
     row.classList.add('dragging')
   }
 
+  /** Drag props for a card in a list: one drag out of the list removes one copy. */
+  function removeDragProps(zone: string, remove: () => void) {
+    return {
+      draggable: true,
+      onDragStart: (e: ReactDragEvent) => {
+        e.stopPropagation()
+        // Own type only, so the add drop zones (deck sections, cart, wishlist, borrowed) ignore it.
+        e.dataTransfer.setData('text/riftbound-remove', zone)
+        e.dataTransfer.effectAllowed = 'move'
+        const el = e.currentTarget as HTMLElement
+        const img = el.querySelector('img') as HTMLImageElement | null
+        if (img && img.complete && img.naturalWidth > 0) {
+          try { e.dataTransfer.setDragImage(img, img.clientWidth / 2, img.clientHeight / 2) } catch {}
+        }
+        el.classList.add('dragging')
+        removeDrag.current = { zone, remove }
+        setCardPreview(null)
+        setRemoving(true)
+      },
+      onDragEnd: (e: ReactDragEvent) => {
+        (e.currentTarget as HTMLElement).classList.remove('dragging')
+        removeDrag.current = null
+        setRemoving(false)
+      },
+    }
+  }
+
   function onPickerDragEnd(e: ReactDragEvent) {
     (e.currentTarget as HTMLElement).classList.remove('dragging')
     setDraggingCardId(null)
@@ -2113,6 +2170,7 @@ export default function App() {
     return {
       className: `list sale-cart${dragOverCart === kind ? ' drag-over' : ''}${dragRejectCart === kind ? ' drag-reject' : ''}`,
       onDragOver: (e: ReactDragEvent) => {
+        if (removeDrag.current) return
         const types = Array.from(e.dataTransfer.types || [])
         if (!types.includes('text/riftbound-card') && !types.includes('text/plain') && !draggingCardId) return
         e.preventDefault()
@@ -2159,6 +2217,7 @@ export default function App() {
   }
 
   function onBorrowDragOver(e: ReactDragEvent) {
+    if (removeDrag.current) return
     const types = Array.from(e.dataTransfer.types || [])
     const raw = types.includes('text/riftbound-card') || types.includes('text/plain') || !!draggingCardId
     if (!raw) return
@@ -2211,6 +2270,7 @@ export default function App() {
   }
 
   function onSectionDragOver(e: ReactDragEvent, sec: DeckSection) {
+    if (removeDrag.current) return
     const types = Array.from(e.dataTransfer.types || [])
     const raw = types.includes('text/riftbound-card') || types.includes('text/plain') || !!draggingCardId
     if (!raw) return
@@ -2326,8 +2386,16 @@ export default function App() {
                 .filter((c) => isPlainRune(c) && (c.domains || []).includes(d))
                 .reduce((s, c) => s + availableForDecks(c.id), 0)
               const pick = inDeck[0]?.id ?? plainRuneFor(d)?.id
+              const removeOne = () => {
+                const last = inDeck[inDeck.length - 1]
+                if (last) bumpDeckCard(last.id, 'rune', -1)
+              }
               return (
-                <div key={d} className={`rune-tile${n > owned ? ' short' : ''}`}>
+                <div
+                  key={d}
+                  className={`rune-tile${n > owned ? ' short' : ''}`}
+                  {...(n > 0 ? removeDragProps('deck', removeOne) : {})}
+                >
                   {d in DOMAIN_ICON && <img src={DOMAIN_ICON[d as keyof typeof DOMAIN_ICON]} alt="" draggable={false} />}
                   <span className="rune-tile-name">{d}</span>
                   <div className="qty">
@@ -2335,10 +2403,7 @@ export default function App() {
                       type="button"
                       aria-label={`${d} −`}
                       disabled={n === 0}
-                      onClick={() => {
-                        const last = inDeck[inDeck.length - 1]
-                        if (last) bumpDeckCard(last.id, 'rune', -1)
-                      }}
+                      onClick={removeOne}
                     >−</button>
                     <b>{n}</b>
                     <button
@@ -2366,6 +2431,7 @@ export default function App() {
               <div
                 key={`${dc.id}-${sec}`}
                 className={`list-item deck-card-row${short ? ' short' : ''}`}
+                {...removeDragProps('deck', () => bumpDeckCard(dc.id, sec, -1))}
                 onMouseEnter={(e) => showCardPreview(e, c.image)}
                 onMouseMove={(e) => showCardPreview(e, c.image)}
                 onMouseLeave={hideCardPreview}
@@ -3403,7 +3469,7 @@ export default function App() {
           const pick = cards.filter((c) => (!setFilter || c.set === setFilter) && matchesSharedFilters(c, query)).slice(0, 120)
           return (
             <div className={`split deck-split${poolHidden ? ' pool-hidden' : ''}`}>
-              <section className="panel col-fill">
+              <section className="panel col-fill" data-remove-src="wish">
                 <div className="toolbar">
                   <button className="btn" onClick={() => setWishOpen(false)}><Icon name="arrow-left" />{t(lang, 'collection.back')}</button>
                   <h2 style={{ margin: 0 }}>{t(lang, 'wish.title')}</h2>
@@ -3421,7 +3487,18 @@ export default function App() {
                       const c = byId.get(id)
                       if (!c) return null
                       return (
-                        <CardTile key={id} c={c} o={wish[id]} lang={lang} priceEntry={priceBook?.cards[id]} variant="catalog" errata={!!errataFor(c)} onOpen={openCardLightbox} onBump={bumpWish}>
+                        <CardTile
+                          key={id}
+                          c={c}
+                          o={wish[id]}
+                          lang={lang}
+                          priceEntry={priceBook?.cards[id]}
+                          variant="catalog"
+                          errata={!!errataFor(c)}
+                          onOpen={openCardLightbox}
+                          onBump={bumpWish}
+                          dragProps={removeDragProps('wish', () => bumpWish(id, wish[id]?.qty ? 'qty' : 'foil', -1))}
+                        >
                           <div className={`wish-alert${wishHits.has(id) ? ' hit' : ''}`}>
                             <span className="wish-alert-label"><Icon name="bell" size={13} />{t(lang, 'alert.below')}</span>
                             <MoneyInput lang={lang} value={wishTargets[id] ?? null} label={t(lang, 'alert.target')} placeholder={t(lang, 'alert.targetPh')} onChange={(v) => setWishTarget(id, v)} />
@@ -3712,7 +3789,7 @@ export default function App() {
 
         {tab === 'sales' && (
           <div className={`split deck-split${poolHidden ? ' pool-hidden' : ''}`}>
-            <section className="panel col-fill">
+            <section className="panel col-fill" data-remove-src="sale">
               <div className="toolbar">
                 <h2 style={{ margin: 0 }}>{t(lang, 'sales.cart')}</h2>
                 <span className="deck-list-count" style={{ flex: 1 }}>{t(lang, 'wish.total', { eur: fmtEur(lang, Object.entries(saleList).reduce((sum, [id, n]) => { const c = byId.get(id); return sum + (c ? ownedLineEur(isFoilOnly(c) ? { foil: n } : { qty: n }, priceBook?.cards[id]) : 0) }, 0)) ?? '' })}</span>
@@ -3749,6 +3826,7 @@ export default function App() {
                         errata={!!errataFor(c)}
                         onOpen={openCardLightbox}
                         onBump={() => {}}
+                        dragProps={removeDragProps('sale', () => bumpSale(id, -1))}
                         qtyRow={
                           <div className="row row-center">
                             <div className="qty">
@@ -3849,7 +3927,7 @@ export default function App() {
 
         {tab === 'decks' && (
           <div className={`split deck-split${poolHidden ? ' pool-hidden' : ''}`}>
-            <section className="panel deck-list-panel">
+            <section className="panel deck-list-panel" data-remove-src="deck">
               <div className="toolbar">
                 <h2 style={{ margin: 0 }}>{t(lang, 'decks.title')}</h2>
                 <span className="deck-list-count">{t(lang, 'decks.count', { n: decks.length })}</span>
@@ -4102,7 +4180,7 @@ export default function App() {
 
         {tab === 'borrowed' && (
           <div className={`split deck-split${poolHidden ? ' pool-hidden' : ''}`}>
-            <section className="panel deck-list-panel">
+            <section className="panel deck-list-panel" data-remove-src="borrow">
               <div className="toolbar">
                 <h2 style={{ margin: 0 }}>{t(lang, 'borrowed.title')}</h2>
                 <span className="deck-list-count">{t(lang, 'borrowed.count', { n: borrowed.length })}</span>
@@ -4251,6 +4329,7 @@ export default function App() {
                                 <div
                                   key={bc.id}
                                   className="list-item deck-card-row"
+                                  {...removeDragProps('borrow', () => bumpBorrowedCard(bc.id, -1))}
                                   onMouseEnter={(e) => showCardPreview(e, img)}
                                   onMouseMove={(e) => showCardPreview(e, img)}
                                   onMouseLeave={hideCardPreview}
@@ -4705,6 +4784,9 @@ export default function App() {
             </div>
           </div>
         </div>
+      )}
+      {removing && (
+        <div className="remove-hint" role="status"><Icon name="minus" size={14} />{t(lang, 'drag.removeHint')}</div>
       )}
       {cardPreview && !cardLightbox && (
         <div
