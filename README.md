@@ -44,7 +44,7 @@ Windows SmartScreen might complain the first time because the installer isn't si
 
 **Prices**
 
-- Cardmarket prices from the English listings: low, 30 day average and foil, Radiance included
+- Cardmarket prices from Cardmarket's daily price guide: low, 30 day average, trend and foil, Radiance included
 - Total value of your collection in EUR
 - Click a card name to open it on Cardmarket
 - Prices refresh every time the app starts, you don't need a new version for that

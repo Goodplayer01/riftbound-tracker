@@ -1,11 +1,9 @@
 name: Bake prices
 
-# Refreshes public/prices.json from Cardmarket every morning and adds the result
-# to public/price-history.json (value chart and movers in the app). Installed apps
-# pick both up at their next start, no release needed.
-# Needs the repository secret TCG_CARDMARKET_API_KEY. Without it only the price
-# history is updated from the prices.json already on main.
-# Can also be started by hand from Actions > Bake prices > Run workflow.
+# Refreshes public/prices.json from Cardmarket's public daily price guide every
+# morning and adds the result to public/price-history.json (value chart and movers
+# in the app). Installed apps pick both up at their next start, no release needed.
+# No secret needed. Can also be started by hand from Actions > Bake prices > Run workflow.
 on:
   schedule:
     - cron: '0 4 * * *'
@@ -29,14 +27,7 @@ jobs:
           python-version: '3.12'
 
       - name: Bake prices.json
-        env:
-          TCG_CARDMARKET_API_KEY: ${{ secrets.TCG_CARDMARKET_API_KEY }}
-        run: |
-          if [ -z "$TCG_CARDMARKET_API_KEY" ]; then
-            echo "::warning::Secret TCG_CARDMARKET_API_KEY not set, keeping the current prices.json"
-          else
-            python scripts/bake_prices.py
-          fi
+        run: python scripts/bake_prices.py
 
       - run: python scripts/bake_price_history.py
 
