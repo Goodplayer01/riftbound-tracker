@@ -1,6 +1,7 @@
-const { app, BrowserWindow, shell, ipcMain, Menu, nativeImage } = require('electron')
+const { app, BrowserWindow, shell, ipcMain, Menu, nativeImage, protocol, net } = require('electron')
 const path = require('path')
 const fs = require('fs')
+const crypto = require('crypto')
 
 const isDev = !app.isPackaged
 let mainWindow
@@ -16,6 +17,12 @@ let applyingWindowed = false
 if (process.platform === 'win32') {
   app.setAppUserModelId('com.goodplayer01.riftboundtracker')
 }
+
+// rbimg://card/?u=<card image URL> serves card images from a disk cache (see cachedCardImage).
+// Must be registered before app ready; "standard" + "secure" lets file:// pages load it like https.
+protocol.registerSchemesAsPrivileged([
+  { scheme: 'rbimg', privileges: { standard: true, secure: true, supportFetchAPI: true, corsEnabled: true } },
+])
 
 const gotSingleInstanceLock = app.requestSingleInstanceLock()
 if (!gotSingleInstanceLock) {
@@ -293,42 +300,111 @@ ipcMain.handle('net:fetchJson', async (_e, url) => {
 })
 
 
-ipcMain.handle('net:fetchImageDataUrl', async (_e, url) => {
-  if (typeof url !== 'string' || !/^https:\/\//i.test(url)) {
-    return { ok: false, error: 'invalid url' }
-  }
-  let parsed
-  try {
-    parsed = new URL(url)
-  } catch {
-    return { ok: false, error: 'invalid url' }
-  }
-  const host = parsed.hostname
-  const allowed =
-    host === 'cmsassets.rgpub.io' ||
+function cardImageHostAllowed(host) {
+  return host === 'cmsassets.rgpub.io' ||
     host.endsWith('.rgpub.io') ||
     host === 'cdn.piltoverarchive.com' ||
-    host.endsWith('.piltoverarchive.com')
-  if (!allowed) {
-    return { ok: false, error: 'host not allowed' }
-  }
+    host.endsWith('.piltoverarchive.com') ||
+    host === 'static.dotgg.gg' ||
+    host === 'riftcompare.com'
+}
+
+/** Returns the parsed URL when it is an https card image on an allowed host, else null. */
+function parseCardImageUrl(url) {
+  if (typeof url !== 'string' || !/^https:\/\//i.test(url)) return null
   try {
-    const res = await fetch(url, {
-      headers: {
-        Accept: 'image/*,*/*',
-        'User-Agent': 'DeakrixRiftboundTracker/' + app.getVersion() + ' (card images)',
-      },
-      signal: AbortSignal.timeout(15000),
-    })
-    if (!res.ok) {
-      return { ok: false, error: 'HTTP ' + res.status }
+    const parsed = new URL(url)
+    return cardImageHostAllowed(parsed.hostname) ? parsed : null
+  } catch {
+    return null
+  }
+}
+
+function sniffImageMime(buf) {
+  if (buf.length >= 4 && buf[0] === 0x89 && buf[1] === 0x50 && buf[2] === 0x4e && buf[3] === 0x47) return 'image/png'
+  if (buf.length >= 12 && buf.toString('ascii', 0, 4) === 'RIFF' && buf.toString('ascii', 8, 12) === 'WEBP') return 'image/webp'
+  if (buf.length >= 3 && buf[0] === 0xff && buf[1] === 0xd8 && buf[2] === 0xff) return 'image/jpeg'
+  if (buf.length >= 4 && buf.toString('ascii', 0, 4) === 'GIF8') return 'image/gif'
+  if (buf.length >= 12 && buf.toString('ascii', 4, 12).startsWith('ftypavi')) return 'image/avif'
+  return null
+}
+
+let imageCacheDir = null
+function getImageCacheDir() {
+  if (!imageCacheDir) {
+    imageCacheDir = path.join(app.getPath('userData'), 'card-image-cache')
+    fs.mkdirSync(imageCacheDir, { recursive: true })
+  }
+  return imageCacheDir
+}
+
+/** In-flight downloads, so a grid asking for the same image twice fetches it once. */
+const imageDownloads = new Map()
+
+/**
+ * Card image bytes from the disk cache, downloading on first use.
+ * Card image URLs are content-addressed (a new image gets a new URL), so entries never expire.
+ */
+async function cachedCardImage(url) {
+  const file = path.join(getImageCacheDir(), crypto.createHash('sha1').update(url).digest('hex'))
+  try {
+    const buf = await fs.promises.readFile(file)
+    const mime = sniffImageMime(buf)
+    if (mime) return { buf, mime }
+  } catch {}
+  let pending = imageDownloads.get(url)
+  if (!pending) {
+    pending = (async () => {
+      const res = await net.fetch(url, {
+        headers: {
+          Accept: 'image/*,*/*',
+          'User-Agent': 'DeakrixRiftboundTracker/' + app.getVersion() + ' (card images)',
+        },
+        signal: AbortSignal.timeout(20000),
+      })
+      if (!res.ok) throw new Error('HTTP ' + res.status)
+      const buf = Buffer.from(await res.arrayBuffer())
+      if (buf.length > 12 * 1024 * 1024) throw new Error('image too large')
+      const mime = sniffImageMime(buf)
+      if (!mime) throw new Error('not an image')
+      const tmp = file + '.' + process.pid + '.tmp'
+      try {
+        await fs.promises.writeFile(tmp, buf)
+        await fs.promises.rename(tmp, file)
+      } catch {
+        fs.promises.unlink(tmp).catch(() => {})
+      }
+      return { buf, mime }
+    })().finally(() => imageDownloads.delete(url))
+    imageDownloads.set(url, pending)
+  }
+  return pending
+}
+
+function handleCardImageProtocol() {
+  protocol.handle('rbimg', async (req) => {
+    const target = parseCardImageUrl(new URL(req.url).searchParams.get('u'))
+    if (!target) return new Response('not allowed', { status: 403 })
+    try {
+      const { buf, mime } = await cachedCardImage(target.href)
+      return new Response(buf, {
+        headers: {
+          'Content-Type': mime,
+          'Cache-Control': 'public, max-age=31536000, immutable',
+          'Access-Control-Allow-Origin': '*',
+        },
+      })
+    } catch (e) {
+      return new Response(String(e), { status: 502 })
     }
-    const buf = Buffer.from(await res.arrayBuffer())
-    if (buf.length > 12 * 1024 * 1024) {
-      return { ok: false, error: 'image too large' }
-    }
-    const ctype = (res.headers.get('content-type') || 'image/png').split(';')[0].trim()
-    const mime = ctype.startsWith('image/') ? ctype : 'image/png'
+  })
+}
+
+ipcMain.handle('net:fetchImageDataUrl', async (_e, url) => {
+  const parsed = parseCardImageUrl(url)
+  if (!parsed) return { ok: false, error: 'invalid url' }
+  try {
+    const { buf, mime } = await cachedCardImage(parsed.href)
     return { ok: true, dataUrl: 'data:' + mime + ';base64,' + buf.toString('base64') }
   } catch (e) {
     return { ok: false, error: String(e) }
@@ -346,6 +422,7 @@ app.whenReady().then(() => {
     app.quit()
     return
   }
+  handleCardImageProtocol()
   createWindow()
   setupAutoUpdater()
   app.on('activate', () => {

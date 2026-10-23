@@ -3,6 +3,7 @@ import { Icon } from './Icon'
 import type { Card, PriceBook } from './types'
 import { fmtEur, t, type Lang } from './i18n'
 import { displayCardName } from './deckHelpers'
+import { layeredArtBackground, preloadArt } from './cardImages'
 import { boosterSets, pullChance, rollPack, type PackSlot } from './dopaminPacks'
 
 type Face = 'down' | 'hold' | 'up'
@@ -96,6 +97,8 @@ export function Dopamin({ cards, lang, prices }: { cards: Card[]; lang: Lang; pr
     if (opening.current || phase !== 'sealed' || !setId) return
     const slots = rollPack(cards, setId)
     if (!slots) return
+    // The tear animation buys time to fetch the full art of every card in the pack.
+    for (const sl of slots) preloadArt(sl.card.image)
     opening.current = true
     const g = ++gen.current
     setPacksOpened((n) => n + 1)
@@ -202,7 +205,7 @@ export function Dopamin({ cards, lang, prices }: { cards: Card[]; lang: Lang; pr
               <span className="dop-back" />
               <span className="dop-face">
                 <span className={`card dop-face-inner${slot.foil ? ' shimmer' : ''}`}>
-                  <span className="art" style={{ backgroundImage: slot.card.image ? `url(${slot.card.image})` : undefined }} />
+                  <span className="art" style={{ backgroundImage: layeredArtBackground(slot.card) }} />
                 </span>
               </span>
             </span>

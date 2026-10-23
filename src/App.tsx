@@ -70,6 +70,7 @@ import { historyPoints, loadPriceHistory, type PriceHistoryFile } from './priceH
 import { ValueHistory, type InvestRow } from './ValueHistory'
 import { CONDITION_FACTOR, cardEur, cardInvest, copyGroups, fitCopyBook, soldGroups, unitEur, type CopyBook, type CopyLot } from './copies'
 import { CopyEditor, MoneyInput, fmtSignedEur } from './CopyEditor'
+import { cardArt, cardThumb, loadThumbIndex, preloadArt, thumbForImage } from './cardImages'
 
 type Tab = 'collection' | 'catalog' | 'sales' | 'decks' | 'borrowed' | 'stores' | 'dopamin'
 
@@ -226,9 +227,10 @@ function DeckThumb({ cardId, src, onOpen, openTitle, zoomIcon, lg }: { cardId?: 
   const node = src ? (
     <img
       className={`deck-thumb${size}${zoom}`}
-      src={src}
+      src={thumbForImage(src)}
       alt=""
       loading="lazy"
+      decoding="async"
       onError={(e) => { (e.currentTarget as HTMLImageElement).style.visibility = 'hidden' }}
       {...open}
     />
@@ -570,6 +572,23 @@ function DomainFilterRow({
   )
 }
 
+/** Card art inside an .art box: loads lazily and fades in over the placeholder. */
+function ArtImg({ src }: { src?: string }) {
+  if (!src) return null
+  return (
+    <img
+      className="art-img"
+      src={src}
+      alt=""
+      loading="lazy"
+      decoding="async"
+      draggable={false}
+      onLoad={(e) => e.currentTarget.classList.add('loaded')}
+      onError={(e) => { e.currentTarget.style.visibility = 'hidden' }}
+    />
+  )
+}
+
 function CardTile({
   c,
   o,
@@ -602,11 +621,11 @@ function CardTile({
     <article className={`card ${ownedClass}${c.signed || c.overnumbered ? ' shimmer' : ''}`} data-card-id={c.id}>
       <div
         className="art art-zoomable"
-        style={{ backgroundImage: c.image ? `url(${c.image})` : undefined }}
         role="button"
         tabIndex={0}
         title={t(lang, 'card.enlarge')}
         onClick={() => onOpen(c)}
+        onMouseEnter={() => preloadArt(c.image)}
         onKeyDown={(e) => {
           if (e.key === 'Enter' || e.key === ' ') {
             e.preventDefault()
@@ -614,6 +633,7 @@ function CardTile({
           }
         }}
       >
+        <ArtImg src={cardThumb(c)} />
         {n > 0 && <div className="badge">x{n}</div>}
         <div className="flags">
           {c.signed ? <span className="flag signed">Signed</span> : null}
@@ -1038,12 +1058,15 @@ export default function App() {
   }, [langMenuOpen, rarityMenuOpen, abilityMenuOpen])
 
   useEffect(() => {
-    fetch(new URL('cards.json', window.location.href))
-      .then((r) => {
+    // The thumbnail index must be in before the first grid renders, or every tile would start on the full art.
+    Promise.all([
+      fetch(new URL('cards.json', window.location.href)).then((r) => {
         if (!r.ok) throw new Error('cards.json fehlt')
         return r.json()
-      })
-      .then((data: Catalog) => setCatalog(data))
+      }),
+      loadThumbIndex(),
+    ])
+      .then(([data]: [Catalog, void]) => setCatalog(data))
       .catch((e: Error) => setError(e.message))
     // Bundled prices.json first, then the live copy from GitHub; newest updatedAt wins.
     const keepNewer = (b: PriceBook | null) => { if (b) setPriceBook((prev) => newerPriceBook(prev, b)) }
@@ -2670,8 +2693,16 @@ export default function App() {
     if (!box) return setLbNav({})
     const ids = [...new Set([...box.querySelectorAll<HTMLElement>('[data-card-id]')].filter(outside).map((el) => el.dataset.cardId))]
     const i = ids.indexOf(cardLightbox.id)
-    setLbNav({ prev: byId.get(ids[i - 1] || ''), next: byId.get(ids[i + 1] || '') })
+    const prev = byId.get(ids[i - 1] || '')
+    const next = byId.get(ids[i + 1] || '')
+    // Arrow-key browsing should never wait on the network.
+    preloadArt(next?.image)
+    preloadArt(prev?.image)
+    setLbNav({ prev, next })
   }, [cardLightbox, byId])
+
+  /** Bundled thumbnail shown in the large view until the full art has loaded. */
+  const lbThumb = cardLightbox && cardThumb(cardLightbox) !== cardArt(cardLightbox.image) ? cardThumb(cardLightbox) : undefined
 
   function setCardLots(id: string, lots: CopyLot[]) {
     setCopies((prev) => {
@@ -2703,7 +2734,8 @@ export default function App() {
     if (x + pw > window.innerWidth - 8) x = e.clientX - pw - pad
     if (y + ph > window.innerHeight - 8) y = Math.max(8, window.innerHeight - ph - 8)
     if (x < 8) x = 8
-    setCardPreview({ src, x, y })
+    preloadArt(src)
+    setCardPreview({ src: thumbForImage(src) ?? src, x, y })
   }
 
   function hideCardPreview() {
@@ -2751,9 +2783,10 @@ export default function App() {
                                   {img ? (
                                     <img
                                       className="deck-thumb"
-                                      src={img}
+                                      src={thumbForImage(img)}
                                       alt=""
                                       loading="lazy"
+                                      decoding="async"
                                       onError={(e) => { (e.currentTarget as HTMLImageElement).style.visibility = 'hidden' }}
                                     />
                                   ) : (
@@ -2896,10 +2929,7 @@ export default function App() {
                                             onMouseLeave={hideCardPreview}
                                             title={name}
                                           >
-                                            <div
-                                              className="art"
-                                              style={{ backgroundImage: c?.image ? `url(${c.image})` : undefined }}
-                                            />
+                                            <div className="art"><ArtImg src={cardThumb(c)} /></div>
                                             <div className="meta">
                                               <div className="name">{name}</div>
                                               {c && (
@@ -4552,14 +4582,21 @@ export default function App() {
               aria-label={t(lang, 'card.enlargeClose')}
             ><Icon name="x" size={18} /></button>
             <div className="card-lightbox-left">
-            <div className={`card-lightbox-art${artReady ? '' : ' loading'}`}>
+            <div
+              className={`card-lightbox-art${artReady ? '' : ' loading'}${lbThumb ? ' has-thumb' : ''}`}
+              style={!artReady && lbThumb ? { backgroundImage: `url("${lbThumb}")` } : undefined}
+            >
               {cardLightbox.image ? (
                 <img
                   key={cardLightbox.id}
-                  src={cardLightbox.image}
+                  src={cardArt(cardLightbox.image)}
                   alt={displayName(cardLightbox)}
                   className={bfTurn ? 'bf-on' : undefined}
-                  onError={() => setArtReady(true)}
+                  onError={(e) => {
+                    // Offline and not cached yet: the bundled thumbnail is better than nothing.
+                    if (lbThumb && e.currentTarget.src !== lbThumb) e.currentTarget.src = lbThumb
+                    else setArtReady(true)
+                  }}
                   onLoad={(e) => {
                     setArtReady(true)
                     const im = e.currentTarget

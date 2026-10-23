@@ -1,0 +1,37 @@
+name: Card thumbnails
+
+# Checks that every card image still turns into a thumbnail, and keeps the
+# result as a download. The Release workflow bakes the same thumbnails into
+# the installer. Also startable from Actions > Card thumbnails > Run workflow.
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - public/cards.json
+      - scripts/bake_thumbs.py
+      - .github/workflows/thumbs.yml
+
+jobs:
+  thumbs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - uses: actions/cache@v4
+        with:
+          path: public/thumbs
+          key: thumbs-${{ hashFiles('public/cards.json', 'scripts/bake_thumbs.py') }}
+          restore-keys: thumbs-
+
+      - run: pip install pillow
+
+      - run: python scripts/bake_thumbs.py
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: thumbs
+          path: public/thumbs
