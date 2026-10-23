@@ -39,6 +39,7 @@ Windows SmartScreen might complain the first time because the installer isn't si
 - Card detail with a big zoomed scan and the rules text you can actually read
 - Battlefields are shown sideways in the detail view so the text is straight
 - Ban badges for Standard and 2v2
+- An Errata tag on cards with official errata, and the new text right under the card in the detail view
 
 **Prices**
 
@@ -83,6 +84,7 @@ Open simulated booster packs for each set with the real pack art. Cards flip one
 - The window button maximizes the app and leaves the Windows taskbar visible
 - In the wishlist, sales and deck builder you can hide the card search on the right to get more room
 - The app runs in German or English
+- Card images load fast: small previews ship with the app, full-size art is cached on your PC after the first view
 
 ## Feedback
 
