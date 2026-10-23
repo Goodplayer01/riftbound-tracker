@@ -58,7 +58,7 @@ Windows SmartScreen might complain the first time because the installer isn't si
 - Find a Legend by typing the champion name
 - Drag cards from the search list into a deck section, and drag them out again to remove one copy per drag
 - Every deck card shows how many you own and how many the deck needs, with buttons to add or remove normal and foil copies in your collection
-- Runes as one big counter per domain of your Legend
+- Runes as one big counter per domain of your Legend. Add Runes only lists the alt art runes, the counters cover the normal ones
 - The open deck shows its Legend big, with the deck's value and what the missing copies would cost. Click the missing tile to list those cards by set with big images, add them to your collection, or copy them as a Cardmarket wants list
 - Import and export deck lists as text
 - Drag decks around to sort them

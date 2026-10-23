@@ -13,7 +13,7 @@ Notes for Claude Code working in this repo. The README is the user-facing featur
 
 - Electron 37 + React 19 + Vite 7 + TypeScript. Windows NSIS installer via electron-builder, auto-update via electron-updater from GitHub Releases.
 - `electron/main.cjs`: window, updater, IPC (`net:fetchJson`, `net:fetchImageDataUrl`, `shell:openExternal`, window controls) and the `rbimg://` image cache protocol. `electron/preload.cjs` exposes these to the renderer.
-- `src/App.tsx` holds most of the UI (one big file, ~4800 lines). Helpers live in their own modules (`prices.ts`, `priceHistory.ts`, `copies.ts`, `cardmarket.ts`, `cardImages.ts`, `deckHelpers.ts`, `banlist.ts`, `storage.ts`, ...).
+- `src/App.tsx` holds most of the UI (one big file, ~5100 lines). Helpers live in their own modules (`prices.ts`, `priceHistory.ts`, `copies.ts`, `cardmarket.ts`, `cardImages.ts`, `deckHelpers.ts`, `banlist.ts`, `storage.ts`, ...).
 - Styling in `src/styles.css`: dark "Apple look", graphite surfaces with amber accent, sidebar navigation. Icons from Lucide (`src/Icon.tsx`).
 - No test framework. The `scripts/check_*.mjs` / `check-dopamin.mjs` files are plain assertion scripts that run in the Release workflow.
 - Stefan's PC has no Python (only the Microsoft Store alias), so Python bake scripts run in the GitHub workflows, e.g. `gh workflow run prices.yml --ref <branch>`.
@@ -78,6 +78,8 @@ If a shape has to change, add a new versioned key and migrate from the old one.
 - `bake-images.yml` (manual): official Riot card images into `cards.json`.
 
 The cloud sandbox proxy blocks the card image hosts and playriftbound.com, so image and errata baking runs in workflows (or errata get added by hand).
+
+One-off scripts no workflow runs: `bake_rules_text.py` (rules text from the playriftbound.com card gallery into `cards.json`), `bake_rad_cm.py` (maps RAD cards to Cardmarket products, uses `cm_rad_slugs.json`), `rebake_cm_urls.py` (rewrites `cmUrl` to the canonical English form, uses `cm_url_overrides.json`).
 
 ## Conventions
 
