@@ -602,8 +602,12 @@ textarea.field { min-height: 160px; resize: vertical; font-family: ui-monospace,
 }
 .deck-warn b { color: var(--accent2); }
 .deck-warn ul { margin: 6px 0 0; padding-left: 18px; }
-.deck-warn-list { display: grid; gap: 6px; margin-top: 8px; }
-.deck-warn-row { padding: 4px 0; background: transparent; border: none; }
+.deck-warn-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 10px; margin-top: 8px; }
+.deck-warn-row { padding: 4px 0; background: transparent; border: none; gap: 14px; }
+.deck-warn-row .name { font-size: 15px; }
+.deck-warn-row .deck-thumb { width: 120px; height: 168px; border-radius: 8px; }
+.deck-warn-set + .deck-warn-set { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--border); }
+.deck-warn-set-head { display: flex; align-items: baseline; gap: 8px; font-size: 14px; }
 .deck-sections { display: grid; gap: 12px; }
 .deck-sec-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 460px), 1fr)); gap: 12px; align-items: start; }
 .deck-sec {
