@@ -56,6 +56,7 @@ import {
   type StoreHit,
 } from './stores'
 import { StoresMap, type MapCenter } from './StoresMap'
+import { StoreDisplays } from './StoreDisplays'
 import {
   OPENING_HAND_SIZE,
   applyMulligan,
@@ -786,6 +787,8 @@ export default function App() {
   const [borrowImportText, setBorrowImportText] = useState('')
   const [borrowImportOpen, setBorrowImportOpen] = useState(false)
   const [borrowNotice, setBorrowNotice] = useState<string | null>(null)
+  /** Store tab: display price comparison or the store locator. */
+  const [storeView, setStoreView] = useState<'displays' | 'stores'>('displays')
   const [storeQuery, setStoreQuery] = useState('Berlin')
   const [storeKm, setStoreKm] = useState(STORE_RADIUS_KM_DEFAULT)
   const [storeHits, setStoreHits] = useState<StoreHit[]>([])
@@ -4558,6 +4561,26 @@ export default function App() {
         )}
 
         {tab === 'stores' && (
+          <div className="stores-view-switch" role="tablist">
+            {(['displays', 'stores'] as const).map((v) => (
+              <button
+                key={v}
+                type="button"
+                role="tab"
+                aria-selected={storeView === v}
+                className={`chip${storeView === v ? ' active' : ''}`}
+                onClick={() => setStoreView(v)}
+              >
+                <Icon name={v === 'displays' ? 'package' : 'map-pinned'} />
+                {t(lang, v === 'displays' ? 'stores.viewDisplays' : 'stores.viewStores')}
+              </button>
+            ))}
+          </div>
+        )}
+
+        {tab === 'stores' && storeView === 'displays' && <StoreDisplays lang={lang} openLink={openLink} />}
+
+        {tab === 'stores' && storeView === 'stores' && (
           <div className="stores-page">
             <div className="stores-search">
               <SearchInput

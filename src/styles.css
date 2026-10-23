@@ -2163,3 +2163,64 @@ input[type="checkbox"] { accent-color: var(--primary); }
   animation: none;
   background-position: center; background-size: contain; background-repeat: no-repeat;
 }
+
+/* Store tab: display price comparison (StoreDisplays.tsx). */
+.stores-view-switch { display: flex; gap: 6px; margin-bottom: 10px; flex: none; }
+.disp-page { flex: 1; min-height: 0; overflow: auto; display: flex; flex-direction: column; gap: 10px; padding-right: 2px; }
+.disp-toolbar { flex: none; }
+.disp-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.disp-chips .chip { min-height: 30px; padding: 0 12px; font-size: 12.5px; }
+.disp-spacer { flex: 1; }
+.disp-ct { margin: 0; padding: 12px 14px; display: grid; gap: 8px; }
+.disp-ct .help { margin: 0; }
+.disp-ct-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.disp-ct-row .field { flex: 1 1 260px; min-width: 200px; padding: 8px 10px; }
+.disp-sets { display: grid; gap: 12px; padding-bottom: 12px; }
+.disp-set { margin: 0; padding: 14px 16px; display: grid; gap: 10px; }
+.disp-head { display: grid; grid-template-columns: 76px minmax(0, 1fr) auto; gap: 14px; align-items: start; }
+.disp-img { width: 76px; height: 76px; object-fit: cover; border-radius: 12px; background: var(--panel2); box-shadow: inset 0 0 0 1px var(--border); }
+.disp-img-none { display: grid; place-items: center; color: var(--muted); }
+.disp-head-main { display: grid; gap: 6px; min-width: 0; }
+.disp-head h2 { margin: 0; font-size: 17px; font-weight: 650; letter-spacing: -.01em; }
+.disp-ref { display: flex; flex-wrap: wrap; gap: 6px; }
+.disp-ref-item {
+  display: inline-flex; align-items: center; gap: 8px; border: 0; border-radius: 999px;
+  padding: 3px 10px; background: var(--fill); font-size: 12.5px; color: var(--text);
+}
+.disp-ref-item:hover { background: var(--fill-hover); }
+.disp-ref-label { color: var(--accent2); font-weight: 600; }
+.disp-ref-val { font-variant-numeric: tabular-nums; }
+.disp-best { font-size: 13px; color: var(--muted); display: flex; flex-wrap: wrap; gap: 6px; align-items: baseline; }
+.disp-best b { color: var(--text); font-variant-numeric: tabular-nums; }
+.disp-target { display: grid; gap: 4px; justify-items: end; font-size: 12px; }
+.disp-target .field { width: 96px; padding: 6px 8px; text-align: right; }
+.disp-target-hits { color: var(--muted); font-size: 12px; }
+.disp-target-hits.hit { color: var(--positive); font-weight: 600; }
+.disp-none { padding: 4px 2px; }
+.disp-offers { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+.disp-offer {
+  display: grid; align-items: center; gap: 12px;
+  grid-template-columns: 84px 56px minmax(120px, 190px) minmax(0, 1fr) auto auto;
+  padding: 7px 10px; border-radius: 10px; background: var(--panel2);
+  box-shadow: inset 0 0 0 1px var(--border);
+}
+.disp-offer.ok { box-shadow: inset 0 0 0 1.5px rgb(var(--positive-rgb) / .6); background: rgb(var(--positive-rgb) / .07); }
+.disp-offer.out { opacity: .55; }
+.disp-price { font-weight: 650; font-variant-numeric: tabular-nums; text-align: right; }
+.disp-delta { font-size: 12px; font-variant-numeric: tabular-nums; color: var(--muted); text-align: right; }
+.disp-delta.good { color: var(--positive); font-weight: 600; }
+.disp-delta.bad { color: var(--danger); }
+.disp-seller { display: grid; min-width: 0; line-height: 1.25; }
+.disp-seller .name { font-weight: 600; font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.disp-seller .sub { font-size: 11.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.disp-title { font-size: 12px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+.disp-tags { display: flex; gap: 4px; flex-wrap: wrap; justify-content: flex-end; }
+.disp-tags .pill { font-size: 11px; padding: 1px 7px; align-items: center; gap: 3px; }
+.disp-pill-ok { background: rgb(var(--positive-rgb) / .18); color: var(--positive); }
+@media (max-width: 980px) {
+  .disp-offer { grid-template-columns: 76px 50px minmax(0, 1fr) auto; }
+  .disp-title, .disp-tags { display: none; }
+  .disp-head { grid-template-columns: 56px minmax(0, 1fr); }
+  .disp-img { width: 56px; height: 56px; }
+  .disp-target { grid-column: 1 / -1; justify-items: start; grid-auto-flow: column; align-items: center; }
+}

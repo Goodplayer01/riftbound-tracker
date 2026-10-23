@@ -217,6 +217,32 @@ ipcMain.handle('updater:download', async () => {
     return { ok: false, error: String(e) }
   }
 })
+
+// CardTrader API (read only GETs) with the user's own token from the Store tab.
+ipcMain.handle('net:cardtrader', async (_e, path, token) => {
+  if (typeof path !== 'string' || !/^\/[a-z_/]+(\?[\w=&%.-]*)?$/i.test(path)) {
+    return { ok: false, error: 'invalid path' }
+  }
+  if (typeof token !== 'string' || !token.trim() || /[\r\n]/.test(token)) {
+    return { ok: false, error: 'no token' }
+  }
+  try {
+    const res = await fetch('https://api.cardtrader.com/api/v2' + path, {
+      headers: {
+        Accept: 'application/json',
+        Authorization: 'Bearer ' + token.trim(),
+        'User-Agent': 'DeakrixRiftboundTracker/' + app.getVersion(),
+      },
+      signal: AbortSignal.timeout(20000),
+    })
+    if (!res.ok) {
+      return { ok: false, error: 'HTTP ' + res.status, status: res.status }
+    }
+    return { ok: true, data: await res.json() }
+  } catch (e) {
+    return { ok: false, error: String(e) }
+  }
+})
 ipcMain.handle('updater:check', async () => {
   if (isDev) {
     mainWindow?.webContents.send('updater', { status: 'not-available', version: app.getVersion() })
@@ -274,11 +300,15 @@ ipcMain.handle('net:fetchJson', async (_e, url) => {
     'api.cloudflare.riftbound.uvsgames.com',
     'nominatim.openstreetmap.org',
   ])
-  // Shopify predictive search only, and only for the fixed Riftbound query.
+  // Open shop searches only, and only for the fixed Riftbound queries:
+  // Shopify predictive search and the WooCommerce Store API.
+  const shopQueries = new Set(['riftbound', 'riftbound display'])
   const shopifySuggest = parsed.pathname === '/search/suggest.json'
-    && parsed.searchParams.get('q') === 'riftbound'
-    && publicShopHost(parsed.hostname)
-  if (!allowed.has(parsed.hostname) && !shopifySuggest) {
+    && shopQueries.has(parsed.searchParams.get('q') || '')
+  const wooSearch = parsed.pathname === '/wp-json/wc/store/v1/products'
+    && shopQueries.has(parsed.searchParams.get('search') || '')
+  const shopSearch = (shopifySuggest || wooSearch) && publicShopHost(parsed.hostname)
+  if (!allowed.has(parsed.hostname) && !shopSearch) {
     return { ok: false, error: 'host not allowed' }
   }
   try {

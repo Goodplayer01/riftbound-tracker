@@ -21,6 +21,7 @@ Notes for Claude Code working in this repo. The README is the user-facing featur
 ## UI structure
 
 - Sidebar tabs (`Tab` in App.tsx): `collection` is labelled "Sets" (set binders, wishlist, value history); `owned` is "All owned", the owned binder (`binderView === 'owned'`, kept in sync with the tab by an effect) with a set filter (`ownedSet`) and a sort select (`ownedSort`: by set, or by the price of one owned copy, foil price when only foils are owned; not persisted). Then Catalogue, Sales, Decks, Borrowed, Stores, Dopamin.
+- Stores tab has two views (`storeView`): Displays (`src/StoreDisplays.tsx` + `src/displays.ts`, the display price comparison) and the store locator map. Displays reads `sealed.json`, asks the listed shops again live (Shopify `/search/suggest.json`, WooCommerce Store API, both allowed in `net:fetchJson` only for the fixed Riftbound queries) and CardTrader through `net:cardtrader` with the user's token. Title parsing (display / language / set) exists twice, in `displays.ts` and `scripts/bake_sealed.py`: keep both in sync, `scripts/check_displays.mjs` covers the TS side.
 - Card tiles are `CardTile`; list rows are `.list-item` (`.deck-card-row` in decks and borrowed, `.picker-card` in the search panels on the right). Clicking a tile or row opens the card detail unless the click hits a button or input (`isControlClick`).
 - Drag and drop: search cards set `text/riftbound-card` and drop into deck sections, wishlist, sales cart and borrowed (`onSectionDrop`, `cartDrop`, `onBorrowDrop`). Cards in those lists drag out with `removeDragProps` (`text/riftbound-remove`): a drop outside the panel marked `data-remove-src` removes one copy.
 - Deck rows: Collection panel (normal / foil steppers, `collectionButtons`) and Owns / Need. The "Still missing" list groups by set and exports a Cardmarket wants list. Runes show one counter per Legend domain.
@@ -34,7 +35,7 @@ npm ci
 npm run dev:app      # Vite + Electron for local development
 npm run build        # tsc --noEmit + vite build (use this to check a change compiles)
 npm run dist         # build + Windows installer into release/
-node --experimental-strip-types scripts/check_v050.mjs   # same for check_v080, check_copies, check-dopamin
+node --experimental-strip-types scripts/check_v050.mjs   # same for check_v080, check_copies, check-dopamin, check_displays
 node scripts/check_errata.mjs
 ```
 
@@ -43,6 +44,7 @@ node scripts/check_errata.mjs
 - `cards.json`: all cards (type `Card` in `src/types.ts`). Images point at Riot's official gallery; `scripts/bake_images.py` (workflow "Bake card images") swaps in official art.
 - `prices.json`: Cardmarket prices from the public daily price guide (`downloads.s3.cardmarket.com`, game 22: low, 30 day avg, trend, foil; no max), matched by `cmId` (Cardmarket idProduct). Rows without a `cmId` are matched by expansion and name only when exactly one product fits: Cardmarket's V1/V2/... do not follow idProduct order, so never pick a print by V number. `sanitize_prices.py` drops zero values, outliers and placeholder asks of 5000 EUR+ with no sales. Cardmarket product pages answer scripts with 403, so links can only be checked against `products_singles_22.json`.
 - `cmUrl` is stored canonical (`/en/...?language=1`). The app builds the real link per click in `cmLink`: site locale from the app language, `sellerCountry=7` (Germany) and `language=1` (English copies). The app loads it live from `raw.githubusercontent.com/.../main/public/prices.json` at startup (cached as `rb.prices.remote.v1`), falling back to the bundled copy. New prices therefore need no release, only a push to main. Prices have no per-language split, so a copy's language does not change its value.
+- `sealed.json`: display prices for the Store tab, baked daily by `scripts/bake_sealed.py`: Cardmarket price guide rows for sealed products (`products_nonsingles_22.json`, set learned from the singles' idExpansion), the German shops that answer an open product search (UVS store list + `ONLINE_SHOPS`) and their display offers. Loaded live from main. The Cardmarket API takes no new private apps; CardTrader has a real API but needs each user's own token.
 - `price-history.json`: one snapshot per price update, also loaded live from main. Drives the Wertverlauf view (`src/ValueHistory.tsx`).
 - `card-errata.json`: official errata keyed by lower case card name. Baked by `scripts/bake_errata.mjs` from playriftbound.com articles (add new articles to `PAGES`). Shown as a blue "Errata" pill next to the ban badge and under the card in the detail view.
 - `card-keywords.json`, `sets/`, `packs/`, `displays/`, `domains/`, `symbols/`, `flags/`: static assets.
@@ -62,13 +64,14 @@ Keep these keys and their shapes backward compatible. Users' collections live he
 - `rb.copies.v1`: per-copy language, condition and purchase price (`src/copies.ts`), layered on top of the collection counts.
 - `rb.backup.v1`: automatic backup.
 - `rb.decks.v1`, `rb.wishlist.v1`, `rb.wishTargets.v1` (price alert targets), `rb.wishAlertsSeen.v1`, `rb.sales.v1`, `rb.borrowed.v1`, `rb.poolHidden`, `riftbound-lang`.
+- `rb.displayTargets.v1`: max display price, `{ [set or "SET:LANG"]: eur }` (English uses the plain set code). `rb.cardtrader.token.v1` (the user's CardTrader token) and `rb.cardtrader.blueprints.v1` (3 day cache of CardTrader display blueprints).
 
 If a shape has to change, add a new versioned key and migrate from the old one.
 
 ## Workflows (.github/workflows)
 
 - `release.yml` (manual, "Run workflow"): runs the check scripts, bakes thumbnails, builds the installer on windows-latest and publishes the GitHub release `v<package.json version>`. **All releases go through this workflow.** Claude cannot create releases directly (403). To release: bump `version` in `package.json` on main, then start the workflow (`gh workflow run release.yml` or via the GitHub MCP).
-- `prices.yml` (daily 04:00 UTC + manual): `bake_prices.py` (Cardmarket's public price guide for game 22, no secret) and `bake_price_history.py`, commits `prices.json` and `price-history.json` to main.
+- `prices.yml` (daily 04:00 UTC + manual): `bake_prices.py` (Cardmarket's public price guide for game 22, no secret) and `bake_price_history.py`, then `bake_sealed.py` (may fail without blocking prices), commits `prices.json`, `price-history.json` and `sealed.json` to main.
 - `thumbs.yml`: checks thumbnail baking on PRs that touch `cards.json`.
 - `bake-images.yml` (manual): official Riot card images into `cards.json`.
 
