@@ -20,7 +20,7 @@ Notes for Claude Code working in this repo. The README is the user-facing featur
 
 ## UI structure
 
-- Sidebar tabs (`Tab` in App.tsx): `collection` is labelled "Sets" (set binders, wishlist, value history); `owned` is "All owned", the owned binder (`binderView === 'owned'`, kept in sync with the tab by an effect). Then Catalogue, Sales, Decks, Borrowed, Stores, Dopamin.
+- Sidebar tabs (`Tab` in App.tsx): `collection` is labelled "Sets" (set binders, wishlist, value history); `owned` is "All owned", the owned binder (`binderView === 'owned'`, kept in sync with the tab by an effect) with a set filter (`ownedSet`) and a sort select (`ownedSort`: by set, or by the price of one owned copy, foil price when only foils are owned; not persisted). Then Catalogue, Sales, Decks, Borrowed, Stores, Dopamin.
 - Card tiles are `CardTile`; list rows are `.list-item` (`.deck-card-row` in decks and borrowed, `.picker-card` in the search panels on the right). Clicking a tile or row opens the card detail unless the click hits a button or input (`isControlClick`).
 - Drag and drop: search cards set `text/riftbound-card` and drop into deck sections, wishlist, sales cart and borrowed (`onSectionDrop`, `cartDrop`, `onBorrowDrop`). Cards in those lists drag out with `removeDragProps` (`text/riftbound-remove`): a drop outside the panel marked `data-remove-src` removes one copy.
 - Deck rows: Collection panel (normal / foil steppers, `collectionButtons`) and Owns / Need. The "Still missing" list groups by set and exports a Cardmarket wants list. Runes show one counter per Legend domain.
