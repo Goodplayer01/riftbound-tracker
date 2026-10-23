@@ -646,7 +646,9 @@ textarea.field { min-height: 160px; resize: vertical; font-family: ui-monospace,
 }
 .deck-card-row {
   display: grid;
-  grid-template-columns: auto minmax(9rem, 1fr) auto auto;
+  /* thumb · name · collection · owns · need (or trash) */
+  grid-template-columns: auto minmax(9rem, 1fr) auto auto auto;
+  column-gap: 18px;
   align-items: center;
   justify-content: stretch;
 }
@@ -660,10 +662,13 @@ textarea.field { min-height: 160px; resize: vertical; font-family: ui-monospace,
   overflow: hidden;
   white-space: normal;
   width: auto;
-  flex: 1 1 auto;
+  flex: 0 1 auto;
   min-width: 0;
   line-height: 1.25;
 }
+.deck-card-row .name-with-ban .ban-badge { flex-shrink: 0; margin-top: 1px; }
+/* Rows and tiles open the card detail on click. */
+.deck-card-row, .deck-warn-row, .card { cursor: pointer; }
 .deck-card-row.short .name { color: var(--warn); }
 .deck-import-box { margin-top: 12px; display: grid; gap: 8px; }
 .split.deck-split {
@@ -942,24 +947,6 @@ button.deck-stat:hover { background: var(--fill-hover); }
   min-width: 34px;
   font-size: 14px;
 }
-.deck-add-collection {
-  flex-shrink: 0;
-  white-space: nowrap;
-  padding: 5px 8px;
-  font-size: 12px;
-  border-color: rgb(var(--positive-rgb) / .4);
-  background: transparent;
-  color: var(--positive);
-}
-.deck-add-collection:hover:not(:disabled) {
-  border-color: var(--positive);
-  background: rgb(var(--positive-rgb) / .1);
-}
-.deck-coll { display: grid; gap: 4px; flex-shrink: 0; }
-.deck-coll-row { display: flex; gap: 4px; }
-.deck-coll-row .deck-add-collection:not(.deck-coll-minus) { flex: 1; justify-content: flex-start; }
-.deck-coll-foil { border-color: rgb(var(--primary-rgb) / .45); color: var(--accent2); }
-.deck-coll-foil:hover:not(:disabled) { border-color: var(--accent2); background: rgb(var(--primary-rgb) / .1); }
 /* Rune deck: one big counter per Legend domain. */
 .rune-tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-bottom: 10px; }
 .rune-tile {
@@ -971,14 +958,17 @@ button.deck-stat:hover { background: var(--fill-hover); }
 .rune-tile-name { font-weight: 650; font-size: 14px; }
 .rune-tile .qty button { width: 34px; height: 34px; font-size: 18px; }
 .rune-tile .qty b { min-width: 34px; font-size: 18px; color: var(--text); }
-.deck-coll-minus { padding: 5px 6px; border-color: rgb(var(--danger-rgb) / .4); color: var(--danger); }
-.deck-coll-minus:hover:not(:disabled) { border-color: var(--danger); background: rgb(var(--danger-rgb) / .1); }
-.deck-coll-minus:disabled { opacity: .35; cursor: not-allowed; }
-/* Labelled "Owns" / "Need" columns on deck rows. */
-.deck-stat { display: grid; gap: 3px; justify-items: center; flex-shrink: 0; }
-.deck-stat > b { min-width: 32px; text-align: center; font-size: 15px; font-variant-numeric: tabular-nums; }
-.deck-stat > b.have { color: var(--positive); }
-.deck-stat > b.short { color: var(--danger); }
+/* Deck row controls: Collection (normal / foil), Owns, Need. Same pill steppers as the card tiles. */
+.row-coll { display: grid; gap: 4px; justify-items: end; }
+.row-coll-line { display: flex; align-items: center; gap: 8px; }
+.deck-warn-row .row-coll { justify-items: start; margin-top: 10px; }
+.deck-warn-row .row-coll-kind { min-width: 44px; }
+.row-coll-kind { font-size: 11.5px; color: var(--muted); font-weight: 600; white-space: nowrap; }
+.row-coll .qty b.have, .row-stat .qty b { color: var(--text); }
+.row-stat { display: grid; gap: 4px; justify-items: center; align-content: center; }
+.row-stat > b { min-width: 32px; text-align: center; font-size: 17px; font-weight: 700; font-variant-numeric: tabular-nums; line-height: 26px; }
+.row-stat > b.have { color: var(--positive); }
+.row-stat > b.short { color: var(--danger); }
 .deck-warn-tools { margin-bottom: 8px; }
 /* Collection tile: which decks use the card. */
 .in-decks {
