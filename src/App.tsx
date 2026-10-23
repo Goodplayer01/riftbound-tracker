@@ -606,8 +606,11 @@ function CardTile({
   children,
   qtyRow,
   errata,
+  inDecks,
 }: {
   children?: ReactNode
+  /** Names of the decks that use this card. */
+  inDecks?: string[]
   /** Card has official errata (shows the errata pill next to the name). */
   errata?: boolean
   /** Replaces the owned counters (sales cart uses its own stepper). */
@@ -661,6 +664,12 @@ function CardTile({
           <ErrataBadge show={!!errata} lang={lang} />
         </div>
         <div className="sub">{c.code} · {(c.types || []).join('/') || '-'} · {(c.domains || []).join('/') || '-'}</div>
+        {inDecks && inDecks.length > 0 && (
+          <div className="in-decks" title={`${t(lang, 'collection.inDecks')}: ${inDecks.join(', ')}`}>
+            <Icon name="layers" size={13} />
+            <span>{inDecks.join(', ')}</span>
+          </div>
+        )}
         <PriceBits entry={priceEntry} lang={lang} showHigh={!foilOnly} foilOnly={foilOnly} />
         {qtyRow ?? (foilOnly ? (
           <div className="qty-group qty-group-single">
@@ -1298,6 +1307,14 @@ export default function App() {
     }
     return points
   }, [priceHistory, priceBook, cards])
+
+  const decksByCard = useMemo(() => {
+    const m = new Map<string, string[]>()
+    for (const d of decks) {
+      for (const id of new Set(d.cards.map((dc) => dc.id))) m.set(id, [...(m.get(id) || []), d.name])
+    }
+    return m
+  }, [decks])
 
   const setProgress = useMemo(() => {
     const known = BINDER_SET_ORDER.filter((id) => id in sets)
@@ -3459,6 +3476,7 @@ export default function App() {
                       onMouseEnter={(e) => showCardPreview(e, c.image)}
                       onMouseMove={(e) => showCardPreview(e, c.image)}
                       onMouseLeave={hideCardPreview}
+                      onClick={() => openCardLightbox(c)}
                     >
                       <DeckThumb cardId={c.id} src={c.image} onOpen={() => openCardLightbox(c)} openTitle={t(lang, 'card.enlarge')} />
                       <div className="grow">
@@ -3476,7 +3494,7 @@ export default function App() {
                         <div className="sub">{c.code} · x{ownedQty(collection[c.id])}{c.energy != null ? ` · E${c.energy}` : ''}</div>
                         <PriceBits entry={priceBook?.cards[c.id]} lang={lang} />
                       </div>
-                      <button className="btn small add" onClick={() => bumpWish(c.id, 'qty', 1)}><Icon name="plus" />{t(lang, 'decks.add')}</button>
+                      <button className="btn small add" onClick={(e) => { e.stopPropagation(); bumpWish(c.id, 'qty', 1) }}><Icon name="plus" />{t(lang, 'decks.add')}</button>
                     </div>
                   ))}
                 </div>
@@ -3603,6 +3621,7 @@ export default function App() {
                     priceEntry={priceBook?.cards[c.id]}
                     variant="binder"
                     errata={!!errataFor(c)}
+                    inDecks={decksByCard.get(c.id)}
                     onOpen={openCardLightbox}
                     onBump={bump}
                   />
@@ -3766,6 +3785,7 @@ export default function App() {
                       onMouseEnter={(e) => showCardPreview(e, c.image)}
                       onMouseMove={(e) => showCardPreview(e, c.image)}
                       onMouseLeave={hideCardPreview}
+                      onClick={() => openCardLightbox(c)}
                     >
                       <DeckThumb cardId={c.id} src={c.image} onOpen={() => openCardLightbox(c)} openTitle={t(lang, 'card.enlarge')} zoomIcon />
                       <div className="grow">
@@ -3779,7 +3799,7 @@ export default function App() {
                         <div className="sub">{c.code} · x{have}{room < have ? t(lang, 'sales.inCart', { n: have - room }) : ''}</div>
                         <PriceBits entry={priceBook?.cards[c.id]} lang={lang} />
                       </div>
-                      <button className="btn small add" disabled={room <= 0} onClick={() => addToSale(c.id, 1)} title={t(lang, 'sales.toCart')} aria-label={t(lang, 'sales.toCart')}>
+                      <button className="btn small add" disabled={room <= 0} onClick={(e) => { e.stopPropagation(); addToSale(c.id, 1) }} title={t(lang, 'sales.toCart')} aria-label={t(lang, 'sales.toCart')}>
                         <Icon name="shopping-cart" />
                       </button>
                     </div>
@@ -4016,12 +4036,14 @@ export default function App() {
                                         <div
                       key={c.id}
                       className="list-item picker-card"
-                      draggable={!!activeDeck && !(sectionNeedsLegend(activeSection) && !hasLegend(activeDeck.cards)) && sectionCount(activeDeck.cards, activeSection) < SECTION_CAPS[activeSection]}
+                      // Any section can be a drop target; each one checks its own cap and Legend rule on drop.
+                      draggable={!!activeDeck}
                       onDragStart={(e) => onPickerDragStart(e, c.id)}
                       onDragEnd={onPickerDragEnd}
                       onMouseEnter={(e) => showCardPreview(e, c.image)}
                       onMouseMove={(e) => showCardPreview(e, c.image)}
                       onMouseLeave={hideCardPreview}
+                      onClick={() => openCardLightbox(c)}
                     >
                       <DeckThumb cardId={c.id} src={c.image} onOpen={() => openCardLightbox(c)} openTitle={t(lang, 'card.enlarge')} />
                       <div className="grow">
@@ -4052,7 +4074,7 @@ export default function App() {
                               ? t(lang, 'decks.limitReached', { cap: SECTION_CAPS[activeSection] })
                               : undefined
                         }
-                        onClick={() => addToDeck(c.id, activeSection)}
+                        onClick={(e) => { e.stopPropagation(); addToDeck(c.id, activeSection) }}
                       >
                         <Icon name="plus" />{t(lang, 'decks.add')}
                       </button>
@@ -4318,6 +4340,7 @@ export default function App() {
                         onMouseEnter={(e) => showCardPreview(e, c.image)}
                         onMouseMove={(e) => showCardPreview(e, c.image)}
                         onMouseLeave={hideCardPreview}
+                        onClick={() => openCardLightbox(c)}
                       >
                         <DeckThumb cardId={c.id} src={c.image} onOpen={() => openCardLightbox(c)} openTitle={t(lang, 'card.enlarge')} zoomIcon />
                         <div className="grow">
@@ -4342,7 +4365,7 @@ export default function App() {
                           className="btn small add"
                           disabled={!activeBorrowed || room <= 0}
                           title={room <= 0 ? t(lang, 'borrowed.noAvail') : undefined}
-                          onClick={() => bumpBorrowedCard(c.id, 1)}
+                          onClick={(e) => { e.stopPropagation(); bumpBorrowedCard(c.id, 1) }}
                         >
                           <Icon name="plus" />{t(lang, 'decks.add')}
                         </button>
