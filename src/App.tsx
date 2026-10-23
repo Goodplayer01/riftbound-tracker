@@ -340,18 +340,23 @@ function ownedLineEur(o: { qty?: number; foil?: number } | undefined, p?: PriceE
 /** Official card errata, baked by scripts/bake_errata.mjs. */
 type CardErrata = { newText: string; oldText: string; source: string }
 
-function openCm(p?: PriceEntry | null) {
-  const raw = p?.cmUrl
-  if (!raw) return
-  let url = raw
+/** Cardmarket page in the app language, filtered to English copies (language=1) from German sellers (sellerCountry=7). */
+function cmLink(raw: string, lang: Lang) {
   try {
     const u = new URL(raw)
+    const segs = u.pathname.split('/')
+    if (segs[1]) segs[1] = lang
+    u.pathname = segs.join('/')
+    u.searchParams.set('sellerCountry', '7')
     u.searchParams.set('language', '1')
-    url = u.toString()
+    return u.toString()
   } catch {
-    /* keep raw */
+    return raw
   }
-  openLink(url)
+}
+
+function openCm(p: PriceEntry | null | undefined, lang: Lang) {
+  if (p?.cmUrl) openLink(cmLink(p.cmUrl, lang))
 }
 
 /** Opens in the system browser (or mail app) from Electron, a new tab in a plain browser. */
@@ -671,7 +676,7 @@ function CardTile({
             className="name name-link"
             title={t(lang, 'price.openCm')}
             disabled={!priceEntry?.cmUrl}
-            onClick={() => openCm(priceEntry)}
+            onClick={() => openCm(priceEntry, lang)}
           >{displayCardName(c)}</button>
           <SetBadge c={c} /><BanBadge status={banStatus(c)} lang={lang} />
           <ErrataBadge show={!!errata} lang={lang} />
@@ -2459,7 +2464,7 @@ export default function App() {
                       className="name name-link"
                       title={t(lang, 'price.openCm')}
                       disabled={!priceBook?.cards[c.id]?.cmUrl}
-                      onClick={(e) => { e.stopPropagation(); openCm(priceBook?.cards[c.id]) }}
+                      onClick={(e) => { e.stopPropagation(); openCm(priceBook?.cards[c.id], lang) }}
                     >{displayName(c)}</button>
                     <SetBadge c={c} /><BanBadge status={banStatus(c)} lang={lang} />
                     <ErrataBadge show={!!errataFor(c)} lang={lang} />
@@ -3045,7 +3050,7 @@ export default function App() {
                                         className="name name-link"
                                         title={t(lang, 'price.openCm')}
                                         disabled={!pe?.cmUrl}
-                                        onClick={() => openCm(pe)}
+                                        onClick={() => openCm(pe, lang)}
                                       >{u.name}</button>
                                       {byId.get(u.id) && <SetBadge c={byId.get(u.id)!} />}
                                     </div>
@@ -3587,7 +3592,7 @@ export default function App() {
                             className="name name-link"
                             title={t(lang, 'price.openCm')}
                             disabled={!priceBook?.cards[c.id]?.cmUrl}
-                            onClick={(e) => { e.stopPropagation(); openCm(priceBook?.cards[c.id]) }}
+                            onClick={(e) => { e.stopPropagation(); openCm(priceBook?.cards[c.id], lang) }}
                           >{displayName(c)}</button>
                           <SetBadge c={c} /><BanBadge status={banStatus(c)} lang={lang} />
                           <ErrataBadge show={!!errataFor(c)} lang={lang} />
@@ -3898,7 +3903,7 @@ export default function App() {
                           className="name name-link"
                           title={t(lang, 'price.openCm')}
                           disabled={!priceBook?.cards[c.id]?.cmUrl}
-                          onClick={(e) => { e.stopPropagation(); openCm(priceBook?.cards[c.id]) }}
+                          onClick={(e) => { e.stopPropagation(); openCm(priceBook?.cards[c.id], lang) }}
                         >{displayName(c)}</button>
                         <div className="sub">{c.code} · x{have}{room < have ? t(lang, 'sales.inCart', { n: have - room }) : ''}</div>
                         <PriceBits entry={priceBook?.cards[c.id]} lang={lang} />
@@ -4157,7 +4162,7 @@ export default function App() {
                             className="name name-link"
                             title={t(lang, 'price.openCm')}
                             disabled={!priceBook?.cards[c.id]?.cmUrl}
-                            onClick={(e) => { e.stopPropagation(); openCm(priceBook?.cards[c.id]) }}
+                            onClick={(e) => { e.stopPropagation(); openCm(priceBook?.cards[c.id], lang) }}
                           >{displayName(c)}</button>
                           <SetBadge c={c} /><BanBadge status={banStatus(c)} lang={lang} />
                           <ErrataBadge show={!!errataFor(c)} lang={lang} />
@@ -4353,7 +4358,7 @@ export default function App() {
                                       className="name name-link"
                                       title={t(lang, 'price.openCm')}
                                       disabled={!priceBook?.cards[bc.id]?.cmUrl}
-                                      onClick={() => openCm(priceBook?.cards[bc.id])}
+                                      onClick={() => openCm(priceBook?.cards[bc.id], lang)}
                                     >{c ? displayCardName(c) : bc.id}</button>
                                     <div className="sub">
                                       {c ? `${c.code} · ` : ''}{t(lang, 'borrowed.ownedAvail', { have, avail })}
@@ -4456,7 +4461,7 @@ export default function App() {
                               className="name name-link"
                               title={t(lang, 'price.openCm')}
                               disabled={!priceBook?.cards[c.id]?.cmUrl}
-                              onClick={(e) => { e.stopPropagation(); openCm(priceBook?.cards[c.id]) }}
+                              onClick={(e) => { e.stopPropagation(); openCm(priceBook?.cards[c.id], lang) }}
                             >{displayCardName(c)}</button>
                             <SetBadge c={c} /><BanBadge status={banStatus(c)} lang={lang} />
                             <ErrataBadge show={!!errataFor(c)} lang={lang} />
@@ -4894,7 +4899,7 @@ export default function App() {
                   <button
                     type="button"
                     className="card-lightbox-title card-lightbox-title-link"
-                    onClick={() => openCm(priceBook?.cards[cardLightbox.id])}
+                    onClick={() => openCm(priceBook?.cards[cardLightbox.id], lang)}
                     title={t(lang, 'card.ocrOpenCm')}
                   >{displayName(cardLightbox)}</button>
                 ) : (
@@ -4982,7 +4987,7 @@ export default function App() {
                   type="button"
                   className="btn"
                   style={{ marginTop: 10 }}
-                  onClick={() => openCm(priceBook?.cards[cardLightbox.id])}
+                  onClick={() => openCm(priceBook?.cards[cardLightbox.id], lang)}
                 ><Icon name="external-link" />{t(lang, 'price.openCm')}</button>
               )}
             </div>
