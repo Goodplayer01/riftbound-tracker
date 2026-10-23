@@ -340,18 +340,23 @@ function ownedLineEur(o: { qty?: number; foil?: number } | undefined, p?: PriceE
 /** Official card errata, baked by scripts/bake_errata.mjs. */
 type CardErrata = { newText: string; oldText: string; source: string }
 
-function openCm(p?: PriceEntry | null) {
-  const raw = p?.cmUrl
-  if (!raw) return
-  let url = raw
+/** Cardmarket page in the app language, filtered to English copies (language=1) from German sellers (sellerCountry=7). */
+function cmLink(raw: string, lang: Lang) {
   try {
     const u = new URL(raw)
+    const segs = u.pathname.split('/')
+    if (segs[1]) segs[1] = lang
+    u.pathname = segs.join('/')
+    u.searchParams.set('sellerCountry', '7')
     u.searchParams.set('language', '1')
-    url = u.toString()
+    return u.toString()
   } catch {
-    /* keep raw */
+    return raw
   }
-  openLink(url)
+}
+
+function openCm(p: PriceEntry | null | undefined, lang: Lang) {
+  if (p?.cmUrl) openLink(cmLink(p.cmUrl, lang))
 }
 
 /** Opens in the system browser (or mail app) from Electron, a new tab in a plain browser. */
@@ -671,8 +676,11 @@ function CardTile({
             className="name name-link"
             title={t(lang, 'price.openCm')}
             disabled={!priceEntry?.cmUrl}
-            onClick={() => openCm(priceEntry)}
+            onClick={() => openCm(priceEntry, lang)}
           >{displayCardName(c)}</button>
+        </div>
+        {/* Tags on their own line, so long names never push them around. */}
+        <div className="card-tags">
           <SetBadge c={c} /><BanBadge status={banStatus(c)} lang={lang} />
           <ErrataBadge show={!!errata} lang={lang} />
         </div>
@@ -842,6 +850,8 @@ export default function App() {
   const [binderView, setBinderView] = useState<string | null>(null)
   const [hideNexusNight, setHideNexusNight] = useState<boolean>(() => loadHideNexusNight())
   const [binderOwnedOnly, setBinderOwnedOnly] = useState(false)
+  /** Set filter in the All owned tab ('' = every set). */
+  const [ownedSet, setOwnedSet] = useState('')
   const [binderMissing, setBinderMissing] = useState(false)
   const [binderMissingFoil, setBinderMissingFoil] = useState(false)
   const [binderRarity, setBinderRarity] = useState<string | null>(null)
@@ -861,17 +871,25 @@ export default function App() {
       e.preventDefault()
       if (e.dataTransfer) e.dataTransfer.dropEffect = 'move'
     }
+    // Removing the last copy unmounts the dragged row, so its own dragend never fires: end the drag here too.
+    const finish = () => {
+      removeDrag.current = null
+      setRemoving(false)
+    }
     const drop = (e: DragEvent) => {
       if (inSource(e)) return
       e.preventDefault()
       removeDrag.current?.remove()
+      finish()
     }
     window.addEventListener('dragover', over)
     window.addEventListener('drop', drop)
+    window.addEventListener('dragend', finish, true)
     document.body.dataset.removing = removeDrag.current?.zone || ''
     return () => {
       window.removeEventListener('dragover', over)
       window.removeEventListener('drop', drop)
+      window.removeEventListener('dragend', finish, true)
       delete document.body.dataset.removing
     }
   }, [removing])
@@ -1439,7 +1457,7 @@ export default function App() {
     const query = deferredQ.trim().toLowerCase()
     let list: Card[]
     if (binderView === 'owned') {
-      list = cards.filter((c) => ownedQty(collection[c.id]) > 0)
+      list = cards.filter((c) => ownedQty(collection[c.id]) > 0 && (!ownedSet || c.set === ownedSet))
     } else {
       list = cards.filter((c) => c.set === binderView)
     }
@@ -1451,8 +1469,18 @@ export default function App() {
       if (binderRarity && (c.rarity || 'Other') !== binderRarity) return false
       return matchesSharedFilters(c, query)
     })
-    return [...list].sort((a, b) => a.cn - b.cn || a.code.localeCompare(b.code))
-  }, [binderView, cards, collection, deferredQ, binderOwnedOnly, binderMissing, binderMissingFoil, binderRarity, domainFilter, raritySigned, rarityOver, rarityPromo, rarityUltimate, abilityFilter, legendIds])
+    // All owned mixes sets: keep them in binder order, then by card number.
+    const rank = (s: string) => { const i = (BINDER_SET_ORDER as readonly string[]).indexOf(s); return i < 0 ? BINDER_SET_ORDER.length : i }
+    return [...list].sort((a, b) => rank(a.set) - rank(b.set) || a.set.localeCompare(b.set) || a.cn - b.cn || a.code.localeCompare(b.code))
+  }, [binderView, cards, collection, deferredQ, binderOwnedOnly, binderMissing, binderMissingFoil, binderRarity, ownedSet, domainFilter, raritySigned, rarityOver, rarityPromo, rarityUltimate, abilityFilter, legendIds])
+
+  /** Sets with owned cards, in binder order, for the All owned set filter. */
+  const ownedSets = useMemo(() => {
+    const counts = new Map<string, number>()
+    for (const c of cards) if (ownedQty(collection[c.id]) > 0) counts.set(c.set, (counts.get(c.set) || 0) + 1)
+    const rank = (s: string) => { const i = (BINDER_SET_ORDER as readonly string[]).indexOf(s); return i < 0 ? BINDER_SET_ORDER.length : i }
+    return [...counts].sort(([a], [b]) => rank(a) - rank(b) || a.localeCompare(b))
+  }, [cards, collection])
 
   const rarityBySet = useMemo(() => {
     const out: Record<string, { rarity: string; total: number; owned: number }[]> = {}
@@ -2459,7 +2487,7 @@ export default function App() {
                       className="name name-link"
                       title={t(lang, 'price.openCm')}
                       disabled={!priceBook?.cards[c.id]?.cmUrl}
-                      onClick={(e) => { e.stopPropagation(); openCm(priceBook?.cards[c.id]) }}
+                      onClick={(e) => { e.stopPropagation(); openCm(priceBook?.cards[c.id], lang) }}
                     >{displayName(c)}</button>
                     <SetBadge c={c} /><BanBadge status={banStatus(c)} lang={lang} />
                     <ErrataBadge show={!!errataFor(c)} lang={lang} />
@@ -3045,7 +3073,7 @@ export default function App() {
                                         className="name name-link"
                                         title={t(lang, 'price.openCm')}
                                         disabled={!pe?.cmUrl}
-                                        onClick={() => openCm(pe)}
+                                        onClick={() => openCm(pe, lang)}
                                       >{u.name}</button>
                                       {byId.get(u.id) && <SetBadge c={byId.get(u.id)!} />}
                                     </div>
@@ -3587,7 +3615,7 @@ export default function App() {
                             className="name name-link"
                             title={t(lang, 'price.openCm')}
                             disabled={!priceBook?.cards[c.id]?.cmUrl}
-                            onClick={(e) => { e.stopPropagation(); openCm(priceBook?.cards[c.id]) }}
+                            onClick={(e) => { e.stopPropagation(); openCm(priceBook?.cards[c.id], lang) }}
                           >{displayName(c)}</button>
                           <SetBadge c={c} /><BanBadge status={banStatus(c)} lang={lang} />
                           <ErrataBadge show={!!errataFor(c)} lang={lang} />
@@ -3655,13 +3683,35 @@ export default function App() {
                 )
               })}
               {binderView !== 'owned' && (rarityBySet[binderView] || []).length > 0 && <span className="toolbar-sep" aria-hidden="true" />}
-              <button
-                type="button"
-                className={`chip ${binderOwnedOnly ? 'active' : ''}`}
-                onClick={() => { setBinderOwnedOnly((v) => !v); if (!binderOwnedOnly) { setBinderMissing(false); setBinderMissingFoil(false) } }}
-              >
-                <Icon name="check" />{t(lang, 'collection.ownedOnly')}
-              </button>
+              {binderView === 'owned' && (
+                <>
+                  <button type="button" className={`chip set-chip ${!ownedSet ? 'active' : ''}`} aria-pressed={!ownedSet} onClick={() => setOwnedSet('')}>
+                    {t(lang, 'catalog.allSets')}
+                  </button>
+                  {ownedSets.map(([sid, n]) => (
+                    <button
+                      key={sid}
+                      type="button"
+                      className={`chip set-chip ${ownedSet === sid ? 'active' : ''}`}
+                      aria-pressed={ownedSet === sid}
+                      title={sets[sid] || sid}
+                      onClick={() => setOwnedSet((cur) => (cur === sid ? '' : sid))}
+                    >
+                      {sid}<span className="set-chip-count">{n}</span>
+                    </button>
+                  ))}
+                  <span className="toolbar-sep" aria-hidden="true" />
+                </>
+              )}
+              {binderView !== 'owned' && (
+                <button
+                  type="button"
+                  className={`chip ${binderOwnedOnly ? 'active' : ''}`}
+                  onClick={() => { setBinderOwnedOnly((v) => !v); if (!binderOwnedOnly) { setBinderMissing(false); setBinderMissingFoil(false) } }}
+                >
+                  <Icon name="check" />{t(lang, 'collection.ownedOnly')}
+                </button>
+              )}
               {binderView !== 'owned' && (
                 <button
                   type="button"
@@ -3898,7 +3948,7 @@ export default function App() {
                           className="name name-link"
                           title={t(lang, 'price.openCm')}
                           disabled={!priceBook?.cards[c.id]?.cmUrl}
-                          onClick={(e) => { e.stopPropagation(); openCm(priceBook?.cards[c.id]) }}
+                          onClick={(e) => { e.stopPropagation(); openCm(priceBook?.cards[c.id], lang) }}
                         >{displayName(c)}</button>
                         <div className="sub">{c.code} · x{have}{room < have ? t(lang, 'sales.inCart', { n: have - room }) : ''}</div>
                         <PriceBits entry={priceBook?.cards[c.id]} lang={lang} />
@@ -4157,7 +4207,7 @@ export default function App() {
                             className="name name-link"
                             title={t(lang, 'price.openCm')}
                             disabled={!priceBook?.cards[c.id]?.cmUrl}
-                            onClick={(e) => { e.stopPropagation(); openCm(priceBook?.cards[c.id]) }}
+                            onClick={(e) => { e.stopPropagation(); openCm(priceBook?.cards[c.id], lang) }}
                           >{displayName(c)}</button>
                           <SetBadge c={c} /><BanBadge status={banStatus(c)} lang={lang} />
                           <ErrataBadge show={!!errataFor(c)} lang={lang} />
@@ -4353,7 +4403,7 @@ export default function App() {
                                       className="name name-link"
                                       title={t(lang, 'price.openCm')}
                                       disabled={!priceBook?.cards[bc.id]?.cmUrl}
-                                      onClick={() => openCm(priceBook?.cards[bc.id])}
+                                      onClick={() => openCm(priceBook?.cards[bc.id], lang)}
                                     >{c ? displayCardName(c) : bc.id}</button>
                                     <div className="sub">
                                       {c ? `${c.code} · ` : ''}{t(lang, 'borrowed.ownedAvail', { have, avail })}
@@ -4456,7 +4506,7 @@ export default function App() {
                               className="name name-link"
                               title={t(lang, 'price.openCm')}
                               disabled={!priceBook?.cards[c.id]?.cmUrl}
-                              onClick={(e) => { e.stopPropagation(); openCm(priceBook?.cards[c.id]) }}
+                              onClick={(e) => { e.stopPropagation(); openCm(priceBook?.cards[c.id], lang) }}
                             >{displayCardName(c)}</button>
                             <SetBadge c={c} /><BanBadge status={banStatus(c)} lang={lang} />
                             <ErrataBadge show={!!errataFor(c)} lang={lang} />
@@ -4894,7 +4944,7 @@ export default function App() {
                   <button
                     type="button"
                     className="card-lightbox-title card-lightbox-title-link"
-                    onClick={() => openCm(priceBook?.cards[cardLightbox.id])}
+                    onClick={() => openCm(priceBook?.cards[cardLightbox.id], lang)}
                     title={t(lang, 'card.ocrOpenCm')}
                   >{displayName(cardLightbox)}</button>
                 ) : (
@@ -4982,7 +5032,7 @@ export default function App() {
                   type="button"
                   className="btn"
                   style={{ marginTop: 10 }}
-                  onClick={() => openCm(priceBook?.cards[cardLightbox.id])}
+                  onClick={() => openCm(priceBook?.cards[cardLightbox.id], lang)}
                 ><Icon name="external-link" />{t(lang, 'price.openCm')}</button>
               )}
             </div>

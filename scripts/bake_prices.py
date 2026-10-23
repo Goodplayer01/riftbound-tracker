@@ -62,7 +62,8 @@ def prefer_english_url(url: str | None) -> str | None:
 
 
 def slug(s: str) -> str:
-    """Cardmarket URL slug of a product name ("Miss Fortune - Buccaneer" -> "Miss-Fortune-Buccaneer")."""
+    """Cardmarket URL slug of a product name ("Kai'Sa, Survivor" -> "kaisa-survivor"); apostrophes are dropped."""
+    s = re.sub(r"['’]", "", s)
     return re.sub(r"-+", "-", re.sub(r"[^A-Za-z0-9]+", "-", s)).strip("-").lower()
 
 
@@ -103,21 +104,12 @@ def match_missing(book: dict, products: list[dict]) -> int:
         parts = url_parts(e.get("cmUrl"))
         if not parts:
             continue
-        exp_slug, name_slug, version = parts
-        if exp_slug in exp_of:
-            cands = sorted(by_name.get((exp_of[exp_slug], name_slug), []))
-        else:
-            # Expansion never seen with an id: only accept a name that is unique game-wide.
-            cands = sorted(by_name_any.get(name_slug, []))
-            if len(cands) != 1:
-                continue
-        # V numbers follow product order on Cardmarket; without a V there must be one product.
-        if version is not None:
-            pick = cands[version - 1] if 0 < version <= len(cands) else None
-        else:
-            pick = cands[0] if len(cands) == 1 else None
-        if pick is None or pick in taken:
+        exp_slug, name_slug, _version = parts
+        cands = by_name.get((exp_of[exp_slug], name_slug), []) if exp_slug in exp_of else by_name_any.get(name_slug, [])
+        # Only a single product with that name is safe: Cardmarket's V1/V2/... does not follow idProduct order.
+        if len(cands) != 1 or cands[0] in taken:
             continue
+        pick = cands[0]
         e["cmId"] = str(pick)
         taken.add(pick)
         matched += 1

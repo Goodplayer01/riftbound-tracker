@@ -983,6 +983,13 @@ body[data-removing] .deck-split > section:not([data-remove-src]) {
 .remove-hint svg { color: var(--danger); }
 .deck-card-row[draggable="true"], .rune-tile[draggable="true"] { cursor: grab; }
 .deck-card-row.dragging, .rune-tile.dragging, .card.dragging { opacity: .45; }
+/* Card tile: set / ban / errata pills in their own row under the name. */
+.card-tags { display: flex; flex-wrap: wrap; gap: 4px; min-height: 18px; margin: 2px 0 1px; }
+.card-tags .ban-badge { margin-left: 0; }
+/* All owned: set filter chips with the number of owned cards. */
+.set-chip { font-weight: 650; }
+.set-chip-count { margin-left: 6px; font-weight: 500; color: var(--muted); font-variant-numeric: tabular-nums; }
+.set-chip.active .set-chip-count { color: inherit; opacity: .75; }
 /* Collection tile: which decks use the card. */
 .in-decks {
   display: flex; align-items: center; gap: 5px; min-width: 0; margin-top: 2px;

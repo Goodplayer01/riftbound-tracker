@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-10-23T19:58:33.418Z",
+  "updatedAt": "2026-10-23T20:02:48.757Z",
   "currency": "EUR",
   "source": "cardmarket",
   "cards": {
@@ -16124,12 +16124,12 @@
       "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/KSante-Pride-of-Nazumah-V3-Showcase?language=1"
     },
     "rad-173-star": {
-      "low": 2000,
+      "low": null,
       "avg30": null,
       "trend": null,
-      "foilLow": 2000,
+      "foilLow": null,
       "foilTrend": null,
-      "cmId": "917620",
+      "cmId": null,
       "languageId": 1,
       "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Riven-The-Exile-V3-Signed-Showcase?language=1"
     },
@@ -16139,7 +16139,7 @@
       "trend": null,
       "foilLow": null,
       "foilTrend": null,
-      "cmId": "917606",
+      "cmId": null,
       "languageId": 1,
       "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Seraphine-Starry-Eyed-Songstress-V5-Signed-Showcase?language=1"
     },
@@ -16154,12 +16154,12 @@
       "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Evelynn-Agonys-Embrace-V3-Signed-Showcase?language=1"
     },
     "rad-176-star": {
-      "low": 1000,
+      "low": null,
       "avg30": null,
       "trend": null,
-      "foilLow": 1000,
+      "foilLow": null,
       "foilTrend": null,
-      "cmId": "917619",
+      "cmId": null,
       "languageId": 1,
       "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Jarvan-IV-Exemplar-of-Demacia-V3-Showcase?language=1"
     }
