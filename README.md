@@ -74,6 +74,8 @@ Put cards you want to sell in a cart by dragging them in, pasting a list or clic
 
 Keep track of cards you lent to friends, sorted by person. Drag cards in from the search and out again when you get them back. Those copies don't count as available when you build decks.
 
+It works the other way round too: switch an entry to "Borrowed from" for cards a friend lent you. They show up in All owned and count when you build decks, with a purple Borrowed tag so you know they aren't yours. Export a list with one click and send it over. Your friend pastes it into Import and gets the exact same prints as cards borrowed from you.
+
 **Stores**
 
 Compare booster display prices before you buy. For each set you see the Cardmarket trend (and the price per booster), then every offer from German online shops sorted by price, marked green or red against the trend, with stock and pre-order info. Filter by print language (English, Chinese Slim / Jumbo, French, Korean), set a max price per display and see which offers fit your budget. With your own CardTrader API token the cheapest CardTrader listings show up too.

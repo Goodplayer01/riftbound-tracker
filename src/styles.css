@@ -1202,6 +1202,13 @@ body[data-removing] .deck-split > section:not([data-remove-src]) {
   background: rgb(var(--info-rgb) / .12);
   color: var(--info);
 }
+.ban-badge.borrowed-badge {
+  border-color: rgba(201,160,255,.45);
+  background: rgba(201,160,255,.12);
+  color: #c9a0ff;
+}
+/* Borrowed entry: lent to / borrowed from switch. */
+.borrow-direction { display: flex; gap: 6px; flex-wrap: wrap; }
 .name-with-ban {
   display: flex;
   flex-wrap: wrap;

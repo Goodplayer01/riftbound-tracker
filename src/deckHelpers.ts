@@ -1,5 +1,5 @@
 import type { Card, Deck, DeckCard, DeckSection } from './types'
-import { loadLang, t } from './i18n'
+import { loadLang, t } from './i18n.ts'
 
 export const SECTION_ORDER: DeckSection[] = [
   'legend',
