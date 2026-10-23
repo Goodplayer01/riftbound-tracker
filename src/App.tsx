@@ -153,6 +153,12 @@ function BanBadge({ status, lang }: { status: BanStatus; lang: Lang }) {
   )
 }
 
+/** Same pill as the ban badge, for cards with official errata. */
+function ErrataBadge({ show, lang }: { show: boolean; lang: Lang }) {
+  if (!show) return null
+  return <span className="ban-badge errata-badge" title={t(lang, 'card.errataHint')}>{t(lang, 'card.errata')}</span>
+}
+
 function cardWord(lang: Lang, n: number) {
   return lang === 'de' ? (n === 1 ? 'Karte' : 'Karten') : (n === 1 ? 'card' : 'cards')
 }
@@ -574,8 +580,11 @@ function CardTile({
   onBump,
   children,
   qtyRow,
+  errata,
 }: {
   children?: ReactNode
+  /** Card has official errata (shows the errata pill next to the name). */
+  errata?: boolean
   /** Replaces the owned counters (sales cart uses its own stepper). */
   qtyRow?: ReactNode
   c: Card
@@ -623,6 +632,7 @@ function CardTile({
             onClick={() => openCm(priceEntry)}
           >{displayCardName(c)}</button>
           <BanBadge status={banStatus(c)} lang={lang} />
+          <ErrataBadge show={!!errata} lang={lang} />
         </div>
         <div className="sub">{c.code} · {(c.types || []).join('/') || '-'} · {(c.domains || []).join('/') || '-'}</div>
         <PriceBits entry={priceEntry} lang={lang} showHigh={!foilOnly} foilOnly={foilOnly} />
@@ -1319,10 +1329,11 @@ export default function App() {
       lang={lang}
       priceEntry={priceBook?.cards[c.id]}
       variant="catalog"
+      errata={!!errataFor(c)}
       onOpen={openCardLightbox}
       onBump={bump}
     />
-  )), [filtered, collection, lang, priceBook])
+  )), [filtered, collection, lang, priceBook, errata])
 
   const binderCards = useMemo(() => {
     if (binderView == null) return [] as Card[]
@@ -2273,6 +2284,7 @@ export default function App() {
                       onClick={(e) => { e.stopPropagation(); openCm(priceBook?.cards[c.id]) }}
                     >{displayName(c)}</button>
                     <BanBadge status={banStatus(c)} lang={lang} />
+                    <ErrataBadge show={!!errataFor(c)} lang={lang} />
                   </div>
                   <div className="sub">
                     {c.energy != null ? `E${c.energy} · ` : ''}{c.code} · {t(lang, 'decks.owns', { have })}
@@ -3221,7 +3233,7 @@ export default function App() {
                       const c = byId.get(id)
                       if (!c) return null
                       return (
-                        <CardTile key={id} c={c} o={wish[id]} lang={lang} priceEntry={priceBook?.cards[id]} variant="catalog" onOpen={openCardLightbox} onBump={bumpWish}>
+                        <CardTile key={id} c={c} o={wish[id]} lang={lang} priceEntry={priceBook?.cards[id]} variant="catalog" errata={!!errataFor(c)} onOpen={openCardLightbox} onBump={bumpWish}>
                           <div className={`wish-alert${wishHits.has(id) ? ' hit' : ''}`}>
                             <span className="wish-alert-label"><Icon name="bell" size={13} />{t(lang, 'alert.below')}</span>
                             <MoneyInput lang={lang} value={wishTargets[id] ?? null} label={t(lang, 'alert.target')} placeholder={t(lang, 'alert.targetPh')} onChange={(v) => setWishTarget(id, v)} />
@@ -3303,6 +3315,7 @@ export default function App() {
                             onClick={(e) => { e.stopPropagation(); openCm(priceBook?.cards[c.id]) }}
                           >{displayName(c)}</button>
                           <BanBadge status={banStatus(c)} lang={lang} />
+                          <ErrataBadge show={!!errataFor(c)} lang={lang} />
                         </div>
                         <div className="sub">{c.code} · x{ownedQty(collection[c.id])}{c.energy != null ? ` · E${c.energy}` : ''}</div>
                         <PriceBits entry={priceBook?.cards[c.id]} lang={lang} />
@@ -3433,6 +3446,7 @@ export default function App() {
                     lang={lang}
                     priceEntry={priceBook?.cards[c.id]}
                     variant="binder"
+                    errata={!!errataFor(c)}
                     onOpen={openCardLightbox}
                     onBump={bump}
                   />
@@ -3542,6 +3556,7 @@ export default function App() {
                         lang={lang}
                         priceEntry={priceBook?.cards[id]}
                         variant="catalog"
+                        errata={!!errataFor(c)}
                         onOpen={openCardLightbox}
                         onBump={() => {}}
                         qtyRow={
@@ -3863,6 +3878,7 @@ export default function App() {
                             onClick={(e) => { e.stopPropagation(); openCm(priceBook?.cards[c.id]) }}
                           >{displayName(c)}</button>
                           <BanBadge status={banStatus(c)} lang={lang} />
+                          <ErrataBadge show={!!errataFor(c)} lang={lang} />
                         </div>
                         <div className="sub">{c.code} · x{ownedQty(collection[c.id])}{c.energy != null ? ` · E${c.energy}` : ''}</div>
                         <PriceBits entry={priceBook?.cards[c.id]} lang={lang} />
@@ -4158,6 +4174,7 @@ export default function App() {
                               onClick={(e) => { e.stopPropagation(); openCm(priceBook?.cards[c.id]) }}
                             >{displayCardName(c)}</button>
                             <BanBadge status={banStatus(c)} lang={lang} />
+                            <ErrataBadge show={!!errataFor(c)} lang={lang} />
                           </div>
                           <div className="sub">
                             {c.code} · x{have} · {t(lang, 'borrowed.availShort', { n: room })}
@@ -4589,6 +4606,7 @@ export default function App() {
                   <h2 className="card-lightbox-title">{displayName(cardLightbox)}</h2>
                 )}
                 <BanBadge status={banStatus(cardLightbox)} lang={lang} />
+                <ErrataBadge show={!!errataFor(cardLightbox)} lang={lang} />
               </div>
               <p className="sub">{cardLightbox.code} · {cardLightbox.setName || cardLightbox.set}</p>
               <div className="card-facts">

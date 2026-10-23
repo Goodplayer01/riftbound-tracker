@@ -31,6 +31,8 @@
   --danger: rgb(var(--danger-rgb));
   --warn-rgb: 255 214 10;
   --warn: rgb(var(--warn-rgb));
+  --info-rgb: 100 170 255;
+  --info: rgb(var(--info-rgb));
   --shadow: 0 1px 2px rgba(0,0,0,.25), 0 8px 24px rgba(0,0,0,.28);
   --shadow-lg: 0 24px 64px rgba(0,0,0,.5), 0 0 0 1px rgb(255 255 255 / .08);
   --material: rgb(44 44 46 / .78);
@@ -1141,6 +1143,11 @@ button.deck-stat:hover { background: var(--fill-hover); }
   border-color: rgb(var(--warn-rgb) / .5);
   background: rgb(var(--warn-rgb) / .12);
   color: var(--warn);
+}
+.ban-badge.errata-badge {
+  border-color: rgb(var(--info-rgb) / .5);
+  background: rgb(var(--info-rgb) / .12);
+  color: var(--info);
 }
 .name-with-ban {
   display: flex;

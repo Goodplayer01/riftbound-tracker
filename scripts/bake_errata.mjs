@@ -4,9 +4,14 @@
 //   node scripts/bake_errata.mjs
 import { readFileSync, writeFileSync } from 'node:fs'
 
-const BASE = 'https://playriftbound.com/en-us/news/rules-and-releases/'
+const BASE = 'https://playriftbound.com/en-us/news/'
 // Oldest first: a later article overrides an earlier errata of the same card.
-const PAGES = ['riftbound-origins-card-errata', 'riftbound-spiritforged-errata', 'unleashed-errata-updates']
+const PAGES = [
+  'rules-and-releases/riftbound-origins-card-errata',
+  'rules-and-releases/riftbound-spiritforged-errata',
+  'rules-and-releases/unleashed-errata-updates',
+  'announcements/radiance-errata-updates',
+]
 
 const decode = (s) =>
   s

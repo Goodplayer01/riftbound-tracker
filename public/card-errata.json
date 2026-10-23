@@ -274,6 +274,26 @@
    "newText": "[Ambush] (You may play me as a [Reaction] to a battlefield where you have units.)\nI can [Ambush] to a battlefield where there are enemy units, even if you don't have units there.",
    "oldText": "[Ambush] (You may play me as a [Reaction] to a battlefield where you have units.)\nI can be played to a battlefield where there are enemy units (even if you don't have units there).",
    "source": "https://playriftbound.com/en-us/news/rules-and-releases/unleashed-errata-updates/"
+  },
+  "elnuk herd": {
+   "newText": "[Hidden] (Hide now for [A] to react with later for [0].)\nWhen you play me, give a friendly unit +3 [M] this turn, then recycle me if I was played from face down.",
+   "oldText": "[Hidden] (Hide now for [A] to react with later for [0].)\nWhen you play me, give another friendly unit +3 [M] this turn, then recycle me if I was played from face down.",
+   "source": "https://playriftbound.com/en-us/news/announcements/radiance-errata-updates/"
+  },
+  "last caress": {
+   "newText": "[Reaction] (Play any time, even before spells and abilities resolve.)\nThe next unit you play this turn, even from face down, can be played to any battlefield.\nWhen you play it, [Buff] it. (Give it a +1 [M] buff if it doesn't have one.)",
+   "oldText": "[Reaction] (Play any time, even before spells and abilities resolve.)\nThe next unit you play this turn (even from face down) can be played to any battlefield.\nWhen you play it, [Buff] it. (Give it a +1 [M] buff if it doesn't have one.)",
+   "source": "https://playriftbound.com/en-us/news/announcements/radiance-errata-updates/"
+  },
+  "forbidden technique": {
+   "newText": "Ready a unit.\nWhen you play a card with Energy cost [7] or more, you may play this from your trash for [1][C][C]. Then banish this.",
+   "oldText": "Ready a unit.\nWhen you play a card with Energy cost [7] or more, you may play this from your trash for [1][C][C]. Banish this.",
+   "source": "https://playriftbound.com/en-us/news/announcements/radiance-errata-updates/"
+  },
+  "neeko, blending in": {
+   "newText": "(Neutral cards can go in decks of any Domain.)\nIf Neeko is in your deck, choose up to 3 different legends in addition to your starting legend.\n(Different means none match names.)\nWhen you play me, choose one of those Legends and add it to your Legend Zone while I'm on the board.",
+   "oldText": "(Neutral cards can go in decks of any Domain.)\nIf Neeko is in your deck, choose 3 different legends in addition to your starting legend.\n(Different means none match names.)\nWhen you play me, choose one of those Legends and add it to your Legend Zone while I'm on the board.",
+   "source": "https://playriftbound.com/en-us/news/announcements/radiance-errata-updates/"
   }
  }
 }

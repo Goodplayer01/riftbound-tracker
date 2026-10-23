@@ -381,6 +381,7 @@ const de: Record<string, string> = {
   'card.errata': 'Errata',
   'card.errataSource': 'Quelle',
   'card.errataPrinted': 'Gedruckter Text',
+  'card.errataHint': 'Offizielle Errata: der Kartentext wurde von Riot geändert',
   'card.ocrOpenCm': 'Auf Cardmarket öffnen',
 
   'card.keywords': 'Keywords',
@@ -794,6 +795,7 @@ const en: Record<string, string> = {
   'card.errata': 'Errata',
   'card.errataSource': 'Source',
   'card.errataPrinted': 'Printed text',
+  'card.errataHint': 'Official errata: Riot changed the card text',
   'card.ocrOpenCm': 'Open on Cardmarket',
 
   'card.keywords': 'Keywords',
