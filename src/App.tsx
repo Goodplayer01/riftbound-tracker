@@ -160,6 +160,12 @@ function ErrataBadge({ show, lang }: { show: boolean; lang: Lang }) {
   return <span className="ban-badge errata-badge" title={t(lang, 'card.errataHint')}>{t(lang, 'card.errata')}</span>
 }
 
+/** Set code pill next to the card name; full set name on hover. */
+function SetBadge({ c }: { c: Card }) {
+  if (!c.set) return null
+  return <span className="ban-badge set-badge" title={c.setName || c.set}>{c.set}</span>
+}
+
 function cardWord(lang: Lang, n: number) {
   return lang === 'de' ? (n === 1 ? 'Karte' : 'Karten') : (n === 1 ? 'card' : 'cards')
 }
@@ -651,7 +657,7 @@ function CardTile({
             disabled={!priceEntry?.cmUrl}
             onClick={() => openCm(priceEntry)}
           >{displayCardName(c)}</button>
-          <BanBadge status={banStatus(c)} lang={lang} />
+          <SetBadge c={c} /><BanBadge status={banStatus(c)} lang={lang} />
           <ErrataBadge show={!!errata} lang={lang} />
         </div>
         <div className="sub">{c.code} · {(c.types || []).join('/') || '-'} · {(c.domains || []).join('/') || '-'}</div>
@@ -2253,6 +2259,10 @@ export default function App() {
     const atCap = count >= cap
     const locked = sectionNeedsLegend(sec) && !hasLegend(deck.cards)
     const cardsIn = deck.cards.filter((dc) => sectionOf(dc) === sec)
+    // Rune deck: plain runes as one big counter per Legend domain, alt art runes stay as rows.
+    const runeDomains = sec === 'rune' ? getLegendDomains(deck.cards, byId) || [] : []
+    const isPlainIn = (dc: (typeof cardsIn)[number]) => { const c = byId.get(dc.id); return !!c && isPlainRune(c) }
+    const listed = runeDomains.length ? cardsIn.filter((dc) => !isPlainIn(dc)) : cardsIn
     return (
       <div
         key={sec}
@@ -2281,8 +2291,46 @@ export default function App() {
           )}
           <span className={`deck-sec-cap${over ? ' over' : ''}`}>{count}/{cap}</span>
         </div>
+        {runeDomains.length > 0 && (
+          <div className="rune-tiles" onClick={(e) => e.stopPropagation()}>
+            {runeDomains.map((d) => {
+              const inDeck = cardsIn.filter((dc) => isPlainIn(dc) && (byId.get(dc.id)?.domains || []).includes(d))
+              const n = inDeck.reduce((s, dc) => s + dc.qty, 0)
+              const owned = cards
+                .filter((c) => isPlainRune(c) && (c.domains || []).includes(d))
+                .reduce((s, c) => s + availableForDecks(c.id), 0)
+              const pick = inDeck[0]?.id ?? plainRuneFor(d)?.id
+              return (
+                <div key={d} className={`rune-tile${n > owned ? ' short' : ''}`}>
+                  {d in DOMAIN_ICON && <img src={DOMAIN_ICON[d as keyof typeof DOMAIN_ICON]} alt="" draggable={false} />}
+                  <span className="rune-tile-name">{d}</span>
+                  <div className="qty">
+                    <button
+                      type="button"
+                      aria-label={`${d} −`}
+                      disabled={n === 0}
+                      onClick={() => {
+                        const last = inDeck[inDeck.length - 1]
+                        if (last) bumpDeckCard(last.id, 'rune', -1)
+                      }}
+                    >−</button>
+                    <b>{n}</b>
+                    <button
+                      type="button"
+                      aria-label={`${d} +`}
+                      disabled={atCap || locked || !pick}
+                      title={atCap ? t(lang, 'decks.limit', { cap }) : undefined}
+                      onClick={() => pick && addToDeck(pick, 'rune')}
+                    >+</button>
+                  </div>
+                  <span className="sub">{t(lang, 'decks.ownsLabel')} {owned}</span>
+                </div>
+              )
+            })}
+          </div>
+        )}
         <div className="list">
-          {cardsIn.map((dc) => {
+          {listed.map((dc) => {
             const c = byId.get(dc.id)
             if (!c) return null
             const have = availableForDecks(c.id)
@@ -2306,27 +2354,19 @@ export default function App() {
                       disabled={!priceBook?.cards[c.id]?.cmUrl}
                       onClick={(e) => { e.stopPropagation(); openCm(priceBook?.cards[c.id]) }}
                     >{displayName(c)}</button>
-                    <BanBadge status={banStatus(c)} lang={lang} />
+                    <SetBadge c={c} /><BanBadge status={banStatus(c)} lang={lang} />
                     <ErrataBadge show={!!errataFor(c)} lang={lang} />
                   </div>
                   <div className="sub">
-                    {c.energy != null ? `E${c.energy} · ` : ''}{c.code} · {t(lang, 'decks.owns', { have })}
+                    {c.energy != null ? `E${c.energy} · ` : ''}{c.code}
                   </div>
                   <PriceBits entry={priceBook?.cards[c.id]} lang={lang} />
                 </div>
-                {shortQty > 0 && (
-                  <button
-                    type="button"
-                    className="btn small deck-add-collection"
-                    title={t(lang, 'decks.addToCollection')}
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      bump(c.id, 'qty', 1)
-                    }}
-                  >
-                    <Icon name="plus" />{t(lang, 'decks.addToCollection')}
-                  </button>
-                )}
+                {collectionButtons(c.id)}
+                <div className="deck-stat">
+                  <span className="qty-label">{t(lang, 'decks.ownsLabel')}</span>
+                  <b className={short ? 'short' : 'have'}>{have}</b>
+                </div>
                 {isSingleSlotSection(sec) ? (
                   <button
                     type="button"
@@ -2341,10 +2381,13 @@ export default function App() {
                     <Icon name="trash-2" size={16} />
                   </button>
                 ) : (
-                  <div className="qty" onClick={(e) => e.stopPropagation()}>
-                    <button type="button" onClick={() => bumpDeckCard(dc.id, sec, -1)}>−</button>
-                    <b>{dc.qty}</b>
-                    <button type="button" disabled={atCap || locked} title={locked ? t(lang, 'decks.legendLocked') : atCap ? t(lang, 'decks.limit', { cap }) : undefined} onClick={() => bumpDeckCard(dc.id, sec, 1)}>+</button>
+                  <div className="deck-stat">
+                    <span className="qty-label">{t(lang, 'decks.needLabel')}</span>
+                    <div className="qty" onClick={(e) => e.stopPropagation()}>
+                      <button type="button" onClick={() => bumpDeckCard(dc.id, sec, -1)}>−</button>
+                      <b>{dc.qty}</b>
+                      <button type="button" disabled={atCap || locked} title={locked ? t(lang, 'decks.legendLocked') : atCap ? t(lang, 'decks.limit', { cap }) : undefined} onClick={() => bumpDeckCard(dc.id, sec, 1)}>+</button>
+                    </div>
                   </div>
                 )}
               </div>
@@ -2441,6 +2484,67 @@ export default function App() {
     }
     out.sort((a, b) => b.short - a.short || a.name.localeCompare(b.name))
     return out
+  }
+
+  /** The deck's missing copies as a Cardmarket wants list. */
+  function openDeckMissingExport(d: Deck) {
+    const lines: CmLine[] = underOwnedLines(d).flatMap((u) => {
+      const card = byId.get(u.id)
+      if (!card) return []
+      const asFoil = isFoilOnly(card)
+      return [{ card, qty: asFoil ? 0 : u.short, foil: asFoil ? u.short : 0, price: priceBook?.cards[u.id] }]
+    })
+    const cost = lines.reduce((s, l) => s + (unitEur(l.price, l.foil > 0) ?? 0) * (l.qty + l.foil), 0)
+    setCmCopied(false)
+    setCmExport({
+      title: t(lang, 'decks.missingCmTitle', { deck: d.name }),
+      help: t(lang, 'decks.missingCmHelp', { n: lines.reduce((s, l) => s + l.qty + l.foil, 0), eur: fmtEur(lang, cost) ?? '' }),
+      text: wantsText(lines),
+      wants: lines.length ? lines : undefined,
+    })
+  }
+
+  /** Collection −/+ for deck rows, normal and foil stacked; stays visible once the deck's copies are owned. */
+  function collectionButtons(id: string) {
+    const c = byId.get(id)
+    // Foil only cards have no normal copies, plain runes no foil.
+    const fields: ('qty' | 'foil')[] = !c ? ['qty'] : isFoilOnly(c) ? ['foil'] : isPlainRune(c) ? ['qty'] : ['qty', 'foil']
+    return (
+      <div className="deck-coll" onClick={(e) => e.stopPropagation()}>
+        {fields.map((f) => (
+          <div key={f} className="deck-coll-row">
+            <button
+              type="button"
+              className="btn small deck-add-collection deck-coll-minus"
+              title={t(lang, f === 'foil' ? 'decks.removeFoilFromCollection' : 'decks.removeFromCollection')}
+              aria-label={t(lang, f === 'foil' ? 'decks.removeFoilFromCollection' : 'decks.removeFromCollection')}
+              disabled={!collection[id]?.[f]}
+              onClick={() => bump(id, f, -1)}
+            >
+              <Icon name="minus" />
+            </button>
+            <button
+              type="button"
+              className={`btn small deck-add-collection${f === 'foil' ? ' deck-coll-foil' : ''}`}
+              title={t(lang, f === 'foil' ? 'decks.addFoilToCollection' : 'decks.addToCollection')}
+              onClick={() => bump(id, f, 1)}
+            >
+              <Icon name="plus" />{t(lang, f === 'foil' ? 'decks.addFoilToCollection' : 'decks.addToCollection')}
+            </button>
+          </div>
+        ))}
+      </div>
+    )
+  }
+
+  /** Plain rune of a domain to add to the rune deck: the print with the most free copies. */
+  function plainRuneFor(domain: string) {
+    let best: Card | null = null
+    for (const c of cards) {
+      if (!isPlainRune(c) || !(c.domains || []).includes(domain)) continue
+      if (!best || availableForDecks(c.id) > availableForDecks(best.id)) best = c
+    }
+    return best
   }
 
   /** Deck aggregate using Cardmarket Low (`ab`), non-foil — same primary as Katalog totals. */
@@ -2784,6 +2888,11 @@ export default function App() {
                     }
                     return (
                       <div className="deck-warn">
+                        <div className="toolbar deck-warn-tools">
+                          <button type="button" className="btn small" onClick={() => openDeckMissingExport(activeDeck)}>
+                            <Icon name="download" />{t(lang, 'cm.wantsBtn')}
+                          </button>
+                        </div>
                         {[...groups].map(([setId, rows]) => (
                           <div key={setId || '-'} className="deck-warn-set">
                           <div className="deck-warn-set-head">
@@ -2816,31 +2925,22 @@ export default function App() {
                                     <div className="deck-thumb deck-thumb-empty" aria-hidden />
                                   )}
                                   <div className="grow">
-                                    <button
-                                      type="button"
-                                      className="name name-link"
-                                      title={t(lang, 'price.openCm')}
-                                      disabled={!pe?.cmUrl}
-                                      onClick={() => openCm(pe)}
-                                    >{u.name}</button>
+                                    <div className="name-with-ban">
+                                      <button
+                                        type="button"
+                                        className="name name-link"
+                                        title={t(lang, 'price.openCm')}
+                                        disabled={!pe?.cmUrl}
+                                        onClick={() => openCm(pe)}
+                                      >{u.name}</button>
+                                      {byId.get(u.id) && <SetBadge c={byId.get(u.id)!} />}
+                                    </div>
                                     <div className="sub">
                                       {byId.get(u.id)?.code && <>{byId.get(u.id)?.code} · </>}
                                       {t(lang, 'decks.needHave', { need: u.need, have: u.have })}
                                     </div>
                                   </div>
-                                  {u.short > 0 && (
-                                    <button
-                                      type="button"
-                                      className="btn small deck-add-collection"
-                                      title={t(lang, 'decks.addToCollection')}
-                                      onClick={(e) => {
-                                        e.stopPropagation()
-                                        bump(u.id, 'qty', 1)
-                                      }}
-                                    >
-                                      <Icon name="plus" />{t(lang, 'decks.addToCollection')}
-                                    </button>
-                                  )}
+                                  {collectionButtons(u.id)}
                                 </div>
                               )
                             })}
@@ -3370,7 +3470,7 @@ export default function App() {
                             disabled={!priceBook?.cards[c.id]?.cmUrl}
                             onClick={(e) => { e.stopPropagation(); openCm(priceBook?.cards[c.id]) }}
                           >{displayName(c)}</button>
-                          <BanBadge status={banStatus(c)} lang={lang} />
+                          <SetBadge c={c} /><BanBadge status={banStatus(c)} lang={lang} />
                           <ErrataBadge show={!!errataFor(c)} lang={lang} />
                         </div>
                         <div className="sub">{c.code} · x{ownedQty(collection[c.id])}{c.energy != null ? ` · E${c.energy}` : ''}</div>
@@ -3933,7 +4033,7 @@ export default function App() {
                             disabled={!priceBook?.cards[c.id]?.cmUrl}
                             onClick={(e) => { e.stopPropagation(); openCm(priceBook?.cards[c.id]) }}
                           >{displayName(c)}</button>
-                          <BanBadge status={banStatus(c)} lang={lang} />
+                          <SetBadge c={c} /><BanBadge status={banStatus(c)} lang={lang} />
                           <ErrataBadge show={!!errataFor(c)} lang={lang} />
                         </div>
                         <div className="sub">{c.code} · x{ownedQty(collection[c.id])}{c.energy != null ? ` · E${c.energy}` : ''}</div>
@@ -4229,7 +4329,7 @@ export default function App() {
                               disabled={!priceBook?.cards[c.id]?.cmUrl}
                               onClick={(e) => { e.stopPropagation(); openCm(priceBook?.cards[c.id]) }}
                             >{displayCardName(c)}</button>
-                            <BanBadge status={banStatus(c)} lang={lang} />
+                            <SetBadge c={c} /><BanBadge status={banStatus(c)} lang={lang} />
                             <ErrataBadge show={!!errataFor(c)} lang={lang} />
                           </div>
                           <div className="sub">
@@ -4668,6 +4768,7 @@ export default function App() {
                 ) : (
                   <h2 className="card-lightbox-title">{displayName(cardLightbox)}</h2>
                 )}
+                <SetBadge c={cardLightbox} />
                 <BanBadge status={banStatus(cardLightbox)} lang={lang} />
                 <ErrataBadge show={!!errataFor(cardLightbox)} lang={lang} />
               </div>
