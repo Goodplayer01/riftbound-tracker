@@ -31,7 +31,7 @@ node scripts/check_errata.mjs
 ## Data files (public/)
 
 - `cards.json`: all cards (type `Card` in `src/types.ts`). Images point at Riot's official gallery; `scripts/bake_images.py` (workflow "Bake card images") swaps in official art.
-- `prices.json`: Cardmarket prices (EN listings: low, 30 day avg, foil). The app loads it live from `raw.githubusercontent.com/.../main/public/prices.json` at startup (cached as `rb.prices.remote.v1`), falling back to the bundled copy. New prices therefore need no release, only a push to main. Prices have no per-language split, so a copy's language does not change its value.
+- `prices.json`: Cardmarket prices from the public daily price guide (`downloads.s3.cardmarket.com`, low, 30 day avg, trend, foil), matched by `cmId` (Cardmarket idProduct). The app loads it live from `raw.githubusercontent.com/.../main/public/prices.json` at startup (cached as `rb.prices.remote.v1`), falling back to the bundled copy. New prices therefore need no release, only a push to main. Prices have no per-language split, so a copy's language does not change its value.
 - `price-history.json`: one snapshot per price update, also loaded live from main. Drives the Wertverlauf view (`src/ValueHistory.tsx`).
 - `card-errata.json`: official errata keyed by lower case card name. Baked by `scripts/bake_errata.mjs` from playriftbound.com articles (add new articles to `PAGES`). Shown as a blue "Errata" pill next to the ban badge and under the card in the detail view.
 - `card-keywords.json`, `sets/`, `packs/`, `displays/`, `domains/`, `symbols/`, `flags/`: static assets.
@@ -57,7 +57,7 @@ If a shape has to change, add a new versioned key and migrate from the old one.
 ## Workflows (.github/workflows)
 
 - `release.yml` (manual, "Run workflow"): runs the check scripts, bakes thumbnails, builds the installer on windows-latest and publishes the GitHub release `v<package.json version>`. **All releases go through this workflow.** Claude cannot create releases directly (403). To release: bump `version` in `package.json` on main, then start the workflow (`gh workflow run release.yml` or via the GitHub MCP).
-- `prices.yml` (daily 04:00 UTC + manual): `bake_prices.py` (needs secret `TCG_CARDMARKET_API_KEY`) and `bake_price_history.py`, commits `prices.json` and `price-history.json` to main.
+- `prices.yml` (daily 04:00 UTC + manual): `bake_prices.py` (Cardmarket's public price guide for game 22, no secret) and `bake_price_history.py`, commits `prices.json` and `price-history.json` to main.
 - `thumbs.yml`: checks thumbnail baking on PRs that touch `cards.json`.
 - `bake-images.yml` (manual): official Riot card images into `cards.json`.
 

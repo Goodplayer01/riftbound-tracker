@@ -18,6 +18,9 @@ PRICES_PATH = ROOT / "public" / "prices.json"
 PRICE_FIELDS = ("low", "avg30", "trend", "foilLow", "foilTrend")
 OUTLIER_FACTOR = 50
 MIN_OUTLIER = 20  # never touch prices below this
+# A low this high with no trend and no 30 day average (normal or foil) is a placeholder
+# listing (the usual 10000 EUR one), not a price. Real signed cards sell for 300-2000.
+UNSOLD_ASK_LIMIT = 5000
 
 
 def sanitize(book: dict) -> list[str]:
@@ -36,6 +39,12 @@ def sanitize(book: dict) -> list[str]:
             if ref and x > OUTLIER_FACTOR * ref:
                 entry[field] = None
                 dropped.append(f"{cid}.{field}={x}")
+        unsold = entry.get("trend") is None and entry.get("avg30") is None and entry.get("foilTrend") is None
+        for field in ("low", "foilLow"):
+            x = entry.get(field)
+            if unsold and isinstance(x, (int, float)) and x >= UNSOLD_ASK_LIMIT:
+                entry[field] = None
+                dropped.append(f"{cid}.{field}={x} (no sales)")
     return dropped
 
 
