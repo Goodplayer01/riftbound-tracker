@@ -678,6 +678,9 @@ function CardTile({
             disabled={!priceEntry?.cmUrl}
             onClick={() => openCm(priceEntry, lang)}
           >{displayCardName(c)}</button>
+        </div>
+        {/* Tags on their own line, so long names never push them around. */}
+        <div className="card-tags">
           <SetBadge c={c} /><BanBadge status={banStatus(c)} lang={lang} />
           <ErrataBadge show={!!errata} lang={lang} />
         </div>
@@ -847,6 +850,8 @@ export default function App() {
   const [binderView, setBinderView] = useState<string | null>(null)
   const [hideNexusNight, setHideNexusNight] = useState<boolean>(() => loadHideNexusNight())
   const [binderOwnedOnly, setBinderOwnedOnly] = useState(false)
+  /** Set filter in the All owned tab ('' = every set). */
+  const [ownedSet, setOwnedSet] = useState('')
   const [binderMissing, setBinderMissing] = useState(false)
   const [binderMissingFoil, setBinderMissingFoil] = useState(false)
   const [binderRarity, setBinderRarity] = useState<string | null>(null)
@@ -866,17 +871,25 @@ export default function App() {
       e.preventDefault()
       if (e.dataTransfer) e.dataTransfer.dropEffect = 'move'
     }
+    // Removing the last copy unmounts the dragged row, so its own dragend never fires: end the drag here too.
+    const finish = () => {
+      removeDrag.current = null
+      setRemoving(false)
+    }
     const drop = (e: DragEvent) => {
       if (inSource(e)) return
       e.preventDefault()
       removeDrag.current?.remove()
+      finish()
     }
     window.addEventListener('dragover', over)
     window.addEventListener('drop', drop)
+    window.addEventListener('dragend', finish, true)
     document.body.dataset.removing = removeDrag.current?.zone || ''
     return () => {
       window.removeEventListener('dragover', over)
       window.removeEventListener('drop', drop)
+      window.removeEventListener('dragend', finish, true)
       delete document.body.dataset.removing
     }
   }, [removing])
@@ -1444,7 +1457,7 @@ export default function App() {
     const query = deferredQ.trim().toLowerCase()
     let list: Card[]
     if (binderView === 'owned') {
-      list = cards.filter((c) => ownedQty(collection[c.id]) > 0)
+      list = cards.filter((c) => ownedQty(collection[c.id]) > 0 && (!ownedSet || c.set === ownedSet))
     } else {
       list = cards.filter((c) => c.set === binderView)
     }
@@ -1456,8 +1469,18 @@ export default function App() {
       if (binderRarity && (c.rarity || 'Other') !== binderRarity) return false
       return matchesSharedFilters(c, query)
     })
-    return [...list].sort((a, b) => a.cn - b.cn || a.code.localeCompare(b.code))
-  }, [binderView, cards, collection, deferredQ, binderOwnedOnly, binderMissing, binderMissingFoil, binderRarity, domainFilter, raritySigned, rarityOver, rarityPromo, rarityUltimate, abilityFilter, legendIds])
+    // All owned mixes sets: keep them in binder order, then by card number.
+    const rank = (s: string) => { const i = (BINDER_SET_ORDER as readonly string[]).indexOf(s); return i < 0 ? BINDER_SET_ORDER.length : i }
+    return [...list].sort((a, b) => rank(a.set) - rank(b.set) || a.set.localeCompare(b.set) || a.cn - b.cn || a.code.localeCompare(b.code))
+  }, [binderView, cards, collection, deferredQ, binderOwnedOnly, binderMissing, binderMissingFoil, binderRarity, ownedSet, domainFilter, raritySigned, rarityOver, rarityPromo, rarityUltimate, abilityFilter, legendIds])
+
+  /** Sets with owned cards, in binder order, for the All owned set filter. */
+  const ownedSets = useMemo(() => {
+    const counts = new Map<string, number>()
+    for (const c of cards) if (ownedQty(collection[c.id]) > 0) counts.set(c.set, (counts.get(c.set) || 0) + 1)
+    const rank = (s: string) => { const i = (BINDER_SET_ORDER as readonly string[]).indexOf(s); return i < 0 ? BINDER_SET_ORDER.length : i }
+    return [...counts].sort(([a], [b]) => rank(a) - rank(b) || a.localeCompare(b))
+  }, [cards, collection])
 
   const rarityBySet = useMemo(() => {
     const out: Record<string, { rarity: string; total: number; owned: number }[]> = {}
@@ -3660,13 +3683,35 @@ export default function App() {
                 )
               })}
               {binderView !== 'owned' && (rarityBySet[binderView] || []).length > 0 && <span className="toolbar-sep" aria-hidden="true" />}
-              <button
-                type="button"
-                className={`chip ${binderOwnedOnly ? 'active' : ''}`}
-                onClick={() => { setBinderOwnedOnly((v) => !v); if (!binderOwnedOnly) { setBinderMissing(false); setBinderMissingFoil(false) } }}
-              >
-                <Icon name="check" />{t(lang, 'collection.ownedOnly')}
-              </button>
+              {binderView === 'owned' && (
+                <>
+                  <button type="button" className={`chip set-chip ${!ownedSet ? 'active' : ''}`} aria-pressed={!ownedSet} onClick={() => setOwnedSet('')}>
+                    {t(lang, 'catalog.allSets')}
+                  </button>
+                  {ownedSets.map(([sid, n]) => (
+                    <button
+                      key={sid}
+                      type="button"
+                      className={`chip set-chip ${ownedSet === sid ? 'active' : ''}`}
+                      aria-pressed={ownedSet === sid}
+                      title={sets[sid] || sid}
+                      onClick={() => setOwnedSet((cur) => (cur === sid ? '' : sid))}
+                    >
+                      {sid}<span className="set-chip-count">{n}</span>
+                    </button>
+                  ))}
+                  <span className="toolbar-sep" aria-hidden="true" />
+                </>
+              )}
+              {binderView !== 'owned' && (
+                <button
+                  type="button"
+                  className={`chip ${binderOwnedOnly ? 'active' : ''}`}
+                  onClick={() => { setBinderOwnedOnly((v) => !v); if (!binderOwnedOnly) { setBinderMissing(false); setBinderMissingFoil(false) } }}
+                >
+                  <Icon name="check" />{t(lang, 'collection.ownedOnly')}
+                </button>
+              )}
               {binderView !== 'owned' && (
                 <button
                   type="button"
