@@ -2,7 +2,8 @@ name: Bake prices
 
 # Refreshes public/prices.json from Cardmarket's public daily price guide every
 # morning and adds the result to public/price-history.json (value chart and movers
-# in the app). Installed apps pick both up at their next start, no release needed.
+# in the app). public/sealed.json holds display prices (Cardmarket + shops) for
+# the Store tab. Installed apps pick them up at their next start, no release needed.
 # No secret needed. Can also be started by hand from Actions > Bake prices > Run workflow.
 on:
   schedule:
@@ -31,15 +32,21 @@ jobs:
 
       - run: python scripts/bake_price_history.py
 
+      # Display prices for the Store tab. A shop or Cardmarket hiccup must not block the card prices.
+      - name: Bake sealed.json
+        continue-on-error: true
+        run: python scripts/bake_sealed.py
+
       - name: Commit prices
         run: |
-          if git diff --quiet public/prices.json public/price-history.json; then
+          if git diff --quiet public/prices.json public/price-history.json && git diff --quiet public/sealed.json 2>/dev/null && [ -z "$(git ls-files --others --exclude-standard public/sealed.json)" ]; then
             echo "No price changes"
             exit 0
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898299+github-actions[bot]@users.noreply.github.com"
           git add public/prices.json public/price-history.json
+          [ -f public/sealed.json ] && git add public/sealed.json
           git commit -m "Prices $(date -u +%F)"
           # main may have moved since checkout; replay this commit on top instead of failing.
           git pull --rebase
