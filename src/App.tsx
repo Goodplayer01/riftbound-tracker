@@ -2390,33 +2390,34 @@ export default function App() {
                   <PriceBits entry={priceBook?.cards[c.id]} lang={lang} />
                 </div>
                 {collectionButtons(c.id)}
-                <div className="row-stat">
-                  <span className="qty-label">{t(lang, 'decks.ownsLabel')}</span>
-                  <b className={short ? 'short' : 'have'}>{have}</b>
-                </div>
-                {isSingleSlotSection(sec) ? (
-                  <button
-                    type="button"
-                    className="btn icon danger deck-trash deck-card-trash"
-                    title={t(lang, 'decks.removeSection', { section: SECTION_LABEL[sec] })}
-                    aria-label={t(lang, 'decks.removeSection', { section: SECTION_LABEL[sec] })}
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      removeDeckCard(dc.id, sec)
-                    }}
-                  >
-                    <Icon name="trash-2" size={16} />
-                  </button>
-                ) : (
-                  <div className="row-stat">
-                    <span className="qty-label">{t(lang, 'decks.needLabel')}</span>
-                    <div className="qty" onClick={(e) => e.stopPropagation()}>
-                      <button type="button" onClick={() => bumpDeckCard(dc.id, sec, -1)}>−</button>
-                      <b>{dc.qty}</b>
-                      <button type="button" disabled={atCap || locked} title={locked ? t(lang, 'decks.legendLocked') : atCap ? t(lang, 'decks.limit', { cap }) : undefined} onClick={() => bumpDeckCard(dc.id, sec, 1)}>+</button>
-                    </div>
+                {/* Owns over Need, laid out like the Normal / Foil lines of the collection block. */}
+                <div className="row-coll row-deck" onClick={(e) => e.stopPropagation()}>
+                  <span className="qty-label">Deck</span>
+                  <div className="row-coll-line">
+                    <span className="row-coll-kind">{t(lang, 'decks.ownsLabel')}</span>
+                    <b className={`row-deck-owns ${short ? 'short' : 'have'}`}>{have}</b>
                   </div>
-                )}
+                  <div className="row-coll-line">
+                    <span className="row-coll-kind">{isSingleSlotSection(sec) ? '' : t(lang, 'decks.needLabel')}</span>
+                    {isSingleSlotSection(sec) ? (
+                      <button
+                        type="button"
+                        className="btn icon danger deck-trash deck-card-trash"
+                        title={t(lang, 'decks.removeSection', { section: SECTION_LABEL[sec] })}
+                        aria-label={t(lang, 'decks.removeSection', { section: SECTION_LABEL[sec] })}
+                        onClick={() => removeDeckCard(dc.id, sec)}
+                      >
+                        <Icon name="trash-2" size={16} />
+                      </button>
+                    ) : (
+                      <div className="qty">
+                        <button type="button" onClick={() => bumpDeckCard(dc.id, sec, -1)}>−</button>
+                        <b>{dc.qty}</b>
+                        <button type="button" disabled={atCap || locked} title={locked ? t(lang, 'decks.legendLocked') : atCap ? t(lang, 'decks.limit', { cap }) : undefined} onClick={() => bumpDeckCard(dc.id, sec, 1)}>+</button>
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
             )
           })}
@@ -2542,7 +2543,7 @@ export default function App() {
         {fields.map((f) => {
           const n = collection[id]?.[f] || 0
           return (
-            <div key={f} className="row-coll-line">
+            <div key={f} className={`row-coll-line${f === 'foil' ? ' foil' : ''}`}>
               <span className="row-coll-kind">
                 {t(lang, f === 'foil' ? 'qty.foil' : 'qty.normal')}
                 {f === 'foil' && <span className="foil-star" aria-hidden="true">★</span>}
