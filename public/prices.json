@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-10-23T19:57:27.257Z",
+  "updatedAt": "2026-10-23T19:58:33.418Z",
   "currency": "EUR",
   "source": "cardmarket",
   "cards": {
@@ -16134,10 +16134,10 @@
       "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Riven-The-Exile-V3-Signed-Showcase?language=1"
     },
     "rad-174a-star": {
-      "low": 10000,
+      "low": null,
       "avg30": null,
       "trend": null,
-      "foilLow": 10000,
+      "foilLow": null,
       "foilTrend": null,
       "cmId": "917606",
       "languageId": 1,
