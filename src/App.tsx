@@ -170,12 +170,13 @@ function BanBadge({ status, lang }: { status: BanStatus; lang: Lang }) {
 }
 
 /** Same pill as the ban badge, one per person you borrowed copies from. */
-function BorrowedBadge({ from, lang }: { from?: { name: string; n: number }[]; lang: Lang }) {
+function BorrowedBadge({ from, lang, short }: { from?: { name: string; n: number }[]; lang: Lang; short?: boolean }) {
   if (!from?.length) return null
   // The count sits outside the name span, so a long name is cut but the count stays visible.
+  // Short (narrow deck rows): just the name, the purple pill already says borrowed.
   return <>{from.map((b, i) => {
     const label = t(lang, 'borrowed.badge', { name: b.name })
-    return <span key={i} className="ban-badge borrowed-badge" title={`${label} ×${b.n}`}><span className="borrowed-name">{label}</span>&nbsp;×{b.n}</span>
+    return <span key={i} className="ban-badge borrowed-badge" title={`${label} ×${b.n}`}><span className="borrowed-name">{short ? b.name : label}</span>&nbsp;×{b.n}</span>
   })}</>
 }
 
@@ -2560,9 +2561,12 @@ export default function App() {
                       disabled={!priceBook?.cards[c.id]?.cmUrl}
                       onClick={(e) => { e.stopPropagation(); openCm(priceBook?.cards[c.id], lang) }}
                     >{displayName(c)}</button>
+                  </div>
+                  {/* Tags on their own line, so the name keeps the full width in a narrow window. */}
+                  <div className="card-tags">
                     <SetBadge c={c} /><BanBadge status={banStatus(c)} lang={lang} />
                     <ErrataBadge show={!!errataFor(c)} lang={lang} />
-                    <BorrowedBadge from={borrowedInFrom.get(c.id)} lang={lang} />
+                    <BorrowedBadge from={borrowedInFrom.get(c.id)} lang={lang} short />
                   </div>
                   <div className="sub">
                     {c.energy != null ? `E${c.energy} · ` : ''}{c.code}
