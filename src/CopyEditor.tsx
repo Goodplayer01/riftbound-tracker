@@ -11,6 +11,7 @@ import {
   freeCopies,
   groupEur,
   parseEur,
+  splitLot,
   type CopyLot,
 } from './copies'
 import { fmtEur, t, type Lang } from './i18n'
@@ -73,6 +74,7 @@ export function CopyEditor({ lang, owned, lots, foilOnly, price, onChange }: {
   const freeFoil = freeCopies(fitted, owned, foilOnly, true)
   const value = cardEur(lots, owned, foilOnly, price)
   const inv = cardInvest(lots, owned, foilOnly, price)
+  const pulledN = fitted.filter((l) => l.pulled).reduce((s, l) => s + l.n, 0)
 
   function patch(id: string, change: Partial<CopyLot>) {
     onChange(fitted.map((l) => (l.id === id ? { ...l, ...change } : l)))
@@ -86,6 +88,13 @@ export function CopyEditor({ lang, owned, lots, foilOnly, price, onChange }: {
   function setCount(l: CopyLot, n: number) {
     if (n <= 0) onChange(fitted.filter((x) => x.id !== l.id))
     else patch(l.id, { n })
+  }
+
+  /** Bought (with a price per copy) or pulled from a pack (no price, not in paid / profit). */
+  function setPulled(l: CopyLot, pulled: boolean) {
+    if (pulled === !!l.pulled) return
+    // undefined drops the flag when the book is saved as JSON.
+    onChange(fitted.map((x) => (x.id !== l.id ? x : pulled ? { ...x, buy: null, pulled: true } : { ...x, pulled: undefined })))
   }
 
   function setFoil(l: CopyLot, foil: boolean) {
@@ -113,7 +122,9 @@ export function CopyEditor({ lang, owned, lots, foilOnly, price, onChange }: {
               return (
                 <div key={l ? l.id : `free-${g.foil}`} className={`copy-row${l ? '' : ' copy-row-free'}`}>
                   {l ? (
-                    <>
+                    <div className="copy-lines">
+                      {/* Line 1: what the copies are. */}
+                      <div className="copy-line">
                       <div className="qty copy-qty">
                         <button aria-label={`${t(lang, 'copies.count')} −1`} onClick={() => setCount(l, l.n - 1)}>−</button>
                         <b className="have">{l.n}</b>
@@ -133,13 +144,6 @@ export function CopyEditor({ lang, owned, lots, foilOnly, price, onChange }: {
                       <select className="select copy-select" aria-label={t(lang, 'copies.cond')} title={t(lang, 'copies.cond')} value={l.cond} onChange={(e) => patch(l.id, { cond: e.target.value as CopyLot['cond'] })}>
                         {CONDITIONS.map((x) => <option key={x} value={x}>{x}</option>)}
                       </select>
-                      <MoneyInput lang={lang} value={l.buy} label={t(lang, 'copies.buy')} placeholder={t(lang, 'copies.buyPh')} onChange={(buy) => patch(l.id, { buy })} />
-                      <span className="copy-eur">
-                        {eur != null && <span>~{fmtEur(lang, eur)}</span>}
-                        {eur != null && l.buy != null && (
-                          <b className={eur - l.n * l.buy >= 0 ? 'value-up' : 'value-down'}>{fmtSignedEur(lang, eur - l.n * l.buy)}</b>
-                        )}
-                      </span>
                       <button
                         type="button"
                         className="btn icon small danger deck-trash"
@@ -147,7 +151,33 @@ export function CopyEditor({ lang, owned, lots, foilOnly, price, onChange }: {
                         aria-label={t(lang, 'copies.remove')}
                         onClick={() => onChange(fitted.filter((x) => x.id !== l.id))}
                       ><Icon name="trash-2" size={14} /></button>
-                    </>
+                      </div>
+                      {/* Line 2: where they came from, what they cost, what they are worth. */}
+                      <div className="copy-line">
+                      <div className="copy-source" role="group" aria-label={t(lang, 'copies.source')}>
+                        <button type="button" className={l.pulled ? '' : 'on'} aria-pressed={!l.pulled} onClick={() => setPulled(l, false)}>{t(lang, 'copies.bought')}</button>
+                        <button type="button" className={l.pulled ? 'on' : ''} aria-pressed={!!l.pulled} onClick={() => setPulled(l, true)}>{t(lang, 'copies.pulled')}</button>
+                      </div>
+                      {!l.pulled && (
+                        <MoneyInput lang={lang} value={l.buy} label={t(lang, 'copies.buy')} placeholder={t(lang, 'copies.buyPh')} onChange={(buy) => patch(l.id, { buy })} />
+                      )}
+                      {l.n > 1 && (
+                        <button
+                          type="button"
+                          className="btn icon small"
+                          title={t(lang, 'copies.split')}
+                          aria-label={t(lang, 'copies.split')}
+                          onClick={() => onChange(splitLot(fitted, l.id, crypto.randomUUID()))}
+                        ><Icon name="copy" size={14} /></button>
+                      )}
+                      <span className="copy-eur">
+                        {eur != null && <span>~{fmtEur(lang, eur)}</span>}
+                        {eur != null && l.buy != null && (
+                          <b className={eur - l.n * l.buy >= 0 ? 'value-up' : 'value-down'}>{fmtSignedEur(lang, eur - l.n * l.buy)}</b>
+                        )}
+                      </span>
+                      </div>
+                    </div>
                   ) : (
                     <>
                       <span className="copy-free-text">
@@ -172,6 +202,7 @@ export function CopyEditor({ lang, owned, lots, foilOnly, price, onChange }: {
                   <b className={inv.worth - inv.paid >= 0 ? 'value-up' : 'value-down'}>{fmtSignedEur(lang, inv.worth - inv.paid)}</b>
                 </>
               )}
+              {pulledN > 0 && <>{' · '}{t(lang, 'copies.pulledCount', { n: pulledN })}</>}
             </span>
           </div>
         </>

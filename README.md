@@ -21,7 +21,7 @@ Windows SmartScreen might complain the first time because the installer isn't si
 - Progress per rarity so you see what's still missing. In a set, click a rarity to show only those cards
 - Filters for owned, missing and missing foils in each set
 - Foil progress per set, what the missing cards would cost, and a missing list for Cardmarket or the wishlist
-- Language, condition and purchase price per copy, with profit or loss against today's price
+- Language, condition and purchase price per copy, with profit or loss against today's price. Split off a copy to give it its own price, or mark copies as pulled from a pack (they count for the value, not for what you paid)
 - Normal and foil counts for every card. Cards that only exist as foil get a single counter
 - Quick import: paste card codes or a whole deck list
 - CSV import and export
@@ -58,7 +58,7 @@ Windows SmartScreen might complain the first time because the installer isn't si
 - Find a Legend by typing the champion name
 - Drag cards from the search list into a deck section, and drag them out again to remove one copy per drag
 - Every deck card shows how many you own and how many the deck needs, with buttons to add or remove normal and foil copies in your collection
-- Runes as one big counter per domain of your Legend. Add Runes only lists the alt art runes, the counters cover the normal ones (Nexus Night runes with the normal art included)
+- Runes as one big counter per domain of your Legend. Add Runes lists the alt art and Nexus Night runes, the counters cover the normal ones
 - The open deck shows its Legend big, with the deck's value and what the missing copies would cost. Click the missing tile to list those cards by set with big images, add them to your collection, or copy them as a Cardmarket wants list
 - Import and export deck lists as text
 - Drag decks around to sort them
@@ -92,6 +92,7 @@ Open simulated booster packs for each set with the real pack art. Every slot of 
 - Domain icons drawn for the app, sharp at every size
 - The window button maximizes the app and leaves the Windows taskbar visible, and the app then uses the full width of the screen
 - Click anywhere on a card to open its detail view, and drag a card from anywhere on its tile
+- The card search on the right looks and works the same in the wishlist, sales, deck builder and borrowed: tags, prices, how many you own, drag and add
 - Prices show as small boxes (from, 30 day average, foil) on every card and in every list, and the price and counters always sit at the bottom of a card, so a row of cards lines up
 - Card names in deck lists get the full width, tags sit on their own line below
 - In the wishlist, sales and deck builder you can hide the card search on the right to get more room

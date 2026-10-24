@@ -29,8 +29,9 @@ export const DEFAULT_LANG: CardLang = 'EN'
 export const DEFAULT_COND: Condition = 'NM'
 
 /** Some copies of one card that share foil, language, condition and purchase price per copy.
- *  Copies of a card without a lot are EN / NM with no purchase price. */
-export type CopyLot = { id: string; foil: boolean; n: number; lang: CardLang; cond: Condition; buy: number | null }
+ *  `pulled`: opened from a pack, so there is no purchase price (buy stays null) and the copies
+ *  stay out of the paid / profit math. Copies of a card without a lot are EN / NM with no purchase price. */
+export type CopyLot = { id: string; foil: boolean; n: number; lang: CardLang; cond: Condition; buy: number | null; pulled?: boolean }
 
 /** Lots per card id. Lives next to the collection; the counts in the collection stay the truth. */
 export type CopyBook = Record<string, CopyLot[]>
@@ -57,13 +58,15 @@ export function cleanCopyBook(raw: unknown): CopyBook {
       const n = Math.floor(Number(l?.n))
       if (!l || !(n > 0)) continue
       const buy = l.buy == null ? null : Number(l.buy)
+      const pulled = l.pulled === true
       ok.push({
         id: typeof l.id === 'string' && l.id ? l.id : crypto.randomUUID(),
         foil: !!l.foil,
         n,
         lang: isLang(l.lang) ? l.lang : DEFAULT_LANG,
         cond: isCond(l.cond) ? l.cond : DEFAULT_COND,
-        buy: buy != null && Number.isFinite(buy) && buy >= 0 ? buy : null,
+        buy: !pulled && buy != null && Number.isFinite(buy) && buy >= 0 ? buy : null,
+        ...(pulled ? { pulled } : {}),
       })
     }
     if (ok.length) out[id] = ok
@@ -176,6 +179,16 @@ export function soldGroups(lots: CopyLot[] | undefined, o: Owned | undefined, fo
   // More sold than owned: the rest as plain NM copies.
   if (left > 0) out.push({ foil, n: left, lang: DEFAULT_LANG, cond: DEFAULT_COND, buy: null })
   return out
+}
+
+/** Moves one copy of a lot into a new lot right after it (same foil, language and condition, no price),
+ *  so copies bought for different prices can each get their own. Lots with one copy stay as they are. */
+export function splitLot(lots: CopyLot[], id: string, newId: string): CopyLot[] {
+  const i = lots.findIndex((l) => l.id === id)
+  const l = lots[i]
+  if (!l || l.n < 2) return lots
+  const one: CopyLot = { id: newId, foil: l.foil, n: 1, lang: l.lang, cond: l.cond, buy: null }
+  return [...lots.slice(0, i), { ...l, n: l.n - 1 }, one, ...lots.slice(i + 1)]
 }
 
 /** "3,50" or "3.50" -> 3.5; empty -> null; garbage -> undefined. */

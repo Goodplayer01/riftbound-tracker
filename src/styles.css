@@ -2098,7 +2098,18 @@ input[type="checkbox"] { accent-color: var(--primary); }
 .copy-tag { padding: 3px 10px; border-radius: 999px; background: var(--primary-soft); color: var(--accent2); font-weight: 600; font-size: 12px; }
 .copy-eur { margin-left: auto; display: inline-flex; flex-direction: column; align-items: flex-end; font-variant-numeric: tabular-nums; line-height: 1.2; }
 .copy-eur b { font-size: 12px; }
-.copy-row .btn.icon.deck-trash { min-width: 30px; min-height: 28px; padding: 4px 6px; }
+.copy-row .btn.icon.deck-trash, .copy-row .btn.icon.small { min-width: 30px; min-height: 28px; padding: 4px 6px; }
+.copy-lines { display: grid; gap: 6px; width: 100%; }
+.copy-line { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; min-width: 0; }
+.copy-line .deck-trash { margin-left: auto; }
+/* Bought / Pulled switch per lot. */
+.copy-source { display: inline-flex; padding: 2px; border-radius: 999px; background: var(--fill); }
+.copy-source button {
+  border: 0; background: transparent; color: var(--muted); font: inherit; font-size: 12px; font-weight: 600;
+  padding: 3px 10px; border-radius: 999px; cursor: pointer;
+}
+.copy-source button.on { background: var(--primary-soft); color: var(--accent2); }
+.copy-source button:hover:not(.on) { color: var(--text); }
 .copy-foot { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
 .copy-foot .sub { font-variant-numeric: tabular-nums; }
 

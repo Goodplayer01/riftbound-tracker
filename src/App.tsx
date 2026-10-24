@@ -66,7 +66,7 @@ import {
   drawTopCard,
 } from './handTester'
 import { downloadSharePng, renderDeckShareCanvas } from './deckScreenshot'
-import { Icon } from './Icon'
+import { Icon, type IconName } from './Icon'
 import { sellText, stockCsv, wantsText, type CmLine } from './cardmarket'
 import { historyPoints, loadPriceHistory, type PriceHistoryFile } from './priceHistory'
 import { ValueHistory, type InvestRow } from './ValueHistory'
@@ -2744,6 +2744,65 @@ export default function App() {
     )
   }
 
+  /** One card in a search list on the right (wishlist, sales, decks, borrowed): the same look, drag,
+   *  click-for-detail and add button everywhere; only the add action and the note differ. */
+  function pickerCard(c: Card, o: {
+    owns: number
+    draggable: boolean
+    note?: string
+    add: { onClick: () => void; disabled?: boolean; title?: string; icon?: IconName; label?: string }
+  }) {
+    return (
+      <div
+        key={c.id}
+        className="list-item picker-card"
+        draggable={o.draggable}
+        onDragStart={(e) => onPickerDragStart(e, c.id)}
+        onDragEnd={onPickerDragEnd}
+        onMouseEnter={(e) => showCardPreview(e, c.image)}
+        onMouseMove={(e) => showCardPreview(e, c.image)}
+        onMouseLeave={hideCardPreview}
+        onClick={(e) => { if (!isControlClick(e)) openCardLightbox(c) }}
+      >
+        <DeckThumb cardId={c.id} src={c.image} onOpen={() => openCardLightbox(c)} openTitle={t(lang, 'card.enlarge')} zoomIcon />
+        <div className="grow">
+          <div className="name-with-ban">
+            <button
+              type="button"
+              className="name name-link"
+              title={t(lang, 'price.openCm')}
+              disabled={!priceBook?.cards[c.id]?.cmUrl}
+              onClick={() => openCm(priceBook?.cards[c.id], lang)}
+            >{displayName(c)}</button>
+          </div>
+          <div className="card-tags">
+            <SetBadge c={c} /><BanBadge status={banStatus(c)} lang={lang} />
+            <ErrataBadge show={!!errataFor(c)} lang={lang} />
+            <BorrowedBadge from={borrowedInFrom.get(c.id)} lang={lang} />
+          </div>
+          <div className="sub">
+            {c.energy != null ? `E${c.energy} · ` : ''}{c.code}{o.note ? ` · ${o.note}` : ''}
+          </div>
+          <PriceBits entry={priceBook?.cards[c.id]} lang={lang} foilOnly={isFoilOnly(c)} />
+        </div>
+        <div className="row-stat">
+          <span className="qty-label">{t(lang, 'decks.ownsLabel')}</span>
+          <b className={o.owns > 0 ? 'have' : 'short'}>{o.owns}</b>
+        </div>
+        <button
+          type="button"
+          className="btn small add"
+          disabled={o.add.disabled}
+          title={o.add.title}
+          aria-label={o.add.title || o.add.label || t(lang, 'decks.add')}
+          onClick={o.add.onClick}
+        >
+          <Icon name={o.add.icon || 'plus'} />{o.add.label ?? t(lang, 'decks.add')}
+        </button>
+      </div>
+    )
+  }
+
   /** Plain rune of a domain to add to the rune deck: the print with the most free copies. */
   function plainRuneFor(domain: string) {
     let best: Card | null = null
@@ -3662,37 +3721,11 @@ export default function App() {
                   <DomainFilterRow value={domainFilter} onChange={setDomainFilter} lang={lang} />
                 </div>
                 <div className="list">
-                  {pick.map((c) => (
-                    <div
-                      key={c.id}
-                      className="list-item picker-card"
-                      draggable
-                      onDragStart={(e) => onPickerDragStart(e, c.id)}
-                      onDragEnd={onPickerDragEnd}
-                      onMouseEnter={(e) => showCardPreview(e, c.image)}
-                      onMouseMove={(e) => showCardPreview(e, c.image)}
-                      onMouseLeave={hideCardPreview}
-                      onClick={() => openCardLightbox(c)}
-                    >
-                      <DeckThumb cardId={c.id} src={c.image} onOpen={() => openCardLightbox(c)} openTitle={t(lang, 'card.enlarge')} />
-                      <div className="grow">
-                        <div className="name-with-ban">
-                          <button
-                            type="button"
-                            className="name name-link"
-                            title={t(lang, 'price.openCm')}
-                            disabled={!priceBook?.cards[c.id]?.cmUrl}
-                            onClick={(e) => { e.stopPropagation(); openCm(priceBook?.cards[c.id], lang) }}
-                          >{displayName(c)}</button>
-                          <SetBadge c={c} /><BanBadge status={banStatus(c)} lang={lang} />
-                          <ErrataBadge show={!!errataFor(c)} lang={lang} />
-                        </div>
-                        <div className="sub">{c.code} · x{ownedQty(collection[c.id])}{c.energy != null ? ` · E${c.energy}` : ''}</div>
-                        <PriceBits entry={priceBook?.cards[c.id]} lang={lang} foilOnly={isFoilOnly(c)} />
-                      </div>
-                      <button className="btn small add" onClick={(e) => { e.stopPropagation(); bumpWish(c.id, 'qty', 1) }}><Icon name="plus" />{t(lang, 'decks.add')}</button>
-                    </div>
-                  ))}
+                  {pick.map((c) => pickerCard(c, {
+                    owns: ownedQty(collection[c.id]),
+                    draggable: true,
+                    add: { onClick: () => bumpWish(c.id, 'qty', 1) },
+                  }))}
                 </div>
               </section>
             </div>
@@ -4015,35 +4048,12 @@ export default function App() {
                 {saleHits.map((c) => {
                   const have = ownedQty(collection[c.id])
                   const room = saleRemaining(c.id)
-                  return (
-                    <div
-                      key={c.id}
-                      className="list-item picker-card"
-                      draggable={room > 0}
-                      onDragStart={(e) => onPickerDragStart(e, c.id)}
-                      onDragEnd={onPickerDragEnd}
-                      onMouseEnter={(e) => showCardPreview(e, c.image)}
-                      onMouseMove={(e) => showCardPreview(e, c.image)}
-                      onMouseLeave={hideCardPreview}
-                      onClick={() => openCardLightbox(c)}
-                    >
-                      <DeckThumb cardId={c.id} src={c.image} onOpen={() => openCardLightbox(c)} openTitle={t(lang, 'card.enlarge')} zoomIcon />
-                      <div className="grow">
-                        <button
-                          type="button"
-                          className="name name-link"
-                          title={t(lang, 'price.openCm')}
-                          disabled={!priceBook?.cards[c.id]?.cmUrl}
-                          onClick={(e) => { e.stopPropagation(); openCm(priceBook?.cards[c.id], lang) }}
-                        >{displayName(c)}</button>
-                        <div className="sub">{c.code} · x{have}{room < have ? t(lang, 'sales.inCart', { n: have - room }) : ''}</div>
-                        <PriceBits entry={priceBook?.cards[c.id]} lang={lang} foilOnly={isFoilOnly(c)} />
-                      </div>
-                      <button className="btn small add" disabled={room <= 0} onClick={(e) => { e.stopPropagation(); addToSale(c.id, 1) }} title={t(lang, 'sales.toCart')} aria-label={t(lang, 'sales.toCart')}>
-                        <Icon name="shopping-cart" />
-                      </button>
-                    </div>
-                  )
+                  return pickerCard(c, {
+                    owns: have,
+                    draggable: room > 0,
+                    note: room < have ? t(lang, 'sales.inCart', { n: have - room }) : undefined,
+                    add: { onClick: () => addToSale(c.id, 1), disabled: room <= 0, title: t(lang, 'sales.toCart'), icon: 'shopping-cart', label: '' },
+                  })
                 })}
                 {ownedCards.length === 0 && (
                   <div className="empty">{t(lang, 'sales.noOwned')}</div>
@@ -4253,9 +4263,9 @@ export default function App() {
                 {activeDeck && !(sectionNeedsLegend(activeSection) && !hasLegend(activeDeck.cards)) && cards
                   .filter((c) => {
                     if (!cardFitsSection(c, activeSection)) return false
-                    // Plain runes have their own counter per domain, the list only offers alt art runes
-                    // (Nexus Night runes with the normal art count as plain here too).
-                    if (activeSection === 'rune' && (isPlainRune(c) || (c.set.endsWith('-NN') && !c.altArt))) return false
+                    // Plain runes have their own counter per domain; the list offers every other rune
+                    // (alt art and the Showcase Nexus Night runes, which the counters do not cover).
+                    if (activeSection === 'rune' && isPlainRune(c)) return false
                     if (deckOwnedOnly && ownedQty(collection[c.id]) <= 0) return false
                     if (sectionNeedsLegend(activeSection)) {
                       const domains = getLegendDomains(activeDeck.cards, byId)
@@ -4275,54 +4285,21 @@ export default function App() {
                     )
                   })
                   .slice(0, 100)
-                  .map((c) => (
-                                        <div
-                      key={c.id}
-                      className="list-item picker-card"
+                  .map((c) => {
+                    const full = sectionCount(activeDeck.cards, activeSection) >= SECTION_CAPS[activeSection]
+                    const locked = sectionNeedsLegend(activeSection) && !hasLegend(activeDeck.cards)
+                    return pickerCard(c, {
+                      // Same number as the deck rows: borrowed-from copies count, lent copies do not.
+                      owns: availableForDecks(c.id),
                       // Any section can be a drop target; each one checks its own cap and Legend rule on drop.
-                      draggable={!!activeDeck}
-                      onDragStart={(e) => onPickerDragStart(e, c.id)}
-                      onDragEnd={onPickerDragEnd}
-                      onMouseEnter={(e) => showCardPreview(e, c.image)}
-                      onMouseMove={(e) => showCardPreview(e, c.image)}
-                      onMouseLeave={hideCardPreview}
-                      onClick={() => openCardLightbox(c)}
-                    >
-                      <DeckThumb cardId={c.id} src={c.image} onOpen={() => openCardLightbox(c)} openTitle={t(lang, 'card.enlarge')} />
-                      <div className="grow">
-                        <div className="name-with-ban">
-                          <button
-                            type="button"
-                            className="name name-link"
-                            title={t(lang, 'price.openCm')}
-                            disabled={!priceBook?.cards[c.id]?.cmUrl}
-                            onClick={(e) => { e.stopPropagation(); openCm(priceBook?.cards[c.id], lang) }}
-                          >{displayName(c)}</button>
-                          <SetBadge c={c} /><BanBadge status={banStatus(c)} lang={lang} />
-                          <ErrataBadge show={!!errataFor(c)} lang={lang} />
-                        </div>
-                        <div className="sub">{c.code} · x{ownedQty(collection[c.id])}{c.energy != null ? ` · E${c.energy}` : ''}</div>
-                        <PriceBits entry={priceBook?.cards[c.id]} lang={lang} foilOnly={isFoilOnly(c)} />
-                      </div>
-                      <button
-                        className="btn small add"
-                        disabled={
-                          sectionCount(activeDeck.cards, activeSection) >= SECTION_CAPS[activeSection]
-                          || (sectionNeedsLegend(activeSection) && !hasLegend(activeDeck.cards))
-                        }
-                        title={
-                          sectionNeedsLegend(activeSection) && !hasLegend(activeDeck.cards)
-                            ? t(lang, 'decks.legendLocked')
-                            : sectionCount(activeDeck.cards, activeSection) >= SECTION_CAPS[activeSection]
-                              ? t(lang, 'decks.limitReached', { cap: SECTION_CAPS[activeSection] })
-                              : undefined
-                        }
-                        onClick={(e) => { e.stopPropagation(); addToDeck(c.id, activeSection) }}
-                      >
-                        <Icon name="plus" />{t(lang, 'decks.add')}
-                      </button>
-                    </div>
-                  ))}
+                      draggable: true,
+                      add: {
+                        onClick: () => addToDeck(c.id, activeSection),
+                        disabled: full || locked,
+                        title: locked ? t(lang, 'decks.legendLocked') : full ? t(lang, 'decks.limitReached', { cap: SECTION_CAPS[activeSection] }) : undefined,
+                      },
+                    })
+                  })}
               </div>
             </section>
           </div>
@@ -4600,48 +4577,16 @@ export default function App() {
                   }
                   return owned.slice(0, 120).map((c) => {
                     const room = remainingToLend(c.id)
-                    const have = ownedQty(collection[c.id])
-                    return (
-                      <div
-                        key={c.id}
-                        className="list-item picker-card"
-                        draggable={!!activeBorrowed && room > 0}
-                        onDragStart={(e) => onPickerDragStart(e, c.id)}
-                        onDragEnd={onPickerDragEnd}
-                        onMouseEnter={(e) => showCardPreview(e, c.image)}
-                        onMouseMove={(e) => showCardPreview(e, c.image)}
-                        onMouseLeave={hideCardPreview}
-                        onClick={() => openCardLightbox(c)}
-                      >
-                        <DeckThumb cardId={c.id} src={c.image} onOpen={() => openCardLightbox(c)} openTitle={t(lang, 'card.enlarge')} zoomIcon />
-                        <div className="grow">
-                          <div className="name-with-ban">
-                            <button
-                              type="button"
-                              className="name name-link"
-                              title={t(lang, 'price.openCm')}
-                              disabled={!priceBook?.cards[c.id]?.cmUrl}
-                              onClick={(e) => { e.stopPropagation(); openCm(priceBook?.cards[c.id], lang) }}
-                            >{displayCardName(c)}</button>
-                            <SetBadge c={c} /><BanBadge status={banStatus(c)} lang={lang} />
-                            <ErrataBadge show={!!errataFor(c)} lang={lang} />
-                          </div>
-                          <div className="sub">
-                            {c.code} · x{have}{from ? '' : ` · ${t(lang, 'borrowed.availShort', { n: room })}`}
-                            {c.energy != null ? ` · E${c.energy}` : ''}
-                          </div>
-                          <PriceBits entry={priceBook?.cards[c.id]} lang={lang} foilOnly={isFoilOnly(c)} />
-                        </div>
-                        <button
-                          className="btn small add"
-                          disabled={!activeBorrowed || room <= 0}
-                          title={room <= 0 ? t(lang, 'borrowed.noAvail') : undefined}
-                          onClick={(e) => { e.stopPropagation(); bumpBorrowedCard(c.id, 1) }}
-                        >
-                          <Icon name="plus" />{t(lang, 'decks.add')}
-                        </button>
-                      </div>
-                    )
+                    return pickerCard(c, {
+                      owns: ownedQty(collection[c.id]),
+                      draggable: !!activeBorrowed && room > 0,
+                      note: from ? undefined : t(lang, 'borrowed.availShort', { n: room }),
+                      add: {
+                        onClick: () => bumpBorrowedCard(c.id, 1),
+                        disabled: !activeBorrowed || room <= 0,
+                        title: room <= 0 ? t(lang, 'borrowed.noAvail') : undefined,
+                      },
+                    })
                   })
                 })()}
               </div>
