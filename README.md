@@ -84,7 +84,7 @@ The second view lists Riftbound shops in Germany on a map with a radius around y
 
 **Dopamin**
 
-Open simulated booster packs for each set with the real pack art. Cards flip one at a time, with price and pull chance, and a counter shows how many packs you've opened. The odds only use what Riot has published, nothing made up.
+Open simulated booster packs for each set with the real pack art. Every slot of a real pack is in there: commons, uncommons, the token or rune slot, the foil slot, the rare slot and the slot that can turn into an Epic, Alt Art, Overnumbered, Signature or Ultimate. Cards flip one at a time with price and pull chance, or reveal the whole pack at once and see what it was worth. A counter per set adds up what the packs would have cost on Cardmarket against what you pulled, so you see whether you are up or down, plus your best pull. The odds are the ones Riot published (Epic 1 in 4 packs, Alt Art 1 in 12, Overnumbered 1 in 72, 1 in 10 of those signed, Ultimate 0.025 % in Radiance); the few slots Riot gave no numbers for are marked as estimates.
 
 **Look and feel**
 

@@ -2242,3 +2242,38 @@ input[type="checkbox"] { accent-color: var(--primary); }
 .price-box span { font-size: 9.5px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); }
 .price-box b { font-size: 13px; font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .price-box.foil span { color: var(--accent2); }
+
+/* Dopamin: money counters, hit labels, pack summary. */
+.dop-set-sub { display: flex; justify-content: center; gap: 8px; padding: 0 10px 12px; margin-top: -6px; font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.dop-set-sub b, .dop-stats .deck-stat b { font-variant-numeric: tabular-nums; }
+.gain b, b.gain { color: var(--positive); }
+.loss b, b.loss { color: var(--danger); }
+.dop-stats { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: center; width: min(1100px, 100%); }
+.dop-stats .deck-stat { min-width: 108px; padding: 6px 12px; }
+.dop-stats .deck-stat b { font-size: 16px; }
+.dop-best { max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 14px !important; }
+.dop-name { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; justify-content: center; }
+.dop-hit, .dop-foil {
+  padding: 1px 8px; border-radius: 999px; font-size: 10.5px; font-weight: 700; letter-spacing: .03em; text-transform: uppercase;
+  border: 1px solid rgb(var(--primary-rgb) / .5); background: rgb(var(--primary-rgb) / .14); color: var(--primary);
+}
+.dop-foil { border-color: rgb(255 255 255 / .18); background: rgb(255 255 255 / .06); color: var(--muted); }
+.dop-hit-epic, .dop-hit-show { border-color: rgba(255,214,120,.6); background: rgba(255,214,120,.14); color: #ffd678; }
+.dop-hit-ur { border-color: #fff6d4; background: linear-gradient(90deg, rgba(255,214,120,.3), rgba(201,160,255,.3), rgba(120,200,255,.3)); color: #fff; }
+.dop-summary { display: grid; gap: 14px; justify-items: center; width: min(1100px, 100%); }
+.dop-summary-head { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+.dop-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 10px; width: 100%; }
+.dop-mini { display: grid; gap: 4px; min-width: 0; padding: 6px; border-radius: 12px; background: var(--fill); }
+.dop-mini.glow-rare { box-shadow: 0 0 0 1px rgb(var(--primary-rgb) / .7), 0 0 12px rgb(var(--primary-rgb) / .35); }
+.dop-mini.glow-epic, .dop-mini.glow-show { box-shadow: 0 0 0 1px rgba(255,214,120,.8), 0 0 16px rgba(255,214,120,.45); }
+.dop-mini.glow-ur { box-shadow: 0 0 0 1px #fff6d4, 0 0 22px rgba(255,244,200,.7); }
+.dop-mini-art { position: relative; display: block; aspect-ratio: 744 / 1039; border-radius: 8px; background: center / cover no-repeat rgba(0,0,0,.3); overflow: hidden; }
+.dop-mini-art.shimmer::after {
+  content: ""; position: absolute; inset: 0;
+  background: linear-gradient(115deg, transparent 20%, rgba(255,236,180,.08) 35%, rgba(255,255,255,.28) 48%, rgba(180,210,255,.14) 55%, transparent 70%);
+  background-size: 220% 100%; animation: foil-shimmer 3.6s ease-in-out infinite; mix-blend-mode: screen;
+}
+.dop-mini-name { font-size: 12px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dop-mini-row { display: flex; justify-content: space-between; align-items: center; gap: 4px; font-size: 12px; font-variant-numeric: tabular-nums; }
+.dop-mini-row .dop-hit, .dop-mini-row .dop-foil { font-size: 9px; padding: 0 5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+@media (max-width: 1100px) { .dop-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); } }

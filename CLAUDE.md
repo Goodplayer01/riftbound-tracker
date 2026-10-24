@@ -27,6 +27,7 @@ Notes for Claude Code working in this repo. The README is the user-facing featur
 - Card tiles are `CardTile`; list rows are `.list-item` (`.deck-card-row` in decks and borrowed, `.picker-card` in the search panels on the right). Clicking a tile or row opens the card detail unless the click hits a button or input (`isControlClick`).
 - Drag and drop: search cards set `text/riftbound-card` and drop into deck sections, wishlist, sales cart and borrowed (`onSectionDrop`, `cartDrop`, `onBorrowDrop`). Cards in those lists drag out with `removeDragProps` (`text/riftbound-remove`): a drop outside the panel marked `data-remove-src` removes one copy.
 - Deck rows: Collection panel (normal / foil steppers, `collectionButtons`) and Owns / Need. The "Still missing" list groups by set and exports a Cardmarket wants list. Runes show one counter per Legend domain.
+- Dopamin (`src/Dopamin.tsx`, `src/dopaminPacks.ts`): pack layout from Riot's Radiance overview, rates as constants with their source in `dopaminPacks.ts`. Slots without a published rate (token / alt rune, foil split) set `estimate` and the UI says so. `scripts/check-dopamin.mjs` checks layout and simulated rates.
 - Check `styles.css` before naming a new class. Reusing an existing name (e.g. `.deck-stat`, the deck header value tiles) silently pulls in its styles.
 - To look at a UI change, load `dist/index.html` in a hidden Electron `BrowserWindow` with a throwaway `userData` dir, seed localStorage, click via `executeJavaScript` and save `webContents.capturePage()` (register an `rbimg` handler that forwards to `net.fetch` so card art loads).
 
@@ -66,6 +67,7 @@ Keep these keys and their shapes backward compatible. Users' collections live he
 - `rb.copies.v1`: per-copy language, condition and purchase price (`src/copies.ts`), layered on top of the collection counts.
 - `rb.backup.v1`: automatic backup.
 - `rb.decks.v1`, `rb.wishlist.v1`, `rb.wishTargets.v1` (price alert targets), `rb.wishAlertsSeen.v1`, `rb.sales.v1`, `rb.borrowed.v1`, `rb.poolHidden`, `riftbound-lang`.
+- `rb.dopamin.v1`: Dopamin counters per set, `{ [set]: { packs, spent, value, best?: { id, eur } } }` (Cardmarket trend for packs and cards).
 - `rb.displayTargets.v1`: max display price, `{ [set or "SET:LANG"]: eur }` (English uses the plain set code). `rb.cardtrader.token.v1` (the user's CardTrader token) and `rb.cardtrader.blueprints.v1` (3 day cache of CardTrader display blueprints).
 
 If a shape has to change, add a new versioned key and migrate from the old one.

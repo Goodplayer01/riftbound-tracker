@@ -1,8 +1,25 @@
-import type { Card } from './types'
+import type { Card, PriceEntry } from './types'
 
-export type PackRole = 'common' | 'uncommon' | 'foil' | 'token' | 'high'
+/**
+ * Booster simulator. Pack layout from Riot's "The Radiance Overview" (same 14 cards in every set):
+ * 7 commons, 3 uncommons, 1 token / rune / alt art rune, 1 foil (common to epic),
+ * 1 rare or epic, 1 flex slot (rare, epic, alt art, overnumbered, signature, ultimate).
+ */
+export type PackRole = 'common' | 'uncommon' | 'token' | 'foil' | 'rare' | 'flex'
 
-export type PackSlot = { card: Card; foil: boolean; role: PackRole }
+/** What makes a pull special, for the glow and the label. */
+export type HitKind = '' | 'rare' | 'epic' | 'alt' | 'altrune' | 'over' | 'signed' | 'ultimate'
+
+export type PackSlot = {
+  card: Card
+  foil: boolean
+  role: PackRole
+  hit: HitKind
+  /** Chance of this exact printing in this slot. */
+  chance: number
+  /** True when Riot has not published the rate and the simulator uses an estimate. */
+  estimate: boolean
+}
 
 export type Booster = { id: string; name: string; tint: string }
 
@@ -14,54 +31,57 @@ export const BOOSTERS: Booster[] = [
   { id: 'RAD', name: 'Radiance', tint: '#8a6a32' },
 ]
 
-function isToken(c: Card) {
-  return (c.types || []).includes('Token') || (c.superTypes || []).includes('Token')
-}
+/** Riot, "Collectability in Riftbound: Origins": Epic in about 1 of 4 packs, taking a rare slot. */
+export const EPIC_RATE = 1 / 4
+/** Riot: about 2 alt art champions per 24 pack display. */
+export const ALT_RATE = 1 / 12
+/** Riot: about 1 overnumbered card per 3 displays, 1 in 10 of them signed. */
+export const OVER_RATE = 1 / 72
+export const SIGNED_SHARE = 1 / 10
+/** Ultimate Rare per pack: Radiance 0.025 % (Riot, "The Radiance Overview"), Unleashed under 0.1 %. */
+export const ULTIMATE_RATE: Record<string, number> = { RAD: 0.00025, UNL: 0.001 }
+/** Estimate: Riot only says "now and then" an alt art rune; about one per display. */
+export const ALT_RUNE_RATE = 1 / 24
+/** Estimate: Riot says the foil slot is common to epic but gives no split; weighted like the rest of the pack. */
+const FOIL_WEIGHTS = { common: 7, uncommon: 3, rare: 2, epic: EPIC_RATE }
 
-function isRune(c: Card) {
-  return (c.types || []).includes('Rune')
-}
-
-function isShowcase(c: Card) {
-  return c.rarity === 'Showcase' || (c.tags || []).includes('showcase')
-}
-
-function isSignature(c: Card) {
-  return !!c.signed || (c.superTypes || []).includes('Signature')
-}
-
-/** Commons / uncommons eligible for the 7, the 3, and the foil slot. */
-function bulkOk(c: Card) {
-  return !c.signed && !c.overnumbered && !isShowcase(c) && !isToken(c) && !isRune(c) && !(c.tags || []).includes('promo')
-}
-
-/** Rares / epics: no alt, overnumber, or signature. */
-function highOk(c: Card) {
-  return !c.altArt && !c.overnumbered && !isSignature(c)
-}
+const has = (c: Card, tag: string) => (c.tags || []).includes(tag)
+const isRune = (c: Card) => (c.types || []).includes('Rune')
+const isToken = (c: Card) => (c.types || []).includes('Token') || (c.superTypes || []).includes('Token')
+const isSigned = (c: Card) => !!c.signed || has(c, 'signed')
+const isOver = (c: Card) => !!c.overnumbered || has(c, 'overnumbered')
 
 function pools(cards: Card[], setId: string) {
-  const inSet = cards.filter((c) => c.set === setId)
+  // Promos share the set code but never come in boosters.
+  const inSet = cards.filter((c) => c.set === setId && !has(c, 'promo'))
+  const base = (c: Card) => !c.altArt && !isOver(c) && !isSigned(c) && !isRune(c) && !isToken(c)
   return {
-    commons: inSet.filter((c) => c.rarity === 'Common' && bulkOk(c)),
-    uncommons: inSet.filter((c) => c.rarity === 'Uncommon' && bulkOk(c)),
+    commons: inSet.filter((c) => c.rarity === 'Common' && base(c)),
+    uncommons: inSet.filter((c) => c.rarity === 'Uncommon' && base(c)),
+    rares: inSet.filter((c) => c.rarity === 'Rare' && base(c)),
+    epics: inSet.filter((c) => c.rarity === 'Epic' && base(c)),
     tokens: inSet.filter((c) => (isToken(c) || isRune(c)) && !c.altArt),
-    rares: inSet.filter((c) => c.rarity === 'Rare' && highOk(c)),
-    epics: inSet.filter((c) => c.rarity === 'Epic' && highOk(c)),
+    altRunes: inSet.filter((c) => isRune(c) && c.altArt),
+    alts: inSet.filter((c) => c.altArt && !isRune(c) && !isOver(c) && !isSigned(c)),
+    overs: inSet.filter((c) => isOver(c) && !isSigned(c) && c.rarity !== 'Ultimate Rare'),
+    signed: inSet.filter((c) => isSigned(c)),
+    ultimates: inSet.filter((c) => c.rarity === 'Ultimate Rare'),
   }
 }
 
+type Pools = ReturnType<typeof pools>
+
+function pick(pool: Card[], rng: () => number): Card {
+  return pool[Math.min(pool.length - 1, Math.floor(rng() * pool.length))]
+}
+
+/** n different cards; repeats only when the pool is smaller than n. */
 function take(pool: Card[], n: number, rng: () => number): Card[] {
-  const bag = pool.slice()
+  let bag: Card[] = []
   const out: Card[] = []
   for (let k = 0; k < n; k++) {
-    if (!bag.length) {
-      // ponytail: refill when the pool is shorter than the slot; duplicates instead of a crash
-      for (const c of pool) bag.push(c)
-    }
-    let j = Math.floor(rng() * bag.length)
-    if (j >= bag.length) j = bag.length - 1
-    out.push(bag.splice(j, 1)[0])
+    if (!bag.length) bag = pool.slice()
+    out.push(bag.splice(Math.min(bag.length - 1, Math.floor(rng() * bag.length)), 1)[0])
   }
   return out
 }
@@ -73,45 +93,73 @@ export function boosterSets(cards: Card[]): Booster[] {
   })
 }
 
-/** Chance this printing shows in its slot group. Draws are uniform; k from n is k/n (capped at 1 when the pool refills). */
-function groupChance(draw: number, pool: number) {
-  if (pool <= 0) return null
-  return Math.min(1, draw / pool)
+function rareSlot(p: Pools, rng: () => number): PackSlot {
+  const epic = p.epics.length ? EPIC_RATE : 0
+  if (rng() < epic) return { card: pick(p.epics, rng), foil: true, role: 'rare', hit: 'epic', chance: epic / p.epics.length, estimate: false }
+  return { card: pick(p.rares, rng), foil: true, role: 'rare', hit: 'rare', chance: (1 - epic) / p.rares.length, estimate: false }
 }
 
-/** Prior used by rollPack for this exact printing in this slot. Not a Riot rate. */
-export function pullChance(cards: Card[], setId: string, slot: PackSlot): number | null {
-  const p = pools(cards, setId)
-  if (slot.role === 'common') return groupChance(7, p.commons.length)
-  if (slot.role === 'uncommon') return groupChance(3, p.uncommons.length)
-  if (slot.role === 'token') return groupChance(1, p.tokens.length)
-  if (slot.role === 'foil') return groupChance(1, p.commons.length + p.uncommons.length)
-  if (setId === 'OGN' && slot.card.rarity === 'Epic') return p.epics.length ? (1 / 4) / p.epics.length : null
-  if (setId === 'RAD' && (slot.card.id === 'rad-184' || slot.card.rarity === 'Ultimate Rare')) return 0.00025
-  const rares = p.rares.length
-  if (!rares) return null
-  if (setId === 'OGN' && p.epics.length) return Math.min(1, 1.75 / rares)
-  if (setId === 'RAD') return Math.min(1, (2 - 0.00025) / rares)
-  return groupChance(2, rares)
+/** The flex slot: one roll, rarest outcome first; an empty pool falls through to a rare. */
+function flexSlot(p: Pools, setId: string, rng: () => number): PackSlot {
+  const tiers: [HitKind, Card[], number][] = [
+    ['ultimate', p.ultimates, ULTIMATE_RATE[setId] || 0],
+    ['signed', p.signed, OVER_RATE * SIGNED_SHARE],
+    ['over', p.overs, OVER_RATE * (1 - SIGNED_SHARE)],
+    ['alt', p.alts, ALT_RATE],
+  ]
+  const r = rng()
+  let edge = 0
+  let used = 0
+  for (const [hit, pool, rate] of tiers) {
+    if (!pool.length || !rate) continue
+    used += rate
+    if (r < (edge += rate)) {
+      // Ultimate Rares come without foil, every other showcase printing is foil.
+      return { card: pick(pool, rng), foil: hit !== 'ultimate', role: 'flex', hit, chance: rate / pool.length, estimate: false }
+    }
+  }
+  return { card: pick(p.rares, rng), foil: true, role: 'flex', hit: 'rare', chance: (1 - used) / p.rares.length, estimate: false }
 }
 
-/** 14 cards, front to back. OGN epic 1/4 replaces the first high slot. RAD ultimate 0.00025 replaces the second. */
+function tokenSlot(p: Pools, rng: () => number): PackSlot {
+  const alt = p.altRunes.length ? ALT_RUNE_RATE : 0
+  if (rng() < alt) return { card: pick(p.altRunes, rng), foil: true, role: 'token', hit: 'altrune', chance: alt / p.altRunes.length, estimate: true }
+  return { card: pick(p.tokens, rng), foil: false, role: 'token', hit: '', chance: (1 - alt) / p.tokens.length, estimate: true }
+}
+
+function foilSlot(p: Pools, rng: () => number): PackSlot {
+  const groups: [HitKind, Card[], number][] = (
+    [['', p.commons, FOIL_WEIGHTS.common], ['', p.uncommons, FOIL_WEIGHTS.uncommon], ['rare', p.rares, FOIL_WEIGHTS.rare], ['epic', p.epics, FOIL_WEIGHTS.epic]] as [HitKind, Card[], number][]
+  ).filter(([, pool]) => pool.length > 0)
+  const total = groups.reduce((s, [, , w]) => s + w, 0)
+  let r = rng() * total
+  for (const [hit, pool, w] of groups) {
+    if ((r -= w) < 0 || pool === groups[groups.length - 1][1]) {
+      return { card: pick(pool, rng), foil: true, role: 'foil', hit, chance: w / total / pool.length, estimate: true }
+    }
+  }
+  throw new Error('unreachable')
+}
+
+/** 14 cards in reveal order: bulk first, the best slots last. */
 export function rollPack(cards: Card[], setId: string, rng: () => number = Math.random): PackSlot[] | null {
   const p = pools(cards, setId)
   if (!p.commons.length || !p.uncommons.length || !p.tokens.length || !p.rares.length) return null
-  const highs = take(p.rares, 2, rng).map((card) => ({ card, foil: true, role: 'high' as const }))
-  if (setId === 'OGN' && p.epics.length && rng() < 1 / 4) {
-    highs[0] = { card: take(p.epics, 1, rng)[0], foil: true, role: 'high' }
-  }
-  if (setId === 'RAD' && rng() < 0.00025) {
-    const ur = cards.find((c) => c.id === 'rad-184') || cards.find((c) => c.set === 'RAD' && c.rarity === 'Ultimate Rare')
-    if (ur) highs[1] = { card: ur, foil: false, role: 'high' }
-  }
+  const bulk = (role: 'common' | 'uncommon', pool: Card[], n: number): PackSlot[] =>
+    take(pool, n, rng).map((card) => ({ card, foil: false, role, hit: '', chance: Math.min(1, n / pool.length), estimate: false }))
   return [
-    ...take(p.commons, 7, rng).map((card) => ({ card, foil: false, role: 'common' as const })),
-    ...take(p.uncommons, 3, rng).map((card) => ({ card, foil: false, role: 'uncommon' as const })),
-    ...take(p.tokens, 1, rng).map((card) => ({ card, foil: false, role: 'token' as const })),
-    ...take([...p.commons, ...p.uncommons], 1, rng).map((card) => ({ card, foil: true, role: 'foil' as const })),
-    ...highs,
+    ...bulk('common', p.commons, 7),
+    ...bulk('uncommon', p.uncommons, 3),
+    tokenSlot(p, rng),
+    foilSlot(p, rng),
+    rareSlot(p, rng),
+    flexSlot(p, setId, rng),
   ]
+}
+
+/** Value of one pulled card at the Cardmarket trend (the low is often a 0.02 € junk listing): foil trend for foils. */
+export function slotValue(slot: Pick<PackSlot, 'foil'>, p?: PriceEntry): number | null {
+  if (!p) return null
+  const v = slot.foil ? (p.foilTrend || p.trend || p.foilLow || p.low) : (p.trend || p.low)
+  return v ?? null
 }
