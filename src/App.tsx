@@ -170,14 +170,15 @@ function BanBadge({ status, lang }: { status: BanStatus; lang: Lang }) {
 }
 
 /** Same pill as the ban badge, one per person you borrowed copies from. */
-function BorrowedBadge({ from, lang, short }: { from?: { name: string; n: number }[]; lang: Lang; short?: boolean }) {
+function BorrowedBadge({ from, lang }: { from?: { name: string; n: number }[]; lang: Lang }) {
   if (!from?.length) return null
-  // The count sits outside the name span, so a long name is cut but the count stays visible.
-  // Short (narrow deck rows): just the name, the purple pill already says borrowed.
-  return <>{from.map((b, i) => {
-    const label = t(lang, 'borrowed.badge', { name: b.name })
-    return <span key={i} className="ban-badge borrowed-badge" title={`${label} ×${b.n}`}><span className="borrowed-name">{short ? b.name : label}</span>&nbsp;×{b.n}</span>
-  })}</>
+  // When space runs out the "Borrowed from" prefix is cut first, the name and count stay visible.
+  const prefix = t(lang, 'borrowed.badge')
+  return <>{from.map((b, i) => (
+    <span key={i} className="ban-badge borrowed-badge" title={`${prefix} ${b.name} ×${b.n}`}>
+      <span className="borrowed-prefix">{prefix}</span>&nbsp;<span className="borrowed-who">{b.name}&nbsp;×{b.n}</span>
+    </span>
+  ))}</>
 }
 
 /** Same pill as the ban badge, for cards with official errata. */
@@ -214,37 +215,23 @@ function priceLabel(lang: Lang, p?: PriceEntry) {
   return { low, high, avg30, foil, cmId: p.cmId || null, cmUrl: p.cmUrl || null }
 }
 
-function PriceBits({ entry, lang, showHigh = false, foilOnly = false, boxed = false }: { entry?: PriceEntry; lang: Lang; showHigh?: boolean; foilOnly?: boolean; boxed?: boolean }) {
+/** Prices as small label-over-value boxes, like the price tiles in the card detail. Foil only cards show one foil box. */
+function PriceBits({ entry, lang, foilOnly = false }: { entry?: PriceEntry; lang: Lang; foilOnly?: boolean }) {
   const pl = priceLabel(lang, entry)
   if (!pl || (!pl.low && !pl.avg30 && !pl.high && !pl.foil)) return null
-  if (boxed) {
-    // Card tiles: small label over value, like the price tiles in the card detail.
-    const p = foilOnly ? fmtEur(lang, entry?.foilLow || entry?.foilTrend || entry?.low || entry?.trend || null) : null
-    const boxes = (foilOnly
-      ? [{ k: 'Foil', v: p, title: 'price.foil', cls: 'foil' }]
-      : [
-          { k: t(lang, 'price.from'), v: pl.low, title: 'price.low', cls: '' },
-          pl.avg30 && { k: 'Ø30', v: pl.avg30, title: 'price.avg30', cls: '' },
-          pl.foil && { k: 'Foil', v: pl.foil, title: 'price.foil', cls: 'foil' },
-        ]).filter(Boolean) as { k: string; v: string | null; title: string; cls: string }[]
-    return (
-      <div className="price-boxes">
-        {boxes.map((b) => (
-          <div key={b.title} className={`price-box ${b.cls}`} title={t(lang, b.title)}><span>{b.k}</span><b>{b.v || '–'}</b></div>
-        ))}
-      </div>
-    )
-  }
-  if (foilOnly) {
-    const p = fmtEur(lang, entry?.foilLow || entry?.foilTrend || entry?.low || entry?.trend || null)
-    return <div className="price">{p ? <span className="foil" title={t(lang, 'price.foil')}>{t(lang, 'price.from')} {p}</span> : <span className="na">{t(lang, 'price.from')} –</span>}</div>
-  }
+  const p = foilOnly ? fmtEur(lang, entry?.foilLow || entry?.foilTrend || entry?.low || entry?.trend || null) : null
+  const boxes = (foilOnly
+    ? [{ k: 'Foil', v: p, title: 'price.foil', cls: 'foil' }]
+    : [
+        { k: t(lang, 'price.from'), v: pl.low, title: 'price.low', cls: '' },
+        pl.avg30 && { k: 'Ø30', v: pl.avg30, title: 'price.avg30', cls: '' },
+        pl.foil && { k: 'Foil', v: pl.foil, title: 'price.foil', cls: 'foil' },
+      ]).filter(Boolean) as { k: string; v: string | null; title: string; cls: string }[]
   return (
-    <div className="price">
-      {pl.low ? <span title={t(lang, 'price.low')}>{t(lang, 'price.from')} {pl.low}</span> : <span className="na">{t(lang, 'price.from')} –</span>}
-      {showHigh && pl.high ? <span className="high" title={t(lang, 'price.high')}>max {pl.high}</span> : null}
-      {pl.avg30 ? <span className="avg30" title={t(lang, 'price.avg30')}>Ø30 {pl.avg30}</span> : null}
-      {pl.foil ? <span className="foil" title={t(lang, 'price.foil')}>Foil {pl.foil}</span> : null}
+    <div className="price-boxes">
+      {boxes.map((b) => (
+        <div key={b.title} className={`price-box ${b.cls}`} title={t(lang, b.title)}><span>{b.k}</span><b>{b.v || '–'}</b></div>
+      ))}
     </div>
   )
 }
@@ -741,7 +728,7 @@ function CardTile({
         )}
         {/* Prices and counters sit at the bottom, so they line up across a grid row. */}
         <div className="tile-foot">
-        <PriceBits entry={priceEntry} lang={lang} foilOnly={foilOnly} boxed />
+        <PriceBits entry={priceEntry} lang={lang} foilOnly={foilOnly} />
         {qtyRow ?? (foilOnly ? (
           <div className="qty-group qty-group-single">
             <div className="qty-col">
@@ -2569,12 +2556,12 @@ export default function App() {
                   <div className="card-tags">
                     <SetBadge c={c} /><BanBadge status={banStatus(c)} lang={lang} />
                     <ErrataBadge show={!!errataFor(c)} lang={lang} />
-                    <BorrowedBadge from={borrowedInFrom.get(c.id)} lang={lang} short />
+                    <BorrowedBadge from={borrowedInFrom.get(c.id)} lang={lang} />
                   </div>
                   <div className="sub">
                     {c.energy != null ? `E${c.energy} · ` : ''}{c.code}
                   </div>
-                  <PriceBits entry={priceBook?.cards[c.id]} lang={lang} />
+                  <PriceBits entry={priceBook?.cards[c.id]} lang={lang} foilOnly={isFoilOnly(c)} />
                 </div>
                 {collectionButtons(c.id)}
                 <div className="row-stat">
@@ -3701,7 +3688,7 @@ export default function App() {
                           <ErrataBadge show={!!errataFor(c)} lang={lang} />
                         </div>
                         <div className="sub">{c.code} · x{ownedQty(collection[c.id])}{c.energy != null ? ` · E${c.energy}` : ''}</div>
-                        <PriceBits entry={priceBook?.cards[c.id]} lang={lang} />
+                        <PriceBits entry={priceBook?.cards[c.id]} lang={lang} foilOnly={isFoilOnly(c)} />
                       </div>
                       <button className="btn small add" onClick={(e) => { e.stopPropagation(); bumpWish(c.id, 'qty', 1) }}><Icon name="plus" />{t(lang, 'decks.add')}</button>
                     </div>
@@ -4050,7 +4037,7 @@ export default function App() {
                           onClick={(e) => { e.stopPropagation(); openCm(priceBook?.cards[c.id], lang) }}
                         >{displayName(c)}</button>
                         <div className="sub">{c.code} · x{have}{room < have ? t(lang, 'sales.inCart', { n: have - room }) : ''}</div>
-                        <PriceBits entry={priceBook?.cards[c.id]} lang={lang} />
+                        <PriceBits entry={priceBook?.cards[c.id]} lang={lang} foilOnly={isFoilOnly(c)} />
                       </div>
                       <button className="btn small add" disabled={room <= 0} onClick={(e) => { e.stopPropagation(); addToSale(c.id, 1) }} title={t(lang, 'sales.toCart')} aria-label={t(lang, 'sales.toCart')}>
                         <Icon name="shopping-cart" />
@@ -4315,7 +4302,7 @@ export default function App() {
                           <ErrataBadge show={!!errataFor(c)} lang={lang} />
                         </div>
                         <div className="sub">{c.code} · x{ownedQty(collection[c.id])}{c.energy != null ? ` · E${c.energy}` : ''}</div>
-                        <PriceBits entry={priceBook?.cards[c.id]} lang={lang} />
+                        <PriceBits entry={priceBook?.cards[c.id]} lang={lang} foilOnly={isFoilOnly(c)} />
                       </div>
                       <button
                         className="btn small add"
@@ -4643,7 +4630,7 @@ export default function App() {
                             {c.code} · x{have}{from ? '' : ` · ${t(lang, 'borrowed.availShort', { n: room })}`}
                             {c.energy != null ? ` · E${c.energy}` : ''}
                           </div>
-                          <PriceBits entry={priceBook?.cards[c.id]} lang={lang} />
+                          <PriceBits entry={priceBook?.cards[c.id]} lang={lang} foilOnly={isFoilOnly(c)} />
                         </div>
                         <button
                           className="btn small add"
