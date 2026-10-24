@@ -56,6 +56,8 @@ import {
   storeReportsStock,
   websiteUrl,
   type StoreHit,
+  type StoreSearch,
+  formatEntryFee,
 } from './stores'
 import { StoresMap, type MapCenter } from './StoresMap'
 import { StoreDisplays } from './StoreDisplays'
@@ -726,8 +728,9 @@ function CardTile({
         <ArtImg src={cardThumb(c)} />
         {n > 0 && <div className="badge">x{n}</div>}
         <div className="flags">
-          {/* One badge per deck, stacked: deck name and copies, click opens that deck. */}
-          {inDecks?.map((u) => (
+          {/* One badge per deck, stacked: deck name and copies, click opens that deck. More than three decks:
+              two badges and "+N decks", which opens the card detail with every deck. */}
+          {(inDecks && inDecks.length > 3 ? inDecks.slice(0, 2) : inDecks)?.map((u) => (
             <button
               key={u.id}
               type="button"
@@ -739,6 +742,16 @@ function CardTile({
               <Icon name="layers" size={12} /><span className="in-deck-name">{u.name}</span><b>×{u.qty}</b>
             </button>
           ))}
+          {inDecks && inDecks.length > 3 && (
+            <button
+              type="button"
+              className="flag in-deck-flag"
+              title={inDecks.slice(2).map((u) => `${u.name} ×${u.qty}`).join('\n')}
+              onClick={(e) => { e.stopPropagation(); onOpen(c) }}
+            >
+              <Icon name="layers" size={12} /><span className="in-deck-name">{t(lang, 'stores.moreDecks', { n: inDecks.length - 2 })}</span>
+            </button>
+          )}
           {c.signed ? <span className="flag signed">Signed</span> : null}
           {c.overnumbered && !c.signed ? <span className="flag over">ON</span> : null}
           {c.altArt ? <span className="flag alt">Alt</span> : null}
@@ -884,6 +897,10 @@ export default function App() {
   /** Store ids whose stock list is expanded past the collapsed preview. */
   const [storeStockOpen, setStoreStockOpen] = useState<Record<string, boolean>>({})
   const [storeEventsOpen, setStoreEventsOpen] = useState<Record<string, boolean>>({})
+  const [storeTruncated, setStoreTruncated] = useState(false)
+  const [storeSource, setStoreSource] = useState<StoreSearch['source']>('events')
+  /** Only the newest store search may show its result; an older, slower one is dropped. */
+  const storeSearchSeq = useRef(0)
   const [q, setQ] = useState('')
   const [setFilter, setSetFilter] = useState('')
   const [ownedOnly, setOwnedOnly] = useState(false)
@@ -2982,6 +2999,7 @@ export default function App() {
 
 
   async function runGermanySearch() {
+    const seq = ++storeSearchSeq.current
     setStoreBusy(true)
     setStoreError(null)
     try {
@@ -2990,88 +3008,83 @@ export default function App() {
       const q = storeQuery.trim()
       if (q) {
         const geo = await geocodeQuery(q, 'de')
+        if (seq !== storeSearchSeq.current) return
         if (!geo) {
-          setStoreHits([])
-          setStoreCenter(null)
-          setStoreLabel(null)
-          setStoreError(t(lang, 'stores.geoFail'))
+          failStoreSearch(t(lang, 'stores.geoFail'))
           return
         }
         sortOrigin = { lat: geo.lat, lng: geo.lng }
       }
-      const hits = await searchStoresInGermany(sortOrigin)
-      setStoreHits(hits)
-      setStoreStockOpen({})
-      setStoreEventsOpen({})
-      setStoreCenter(sortOrigin ?? GERMANY_CENTER)
-      setStoreFetchedKm(storeKm)
-      setStoreLabel(t(lang, 'stores.allGermany'))
+      const res = await searchStoresInGermany(sortOrigin)
+      if (seq !== storeSearchSeq.current) return
+      showStoreResult(res, sortOrigin ?? GERMANY_CENTER, t(lang, 'stores.allGermany'), storeKm)
     } catch (e) {
-      setStoreHits([])
-      setStoreCenter(null)
-      setStoreLabel(null)
-      setStoreError(t(lang, 'stores.error', { message: e instanceof Error ? e.message : String(e) }))
+      if (seq === storeSearchSeq.current) failStoreSearch(t(lang, 'stores.error', { message: e instanceof Error ? e.message : String(e) }))
     } finally {
-      setStoreBusy(false)
+      if (seq === storeSearchSeq.current) setStoreBusy(false)
     }
+  }
+
+  function showStoreResult(res: StoreSearch, center: { lat: number; lng: number }, label: string, km: number) {
+    setStoreHits(res.hits)
+    setStoreTruncated(res.truncated)
+    setStoreSource(res.source)
+    setStoreStockOpen({})
+    setStoreEventsOpen({})
+    setStoreCenter(center)
+    setStoreFetchedKm(km)
+    setStoreLabel(label)
+  }
+
+  function failStoreSearch(message: string) {
+    setStoreHits([])
+    setStoreCenter(null)
+    setStoreLabel(null)
+    setStoreError(message)
   }
 
   async function runStoreSearchAt(lat: number, lng: number, label: string, radiusKm = storeKm) {
     if (storeAllGermany) return runGermanySearch()
     const km = clampStoreRadiusKm(radiusKm)
+    const seq = ++storeSearchSeq.current
     setStoreBusy(true)
     setStoreError(null)
     try {
-      const hits = await searchStoresNear(lat, lng, km)
-      setStoreHits(hits)
-      setStoreStockOpen({})
-      setStoreEventsOpen({})
-      setStoreCenter({ lat, lng })
-      setStoreFetchedKm(km)
-      setStoreLabel(label)
+      const res = await searchStoresNear(lat, lng, km)
+      if (seq !== storeSearchSeq.current) return
+      showStoreResult(res, { lat, lng }, label, km)
     } catch (e) {
-      setStoreHits([])
-      setStoreCenter(null)
-      setStoreLabel(null)
-      setStoreError(t(lang, 'stores.error', { message: e instanceof Error ? e.message : String(e) }))
+      if (seq === storeSearchSeq.current) failStoreSearch(t(lang, 'stores.error', { message: e instanceof Error ? e.message : String(e) }))
     } finally {
-      setStoreBusy(false)
+      if (seq === storeSearchSeq.current) setStoreBusy(false)
     }
   }
 
-  async function runStoreSearch() {
+  async function runStoreSearch(query = storeQuery) {
     if (storeAllGermany) return runGermanySearch()
-    const q = storeQuery.trim()
+    const q = query.trim()
     if (!q) {
       setStoreError(t(lang, 'stores.needQuery'))
       return
     }
     const km = clampStoreRadiusKm(storeKm)
+    const seq = ++storeSearchSeq.current
     setStoreBusy(true)
     setStoreError(null)
     try {
       const geo = await geocodeQuery(q, 'de')
+      if (seq !== storeSearchSeq.current) return
       if (!geo) {
-        setStoreHits([])
-        setStoreCenter(null)
-        setStoreLabel(null)
-        setStoreError(t(lang, 'stores.geoFail'))
+        failStoreSearch(t(lang, 'stores.geoFail'))
         return
       }
-      const hits = await searchStoresNear(geo.lat, geo.lng, km)
-      setStoreHits(hits)
-      setStoreStockOpen({})
-      setStoreEventsOpen({})
-      setStoreCenter({ lat: geo.lat, lng: geo.lng })
-      setStoreFetchedKm(km)
-      setStoreLabel(geo.label)
+      const res = await searchStoresNear(geo.lat, geo.lng, km)
+      if (seq !== storeSearchSeq.current) return
+      showStoreResult(res, { lat: geo.lat, lng: geo.lng }, geo.label, km)
     } catch (e) {
-      setStoreHits([])
-      setStoreCenter(null)
-      setStoreLabel(null)
-      setStoreError(t(lang, 'stores.error', { message: e instanceof Error ? e.message : String(e) }))
+      if (seq === storeSearchSeq.current) failStoreSearch(t(lang, 'stores.error', { message: e instanceof Error ? e.message : String(e) }))
     } finally {
-      setStoreBusy(false)
+      if (seq === storeSearchSeq.current) setStoreBusy(false)
     }
   }
 
@@ -3091,9 +3104,12 @@ export default function App() {
     setStoreHome(q)
   }
 
-  // Opening the store view with a home location and no results yet searches there right away.
+  // Opening the store view with a home location and no results yet searches the home location right away.
   useEffect(() => {
-    if (tab === 'stores' && storeView === 'stores' && storeHome && !storeLabel && !storeBusy && !storeError) void runStoreSearch()
+    if (tab === 'stores' && storeView === 'stores' && storeHome && !storeLabel && !storeBusy && !storeError) {
+      setStoreQuery(storeHome)
+      void runStoreSearch(storeHome)
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps -- only when the view opens
   }, [tab, storeView])
 
@@ -4809,6 +4825,8 @@ export default function App() {
             {storeLabel && !storeError && (
               <p className="help stores-help">{storeAllGermany ? t(lang, 'stores.allGermany') : t(lang, 'stores.near', { label: storeLabel })} · {t(lang, 'stores.results', { n: visibleStoreHits.length })}
                 {!storeAllGermany && storeKm > storeFetchedKm + 0.5 ? ` · ${t(lang, 'stores.enlargeHint')}` : ''}
+                {storeTruncated ? ` · ${t(lang, 'stores.truncated')}` : ''}
+                {storeSource === 'uvs' ? ` · ${t(lang, 'stores.uvsFallback')}` : ''}
               </p>
             )}
             <div className="stores-body">
@@ -4870,9 +4888,7 @@ export default function App() {
                             <ul className="store-events">
                               {list.map((ev) => {
                                 const when = ev.startsAt ? new Date(ev.startsAt) : null
-                                const fee = ev.feeMinor != null && ev.currency
-                                  ? (ev.feeMinor / 100).toLocaleString(locale, { style: 'currency', currency: ev.currency })
-                                  : t(lang, 'stores.eventFree')
+                                const fee = formatEntryFee(ev.feeMinor, ev.currency, locale) ?? t(lang, 'stores.eventFree')
                                 return (
                                   <li key={ev.id}>
                                     <button type="button" className="store-event" onClick={() => openLink(eventUrl(ev.id, lang))} title={t(lang, 'stores.eventOpen')}>
