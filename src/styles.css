@@ -2234,7 +2234,7 @@ input[type="checkbox"] { accent-color: var(--primary); }
 
 /* Card tile: one borrowed pill per person, each on its own line. */
 .borrowed-tags { display: flex; flex-direction: column; align-items: flex-start; gap: 3px; }
-.borrowed-tags .ban-badge { margin-left: 0; max-width: 100%; }
+.borrowed-tags .ban-badge, .deck-card-row .card-tags .ban-badge { margin-left: 0; max-width: 100%; }
 .borrowed-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
 /* Card tile prices: label over value, like the price tiles in the card detail. */
 .price-boxes { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 4px; }
