@@ -6,6 +6,19 @@
 export const RIFTBOUND_GAME_ID = 3
 export const STORE_LOCATOR_URL = 'https://playriftbound.com/de-DE/events/'
 
+/** Entry fee as text, or null when the event is free (no fee, or 0). Uses the currency's own number of
+ *  decimals (JPY has none); an unknown currency code never throws, it falls back to "12.50 XYZ". */
+export function formatEntryFee(feeMinor: number | null, currency: string | null, locale: string): string | null {
+  if (feeMinor == null || feeMinor <= 0) return null
+  if (!currency) return (feeMinor / 100).toLocaleString(locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+  try {
+    const nf = new Intl.NumberFormat(locale, { style: 'currency', currency })
+    return nf.format(feeMinor / 10 ** (nf.resolvedOptions().maximumFractionDigits ?? 2))
+  } catch {
+    return `${(feeMinor / 100).toFixed(2)} ${currency}`
+  }
+}
+
 /** Link to one event on the official events page. */
 export function eventUrl(id: string, lang: 'de' | 'en') {
   return `https://playriftbound.com/${lang === 'de' ? 'de-DE' : 'en-US'}/events/${encodeURIComponent(id)}`
@@ -341,55 +354,167 @@ async function rbEvents(req: Parameters<NonNullable<Window['riftbound']>['rbEven
   return res.data
 }
 
-/** All event search pages within the radius (50 events a page, at most `maxPages`). */
-async function searchEvents(lat: number, lng: number, radiusKm: number, maxPages: number): Promise<EventEdge[]> {
+/** Result of a store search. `truncated`: not every event could be loaded (page cap or a later page
+ *  failed), so stores may be missing. `source`: where the list came from. */
+export type StoreSearch = { hits: StoreHit[]; truncated: boolean; source: 'events' | 'uvs' }
+
+/** Event search pages within the radius (50 events a page, at most `maxPages`). Only a failing first
+ *  page throws; a later failure keeps what was loaded and reports the list as truncated. */
+async function searchEvents(lat: number, lng: number, radiusKm: number, maxPages: number): Promise<{ edges: EventEdge[]; truncated: boolean }> {
   const edges: EventEdge[] = []
   let after: string | undefined
   for (let page = 0; page < maxPages; page++) {
-    const data = (await rbEvents({ op: 'search', lat, lng, distanceMeters: radiusKm * 1000, after })) as {
-      competeTournamentSearch?: { edges?: EventEdge[]; pageInfo?: { endCursor?: string | null; hasNextPage?: boolean } }
+    let data: { competeTournamentSearch?: { edges?: EventEdge[]; pageInfo?: { endCursor?: string | null; hasNextPage?: boolean } } }
+    try {
+      data = (await rbEvents({ op: 'search', lat, lng, distanceMeters: radiusKm * 1000, after })) as typeof data
+    } catch (e) {
+      if (page === 0) throw e
+      return { edges, truncated: true }
     }
     const conn = data?.competeTournamentSearch
     edges.push(...(conn?.edges || []))
-    if (!conn?.pageInfo?.hasNextPage || !conn.pageInfo.endCursor) break
+    if (!conn?.pageInfo?.hasNextPage || !conn.pageInfo.endCursor) return { edges, truncated: false }
     after = conn.pageInfo.endCursor
   }
-  return edges
+  return { edges, truncated: true }
 }
 
-/** Phone, e-mail, website and the store's own address from its organizer profile. */
-async function withContacts(hits: StoreHit[]): Promise<StoreHit[]> {
+type OrganizerContact = { email: string | null; website: string | null; phone: string | null; address: string | null; lat: number | null; lng: number | null }
+/** Organizer profiles hardly change: one lookup per store and app session. */
+const contactCache = new Map<string, OrganizerContact>()
+
+async function organizerContact(id: string): Promise<OrganizerContact> {
+  const cached = contactCache.get(id)
+  if (cached) return cached
+  const d = (await rbEvents({ op: 'organizer', id })) as {
+    organizerSummary?: {
+      email?: string | null
+      website?: string | null
+      phone?: { countryDialingCode?: string; number?: string } | null
+      physicalAddress?: EventLocation | null
+    } | null
+  }
+  const o = d?.organizerSummary
+  const a = o?.physicalAddress
+  const c: OrganizerContact = {
+    email: textOrNull(o?.email),
+    website: textOrNull(o?.website),
+    phone: o?.phone?.number ? `${o.phone.countryDialingCode || ''} ${o.phone.number}`.trim() : null,
+    address: textOrNull(a?.formattedAddress),
+    lat: typeof a?.latitude === 'number' ? a.latitude : null,
+    lng: typeof a?.longitude === 'number' ? a.longitude : null,
+  }
+  contactCache.set(id, c)
+  return c
+}
+
+/** Contact details and the store's own address and position (not the first event's venue) from its
+ *  organizer profile. When no profile loads at all (e.g. that query changed), `uvsFallback` supplies
+ *  phone, e-mail and website from the UVS list, matched by name or a position within 300 m. */
+async function withContacts(
+  hits: StoreHit[],
+  origin: { lat: number; lng: number },
+  uvsFallback: () => Promise<StoreHit[]>,
+): Promise<StoreHit[]> {
   const out = hits.slice()
+  let loaded = 0
   let cursor = 0
   const workers = Array.from({ length: Math.min(4, hits.length) }, async () => {
     while (cursor < hits.length) {
       const i = cursor++
       try {
-        const d = (await rbEvents({ op: 'organizer', id: hits[i].id })) as {
-          organizerSummary?: {
-            email?: string | null
-            website?: string | null
-            phone?: { countryDialingCode?: string; number?: string } | null
-            physicalAddress?: EventLocation | null
-          } | null
-        }
-        const o = d?.organizerSummary
-        if (!o) continue
-        const phone = o.phone?.number ? `${o.phone.countryDialingCode || ''} ${o.phone.number}`.trim() : null
+        const c = await organizerContact(hits[i].id)
+        loaded++
+        const lat = c.lat ?? hits[i].lat
+        const lng = c.lng ?? hits[i].lng
         out[i] = {
           ...hits[i],
-          email: textOrNull(o.email),
-          website: textOrNull(o.website),
-          phone,
-          address: textOrNull(o.physicalAddress?.formattedAddress) || hits[i].address,
+          email: c.email,
+          website: c.website,
+          phone: c.phone,
+          address: c.address || hits[i].address,
+          lat,
+          lng,
+          distanceKm: lat != null && lng != null ? haversineKm(origin.lat, origin.lng, lat, lng) : hits[i].distanceKm,
         }
       } catch {
-        // Contact details are extra: the store still shows with its events.
+        // One missing profile: the store still shows with its events.
       }
     }
   })
   await Promise.all(workers)
+  if (hits.length && loaded === 0) {
+    try {
+      const uvs = await uvsFallback()
+      const norm = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, '')
+      for (let i = 0; i < out.length; i++) {
+        const h = out[i]
+        const m = uvs.find((u) => (norm(u.name) && norm(u.name) === norm(h.name))
+          || (u.lat != null && u.lng != null && h.lat != null && h.lng != null && haversineKm(u.lat, u.lng, h.lat, h.lng) < 0.3))
+        if (m) out[i] = { ...h, phone: m.phone, email: m.email, website: m.website }
+      }
+    } catch {
+      // No contact source reachable: stores and events still show.
+    }
+  }
+  out.sort((a, b) => (a.distanceKm ?? 1e9) - (b.distanceKm ?? 1e9))
   return out
+}
+
+/** Event search page cap per circle: 50 events a page, so up to 1000 events in one circle. */
+const MAX_PAGES = 20
+
+/** The event search answers at most ~160 km (100 miles) around a point, a larger distance returns the
+ *  same events. Bigger areas are covered by several circles of this size. */
+export const EVENT_SEARCH_MAX_KM = 160
+
+function offsetPoint(lat: number, lng: number, northKm: number, eastKm: number) {
+  return { lat: lat + northKm / 111.32, lng: lng + eastKm / (111.32 * Math.cos((lat * Math.PI) / 180)) }
+}
+
+/** Search circles for a radius around a point: one circle up to 160 km, else a 3×3 grid 180 km apart,
+ *  so every spot within 250 km is inside a circle. */
+export function searchCircles(lat: number, lng: number, radiusKm: number) {
+  if (radiusKm <= EVENT_SEARCH_MAX_KM) return [{ lat, lng }]
+  const out: { lat: number; lng: number }[] = []
+  for (const n of [-180, 0, 180]) for (const e of [-180, 0, 180]) out.push(offsetPoint(lat, lng, n, e))
+  return out
+}
+
+/** 5×4 grid over Germany, about 180 km apart: every German spot is within ~130 km of a circle center. */
+export const GERMANY_CIRCLES = [47.8, 49.4, 51.0, 52.6, 54.2].flatMap((lat) => [6.8, 9.4, 12.0, 14.6].map((lng) => ({ lat, lng })))
+
+/** Runs the event search for each circle (3 at a time), events once each even where circles overlap.
+ *  Only throws when no circle answers at all; a failing circle marks the result as truncated. */
+async function searchEventCircles(circles: { lat: number; lng: number }[], radiusKm: number) {
+  const seen = new Set<string>()
+  const edges: EventEdge[] = []
+  let truncated = false
+  let answered = 0
+  let lastError: unknown
+  let cursor = 0
+  const workers = Array.from({ length: Math.min(3, circles.length) }, async () => {
+    while (cursor < circles.length) {
+      const c = circles[cursor++]
+      try {
+        const r = await searchEvents(c.lat, c.lng, Math.min(radiusKm, EVENT_SEARCH_MAX_KM), MAX_PAGES)
+        answered++
+        truncated ||= r.truncated
+        for (const e of r.edges) {
+          const id = e.node?.tournament?.id
+          if (!id || seen.has(id)) continue
+          seen.add(id)
+          edges.push(e)
+        }
+      } catch (e) {
+        lastError = e
+        truncated = true
+      }
+    }
+  })
+  await Promise.all(workers)
+  if (!answered) throw lastError ?? new Error('event search failed')
+  return { edges, truncated }
 }
 
 /**
@@ -401,31 +526,55 @@ export async function searchStoresNear(
   lat: number,
   lng: number,
   radiusKm = STORE_RADIUS_KM_DEFAULT,
-): Promise<StoreHit[]> {
-  let hits: StoreHit[]
+): Promise<StoreSearch> {
   try {
-    hits = await withContacts(eventsToStores(await searchEvents(lat, lng, radiusKm, 6), lat, lng))
+    const { edges, truncated } = await searchEventCircles(searchCircles(lat, lng, radiusKm), radiusKm)
+    // Circles beyond the radius bring extra events; keep the ones inside it.
+    const inside = edges.filter((e) => {
+      const l = e.node?.tournament?.tournamentLocation
+      return typeof l?.latitude !== 'number' || typeof l?.longitude !== 'number' || haversineKm(lat, lng, l.latitude, l.longitude) <= radiusKm + 0.05
+    })
+    const hits = await withContacts(eventsToStores(inside, lat, lng), { lat, lng }, () => uvsStoresNear(lat, lng, radiusKm))
+    return { hits: await withProducts(hits), truncated, source: 'events' }
   } catch {
-    hits = await uvsStoresNear(lat, lng, radiusKm)
+    return { hits: await withProducts(await uvsStoresNear(lat, lng, radiusKm)), truncated: false, source: 'uvs' }
   }
-  return withProducts(hits)
+}
+
+/** Rough box around Germany; neighbours inside it are caught by their country name in the address. */
+const GERMANY_BOX = { south: 47.27, north: 55.06, west: 5.87, east: 15.04 }
+// \b does not work next to letters like Ö, so word edges are "no letter" (Unicode) instead.
+const NOT_GERMANY = /(?<!\p{L})(netherlands|nederland|belgium|belgi[eë]|belgique|poland|polska|czechia|czech republic|česko|austria|österreich|switzerland|schweiz|suisse|svizzera|denmark|danmark|france|luxembourg|luxemburg)(?!\p{L})/iu
+
+/** Whether an event takes place in Germany: the address names Germany, or it names no neighbour and
+ *  lies inside Germany's box (addresses without a country). */
+export function isGermanEvent(loc: EventLocation | null | undefined) {
+  const text = loc?.formattedAddress || ''
+  if (/\b(germany|deutschland)\b/i.test(text)) return true
+  if (NOT_GERMANY.test(text)) return false
+  const lat = loc?.latitude
+  const lng = loc?.longitude
+  return typeof lat === 'number' && typeof lng === 'number'
+    && lat >= GERMANY_BOX.south && lat <= GERMANY_BOX.north && lng >= GERMANY_BOX.west && lng <= GERMANY_BOX.east
 }
 
 /**
  * Every store in Germany with upcoming events (event search around the center of Germany, German
- * addresses only), sorted by distance to `sortOrigin` when given. Falls back to the UVS list.
+ * events only), sorted by distance to `sortOrigin` when given. Falls back to the UVS list, also when
+ * the event search finds no German store at all.
  */
 export async function searchStoresInGermany(
   sortOrigin?: { lat: number; lng: number },
-): Promise<StoreHit[]> {
-  const originLat = sortOrigin?.lat ?? GERMANY_CENTER.lat
-  const originLng = sortOrigin?.lng ?? GERMANY_CENTER.lng
+): Promise<StoreSearch> {
+  const origin = { lat: sortOrigin?.lat ?? GERMANY_CENTER.lat, lng: sortOrigin?.lng ?? GERMANY_CENTER.lng }
   try {
-    const edges = (await searchEvents(GERMANY_CENTER.lat, GERMANY_CENTER.lng, GERMANY_COVER_KM, 20))
-      .filter((e) => /germany|deutschland/i.test(e.node?.tournament?.tournamentLocation?.formattedAddress || ''))
-    return withProducts(await withContacts(eventsToStores(edges, originLat, originLng)))
+    const { edges, truncated } = await searchEventCircles(GERMANY_CIRCLES, EVENT_SEARCH_MAX_KM)
+    const stores = eventsToStores(edges.filter((e) => isGermanEvent(e.node?.tournament?.tournamentLocation)), origin.lat, origin.lng)
+    if (!stores.length) throw new Error('no German stores in the event search')
+    const hits = await withContacts(stores, origin, () => uvsStoresInGermany(sortOrigin))
+    return { hits: await withProducts(hits), truncated, source: 'events' }
   } catch {
-    return withProducts(await uvsStoresInGermany(sortOrigin))
+    return { hits: await withProducts(await uvsStoresInGermany(sortOrigin)), truncated: false, source: 'uvs' }
   }
 }
 
