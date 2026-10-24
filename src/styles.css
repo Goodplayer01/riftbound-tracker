@@ -1327,6 +1327,17 @@ body[data-removing] .deck-split > section:not([data-remove-src]) {
 }
 .store-stock-more:hover { color: var(--text); }
 .store-unknown { margin-top: 4px; font-size: 12px; color: var(--muted); }
+/* Upcoming events of a store (official event search), one clickable row each. */
+.store-events { list-style: none; margin: 8px 0 0; padding: 0; display: grid; gap: 4px; }
+.store-event {
+  display: grid; grid-template-columns: auto 1fr; column-gap: 10px; width: 100%; text-align: left;
+  padding: 6px 8px; border-radius: var(--r-sm); border: 1px solid var(--border); background: rgb(255 255 255 / .03);
+  color: var(--text); font: inherit; cursor: pointer;
+}
+.store-event:hover { border-color: rgb(var(--primary-rgb) / .5); background: rgb(var(--primary-rgb) / .08); }
+.store-event-when { grid-row: span 2; align-self: center; font-size: 12px; font-weight: 700; color: var(--accent2); font-variant-numeric: tabular-nums; }
+.store-event-name { font-size: 12.5px; font-weight: 600; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.store-event-meta { font-size: 11.5px; color: var(--muted); }
 .stores-map-panel .stores-map-wrap {
   flex: 1;
   min-height: 0;

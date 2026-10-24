@@ -43,6 +43,7 @@ import { banStatus, type BanStatus } from './banlist'
 import { cardMatchesDomains, deckDropIndex, moveDeckTo } from './domainMatch.ts'
 import {
   STORE_LOCATOR_URL,
+  eventUrl,
   STORE_RADIUS_KM_DEFAULT,
   STORE_RADIUS_KM_MAX,
   STORE_RADIUS_KM_MIN,
@@ -814,7 +815,13 @@ function CardTile({
   )
 }
 
+/** NEXUS_NIGHT -> Nexus Night (event types from the official event search). */
+function prettyEventType(type: string | null) {
+  return (type || '').toLowerCase().split('_').filter(Boolean).map((w) => w[0].toUpperCase() + w.slice(1)).join(' ')
+}
+
 const HIDE_NN_KEY = 'riftbound-hide-nexus-night'
+const STORE_HOME_KEY = 'rb.storeHome.v1'
 
 /** Last list wiped by delete all. Module scope: gone when the app process exits. */
 let deckListUndo: Deck[] | null = null
@@ -862,7 +869,9 @@ export default function App() {
   const [borrowNotice, setBorrowNotice] = useState<string | null>(null)
   /** Store tab: display price comparison or the store locator. */
   const [storeView, setStoreView] = useState<'displays' | 'stores'>('displays')
-  const [storeQuery, setStoreQuery] = useState('Berlin')
+  /** Saved home location for the store search (rb.storeHome.v1), searched when the store view opens. */
+  const [storeHome, setStoreHome] = useState(() => { try { return localStorage.getItem(STORE_HOME_KEY) || '' } catch { return '' } })
+  const [storeQuery, setStoreQuery] = useState(storeHome)
   const [storeKm, setStoreKm] = useState(STORE_RADIUS_KM_DEFAULT)
   const [storeHits, setStoreHits] = useState<StoreHit[]>([])
   const [storeCenter, setStoreCenter] = useState<MapCenter | null>(null)
@@ -874,6 +883,7 @@ export default function App() {
   const [storeStockOnly, setStoreStockOnly] = useState(false)
   /** Store ids whose stock list is expanded past the collapsed preview. */
   const [storeStockOpen, setStoreStockOpen] = useState<Record<string, boolean>>({})
+  const [storeEventsOpen, setStoreEventsOpen] = useState<Record<string, boolean>>({})
   const [q, setQ] = useState('')
   const [setFilter, setSetFilter] = useState('')
   const [ownedOnly, setOwnedOnly] = useState(false)
@@ -2992,6 +3002,7 @@ export default function App() {
       const hits = await searchStoresInGermany(sortOrigin)
       setStoreHits(hits)
       setStoreStockOpen({})
+      setStoreEventsOpen({})
       setStoreCenter(sortOrigin ?? GERMANY_CENTER)
       setStoreFetchedKm(storeKm)
       setStoreLabel(t(lang, 'stores.allGermany'))
@@ -3014,6 +3025,7 @@ export default function App() {
       const hits = await searchStoresNear(lat, lng, km)
       setStoreHits(hits)
       setStoreStockOpen({})
+      setStoreEventsOpen({})
       setStoreCenter({ lat, lng })
       setStoreFetchedKm(km)
       setStoreLabel(label)
@@ -3049,6 +3061,7 @@ export default function App() {
       const hits = await searchStoresNear(geo.lat, geo.lng, km)
       setStoreHits(hits)
       setStoreStockOpen({})
+      setStoreEventsOpen({})
       setStoreCenter({ lat: geo.lat, lng: geo.lng })
       setStoreFetchedKm(km)
       setStoreLabel(geo.label)
@@ -3065,6 +3078,24 @@ export default function App() {
   function setStoreKmFromUi(raw: number) {
     setStoreKm(clampStoreRadiusKm(raw))
   }
+
+  /** Saves the typed place as home location (or clears it when the field is empty). */
+  function saveStoreHome() {
+    const q = storeQuery.trim()
+    try {
+      if (q) localStorage.setItem(STORE_HOME_KEY, q)
+      else localStorage.removeItem(STORE_HOME_KEY)
+    } catch {
+      // Storage blocked: the home location just lasts for this session.
+    }
+    setStoreHome(q)
+  }
+
+  // Opening the store view with a home location and no results yet searches there right away.
+  useEffect(() => {
+    if (tab === 'stores' && storeView === 'stores' && storeHome && !storeLabel && !storeBusy && !storeError) void runStoreSearch()
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- only when the view opens
+  }, [tab, storeView])
 
   const visibleStoreHits = storeHits.filter((h) => {
     if (!storeAllGermany && h.distanceKm != null && h.distanceKm > storeKm + 0.05) return false
@@ -4761,6 +4792,14 @@ export default function App() {
               </button>
               <button
                 type="button"
+                className={`btn${storeHome && storeHome === storeQuery.trim() ? ' on' : ''}`}
+                title={storeHome ? t(lang, 'stores.homeIs', { place: storeHome }) : t(lang, 'stores.homeHint')}
+                onClick={saveStoreHome}
+              >
+                <Icon name="map-pin" />{storeHome && storeHome === storeQuery.trim() ? t(lang, 'stores.homeSaved') : t(lang, 'stores.homeSave')}
+              </button>
+              <button
+                type="button"
                 className="btn"
                 onClick={() => openLink(STORE_LOCATOR_URL)}
               ><Icon name="external-link" />{t(lang, 'stores.openOfficial')}</button>
@@ -4822,6 +4861,48 @@ export default function App() {
                             <Icon name="map-pinned" />{t(lang, 'stores.maps')}
                           </button>
                         </div>
+                        {h.events.length > 0 && (() => {
+                          const EVENT_PREVIEW = 3
+                          const eventsOpen = !!storeEventsOpen[h.id]
+                          const list = eventsOpen ? h.events : h.events.slice(0, EVENT_PREVIEW)
+                          const locale = lang === 'de' ? 'de-DE' : 'en-GB'
+                          return (
+                            <ul className="store-events">
+                              {list.map((ev) => {
+                                const when = ev.startsAt ? new Date(ev.startsAt) : null
+                                const fee = ev.feeMinor != null && ev.currency
+                                  ? (ev.feeMinor / 100).toLocaleString(locale, { style: 'currency', currency: ev.currency })
+                                  : t(lang, 'stores.eventFree')
+                                return (
+                                  <li key={ev.id}>
+                                    <button type="button" className="store-event" onClick={() => openLink(eventUrl(ev.id, lang))} title={t(lang, 'stores.eventOpen')}>
+                                      <span className="store-event-when">
+                                        {when ? when.toLocaleString(locale, { weekday: 'short', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) : '–'}
+                                      </span>
+                                      <span className="store-event-name">{ev.name || prettyEventType(ev.type)}</span>
+                                      <span className="store-event-meta">
+                                        {ev.type ? `${prettyEventType(ev.type)} · ` : ''}{fee}
+                                        {ev.capacity ? ` · ${ev.registered}/${ev.capacity}` : ''}
+                                      </span>
+                                    </button>
+                                  </li>
+                                )
+                              })}
+                              {h.events.length > EVENT_PREVIEW && (
+                                <li>
+                                  <button
+                                    type="button"
+                                    className="store-stock-more"
+                                    onClick={() => setStoreEventsOpen((prev) => ({ ...prev, [h.id]: !eventsOpen }))}
+                                  >
+                                    <Icon name={eventsOpen ? 'chevron-up' : 'chevron-down'} size={13} />
+                                    {eventsOpen ? t(lang, 'stores.showLess') : t(lang, 'stores.moreEvents', { n: h.events.length - EVENT_PREVIEW })}
+                                  </button>
+                                </li>
+                              )}
+                            </ul>
+                          )
+                        })()}
                         {products && shown.length > 0 ? (
                           <ul className="store-stock">
                             {shown.map((p) => (

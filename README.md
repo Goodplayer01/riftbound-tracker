@@ -80,7 +80,7 @@ It works the other way round too: switch an entry to "Borrowed from" for cards a
 
 Compare booster display prices before you buy. For each set you see the Cardmarket trend (and the price per booster), then every offer from German online shops sorted by price, marked green or red against the trend, with stock and pre-order info. Filter by print language (English, Chinese Slim / Jumbo, French, Korean), set a max price per display and see which offers fit your budget. With your own CardTrader API token the cheapest CardTrader listings show up too.
 
-The second view lists Riftbound shops in Germany on a map with a radius around you, contact info, and a stock hint where the shop publishes one.
+The second view shows Riftbound stores on a map with a radius around you, taken from the official event search on playriftbound.com: every store with upcoming events, its contact info, its next events (date, type, entry fee, sign-ups) with a link to each event, and a stock hint where the shop publishes one. Save a place as home location and the search runs there as soon as you open the view.
 
 **Dopamin**
 
