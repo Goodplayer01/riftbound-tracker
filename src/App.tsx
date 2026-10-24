@@ -136,6 +136,18 @@ function borrowedQtyById(groups: BorrowedGroup[], from = false): Map<string, num
   return m
 }
 
+/** Per card: who you borrowed copies from and how many each (borrowed-from groups only). */
+function borrowedFromById(groups: BorrowedGroup[]): Map<string, { name: string; n: number }[]> {
+  const m = new Map<string, { name: string; n: number }[]>()
+  for (const g of groups) {
+    if (g.direction !== 'from') continue
+    for (const c of g.cards) {
+      if (c.qty > 0) m.set(c.id, [...(m.get(c.id) || []), { name: g.name.trim() || '?', n: c.qty }])
+    }
+  }
+  return m
+}
+
 /** Flatten deck-import result into a flat id+qty list (merge duplicates). */
 function flattenImportCards(cards: { id: string; qty: number }[]): BorrowedCard[] {
   const m = new Map<string, number>()
@@ -157,10 +169,14 @@ function BanBadge({ status, lang }: { status: BanStatus; lang: Lang }) {
   )
 }
 
-/** Same pill as the ban badge, for copies borrowed from someone. */
-function BorrowedBadge({ n, lang }: { n?: number; lang: Lang }) {
-  if (!n) return null
-  return <span className="ban-badge borrowed-badge">{t(lang, 'borrowed.badge', { n })}</span>
+/** Same pill as the ban badge, one per person you borrowed copies from. */
+function BorrowedBadge({ from, lang }: { from?: { name: string; n: number }[]; lang: Lang }) {
+  if (!from?.length) return null
+  // The count sits outside the name span, so a long name is cut but the count stays visible.
+  return <>{from.map((b, i) => {
+    const label = t(lang, 'borrowed.badge', { name: b.name })
+    return <span key={i} className="ban-badge borrowed-badge" title={`${label} ×${b.n}`}><span className="borrowed-name">{label}</span>&nbsp;×{b.n}</span>
+  })}</>
 }
 
 /** Same pill as the ban badge, for cards with official errata. */
@@ -197,9 +213,27 @@ function priceLabel(lang: Lang, p?: PriceEntry) {
   return { low, high, avg30, foil, cmId: p.cmId || null, cmUrl: p.cmUrl || null }
 }
 
-function PriceBits({ entry, lang, showHigh = false, foilOnly = false }: { entry?: PriceEntry; lang: Lang; showHigh?: boolean; foilOnly?: boolean }) {
+function PriceBits({ entry, lang, showHigh = false, foilOnly = false, boxed = false }: { entry?: PriceEntry; lang: Lang; showHigh?: boolean; foilOnly?: boolean; boxed?: boolean }) {
   const pl = priceLabel(lang, entry)
   if (!pl || (!pl.low && !pl.avg30 && !pl.high && !pl.foil)) return null
+  if (boxed) {
+    // Card tiles: small label over value, like the price tiles in the card detail.
+    const p = foilOnly ? fmtEur(lang, entry?.foilLow || entry?.foilTrend || entry?.low || entry?.trend || null) : null
+    const boxes = (foilOnly
+      ? [{ k: 'Foil', v: p, title: 'price.foil', cls: 'foil' }]
+      : [
+          { k: t(lang, 'price.from'), v: pl.low, title: 'price.low', cls: '' },
+          pl.avg30 && { k: 'Ø30', v: pl.avg30, title: 'price.avg30', cls: '' },
+          pl.foil && { k: 'Foil', v: pl.foil, title: 'price.foil', cls: 'foil' },
+        ]).filter(Boolean) as { k: string; v: string | null; title: string; cls: string }[]
+    return (
+      <div className="price-boxes">
+        {boxes.map((b) => (
+          <div key={b.title} className={`price-box ${b.cls}`} title={t(lang, b.title)}><span>{b.k}</span><b>{b.v || '–'}</b></div>
+        ))}
+      </div>
+    )
+  }
   if (foilOnly) {
     const p = fmtEur(lang, entry?.foilLow || entry?.foilTrend || entry?.low || entry?.trend || null)
     return <div className="price">{p ? <span className="foil" title={t(lang, 'price.foil')}>{t(lang, 'price.from')} {p}</span> : <span className="na">{t(lang, 'price.from')} –</span>}</div>
@@ -627,11 +661,11 @@ function CardTile({
   errata,
   inDecks,
   dragProps,
-  borrowedIn,
+  borrowedFrom,
 }: {
   children?: ReactNode
-  /** Copies borrowed from someone (shows the borrowed pill). */
-  borrowedIn?: number
+  /** Copies borrowed from someone (one borrowed pill per person). */
+  borrowedFrom?: { name: string; n: number }[]
   /** Makes the tile draggable (drag out of a list to remove one copy). */
   dragProps?: { draggable: boolean; onDragStart: (e: ReactDragEvent) => void; onDragEnd: (e: ReactDragEvent) => void }
   /** Names of the decks that use this card. */
@@ -695,8 +729,8 @@ function CardTile({
         <div className="card-tags">
           <SetBadge c={c} /><BanBadge status={banStatus(c)} lang={lang} />
           <ErrataBadge show={!!errata} lang={lang} />
-          <BorrowedBadge n={borrowedIn} lang={lang} />
         </div>
+        {borrowedFrom?.length ? <div className="borrowed-tags"><BorrowedBadge from={borrowedFrom} lang={lang} /></div> : null}
         <div className="sub">{c.code} · {(c.types || []).join('/') || '-'} · {(c.domains || []).join('/') || '-'}</div>
         {inDecks && inDecks.length > 0 && (
           <div className="in-decks" title={`${t(lang, 'collection.inDecks')}: ${inDecks.join(', ')}`}>
@@ -704,7 +738,7 @@ function CardTile({
             <span>{inDecks.join(', ')}</span>
           </div>
         )}
-        <PriceBits entry={priceEntry} lang={lang} showHigh={!foilOnly} foilOnly={foilOnly} />
+        <PriceBits entry={priceEntry} lang={lang} foilOnly={foilOnly} boxed />
         {qtyRow ?? (foilOnly ? (
           <div className="qty-group qty-group-single">
             <div className="qty-col">
@@ -870,6 +904,7 @@ export default function App() {
   /** Set filter in the All owned tab ('' = every set). */
   const [ownedSet, setOwnedSet] = useState('')
   const [ownedSort, setOwnedSort] = useState<'set' | 'price-desc' | 'price-asc'>('set')
+  const [ownedBorrowedOnly, setOwnedBorrowedOnly] = useState(false)
   const [binderMissing, setBinderMissing] = useState(false)
   const [binderMissingFoil, setBinderMissingFoil] = useState(false)
   const [binderRarity, setBinderRarity] = useState<string | null>(null)
@@ -1310,6 +1345,7 @@ export default function App() {
   const borrowedTotals = useMemo(() => borrowedQtyById(borrowed), [borrowed])
   /** Copies borrowed from other people: shown in All owned and usable in decks, but not part of the collection. */
   const borrowedInTotals = useMemo(() => borrowedQtyById(borrowed, true), [borrowed])
+  const borrowedInFrom = useMemo(() => borrowedFromById(borrowed), [borrowed])
 
   const totals = useMemo(() => {
     let copies = 0
@@ -1478,7 +1514,7 @@ export default function App() {
     const query = deferredQ.trim().toLowerCase()
     let list: Card[]
     if (binderView === 'owned') {
-      list = cards.filter((c) => (ownedQty(collection[c.id]) > 0 || borrowedInTotals.has(c.id)) && (!ownedSet || c.set === ownedSet))
+      list = cards.filter((c) => (ownedBorrowedOnly ? borrowedInTotals.has(c.id) : ownedQty(collection[c.id]) > 0 || borrowedInTotals.has(c.id)) && (!ownedSet || c.set === ownedSet))
     } else {
       list = cards.filter((c) => c.set === binderView)
     }
@@ -1505,7 +1541,7 @@ export default function App() {
       if (pa == null || pb == null) return (pa == null ? 1 : 0) - (pb == null ? 1 : 0) || bySet(a, b)
       return dir * (pa - pb) || bySet(a, b)
     })
-  }, [binderView, cards, collection, borrowedInTotals, deferredQ, binderOwnedOnly, binderMissing, binderMissingFoil, binderRarity, ownedSet, ownedSort, priceBook, domainFilter, raritySigned, rarityOver, rarityPromo, rarityUltimate, abilityFilter, legendIds])
+  }, [binderView, cards, collection, borrowedInTotals, deferredQ, binderOwnedOnly, binderMissing, binderMissingFoil, binderRarity, ownedSet, ownedSort, ownedBorrowedOnly, priceBook, domainFilter, raritySigned, rarityOver, rarityPromo, rarityUltimate, abilityFilter, legendIds])
 
   /** Sets with owned cards, in binder order, for the All owned set filter. */
   const ownedSets = useMemo(() => {
@@ -2526,7 +2562,7 @@ export default function App() {
                     >{displayName(c)}</button>
                     <SetBadge c={c} /><BanBadge status={banStatus(c)} lang={lang} />
                     <ErrataBadge show={!!errataFor(c)} lang={lang} />
-                    <BorrowedBadge n={borrowedInTotals.get(c.id)} lang={lang} />
+                    <BorrowedBadge from={borrowedInFrom.get(c.id)} lang={lang} />
                   </div>
                   <div className="sub">
                     {c.energy != null ? `E${c.energy} · ` : ''}{c.code}
@@ -3748,6 +3784,14 @@ export default function App() {
                     <option value="price-desc">{t(lang, 'owned.sortPriceDesc')}</option>
                     <option value="price-asc">{t(lang, 'owned.sortPriceAsc')}</option>
                   </select>
+                  <button
+                    type="button"
+                    className={`chip ${ownedBorrowedOnly ? 'active' : ''}`}
+                    aria-pressed={ownedBorrowedOnly}
+                    onClick={() => setOwnedBorrowedOnly((v) => !v)}
+                  >
+                    <Icon name="check" />{t(lang, 'owned.borrowedOnly')}
+                  </button>
                 </>
               )}
               {binderView !== 'owned' && (
@@ -3822,7 +3866,7 @@ export default function App() {
                     variant="binder"
                     errata={!!errataFor(c)}
                     inDecks={decksByCard.get(c.id)}
-                    borrowedIn={binderView === 'owned' ? borrowedInTotals.get(c.id) : undefined}
+                    borrowedFrom={binderView === 'owned' ? borrowedInFrom.get(c.id) : undefined}
                     onOpen={openCardLightbox}
                     onBump={bump}
                   />
@@ -4215,8 +4259,9 @@ export default function App() {
                 {activeDeck && !(sectionNeedsLegend(activeSection) && !hasLegend(activeDeck.cards)) && cards
                   .filter((c) => {
                     if (!cardFitsSection(c, activeSection)) return false
-                    // Plain runes have their own counter per domain, the list only offers alt art runes.
-                    if (activeSection === 'rune' && isPlainRune(c)) return false
+                    // Plain runes have their own counter per domain, the list only offers alt art runes
+                    // (Nexus Night runes with the normal art count as plain here too).
+                    if (activeSection === 'rune' && (isPlainRune(c) || (c.set.endsWith('-NN') && !c.altArt))) return false
                     if (deckOwnedOnly && ownedQty(collection[c.id]) <= 0) return false
                     if (sectionNeedsLegend(activeSection)) {
                       const domains = getLegendDomains(activeDeck.cards, byId)

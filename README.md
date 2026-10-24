@@ -15,7 +15,7 @@ Windows SmartScreen might complain the first time because the installer isn't si
 **Sets and All owned**
 
 - Sets tab: binders per set: OGN, OGS, SFD, UNL, VEN and RAD. Nexus Night binders can be hidden
-- All owned tab: every card you own in one place, with a filter per set, sorted by set or by price
+- All owned tab: every card you own in one place, with a filter per set and a Borrowed only filter, sorted by set or by price
 - Each card shows which of your decks use it
 - Set, ban and errata tags on every card tile
 - Progress per rarity so you see what's still missing. In a set, click a rarity to show only those cards
@@ -74,7 +74,7 @@ Put cards you want to sell in a cart by dragging them in, pasting a list or clic
 
 Keep track of cards you lent to friends, sorted by person. Drag cards in from the search and out again when you get them back. Those copies don't count as available when you build decks.
 
-It works the other way round too: switch an entry to "Borrowed from" for cards a friend lent you. They show up in All owned and count when you build decks, with a purple Borrowed tag so you know they aren't yours. Export a list with one click and send it over. Your friend pastes it into Import and gets the exact same prints as cards borrowed from you.
+It works the other way round too: switch an entry to "Borrowed from" for cards a friend lent you. They show up in All owned and count when you build decks, with a purple tag that says who you borrowed them from and how many, so you know they aren't yours. Export a list with one click and send it over. Your friend pastes it into Import and gets the exact same prints as cards borrowed from you.
 
 **Stores**
 
