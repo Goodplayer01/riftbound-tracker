@@ -1,4 +1,4 @@
-import { cardEur, cardInvest, cleanCopyBook, fitLots, parseEur, soldGroups } from '../src/copies.ts'
+import { cardEur, cardInvest, cleanCopyBook, fitLots, parseEur, soldGroups, splitLot } from '../src/copies.ts'
 
 function assert(cond, msg) {
   if (!cond) throw new Error(msg)
@@ -36,6 +36,17 @@ assert(inv.copies === 2 && inv.paid === 3 && inv.worth === 20, 'invest only coun
 const book = cleanCopyBook({ x: [{ n: '2', foil: 1, lang: 'XX', cond: 'bad', buy: -1 }, { n: 0 }], y: 'junk' })
 assert(book.x.length === 1 && book.x[0].n === 2 && book.x[0].foil && book.x[0].lang === 'EN' && book.x[0].cond === 'NM' && book.x[0].buy === null, 'clean book')
 assert(!('y' in book), 'drop non arrays')
+
+// Pulled copies: kept by the cleaner without a price, counted in the value but not in paid / profit.
+const pulledBook = cleanCopyBook({ p: [{ id: 'p', n: 1, pulled: true, buy: 5 }, { id: 'q', n: 1, buy: 2 }] })
+assert(pulledBook.p[0].pulled === true && pulledBook.p[0].buy === null && !('pulled' in pulledBook.p[1]), 'pulled lot kept, price dropped')
+const invP = cardInvest(pulledBook.p, { qty: 2, foil: 0 }, false, price)
+assert(invP.copies === 1 && invP.paid === 2 && cardEur(pulledBook.p, { qty: 2, foil: 0 }, false, price) === 20, 'pulled copies have value, no cost')
+
+// Splitting a lot: one copy moves into its own lot right after, without a price.
+const split = splitLot([a, b], 'a', 'a2')
+assert(split.length === 3 && split[0].n === 1 && split[1].id === 'a2' && split[1].n === 1 && split[1].buy === null && split[2] === b, 'split lot')
+assert(splitLot([lot('s', false, 1, 1)], 's', 'x').length === 1, 'single copy lot does not split')
 
 assert(parseEur('3,50 €') === 3.5 && parseEur('') === null && parseEur('abc') === undefined, 'parseEur')
 

@@ -158,11 +158,9 @@ export function detectKeywordsInText(text: string): KeywordId[] {
   return found
 }
 
-/** Keywords known for this printing (baked map), else empty. */
+/** Keywords known for this printing (baked map), else empty. Never read from the card name:
+ *  "Thrill of the Hunt" or "Legion Rearguard" are names, not keywords; the rules text is checked separately. */
 export function keywordsForCard(card: Card): KeywordId[] {
   const labels = cardKeywordBook?.byCardId?.[card.id]
-  if (labels && labels.length) return labelsToIds(labels)
-  // Light fallback: whole-word match in name/subtitle/tags (rarely hits keyword names)
-  const hay = [card.name, card.subtitle || '', ...(card.tags || []), ...(card.types || [])].join(' ')
-  return detectKeywordsInText(hay)
+  return labels && labels.length ? labelsToIds(labels) : []
 }
