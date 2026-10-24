@@ -58,7 +58,7 @@ Windows SmartScreen might complain the first time because the installer isn't si
 - Find a Legend by typing the champion name
 - Drag cards from the search list into a deck section, and drag them out again to remove one copy per drag
 - Every deck card shows how many you own and how many the deck needs, with buttons to add or remove normal and foil copies in your collection
-- Runes as one big counter per domain of your Legend. Add Runes only lists the alt art runes, the counters cover the normal ones
+- Runes as one big counter per domain of your Legend. Add Runes only lists the alt art runes, the counters cover the normal ones (Nexus Night runes with the normal art included)
 - The open deck shows its Legend big, with the deck's value and what the missing copies would cost. Click the missing tile to list those cards by set with big images, add them to your collection, or copy them as a Cardmarket wants list
 - Import and export deck lists as text
 - Drag decks around to sort them
@@ -84,7 +84,7 @@ The second view lists Riftbound shops in Germany on a map with a radius around y
 
 **Dopamin**
 
-Open simulated booster packs for each set with the real pack art. Cards flip one at a time, with price and pull chance, and a counter shows how many packs you've opened. The odds only use what Riot has published, nothing made up.
+Open simulated booster packs for each set with the real pack art. Every slot of a real pack is in there: commons, uncommons, the token or rune slot, the foil slot, the rare slot and the slot that can turn into an Epic, Alt Art, Overnumbered, Signature or Ultimate. Cards flip one at a time with price and pull chance, or reveal the whole pack at once and see what it was worth. A counter per set adds up what the packs would have cost on Cardmarket against what you pulled, so you see whether you are up or down, plus your best pull. The odds are the ones Riot published (Epic 1 in 4 packs, Alt Art 1 in 12, Overnumbered 1 in 72, 1 in 10 of those signed, Ultimate 0.025 % in Radiance); the few slots Riot gave no numbers for are marked as estimates.
 
 **Look and feel**
 
@@ -92,6 +92,8 @@ Open simulated booster packs for each set with the real pack art. Cards flip one
 - Domain icons drawn for the app, sharp at every size
 - The window button maximizes the app and leaves the Windows taskbar visible, and the app then uses the full width of the screen
 - Click anywhere on a card to open its detail view, and drag a card from anywhere on its tile
+- Prices show as small boxes (from, 30 day average, foil) on every card and in every list, and the price and counters always sit at the bottom of a card, so a row of cards lines up
+- Card names in deck lists get the full width, tags sit on their own line below
 - In the wishlist, sales and deck builder you can hide the card search on the right to get more room
 - The app runs in German or English
 - Card images load fast: small previews ship with the app, full-size art is cached on your PC after the first view
