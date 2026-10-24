@@ -310,14 +310,6 @@ textarea.field { min-height: 160px; resize: vertical; font-family: ui-monospace,
 .warn { color: var(--warn); }
 .err { color: var(--danger); }
 
-.price {
-  display: flex; gap: 6px; flex-wrap: wrap; align-items: center;
-  font-size: 12px; color: var(--warn); font-variant-numeric: tabular-nums;
-}
-.price .foil { color: var(--accent2); }
-.price .avg30 { color: #d7c38a; }
-.price .high { color: var(--muted); }
-.price .na { color: var(--muted); }
 .name-link {
   display: block; width: 100%; text-align: left;
   background: none; border: 0; padding: 0; margin: 0;
@@ -847,11 +839,6 @@ textarea.field { min-height: 160px; resize: vertical; font-family: ui-monospace,
   gap: 8px;
   align-items: flex-start;
 }
-.deck-card-row .price {
-  margin-top: 2px;
-  font-size: 0.85em;
-}
-
 /* Deck list accordion */
 .deck-accordion {
   display: grid; gap: 8px; align-content: start;
@@ -1026,11 +1013,6 @@ body[data-removing] .deck-split > section:not([data-remove-src]) {
   border-color: var(--danger);
   background: rgb(var(--danger-rgb) / .16);
 }
-.picker-card .price {
-  margin-top: 2px;
-  font-size: 0.85em;
-}
-
 /* Deck build gates */
 .deck-notice {
   display: flex; align-items: center; justify-content: space-between; gap: 10px;
@@ -2235,7 +2217,9 @@ input[type="checkbox"] { accent-color: var(--primary); }
 /* Card tile: one borrowed pill per person, each on its own line. */
 .borrowed-tags { display: flex; flex-direction: column; align-items: flex-start; gap: 3px; }
 .borrowed-tags .ban-badge, .deck-card-row .card-tags .ban-badge { margin-left: 0; max-width: 100%; }
-.borrowed-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.borrowed-prefix { min-width: 1.2em; overflow: hidden; text-overflow: ellipsis; }
+.borrowed-who { flex-shrink: 0; }
+.ban-badge.borrowed-badge { overflow: hidden; }
 /* Card tile prices: label over value, like the price tiles in the card detail. */
 .price-boxes { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 4px; }
 .price-box { display: grid; gap: 1px; padding: 4px 7px; border-radius: 8px; background: var(--fill); min-width: 0; }
@@ -2277,3 +2261,10 @@ input[type="checkbox"] { accent-color: var(--primary); }
 .dop-mini-row { display: flex; justify-content: space-between; align-items: center; gap: 4px; font-size: 12px; font-variant-numeric: tabular-nums; }
 .dop-mini-row .dop-hit, .dop-mini-row .dop-foil { font-size: 9px; padding: 0 5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
 @media (max-width: 1100px) { .dop-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); } }
+/* List rows: boxes keep their own width instead of filling the row. */
+.list-item .price-boxes { display: flex; flex-wrap: wrap; margin-top: 4px; }
+.list-item .price-box { padding: 3px 7px; }
+.list-item .price-box b { font-size: 12.5px; }
+/* Card tile: the meta block fills the tile and the foot (prices + counters) sits at the bottom. */
+.card > .meta { flex: 1; display: flex; flex-direction: column; }
+.tile-foot { margin-top: auto; display: grid; gap: 6px; padding-top: 2px; }
