@@ -22,5 +22,6 @@ contextBridge.exposeInMainWorld('riftbound', {
   openExternal: (url) => ipcRenderer.invoke('shell:openExternal', url),
   fetchJson: (url) => ipcRenderer.invoke('net:fetchJson', url),
   cardtrader: (path, token) => ipcRenderer.invoke('net:cardtrader', path, token),
+  rbEvents: (req) => ipcRenderer.invoke('net:rbEvents', req),
   fetchImageDataUrl: (url) => ipcRenderer.invoke('net:fetchImageDataUrl', url),
 })

@@ -15,8 +15,8 @@ Windows SmartScreen might complain the first time because the installer isn't si
 **Sets and All owned**
 
 - Sets tab: binders per set: OGN, OGS, SFD, UNL, VEN and RAD. Nexus Night binders can be hidden
-- All owned tab: every card you own in one place, with a filter per set, Borrowed only and Not in a deck, sorted by set or by price. Borrowed only plus Not in a deck shows the borrowed cards you can give back
-- Each card shows which of your decks use it and how many copies each, as pills on the card and in the card detail, plus a deck badge in the top right of the image. Click one to jump to that deck
+- All owned tab: every card you own in one place, with a filter per set, Borrowed only and Not needed in decks, sorted by set or by price. Not needed in decks shows how many copies no deck needs (all decks added up); together with Borrowed only it lists the borrowed copies you can give back
+- Each card shows which of your decks use it and how many copies each: one badge per deck, stacked in the top right of the image, and the same in the card detail. Click one to jump to that deck
 - Set, ban and errata tags on every card tile
 - Progress per rarity so you see what's still missing. In a set, click a rarity to show only those cards
 - Filters for owned, missing and missing foils in each set
@@ -80,7 +80,7 @@ It works the other way round too: switch an entry to "Borrowed from" for cards a
 
 Compare booster display prices before you buy. For each set you see the Cardmarket trend (and the price per booster), then every offer from German online shops sorted by price, marked green or red against the trend, with stock and pre-order info. Filter by print language (English, Chinese Slim / Jumbo, French, Korean), set a max price per display and see which offers fit your budget. With your own CardTrader API token the cheapest CardTrader listings show up too.
 
-The second view lists Riftbound shops in Germany on a map with a radius around you, contact info, and a stock hint where the shop publishes one.
+The second view shows Riftbound stores on a map with a radius around you, taken from the official event search on playriftbound.com: every store with upcoming events, its contact info, its next events (date, type, entry fee, sign-ups) with a link to each event, and a stock hint where the shop publishes one. Save a place as home location and the search runs there as soon as you open the view.
 
 **Dopamin**
 

@@ -24,6 +24,9 @@ declare global {
       openExternal: (url: string) => Promise<{ ok: boolean }>
       fetchJson: (url: string) => Promise<{ ok: boolean; data?: unknown; error?: string }>
       cardtrader: (path: string, token: string) => Promise<{ ok: boolean; data?: unknown; error?: string; status?: number }>
+      rbEvents: (
+        req: { op: 'search'; lat: number; lng: number; distanceMeters: number; after?: string } | { op: 'organizer'; id: string },
+      ) => Promise<{ ok: boolean; data?: unknown; error?: string }>
       fetchImageDataUrl: (url: string) => Promise<{ ok: boolean; dataUrl?: string; error?: string }>
     }
   }

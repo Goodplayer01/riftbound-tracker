@@ -23,6 +23,14 @@ export function subtractOwnedCopies(o: Owned, sellQty: number) {
   return { qty, foil, sold, short }
 }
 
+/** Which copies a sale of `sellQty` takes: same rule as subtractOwnedCopies (normal first, then foil).
+ *  The sell export and the cart value use it, so they name the copies that really leave. */
+export function saleSplit(o: Owned | undefined, sellQty: number) {
+  const cur = { qty: o?.qty || 0, foil: o?.foil || 0 }
+  const r = subtractOwnedCopies(cur, sellQty)
+  return { qty: cur.qty - r.qty, foil: cur.foil - r.foil }
+}
+
 /** German Excel saves CSV with ';', so the header line picks the separator. */
 export function csvSeparator(header: string) {
   return header.includes(';') ? ';' : ','

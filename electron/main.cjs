@@ -277,6 +277,72 @@ ipcMain.handle('window:close', () => {
 })
 
 
+// Riftbound event search on events.playriftbound.com (the "Events" page on playriftbound.com).
+// The endpoint only runs persisted queries by id; ids are the sha256 of the query body in the site's
+// query manifest. shortcut: ids are pinned here, when Riot changes those queries the search fails and the
+// Store tab falls back to the UVS locator; then copy the new ids from the manifest chunk of the events page.
+const RB_EVENTS_URL = 'https://events.playriftbound.com/api/gql'
+const RB_EVENTS_QUERIES = {
+  search: { name: 'CompeteTournamentSearch', hash: '868030f676276bec926c740aada7129713d4097f6e2dd7c3a0451c4fb43852eb' },
+  organizer: { name: 'OrganizerSummary', hash: '3c1b5c84a25e8c304922e4130a99a196e6eac6c90d740690ba1afd0f040010cf' },
+}
+
+ipcMain.handle('net:rbEvents', async (_e, req) => {
+  let op
+  let variables
+  if (req && req.op === 'search') {
+    const { lat, lng, distanceMeters, after } = req
+    const ok = [lat, lng, distanceMeters].every((n) => typeof n === 'number' && Number.isFinite(n))
+      && Math.abs(lat) <= 90 && Math.abs(lng) <= 180 && distanceMeters > 0 && distanceMeters <= 1500000
+    if (!ok || (after != null && (typeof after !== 'string' || !/^[A-Za-z0-9+/=_-]{1,200}$/.test(after)))) {
+      return { ok: false, error: 'invalid search' }
+    }
+    op = RB_EVENTS_QUERIES.search
+    variables = {
+      sport: 'rb',
+      first: 50,
+      filter: { rb: {
+        coords: { latitude: lat, longitude: lng },
+        // Same as the site: events that started up to an hour ago still count.
+        startDate: new Date(Date.now() - 3600000).toISOString(),
+        distanceMeters: Math.round(distanceMeters),
+      } },
+      ...(after ? { after } : {}),
+    }
+  } else if (req && req.op === 'organizer' && typeof req.id === 'string' && /^[0-9a-f-]{36}$/i.test(req.id)) {
+    op = RB_EVENTS_QUERIES.organizer
+    variables = { id: req.id }
+  } else {
+    return { ok: false, error: 'invalid request' }
+  }
+  try {
+    const res = await fetch(RB_EVENTS_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/graphql-response+json,application/json;q=0.9',
+        // The endpoint rejects requests without Apollo client headers.
+        'apollographql-client-name': 'Esports Web',
+        'apollographql-client-version': app.getVersion(),
+        'User-Agent': 'DeakrixRiftboundTracker/' + app.getVersion() + ' (store events)',
+      },
+      body: JSON.stringify({
+        operationName: op.name,
+        variables,
+        extensions: { persistedQuery: { version: 1, sha256Hash: op.hash } },
+      }),
+      signal: AbortSignal.timeout(20000),
+    })
+    const json = await res.json().catch(() => null)
+    if (!res.ok || !json || json.errors?.length) {
+      return { ok: false, error: json?.errors?.[0]?.message || 'HTTP ' + res.status }
+    }
+    return { ok: true, data: json.data }
+  } catch (e) {
+    return { ok: false, error: String(e) }
+  }
+})
+
 function publicShopHost(host) {
   if (!host || host.includes(':') || !host.includes('.')) return false
   if (/^\d{1,3}(\.\d{1,3}){3}$/.test(host)) return false

@@ -2,7 +2,7 @@ import { useDeferredValue, useEffect, useMemo, useRef, useState, type DragEvent 
 import { fetchRemotePrices, loadBundledPrices, loadCachedPrices, newerPriceBook } from './prices'
 import type { BorrowedCard, BorrowedGroup, Card, Catalog, Deck, DeckSection, PriceBook, PriceEntry } from './types'
 import { backupOnce, loadAlertsSeen, loadBorrowed, loadCollection, loadCopies, loadDecks, loadSales, loadWish, loadWishTargets, saveAlertsSeen, saveBorrowed, saveCollection, saveCopies, saveDecks, saveSales, saveWish, saveWishTargets, type Collection } from './storage'
-import { csvSeparator, ownedQty, splitCsv, subtractOwnedCopies } from './collection'
+import { csvSeparator, ownedQty, saleSplit, splitCsv, subtractOwnedCopies } from './collection'
 import { fmtEur, loadLang, saveLang, t, type Lang } from './i18n'
 import { Dopamin } from './Dopamin'
 import { SearchInput } from './SearchInput'
@@ -43,6 +43,7 @@ import { banStatus, type BanStatus } from './banlist'
 import { cardMatchesDomains, deckDropIndex, moveDeckTo } from './domainMatch.ts'
 import {
   STORE_LOCATOR_URL,
+  eventUrl,
   STORE_RADIUS_KM_DEFAULT,
   STORE_RADIUS_KM_MAX,
   STORE_RADIUS_KM_MIN,
@@ -671,10 +672,13 @@ function CardTile({
   errata,
   inDecks,
   onOpenDeck,
+  spare,
   dragProps,
   borrowedFrom,
 }: {
   children?: ReactNode
+  /** Copies no deck needs (shown with the Not needed in decks filter). */
+  spare?: number
   /** Jumps to a deck from the deck pills or the deck badge on the art. */
   onOpenDeck?: (deckId: string) => void
   /** Copies borrowed from someone (one borrowed pill per person). */
@@ -722,17 +726,19 @@ function CardTile({
         <ArtImg src={cardThumb(c)} />
         {n > 0 && <div className="badge">x{n}</div>}
         <div className="flags">
-          {inDecks?.length ? (
+          {/* One badge per deck, stacked: deck name and copies, click opens that deck. */}
+          {inDecks?.map((u) => (
             <button
+              key={u.id}
               type="button"
               className="flag in-deck-flag"
-              title={inDecks.map((u) => `${u.name} ×${u.qty}`).join('\n')}
-              aria-label={t(lang, 'collection.openDeck', { deck: inDecks[0].name })}
-              onClick={(e) => { e.stopPropagation(); onOpenDeck?.(inDecks[0].id) }}
+              title={t(lang, 'collection.openDeck', { deck: u.name })}
+              aria-label={t(lang, 'collection.openDeck', { deck: u.name })}
+              onClick={(e) => { e.stopPropagation(); onOpenDeck?.(u.id) }}
             >
-              <Icon name="layers" size={12} />{inDecks.reduce((s, u) => s + u.qty, 0)}
+              <Icon name="layers" size={12} /><span className="in-deck-name">{u.name}</span><b>×{u.qty}</b>
             </button>
-          ) : null}
+          ))}
           {c.signed ? <span className="flag signed">Signed</span> : null}
           {c.overnumbered && !c.signed ? <span className="flag over">ON</span> : null}
           {c.altArt ? <span className="flag alt">Alt</span> : null}
@@ -756,7 +762,7 @@ function CardTile({
         </div>
         {borrowedFrom?.length ? <div className="borrowed-tags"><BorrowedBadge from={borrowedFrom} lang={lang} /></div> : null}
         <div className="sub">{c.code} · {(c.types || []).join('/') || '-'} · {(c.domains || []).join('/') || '-'}</div>
-        <DeckUses uses={inDecks} lang={lang} onOpenDeck={onOpenDeck} />
+        {spare != null && spare > 0 && <div className="spare-tag">{t(lang, 'owned.spare', { n: spare })}</div>}
         {/* Prices and counters sit at the bottom, so they line up across a grid row. */}
         <div className="tile-foot">
         <PriceBits entry={priceEntry} lang={lang} foilOnly={foilOnly} />
@@ -809,7 +815,13 @@ function CardTile({
   )
 }
 
+/** NEXUS_NIGHT -> Nexus Night (event types from the official event search). */
+function prettyEventType(type: string | null) {
+  return (type || '').toLowerCase().split('_').filter(Boolean).map((w) => w[0].toUpperCase() + w.slice(1)).join(' ')
+}
+
 const HIDE_NN_KEY = 'riftbound-hide-nexus-night'
+const STORE_HOME_KEY = 'rb.storeHome.v1'
 
 /** Last list wiped by delete all. Module scope: gone when the app process exits. */
 let deckListUndo: Deck[] | null = null
@@ -857,7 +869,9 @@ export default function App() {
   const [borrowNotice, setBorrowNotice] = useState<string | null>(null)
   /** Store tab: display price comparison or the store locator. */
   const [storeView, setStoreView] = useState<'displays' | 'stores'>('displays')
-  const [storeQuery, setStoreQuery] = useState('Berlin')
+  /** Saved home location for the store search (rb.storeHome.v1), searched when the store view opens. */
+  const [storeHome, setStoreHome] = useState(() => { try { return localStorage.getItem(STORE_HOME_KEY) || '' } catch { return '' } })
+  const [storeQuery, setStoreQuery] = useState(storeHome)
   const [storeKm, setStoreKm] = useState(STORE_RADIUS_KM_DEFAULT)
   const [storeHits, setStoreHits] = useState<StoreHit[]>([])
   const [storeCenter, setStoreCenter] = useState<MapCenter | null>(null)
@@ -869,6 +883,7 @@ export default function App() {
   const [storeStockOnly, setStoreStockOnly] = useState(false)
   /** Store ids whose stock list is expanded past the collapsed preview. */
   const [storeStockOpen, setStoreStockOpen] = useState<Record<string, boolean>>({})
+  const [storeEventsOpen, setStoreEventsOpen] = useState<Record<string, boolean>>({})
   const [q, setQ] = useState('')
   const [setFilter, setSetFilter] = useState('')
   const [ownedOnly, setOwnedOnly] = useState(false)
@@ -1469,6 +1484,13 @@ export default function App() {
     return m
   }, [decks])
 
+  /** Copies no deck needs: what you can play with (owned + borrowed in − lent out) minus what all decks
+   *  together use, so a card in two built decks needs both decks' copies. */
+  function spareCopies(id: string) {
+    const need = (decksByCard.get(id) || []).reduce((s, u) => s + u.qty, 0)
+    return Math.max(0, availableForDecks(id) - need)
+  }
+
   /** Opens a deck in the Decks tab (from a card tile or the card detail). */
   function openDeck(deckId: string) {
     setCardLightbox(null)
@@ -1550,7 +1572,7 @@ export default function App() {
     if (binderView === 'owned') {
       list = cards.filter((c) => (ownedBorrowedOnly ? borrowedInTotals.has(c.id) : ownedQty(collection[c.id]) > 0 || borrowedInTotals.has(c.id))
         && (!ownedSet || c.set === ownedSet)
-        && (!ownedNotInDeck || !decksByCard.has(c.id)))
+        && (!ownedNotInDeck || spareCopies(c.id) > 0))
     } else {
       list = cards.filter((c) => c.set === binderView)
     }
@@ -1577,7 +1599,7 @@ export default function App() {
       if (pa == null || pb == null) return (pa == null ? 1 : 0) - (pb == null ? 1 : 0) || bySet(a, b)
       return dir * (pa - pb) || bySet(a, b)
     })
-  }, [binderView, cards, collection, borrowedInTotals, deferredQ, binderOwnedOnly, binderMissing, binderMissingFoil, binderRarity, ownedSet, ownedSort, ownedBorrowedOnly, ownedNotInDeck, decksByCard, priceBook, domainFilter, raritySigned, rarityOver, rarityPromo, rarityUltimate, abilityFilter, legendIds])
+  }, [binderView, cards, collection, borrowedInTotals, deferredQ, binderOwnedOnly, binderMissing, binderMissingFoil, binderRarity, ownedSet, ownedSort, ownedBorrowedOnly, ownedNotInDeck, decksByCard, borrowedTotals, priceBook, domainFilter, raritySigned, rarityOver, rarityPromo, rarityUltimate, abilityFilter, legendIds])
 
   /** Sets with owned cards, in binder order, for the All owned set filter. */
   const ownedSets = useMemo(() => {
@@ -2030,9 +2052,14 @@ export default function App() {
     const lines: CmLine[] = Object.entries(saleList).flatMap(([id, n]) => {
       const card = byId.get(id)
       if (!card) return []
-      const foil = isFoilOnly(card)
-      const groups = soldGroups(copies[id], collection[id], foil, foil, n)
-      return [{ card, qty: foil ? 0 : n, foil: foil ? n : 0, price: priceBook?.cards[id], groups }]
+      // The copies "Mark as sold" will take (normal first, then foil), so a foil is never listed as a normal copy.
+      const sold = saleSplit(collection[id], n)
+      const foilOnly = isFoilOnly(card)
+      const groups = [
+        ...(sold.qty > 0 ? soldGroups(copies[id], collection[id], foilOnly, false, sold.qty) : []),
+        ...(sold.foil > 0 ? soldGroups(copies[id], collection[id], foilOnly, true, sold.foil) : []),
+      ]
+      return [{ card, qty: sold.qty, foil: sold.foil, price: priceBook?.cards[id], groups }]
     })
     setCmCopied(false)
     setCmExport({
@@ -2975,6 +3002,7 @@ export default function App() {
       const hits = await searchStoresInGermany(sortOrigin)
       setStoreHits(hits)
       setStoreStockOpen({})
+      setStoreEventsOpen({})
       setStoreCenter(sortOrigin ?? GERMANY_CENTER)
       setStoreFetchedKm(storeKm)
       setStoreLabel(t(lang, 'stores.allGermany'))
@@ -2997,6 +3025,7 @@ export default function App() {
       const hits = await searchStoresNear(lat, lng, km)
       setStoreHits(hits)
       setStoreStockOpen({})
+      setStoreEventsOpen({})
       setStoreCenter({ lat, lng })
       setStoreFetchedKm(km)
       setStoreLabel(label)
@@ -3032,6 +3061,7 @@ export default function App() {
       const hits = await searchStoresNear(geo.lat, geo.lng, km)
       setStoreHits(hits)
       setStoreStockOpen({})
+      setStoreEventsOpen({})
       setStoreCenter({ lat: geo.lat, lng: geo.lng })
       setStoreFetchedKm(km)
       setStoreLabel(geo.label)
@@ -3048,6 +3078,24 @@ export default function App() {
   function setStoreKmFromUi(raw: number) {
     setStoreKm(clampStoreRadiusKm(raw))
   }
+
+  /** Saves the typed place as home location (or clears it when the field is empty). */
+  function saveStoreHome() {
+    const q = storeQuery.trim()
+    try {
+      if (q) localStorage.setItem(STORE_HOME_KEY, q)
+      else localStorage.removeItem(STORE_HOME_KEY)
+    } catch {
+      // Storage blocked: the home location just lasts for this session.
+    }
+    setStoreHome(q)
+  }
+
+  // Opening the store view with a home location and no results yet searches there right away.
+  useEffect(() => {
+    if (tab === 'stores' && storeView === 'stores' && storeHome && !storeLabel && !storeBusy && !storeError) void runStoreSearch()
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- only when the view opens
+  }, [tab, storeView])
 
   const visibleStoreHits = storeHits.filter((h) => {
     if (!storeAllGermany && h.distanceKm != null && h.distanceKm > storeKm + 0.05) return false
@@ -3948,6 +3996,10 @@ export default function App() {
                     errata={!!errataFor(c)}
                     inDecks={decksByCard.get(c.id)}
                     onOpenDeck={openDeck}
+                    // With Borrowed only, only borrowed copies can go back: never more than you borrowed.
+                    spare={binderView === 'owned' && ownedNotInDeck
+                      ? (ownedBorrowedOnly ? Math.min(spareCopies(c.id), borrowedInTotals.get(c.id) || 0) : spareCopies(c.id))
+                      : undefined}
                     borrowedFrom={binderView === 'owned' ? borrowedInFrom.get(c.id) : undefined}
                     onOpen={openCardLightbox}
                     onBump={bump}
@@ -4027,7 +4079,7 @@ export default function App() {
             <section className="panel col-fill" data-remove-src="sale">
               <div className="toolbar">
                 <h2 style={{ margin: 0 }}>{t(lang, 'sales.cart')}</h2>
-                <span className="deck-list-count" style={{ flex: 1 }}>{t(lang, 'wish.total', { eur: fmtEur(lang, Object.entries(saleList).reduce((sum, [id, n]) => { const c = byId.get(id); return sum + (c ? ownedLineEur(isFoilOnly(c) ? { foil: n } : { qty: n }, priceBook?.cards[id]) : 0) }, 0)) ?? '' })}</span>
+                <span className="deck-list-count" style={{ flex: 1 }}>{t(lang, 'wish.total', { eur: fmtEur(lang, Object.entries(saleList).reduce((sum, [id, n]) => { const c = byId.get(id); return sum + (c ? ownedLineEur(saleSplit(collection[id], n), priceBook?.cards[id]) : 0) }, 0)) ?? '' })}</span>
                 <button
                   className="btn primary"
                   disabled={saleSelectedCount === 0}
@@ -4049,7 +4101,7 @@ export default function App() {
                     const c = byId.get(id)
                     if (!c) return null
                     const have = ownedQty(collection[id])
-                    const line = ownedLineEur(isFoilOnly(c) ? { foil: qty } : { qty }, priceBook?.cards[id])
+                    const line = ownedLineEur(saleSplit(collection[id], qty), priceBook?.cards[id])
                     return (
                       <CardTile
                         key={id}
@@ -4740,6 +4792,14 @@ export default function App() {
               </button>
               <button
                 type="button"
+                className={`btn${storeHome && storeHome === storeQuery.trim() ? ' on' : ''}`}
+                title={storeHome ? t(lang, 'stores.homeIs', { place: storeHome }) : t(lang, 'stores.homeHint')}
+                onClick={saveStoreHome}
+              >
+                <Icon name="map-pin" />{storeHome && storeHome === storeQuery.trim() ? t(lang, 'stores.homeSaved') : t(lang, 'stores.homeSave')}
+              </button>
+              <button
+                type="button"
                 className="btn"
                 onClick={() => openLink(STORE_LOCATOR_URL)}
               ><Icon name="external-link" />{t(lang, 'stores.openOfficial')}</button>
@@ -4801,6 +4861,48 @@ export default function App() {
                             <Icon name="map-pinned" />{t(lang, 'stores.maps')}
                           </button>
                         </div>
+                        {h.events.length > 0 && (() => {
+                          const EVENT_PREVIEW = 3
+                          const eventsOpen = !!storeEventsOpen[h.id]
+                          const list = eventsOpen ? h.events : h.events.slice(0, EVENT_PREVIEW)
+                          const locale = lang === 'de' ? 'de-DE' : 'en-GB'
+                          return (
+                            <ul className="store-events">
+                              {list.map((ev) => {
+                                const when = ev.startsAt ? new Date(ev.startsAt) : null
+                                const fee = ev.feeMinor != null && ev.currency
+                                  ? (ev.feeMinor / 100).toLocaleString(locale, { style: 'currency', currency: ev.currency })
+                                  : t(lang, 'stores.eventFree')
+                                return (
+                                  <li key={ev.id}>
+                                    <button type="button" className="store-event" onClick={() => openLink(eventUrl(ev.id, lang))} title={t(lang, 'stores.eventOpen')}>
+                                      <span className="store-event-when">
+                                        {when ? when.toLocaleString(locale, { weekday: 'short', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) : '–'}
+                                      </span>
+                                      <span className="store-event-name">{ev.name || prettyEventType(ev.type)}</span>
+                                      <span className="store-event-meta">
+                                        {ev.type ? `${prettyEventType(ev.type)} · ` : ''}{fee}
+                                        {ev.capacity ? ` · ${ev.registered}/${ev.capacity}` : ''}
+                                      </span>
+                                    </button>
+                                  </li>
+                                )
+                              })}
+                              {h.events.length > EVENT_PREVIEW && (
+                                <li>
+                                  <button
+                                    type="button"
+                                    className="store-stock-more"
+                                    onClick={() => setStoreEventsOpen((prev) => ({ ...prev, [h.id]: !eventsOpen }))}
+                                  >
+                                    <Icon name={eventsOpen ? 'chevron-up' : 'chevron-down'} size={13} />
+                                    {eventsOpen ? t(lang, 'stores.showLess') : t(lang, 'stores.moreEvents', { n: h.events.length - EVENT_PREVIEW })}
+                                  </button>
+                                </li>
+                              )}
+                            </ul>
+                          )
+                        })()}
                         {products && shown.length > 0 ? (
                           <ul className="store-stock">
                             {shown.map((p) => (
