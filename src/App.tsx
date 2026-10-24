@@ -725,17 +725,19 @@ function CardTile({
         <ArtImg src={cardThumb(c)} />
         {n > 0 && <div className="badge">x{n}</div>}
         <div className="flags">
-          {inDecks?.length ? (
+          {/* One badge per deck, stacked: deck name and copies, click opens that deck. */}
+          {inDecks?.map((u) => (
             <button
+              key={u.id}
               type="button"
               className="flag in-deck-flag"
-              title={inDecks.map((u) => `${u.name} ×${u.qty}`).join('\n')}
-              aria-label={t(lang, 'collection.openDeck', { deck: inDecks[0].name })}
-              onClick={(e) => { e.stopPropagation(); onOpenDeck?.(inDecks[0].id) }}
+              title={t(lang, 'collection.openDeck', { deck: u.name })}
+              aria-label={t(lang, 'collection.openDeck', { deck: u.name })}
+              onClick={(e) => { e.stopPropagation(); onOpenDeck?.(u.id) }}
             >
-              <Icon name="layers" size={12} />{inDecks.reduce((s, u) => s + u.qty, 0)}
+              <Icon name="layers" size={12} /><span className="in-deck-name">{u.name}</span><b>×{u.qty}</b>
             </button>
-          ) : null}
+          ))}
           {c.signed ? <span className="flag signed">Signed</span> : null}
           {c.overnumbered && !c.signed ? <span className="flag over">ON</span> : null}
           {c.altArt ? <span className="flag alt">Alt</span> : null}
@@ -759,7 +761,6 @@ function CardTile({
         </div>
         {borrowedFrom?.length ? <div className="borrowed-tags"><BorrowedBadge from={borrowedFrom} lang={lang} /></div> : null}
         <div className="sub">{c.code} · {(c.types || []).join('/') || '-'} · {(c.domains || []).join('/') || '-'}</div>
-        <DeckUses uses={inDecks} lang={lang} onOpenDeck={onOpenDeck} />
         {spare != null && spare > 0 && <div className="spare-tag">{t(lang, 'owned.spare', { n: spare })}</div>}
         {/* Prices and counters sit at the bottom, so they line up across a grid row. */}
         <div className="tile-foot">

@@ -416,6 +416,7 @@ textarea.field { min-height: 160px; resize: vertical; font-family: ui-monospace,
 
 .flags {
   position: absolute; top: 8px; right: 8px; display: flex; flex-direction: column; gap: 4px; align-items: flex-end; z-index: 2;
+  max-width: calc(100% - 56px); /* keeps clear of the copies badge top left */
 }
 .flag {
   background: rgb(28 28 30 / .7); backdrop-filter: var(--blur); border: 1px solid rgba(255,255,255,.14);
@@ -996,11 +997,14 @@ body[data-removing] .deck-split > section:not([data-remove-src]) {
 }
 .deck-use:hover { background: rgb(var(--primary-rgb) / .22); border-color: var(--accent2); }
 .deck-use b { font-weight: 700; }
-/* Deck badge in the art corner: copies in decks, click opens the first deck. */
+/* Deck badges in the art corner, one per deck (stacked by .flags): name and copies, click opens the deck. */
 .flag.in-deck-flag {
-  display: inline-flex; align-items: center; gap: 4px; cursor: pointer; font: inherit; font-size: 11px; font-weight: 700;
-  color: var(--accent2); border-color: rgb(var(--primary-rgb) / .55);
+  display: inline-flex; align-items: center; gap: 4px; max-width: min(180px, 100%); cursor: pointer;
+  font: inherit; font-size: 11px; font-weight: 600; color: var(--accent2); border-color: rgb(var(--primary-rgb) / .55);
 }
+.in-deck-flag svg { flex-shrink: 0; }
+.in-deck-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.in-deck-flag b { flex-shrink: 0; font-weight: 700; }
 .flag.in-deck-flag:hover { background: rgb(var(--primary-rgb) / .3); }
 .ban-badge.set-badge {
   border-color: rgb(var(--primary-rgb) / .45);
