@@ -15,8 +15,8 @@ Windows SmartScreen might complain the first time because the installer isn't si
 **Sets and All owned**
 
 - Sets tab: binders per set: OGN, OGS, SFD, UNL, VEN and RAD. Nexus Night binders can be hidden
-- All owned tab: every card you own in one place, with a filter per set and a Borrowed only filter, sorted by set or by price
-- Each card shows which of your decks use it
+- All owned tab: every card you own in one place, with a filter per set, Borrowed only and Not in a deck, sorted by set or by price. Borrowed only plus Not in a deck shows the borrowed cards you can give back
+- Each card shows which of your decks use it and how many copies each, as pills on the card and in the card detail, plus a deck badge in the top right of the image. Click one to jump to that deck
 - Set, ban and errata tags on every card tile
 - Progress per rarity so you see what's still missing. In a set, click a rarity to show only those cards
 - Filters for owned, missing and missing foils in each set

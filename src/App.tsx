@@ -636,6 +636,28 @@ function ArtImg({ src }: { src?: string }) {
   )
 }
 
+/** A deck that uses a card, with the number of copies in it. */
+type DeckUse = { id: string; name: string; qty: number }
+
+/** "Deck name ×2" pills; a click opens that deck. Same on card tiles and in the card detail. */
+function DeckUses({ uses, lang, onOpenDeck }: { uses?: DeckUse[]; lang: Lang; onOpenDeck?: (deckId: string) => void }) {
+  if (!uses?.length) return null
+  return (
+    <div className="in-decks" aria-label={t(lang, 'collection.inDecks')}>
+      <Icon name="layers" size={13} />
+      {uses.map((u) => (
+        <button
+          key={u.id}
+          type="button"
+          className="deck-use"
+          title={t(lang, 'collection.openDeck', { deck: u.name })}
+          onClick={() => onOpenDeck?.(u.id)}
+        >{u.name} <b>×{u.qty}</b></button>
+      ))}
+    </div>
+  )
+}
+
 function CardTile({
   c,
   o,
@@ -648,16 +670,19 @@ function CardTile({
   qtyRow,
   errata,
   inDecks,
+  onOpenDeck,
   dragProps,
   borrowedFrom,
 }: {
   children?: ReactNode
+  /** Jumps to a deck from the deck pills or the deck badge on the art. */
+  onOpenDeck?: (deckId: string) => void
   /** Copies borrowed from someone (one borrowed pill per person). */
   borrowedFrom?: { name: string; n: number }[]
   /** Makes the tile draggable (drag out of a list to remove one copy). */
   dragProps?: { draggable: boolean; onDragStart: (e: ReactDragEvent) => void; onDragEnd: (e: ReactDragEvent) => void }
-  /** Names of the decks that use this card. */
-  inDecks?: string[]
+  /** Decks that use this card, with copies per deck. */
+  inDecks?: DeckUse[]
   /** Card has official errata (shows the errata pill next to the name). */
   errata?: boolean
   /** Replaces the owned counters (sales cart uses its own stepper). */
@@ -697,6 +722,17 @@ function CardTile({
         <ArtImg src={cardThumb(c)} />
         {n > 0 && <div className="badge">x{n}</div>}
         <div className="flags">
+          {inDecks?.length ? (
+            <button
+              type="button"
+              className="flag in-deck-flag"
+              title={inDecks.map((u) => `${u.name} ×${u.qty}`).join('\n')}
+              aria-label={t(lang, 'collection.openDeck', { deck: inDecks[0].name })}
+              onClick={(e) => { e.stopPropagation(); onOpenDeck?.(inDecks[0].id) }}
+            >
+              <Icon name="layers" size={12} />{inDecks.reduce((s, u) => s + u.qty, 0)}
+            </button>
+          ) : null}
           {c.signed ? <span className="flag signed">Signed</span> : null}
           {c.overnumbered && !c.signed ? <span className="flag over">ON</span> : null}
           {c.altArt ? <span className="flag alt">Alt</span> : null}
@@ -720,12 +756,7 @@ function CardTile({
         </div>
         {borrowedFrom?.length ? <div className="borrowed-tags"><BorrowedBadge from={borrowedFrom} lang={lang} /></div> : null}
         <div className="sub">{c.code} · {(c.types || []).join('/') || '-'} · {(c.domains || []).join('/') || '-'}</div>
-        {inDecks && inDecks.length > 0 && (
-          <div className="in-decks" title={`${t(lang, 'collection.inDecks')}: ${inDecks.join(', ')}`}>
-            <Icon name="layers" size={13} />
-            <span>{inDecks.join(', ')}</span>
-          </div>
-        )}
+        <DeckUses uses={inDecks} lang={lang} onOpenDeck={onOpenDeck} />
         {/* Prices and counters sit at the bottom, so they line up across a grid row. */}
         <div className="tile-foot">
         <PriceBits entry={priceEntry} lang={lang} foilOnly={foilOnly} />
@@ -896,6 +927,8 @@ export default function App() {
   const [ownedSet, setOwnedSet] = useState('')
   const [ownedSort, setOwnedSort] = useState<'set' | 'price-desc' | 'price-asc'>('set')
   const [ownedBorrowedOnly, setOwnedBorrowedOnly] = useState(false)
+  /** All owned: only cards no deck uses (with Borrowed only: borrowed cards you can give back). */
+  const [ownedNotInDeck, setOwnedNotInDeck] = useState(false)
   const [binderMissing, setBinderMissing] = useState(false)
   const [binderMissingFoil, setBinderMissingFoil] = useState(false)
   const [binderRarity, setBinderRarity] = useState<string | null>(null)
@@ -1427,13 +1460,23 @@ export default function App() {
     }
   }, [tab, binderView])
 
+  /** Per card: the decks that use it and how many copies each (all sections together). */
   const decksByCard = useMemo(() => {
-    const m = new Map<string, string[]>()
+    const m = new Map<string, DeckUse[]>()
     for (const d of decks) {
-      for (const id of new Set(d.cards.map((dc) => dc.id))) m.set(id, [...(m.get(id) || []), d.name])
+      for (const [id, qty] of deckTotalQtyById(d.cards)) m.set(id, [...(m.get(id) || []), { id: d.id, name: d.name, qty }])
     }
     return m
   }, [decks])
+
+  /** Opens a deck in the Decks tab (from a card tile or the card detail). */
+  function openDeck(deckId: string) {
+    setCardLightbox(null)
+    setTab('decks')
+    setActiveDeckId(deckId)
+    // The deck list renders on the next frame; then bring the opened deck to the top.
+    window.setTimeout(() => document.querySelector(`[data-deck-id="${deckId}"]`)?.scrollIntoView({ block: 'start', behavior: 'smooth' }), 60)
+  }
 
   const setProgress = useMemo(() => {
     const known = BINDER_SET_ORDER.filter((id) => id in sets)
@@ -1505,7 +1548,9 @@ export default function App() {
     const query = deferredQ.trim().toLowerCase()
     let list: Card[]
     if (binderView === 'owned') {
-      list = cards.filter((c) => (ownedBorrowedOnly ? borrowedInTotals.has(c.id) : ownedQty(collection[c.id]) > 0 || borrowedInTotals.has(c.id)) && (!ownedSet || c.set === ownedSet))
+      list = cards.filter((c) => (ownedBorrowedOnly ? borrowedInTotals.has(c.id) : ownedQty(collection[c.id]) > 0 || borrowedInTotals.has(c.id))
+        && (!ownedSet || c.set === ownedSet)
+        && (!ownedNotInDeck || !decksByCard.has(c.id)))
     } else {
       list = cards.filter((c) => c.set === binderView)
     }
@@ -1532,7 +1577,7 @@ export default function App() {
       if (pa == null || pb == null) return (pa == null ? 1 : 0) - (pb == null ? 1 : 0) || bySet(a, b)
       return dir * (pa - pb) || bySet(a, b)
     })
-  }, [binderView, cards, collection, borrowedInTotals, deferredQ, binderOwnedOnly, binderMissing, binderMissingFoil, binderRarity, ownedSet, ownedSort, ownedBorrowedOnly, priceBook, domainFilter, raritySigned, rarityOver, rarityPromo, rarityUltimate, abilityFilter, legendIds])
+  }, [binderView, cards, collection, borrowedInTotals, deferredQ, binderOwnedOnly, binderMissing, binderMissingFoil, binderRarity, ownedSet, ownedSort, ownedBorrowedOnly, ownedNotInDeck, decksByCard, priceBook, domainFilter, raritySigned, rarityOver, rarityPromo, rarityUltimate, abilityFilter, legendIds])
 
   /** Sets with owned cards, in binder order, for the All owned set filter. */
   const ownedSets = useMemo(() => {
@@ -3819,6 +3864,15 @@ export default function App() {
                   >
                     <Icon name="check" />{t(lang, 'owned.borrowedOnly')}
                   </button>
+                  <button
+                    type="button"
+                    className={`chip ${ownedNotInDeck ? 'active' : ''}`}
+                    aria-pressed={ownedNotInDeck}
+                    title={t(lang, 'owned.notInDeckHint')}
+                    onClick={() => setOwnedNotInDeck((v) => !v)}
+                  >
+                    <Icon name="layers" />{t(lang, 'owned.notInDeck')}
+                  </button>
                 </>
               )}
               {binderView !== 'owned' && (
@@ -3893,6 +3947,7 @@ export default function App() {
                     variant="binder"
                     errata={!!errataFor(c)}
                     inDecks={decksByCard.get(c.id)}
+                    onOpenDeck={openDeck}
                     borrowedFrom={binderView === 'owned' ? borrowedInFrom.get(c.id) : undefined}
                     onOpen={openCardLightbox}
                     onBump={bump}
@@ -5036,6 +5091,7 @@ export default function App() {
                 <ErrataBadge show={!!errataFor(cardLightbox)} lang={lang} />
               </div>
               <p className="sub">{cardLightbox.code} · {cardLightbox.setName || cardLightbox.set}</p>
+              <DeckUses uses={decksByCard.get(cardLightbox.id)} lang={lang} onOpenDeck={openDeck} />
               <div className="card-facts">
                 {cardLightbox.energy != null && (
                   <span className="card-fact" title={t(lang, 'card.energy')}><RulesText text={`[${cardLightbox.energy}]`} /></span>
