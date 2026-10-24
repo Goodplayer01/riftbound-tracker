@@ -2242,3 +2242,6 @@ input[type="checkbox"] { accent-color: var(--primary); }
 .price-box span { font-size: 9.5px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); }
 .price-box b { font-size: 13px; font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .price-box.foil span { color: var(--accent2); }
+/* Card tile: the meta block fills the tile and the foot (prices + counters) sits at the bottom. */
+.card > .meta { flex: 1; display: flex; flex-direction: column; }
+.tile-foot { margin-top: auto; display: grid; gap: 6px; padding-top: 2px; }

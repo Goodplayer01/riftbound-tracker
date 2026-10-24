@@ -739,6 +739,8 @@ function CardTile({
             <span>{inDecks.join(', ')}</span>
           </div>
         )}
+        {/* Prices and counters sit at the bottom, so they line up across a grid row. */}
+        <div className="tile-foot">
         <PriceBits entry={priceEntry} lang={lang} foilOnly={foilOnly} boxed />
         {qtyRow ?? (foilOnly ? (
           <div className="qty-group qty-group-single">
@@ -783,6 +785,7 @@ function CardTile({
         </div>
         ))}
         {children}
+        </div>
       </div>
     </article>
   )
