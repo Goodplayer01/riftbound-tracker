@@ -2,7 +2,7 @@ import { useDeferredValue, useEffect, useMemo, useRef, useState, type DragEvent 
 import { fetchRemotePrices, loadBundledPrices, loadCachedPrices, newerPriceBook } from './prices'
 import type { BorrowedCard, BorrowedGroup, Card, Catalog, Deck, DeckSection, PriceBook, PriceEntry } from './types'
 import { backupOnce, loadAlertsSeen, loadBorrowed, loadCollection, loadCopies, loadDecks, loadSales, loadWish, loadWishTargets, saveAlertsSeen, saveBorrowed, saveCollection, saveCopies, saveDecks, saveSales, saveWish, saveWishTargets, type Collection } from './storage'
-import { csvSeparator, ownedQty, splitCsv, subtractOwnedCopies } from './collection'
+import { csvSeparator, ownedQty, saleSplit, splitCsv, subtractOwnedCopies } from './collection'
 import { fmtEur, loadLang, saveLang, t, type Lang } from './i18n'
 import { Dopamin } from './Dopamin'
 import { SearchInput } from './SearchInput'
@@ -671,10 +671,13 @@ function CardTile({
   errata,
   inDecks,
   onOpenDeck,
+  spare,
   dragProps,
   borrowedFrom,
 }: {
   children?: ReactNode
+  /** Copies no deck needs (shown with the Not needed in decks filter). */
+  spare?: number
   /** Jumps to a deck from the deck pills or the deck badge on the art. */
   onOpenDeck?: (deckId: string) => void
   /** Copies borrowed from someone (one borrowed pill per person). */
@@ -757,6 +760,7 @@ function CardTile({
         {borrowedFrom?.length ? <div className="borrowed-tags"><BorrowedBadge from={borrowedFrom} lang={lang} /></div> : null}
         <div className="sub">{c.code} · {(c.types || []).join('/') || '-'} · {(c.domains || []).join('/') || '-'}</div>
         <DeckUses uses={inDecks} lang={lang} onOpenDeck={onOpenDeck} />
+        {spare != null && spare > 0 && <div className="spare-tag">{t(lang, 'owned.spare', { n: spare })}</div>}
         {/* Prices and counters sit at the bottom, so they line up across a grid row. */}
         <div className="tile-foot">
         <PriceBits entry={priceEntry} lang={lang} foilOnly={foilOnly} />
@@ -1469,6 +1473,13 @@ export default function App() {
     return m
   }, [decks])
 
+  /** Copies no deck needs: what you can play with (owned + borrowed in − lent out) minus what all decks
+   *  together use, so a card in two built decks needs both decks' copies. */
+  function spareCopies(id: string) {
+    const need = (decksByCard.get(id) || []).reduce((s, u) => s + u.qty, 0)
+    return Math.max(0, availableForDecks(id) - need)
+  }
+
   /** Opens a deck in the Decks tab (from a card tile or the card detail). */
   function openDeck(deckId: string) {
     setCardLightbox(null)
@@ -1550,7 +1561,7 @@ export default function App() {
     if (binderView === 'owned') {
       list = cards.filter((c) => (ownedBorrowedOnly ? borrowedInTotals.has(c.id) : ownedQty(collection[c.id]) > 0 || borrowedInTotals.has(c.id))
         && (!ownedSet || c.set === ownedSet)
-        && (!ownedNotInDeck || !decksByCard.has(c.id)))
+        && (!ownedNotInDeck || spareCopies(c.id) > 0))
     } else {
       list = cards.filter((c) => c.set === binderView)
     }
@@ -1577,7 +1588,7 @@ export default function App() {
       if (pa == null || pb == null) return (pa == null ? 1 : 0) - (pb == null ? 1 : 0) || bySet(a, b)
       return dir * (pa - pb) || bySet(a, b)
     })
-  }, [binderView, cards, collection, borrowedInTotals, deferredQ, binderOwnedOnly, binderMissing, binderMissingFoil, binderRarity, ownedSet, ownedSort, ownedBorrowedOnly, ownedNotInDeck, decksByCard, priceBook, domainFilter, raritySigned, rarityOver, rarityPromo, rarityUltimate, abilityFilter, legendIds])
+  }, [binderView, cards, collection, borrowedInTotals, deferredQ, binderOwnedOnly, binderMissing, binderMissingFoil, binderRarity, ownedSet, ownedSort, ownedBorrowedOnly, ownedNotInDeck, decksByCard, borrowedTotals, priceBook, domainFilter, raritySigned, rarityOver, rarityPromo, rarityUltimate, abilityFilter, legendIds])
 
   /** Sets with owned cards, in binder order, for the All owned set filter. */
   const ownedSets = useMemo(() => {
@@ -2030,9 +2041,14 @@ export default function App() {
     const lines: CmLine[] = Object.entries(saleList).flatMap(([id, n]) => {
       const card = byId.get(id)
       if (!card) return []
-      const foil = isFoilOnly(card)
-      const groups = soldGroups(copies[id], collection[id], foil, foil, n)
-      return [{ card, qty: foil ? 0 : n, foil: foil ? n : 0, price: priceBook?.cards[id], groups }]
+      // The copies "Mark as sold" will take (normal first, then foil), so a foil is never listed as a normal copy.
+      const sold = saleSplit(collection[id], n)
+      const foilOnly = isFoilOnly(card)
+      const groups = [
+        ...(sold.qty > 0 ? soldGroups(copies[id], collection[id], foilOnly, false, sold.qty) : []),
+        ...(sold.foil > 0 ? soldGroups(copies[id], collection[id], foilOnly, true, sold.foil) : []),
+      ]
+      return [{ card, qty: sold.qty, foil: sold.foil, price: priceBook?.cards[id], groups }]
     })
     setCmCopied(false)
     setCmExport({
@@ -3948,6 +3964,10 @@ export default function App() {
                     errata={!!errataFor(c)}
                     inDecks={decksByCard.get(c.id)}
                     onOpenDeck={openDeck}
+                    // With Borrowed only, only borrowed copies can go back: never more than you borrowed.
+                    spare={binderView === 'owned' && ownedNotInDeck
+                      ? (ownedBorrowedOnly ? Math.min(spareCopies(c.id), borrowedInTotals.get(c.id) || 0) : spareCopies(c.id))
+                      : undefined}
                     borrowedFrom={binderView === 'owned' ? borrowedInFrom.get(c.id) : undefined}
                     onOpen={openCardLightbox}
                     onBump={bump}
@@ -4027,7 +4047,7 @@ export default function App() {
             <section className="panel col-fill" data-remove-src="sale">
               <div className="toolbar">
                 <h2 style={{ margin: 0 }}>{t(lang, 'sales.cart')}</h2>
-                <span className="deck-list-count" style={{ flex: 1 }}>{t(lang, 'wish.total', { eur: fmtEur(lang, Object.entries(saleList).reduce((sum, [id, n]) => { const c = byId.get(id); return sum + (c ? ownedLineEur(isFoilOnly(c) ? { foil: n } : { qty: n }, priceBook?.cards[id]) : 0) }, 0)) ?? '' })}</span>
+                <span className="deck-list-count" style={{ flex: 1 }}>{t(lang, 'wish.total', { eur: fmtEur(lang, Object.entries(saleList).reduce((sum, [id, n]) => { const c = byId.get(id); return sum + (c ? ownedLineEur(saleSplit(collection[id], n), priceBook?.cards[id]) : 0) }, 0)) ?? '' })}</span>
                 <button
                   className="btn primary"
                   disabled={saleSelectedCount === 0}
@@ -4049,7 +4069,7 @@ export default function App() {
                     const c = byId.get(id)
                     if (!c) return null
                     const have = ownedQty(collection[id])
-                    const line = ownedLineEur(isFoilOnly(c) ? { foil: qty } : { qty }, priceBook?.cards[id])
+                    const line = ownedLineEur(saleSplit(collection[id], qty), priceBook?.cards[id])
                     return (
                       <CardTile
                         key={id}
