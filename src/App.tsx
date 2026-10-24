@@ -927,6 +927,8 @@ export default function App() {
   const [ownedSet, setOwnedSet] = useState('')
   const [ownedSort, setOwnedSort] = useState<'set' | 'price-desc' | 'price-asc'>('set')
   const [ownedBorrowedOnly, setOwnedBorrowedOnly] = useState(false)
+  /** All owned: only cards no deck uses (with Borrowed only: borrowed cards you can give back). */
+  const [ownedNotInDeck, setOwnedNotInDeck] = useState(false)
   const [binderMissing, setBinderMissing] = useState(false)
   const [binderMissingFoil, setBinderMissingFoil] = useState(false)
   const [binderRarity, setBinderRarity] = useState<string | null>(null)
@@ -1546,7 +1548,9 @@ export default function App() {
     const query = deferredQ.trim().toLowerCase()
     let list: Card[]
     if (binderView === 'owned') {
-      list = cards.filter((c) => (ownedBorrowedOnly ? borrowedInTotals.has(c.id) : ownedQty(collection[c.id]) > 0 || borrowedInTotals.has(c.id)) && (!ownedSet || c.set === ownedSet))
+      list = cards.filter((c) => (ownedBorrowedOnly ? borrowedInTotals.has(c.id) : ownedQty(collection[c.id]) > 0 || borrowedInTotals.has(c.id))
+        && (!ownedSet || c.set === ownedSet)
+        && (!ownedNotInDeck || !decksByCard.has(c.id)))
     } else {
       list = cards.filter((c) => c.set === binderView)
     }
@@ -1573,7 +1577,7 @@ export default function App() {
       if (pa == null || pb == null) return (pa == null ? 1 : 0) - (pb == null ? 1 : 0) || bySet(a, b)
       return dir * (pa - pb) || bySet(a, b)
     })
-  }, [binderView, cards, collection, borrowedInTotals, deferredQ, binderOwnedOnly, binderMissing, binderMissingFoil, binderRarity, ownedSet, ownedSort, ownedBorrowedOnly, priceBook, domainFilter, raritySigned, rarityOver, rarityPromo, rarityUltimate, abilityFilter, legendIds])
+  }, [binderView, cards, collection, borrowedInTotals, deferredQ, binderOwnedOnly, binderMissing, binderMissingFoil, binderRarity, ownedSet, ownedSort, ownedBorrowedOnly, ownedNotInDeck, decksByCard, priceBook, domainFilter, raritySigned, rarityOver, rarityPromo, rarityUltimate, abilityFilter, legendIds])
 
   /** Sets with owned cards, in binder order, for the All owned set filter. */
   const ownedSets = useMemo(() => {
@@ -3859,6 +3863,15 @@ export default function App() {
                     onClick={() => setOwnedBorrowedOnly((v) => !v)}
                   >
                     <Icon name="check" />{t(lang, 'owned.borrowedOnly')}
+                  </button>
+                  <button
+                    type="button"
+                    className={`chip ${ownedNotInDeck ? 'active' : ''}`}
+                    aria-pressed={ownedNotInDeck}
+                    title={t(lang, 'owned.notInDeckHint')}
+                    onClick={() => setOwnedNotInDeck((v) => !v)}
+                  >
+                    <Icon name="layers" />{t(lang, 'owned.notInDeck')}
                   </button>
                 </>
               )}
