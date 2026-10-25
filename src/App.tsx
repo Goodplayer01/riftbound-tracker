@@ -1,10 +1,11 @@
-import { useDeferredValue, useEffect, useMemo, useRef, useState, type DragEvent as ReactDragEvent, type MouseEvent as ReactMouseEvent, type PointerEvent as ReactPointerEvent, type ReactNode, type RefObject } from 'react'
+import { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState, type DragEvent as ReactDragEvent, type MouseEvent as ReactMouseEvent, type PointerEvent as ReactPointerEvent, type ReactNode, type RefObject } from 'react'
 import { fetchRemotePrices, loadBundledPrices, loadCachedPrices, newerPriceBook } from './prices'
 import type { BorrowedCard, BorrowedGroup, Card, Catalog, Deck, DeckSection, PriceBook, PriceEntry } from './types'
 import { backupOnce, loadAlertsSeen, loadBorrowed, loadCollection, loadCopies, loadDecks, loadSales, loadWish, loadWishTargets, saveAlertsSeen, saveBorrowed, saveCollection, saveCopies, saveDecks, saveSales, saveWish, saveWishTargets, type Collection } from './storage'
-import { csvSeparator, ownedQty, saleSplit, splitCsv, subtractOwnedCopies } from './collection'
+import { ownedQty, saleSplit, subtractOwnedCopies } from './collection'
 import { fmtEur, loadLang, saveLang, t, type Lang } from './i18n'
 import { Dopamin } from './Dopamin'
+import { autoBackup, BackupView } from './BackupView'
 import { SearchInput } from './SearchInput'
 import {
   detectKeywordsInText,
@@ -74,11 +75,11 @@ import { Icon, type IconName } from './Icon'
 import { sellText, stockCsv, wantsText, type CmLine } from './cardmarket'
 import { historyPoints, loadPriceHistory, type PriceHistoryFile } from './priceHistory'
 import { ValueHistory, type InvestRow } from './ValueHistory'
-import { CONDITION_FACTOR, cardEur, cardInvest, copyGroups, fitCopyBook, soldGroups, unitEur, type CopyBook, type CopyLot } from './copies'
+import { CONDITION_FACTOR, cardEur, cardInvest, copyGroups, fitCopyBook, lotCost, soldGroups, unitEur, unsourcedCopies, type CopyBook, type CopyLot, type PackSource } from './copies'
 import { CopyEditor, MoneyInput, fmtSignedEur } from './CopyEditor'
-import { cardArt, cardThumb, loadThumbIndex, preloadArt, thumbForImage } from './cardImages'
+import { cardArt, cardThumb, layeredArtBackground, loadThumbIndex, preloadArt, thumbForImage } from './cardImages'
 
-type Tab = 'collection' | 'owned' | 'catalog' | 'sales' | 'decks' | 'borrowed' | 'stores' | 'dopamin'
+type Tab = 'collection' | 'owned' | 'catalog' | 'sales' | 'decks' | 'borrowed' | 'stores' | 'dopamin' | 'backup'
 
 function uid() {
   return crypto.randomUUID()
@@ -846,7 +847,8 @@ function prettyEventType(type: string | null) {
 
 const HIDE_NN_KEY = 'riftbound-hide-nexus-night'
 const STORE_HOME_KEY = 'rb.storeHome.v1'
-const CSV_BACKUP_KEY = 'rb.backup.csvReplace.v1'
+/** Source review skips copies cheaper than this: nobody sorts bulk. */
+const REVIEW_MIN_EUR = 1
 
 /** Last list wiped by delete all. Module scope: gone when the app process exits. */
 let deckListUndo: Deck[] | null = null
@@ -936,6 +938,14 @@ export default function App() {
   const [saleQ, setSaleQ] = useState('')
   const [salePaste, setSalePaste] = useState('')
   const [saleReport, setSaleReport] = useState<string | null>(null)
+  /** Sales tab: the cart, or the source review stack (bought or pulled, one card at a time). */
+  const [salesView, setSalesView] = useState<'cart' | 'review'>('cart')
+  /** Review card being edited: stays on screen until "Next", even once its copies are done. */
+  const [reviewId, setReviewId] = useState<string | null>(null)
+  const [reviewSkipped, setReviewSkipped] = useState<string[]>([])
+  const [reviewDone, setReviewDone] = useState(0)
+  /** What "+ Pulled" fills in during the review, so a whole display is one price entry. */
+  const [reviewPack, setReviewPack] = useState<PackSource>({ kind: 'display', eur: null })
   const [activeDeckId, setActiveDeckId] = useState<string | null>(() => decks[0]?.id ?? null)
   const [deckOwnedOnly, setDeckOwnedOnly] = useState(false)
   const [activeSection, setActiveSection] = useState<DeckSection>('main')
@@ -957,8 +967,6 @@ export default function App() {
   const [clearSec, setClearSec] = useState<DeckSection | null>(null)
   const [deckUndoOn, setDeckUndoOn] = useState(false)
   const [borrowUndoOn, setBorrowUndoOn] = useState(false)
-  /** A read CSV waiting for the "replace your collection?" confirmation. */
-  const [csvReplace, setCsvReplace] = useState<{ name: string; rows: Collection } | null>(null)
   const [deckConfirm, setDeckConfirm] = useState<null | { kind: 'all' } | { kind: 'one'; id: string; name: string } | { kind: 'borrow'; id: string; name: string } | { kind: 'borrowAll' } | { kind: 'wish'; id: string; name: string }>(null)
   /** Official errata by lower case "name" or "name, subtitle" (public/card-errata.json). */
   const [errata, setErrata] = useState<Record<string, CardErrata>>({})
@@ -1159,6 +1167,7 @@ export default function App() {
 
   useEffect(() => {
     window.riftbound?.getVersion().then(setAppVersion).catch(() => {})
+    void autoBackup()
     window.riftbound?.windowIsFullScreen?.().then(setIsFullScreen).catch(() => {})
     const offUpdater = window.riftbound?.onUpdater((p) => setUpdateInfo(p))
     const offFs = window.riftbound?.onFullscreen?.((v) => setIsFullScreen(v))
@@ -1357,6 +1366,7 @@ export default function App() {
    *  left out of everything (value, progress, All owned, decks, sales). Nothing is deleted from storage;
    *  alt art runes stay tracked. */
   const collection = useMemo(() => withoutPlainRunes(rawCollection, byId), [rawCollection, byId])
+  const isUntracked = useCallback((id: string) => { const c = byId.get(id); return !!c && isPlainRune(c) }, [byId])
 
   // One time fold (and after imports): normal copies of foil only cards become foil.
   useEffect(() => {
@@ -1466,7 +1476,7 @@ export default function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [collection, copies, byId])
 
-  /** Purchase price vs. worth today, for copies with a purchase price. */
+  /** Purchase price vs. worth today, for copies with a purchase price or a pack price. */
   const invest = useMemo(() => {
     let copiesN = 0
     let paid = 0
@@ -1474,7 +1484,7 @@ export default function App() {
     const rows: InvestRow[] = []
     for (const [id, lots] of Object.entries(copies)) {
       const card = byId.get(id)
-      if (!card || !lots.some((l) => l.buy != null)) continue
+      if (!card || !lots.some((l) => lotCost(l) != null)) continue
       const r = cardInvest(lots, collection[id], isFoilOnly(card), priceBook?.cards[id])
       if (!r.copies) continue
       copiesN += r.copies
@@ -1484,6 +1494,46 @@ export default function App() {
     }
     return { copies: copiesN, paid, worth, rows }
   }, [copies, collection, byId, priceBook])
+
+  /** Owned cards with copies of REVIEW_MIN_EUR or more whose source is still open, most valuable first.
+   *  Built from the data itself, so the review can stop any time and pick up where it left off. */
+  const reviewStack = useMemo(() => {
+    const out: { card: Card; n: number; eur: number }[] = []
+    for (const [id, o] of Object.entries(collection)) {
+      const card = byId.get(id)
+      if (!card) continue
+      const p = priceBook?.cards[id]
+      const n = unsourcedCopies(copies[id], o, isFoilOnly(card), p, REVIEW_MIN_EUR)
+      if (n) out.push({ card, n, eur: cardEur(copies[id], o, isFoilOnly(card), p) })
+    }
+    return out.sort((a, b) => b.eur - a.eur)
+  }, [collection, copies, byId, priceBook])
+  const reviewOpen = reviewStack.filter((r) => !reviewSkipped.includes(r.card.id))
+  const reviewCard = (reviewId && ownedQty(collection[reviewId]) > 0 ? byId.get(reviewId) : undefined) ?? reviewOpen[0]?.card
+  const reviewLeft = reviewStack.find((r) => r.card.id === reviewCard?.id)?.n ?? 0
+  const reviewNextCard = reviewOpen.find((r) => r.card.id !== reviewCard?.id)?.card
+
+  /** Done cards count, unfinished ones are skipped for this session. */
+  function reviewNext() {
+    if (!reviewCard) return
+    if (reviewLeft > 0) setReviewSkipped((s) => [...s, reviewCard.id])
+    else setReviewDone((d) => d + 1)
+    setReviewId(null)
+  }
+
+  useEffect(() => { preloadArt(reviewNextCard?.image) }, [reviewNextCard])
+
+  // → moves on, unless the user is typing a price.
+  useEffect(() => {
+    if (tab !== 'sales' || salesView !== 'review') return
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== 'ArrowRight' || (e.target as HTMLElement)?.closest?.('input, select, textarea')) return
+      e.preventDefault()
+      reviewNext()
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  })
 
   const pricePoints = useMemo(() => {
     const points = historyPoints(priceHistory, priceBook)
@@ -1583,7 +1633,7 @@ export default function App() {
   /** "Also in Deck ×n" pills for the deck builder; orange when the copies do not cover every deck. */
   function otherDeckPills(id: string, deck: Deck) {
     const c = byId.get(id)
-    if (c && isPlainRune(c)) return null
+    if (c && isPlainRune(c)) return []
     const { uses, enough } = otherDeckUses(id, deck)
     return uses.map((u) => (
       <button
@@ -2076,70 +2126,6 @@ export default function App() {
         copyWord: copyWord(lang, soldCopies),
       }) + (notes.length ? ` ${notes.slice(0, 4).join(' · ')}` : ''),
     )
-  }
-
-    function exportCsv() {
-    const lines = ['id,code,name,set,qty,foil']
-    for (const [id, o] of Object.entries(collection)) {
-      const c = byId.get(id)
-      if (!c || ownedQty(o) <= 0) continue
-      lines.push([id, c.code, JSON.stringify(c.name), c.set, o.qty, o.foil].join(','))
-    }
-    download('riftbound-collection.csv', lines.join('\n'))
-  }
-
-  function importCsv(file: File) {
-    const reader = new FileReader()
-    reader.onload = () => {
-      const text = String(reader.result || '')
-      const lines = text.split(/\r?\n/).filter(Boolean)
-      const start = lines[0]?.toLowerCase().includes('id') ? 1 : 0
-      const sep = csvSeparator(lines[0] || '')
-      const rows: Collection = {}
-      for (let i = start; i < lines.length; i++) {
-        const cols = splitCsv(lines[i], sep)
-        if (cols.length < 5) continue
-        const [id, , , , qty, foil] = cols
-        const card = byId.get(id) || resolveToken(cols[1] || id, cards)
-        if (!card) continue
-        rows[card.id] = {
-          qty: Math.max(0, Number(qty) || 0),
-          foil: Math.max(0, Number(foil) || 0),
-        }
-      }
-      // An empty or unreadable file must never wipe the collection.
-      if (!Object.keys(rows).length) {
-        setBulkReport(t(lang, 'catalog.csvEmpty', { name: file.name }))
-        setTab('collection')
-        return
-      }
-      setCsvReplace({ name: file.name, rows })
-    }
-    reader.readAsText(file)
-  }
-
-  /** The CSV becomes the collection: cards not in the file are removed. The old collection and copy
-   *  details go to rb.backup.csvReplace.v1 first, so a wrong file can be undone by hand. */
-  function applyCsvReplace() {
-    if (!csvReplace) return
-    const { name, rows } = csvReplace
-    setCsvReplace(null)
-    try {
-      localStorage.setItem(CSV_BACKUP_KEY, JSON.stringify({ at: new Date().toISOString(), file: name, collection: rawCollection, copies }))
-    } catch {
-      // Storage full: the replace still runs, the user confirmed it.
-    }
-    setCollection((prev) => {
-      // Plain runes are not tracked and not exported: keep whatever was stored for them.
-      const next: Collection = {}
-      for (const [id, o] of Object.entries(prev)) {
-        const c = byId.get(id)
-        if (c && isPlainRune(c)) next[id] = o
-      }
-      return { ...next, ...rows }
-    })
-    setBulkReport(t(lang, 'catalog.csvImported', { name, count: Object.keys(rows).length }))
-    setTab('collection')
   }
 
   function openWantsExport() {
@@ -2969,7 +2955,7 @@ export default function App() {
     owns: number
     draggable: boolean
     note?: string
-    /** Extra pills in the tags line (deck builder: other decks that use the card). */
+    /** Replaces the deck pills in the tags line (deck builder: other decks that use any print of the card). */
     tags?: ReactNode
     /** Deck builder: copies of this print already in the open deck (all sections). */
     inDeck?: number
@@ -3002,7 +2988,16 @@ export default function App() {
             <SetBadge c={c} /><BanBadge status={banStatus(c)} lang={lang} />
             <ErrataBadge show={!!errataFor(c)} lang={lang} />
             <BorrowedBadge from={borrowedInFrom.get(c.id)} lang={lang} />
-            {o.tags}
+            {/* Deck builder passes its own "Also in" pills; every other search shows the decks using this print. */}
+            {o.tags ?? (decksByCard.get(c.id) || []).map((u) => (
+              <button
+                key={u.id}
+                type="button"
+                className="ban-badge other-deck-badge"
+                title={t(lang, 'collection.openDeck', { deck: u.name })}
+                onClick={() => openDeck(u.id)}
+              >{t(lang, 'decks.inPill', { deck: u.name, n: u.qty })}</button>
+            ))}
           </div>
           <div className="sub">
             {c.code}{o.note ? ` · ${o.note}` : ''}
@@ -3622,6 +3617,7 @@ export default function App() {
             ['borrowed', 'tab.borrowed', 'handshake'],
             ['stores', 'tab.stores', 'store'],
             ['dopamin', 'tab.dopamin', 'booster-open'],
+            ['backup', 'tab.backup', 'database-backup'],
           ] as const).map(([id, key, icon]) => (
             <button key={id} type="button" className={`side-item ${tab === id ? 'active' : ''}`} aria-current={tab === id ? 'page' : undefined} onClick={() => setTab(id)}>
               <Icon name={icon} />
@@ -3743,20 +3739,6 @@ export default function App() {
               >
                 <Icon name="eye-off" />{t(lang, 'collection.hideNexusNight')}
               </button>
-              <button className="btn" onClick={exportCsv}><Icon name="file-down" />{t(lang, 'catalog.csvExport')}</button>
-              <label className="btn">
-                <Icon name="file-up" />{t(lang, 'catalog.csvImport')}
-                <input
-                  type="file"
-                  accept=".csv,text/csv"
-                  hidden
-                  onChange={(e) => {
-                    const f = e.target.files?.[0]
-                    if (f) importCsv(f)
-                    e.target.value = ''
-                  }}
-                />
-              </label>
               <button type="button" className="btn" onClick={() => setQuickOpen((v) => !v)}>
                 <Icon name="zap" />{t(lang, 'collection.quickImport')}
               </button>
@@ -4196,20 +4178,6 @@ export default function App() {
                   <option key={ty} value={ty}>{ty}</option>
                 ))}
               </select>
-              <button className="btn" onClick={exportCsv}><Icon name="file-down" />{t(lang, 'catalog.csvExport')}</button>
-              <label className="btn">
-                <Icon name="file-up" />{t(lang, 'catalog.csvImport')}
-                <input
-                  type="file"
-                  accept=".csv,text/csv"
-                  hidden
-                  onChange={(e) => {
-                    const f = e.target.files?.[0]
-                    if (f) importCsv(f)
-                    e.target.value = ''
-                  }}
-                />
-              </label>
             </div>
             <div className="toolbar filter-bar">
               <RarityMenu
@@ -4238,6 +4206,107 @@ export default function App() {
         )}
 
         {tab === 'sales' && (
+          <div className="stores-view-switch" role="tablist">
+            {(['cart', 'review'] as const).map((v) => (
+              <button
+                key={v}
+                type="button"
+                role="tab"
+                aria-selected={salesView === v}
+                className={`chip${salesView === v ? ' active' : ''}`}
+                onClick={() => setSalesView(v)}
+              >
+                <Icon name={v === 'cart' ? 'shopping-cart' : 'tag'} />
+                {t(lang, v === 'cart' ? 'sales.viewCart' : 'sales.viewReview')}
+                {v === 'review' && reviewStack.length > 0 && <span className="review-badge">{reviewStack.length}</span>}
+              </button>
+            ))}
+          </div>
+        )}
+
+        {tab === 'sales' && salesView === 'review' && (
+          <div className="review">
+            <div className="panel review-head">
+              <div className="review-count">
+                <b>{reviewStack.length}</b>
+                <span>{t(lang, 'review.cardsLeft')}</span>
+              </div>
+              <div className="grow">
+                <div>{t(lang, 'review.left', { copies: reviewStack.reduce((s, r) => s + r.n, 0), min: fmtEur(lang, REVIEW_MIN_EUR) ?? '' })}</div>
+                <div className="review-progress" aria-hidden="true">
+                  <span style={{ width: `${reviewDone + reviewStack.length ? (100 * reviewDone) / (reviewDone + reviewStack.length) : 100}%` }} />
+                </div>
+                <small className="muted">
+                  {t(lang, 'review.done', { n: reviewDone })}
+                  {reviewSkipped.length > 0 && (
+                    <> · <button type="button" className="link-btn" onClick={() => setReviewSkipped([])}>{t(lang, 'review.showSkipped', { n: reviewSkipped.length })}</button></>
+                  )}
+                </small>
+              </div>
+              <div className="review-pack">
+                <span className="qty-label">{t(lang, 'review.packLabel')}</span>
+                <div className="copy-line">
+                  <select
+                    className="select copy-select"
+                    aria-label={t(lang, 'copies.packKind')}
+                    value={reviewPack.kind}
+                    onChange={(e) => setReviewPack((p) => ({ ...p, kind: e.target.value as PackSource['kind'] }))}
+                  >
+                    <option value="booster">{t(lang, 'copies.booster')}</option>
+                    <option value="display">{t(lang, 'copies.display')}</option>
+                  </select>
+                  <MoneyInput lang={lang} value={reviewPack.eur} label={t(lang, 'copies.packPrice')} placeholder={t(lang, 'copies.packPh')} onChange={(eur) => setReviewPack((p) => ({ ...p, eur }))} />
+                </div>
+              </div>
+            </div>
+            {reviewCard ? (
+              <div className="panel review-card">
+                <button
+                  type="button"
+                  className="review-art"
+                  style={{ backgroundImage: layeredArtBackground(reviewCard) }}
+                  title={t(lang, 'card.enlarge')}
+                  aria-label={t(lang, 'card.enlarge')}
+                  onClick={() => openCardLightbox(reviewCard)}
+                />
+                <div className="review-info">
+                  <h2>{displayName(reviewCard)}</h2>
+                  <div className="card-tags">
+                    <SetBadge c={reviewCard} />
+                    {(decksByCard.get(reviewCard.id) || []).map((u) => (
+                      <button key={u.id} type="button" className="ban-badge other-deck-badge" title={t(lang, 'collection.openDeck', { deck: u.name })} onClick={() => openDeck(u.id)}>
+                        {t(lang, 'decks.inPill', { deck: u.name, n: u.qty })}
+                      </button>
+                    ))}
+                  </div>
+                  <div className="sub">{reviewCard.code}</div>
+                  <PriceBits entry={priceBook?.cards[reviewCard.id]} lang={lang} foilOnly={isFoilOnly(reviewCard)} />
+                  <CopyEditor
+                    lang={lang}
+                    owned={collection[reviewCard.id]}
+                    lots={copies[reviewCard.id] || []}
+                    foilOnly={isFoilOnly(reviewCard)}
+                    price={priceBook?.cards[reviewCard.id]}
+                    defaultPack={reviewPack}
+                    onChange={(lots) => { setReviewId(reviewCard.id); setCardLots(reviewCard.id, lots) }}
+                  />
+                  <div className="review-actions">
+                    <span className={reviewLeft > 0 ? 'muted' : 'value-up'}>
+                      {reviewLeft > 0 ? t(lang, 'review.openHere', { n: reviewLeft }) : t(lang, 'review.cardDone')}
+                    </span>
+                    <button type="button" className={`btn${reviewLeft > 0 ? '' : ' primary'}`} onClick={reviewNext} title={t(lang, 'review.keyHint')}>
+                      {t(lang, reviewLeft > 0 ? 'review.skip' : 'review.next')}<Icon name="chevron-right" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="panel empty">{t(lang, reviewStack.length ? 'review.allSkipped' : 'review.empty', { min: fmtEur(lang, REVIEW_MIN_EUR) ?? '' })}</div>
+            )}
+          </div>
+        )}
+
+        {tab === 'sales' && salesView === 'cart' && (
           <div className={`split deck-split${poolHidden ? ' pool-hidden' : ''}`}>
             <section className="panel col-fill" data-remove-src="sale">
               <div className="toolbar">
@@ -5102,6 +5171,7 @@ export default function App() {
         )}
 
         {tab === 'dopamin' && catalog && <Dopamin cards={catalog.cards} lang={lang} prices={priceBook} />}
+        {tab === 'backup' && <BackupView lang={lang} skip={isUntracked} />}
 
       </main>
       </div>
@@ -5221,29 +5291,6 @@ export default function App() {
             <div className="confirm-actions">
               <button type="button" className="btn small" onClick={() => setDeckConfirm(null)}><Icon name="x" />{t(lang, 'decks.clearCancel')}</button>
               <button type="button" className="btn small deck-trash" onClick={applyDeckConfirm}><Icon name="trash-2" />{t(lang, 'decks.clearConfirm')}</button>
-            </div>
-          </div>
-        </div>
-      )}
-      {csvReplace && (
-        <div
-          className="card-lightbox"
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="csv-replace-title"
-          onClick={() => setCsvReplace(null)}
-        >
-          <div className="panel confirm-box" onClick={(e) => e.stopPropagation()}>
-            <p id="csv-replace-title" className="help" style={{ margin: 0 }}>
-              {t(lang, 'catalog.csvReplaceConfirm', {
-                name: csvReplace.name,
-                now: totals.unique,
-                file: Object.values(csvReplace.rows).filter((o) => ownedQty(o) > 0).length,
-              })}
-            </p>
-            <div className="confirm-actions">
-              <button type="button" className="btn small" onClick={() => setCsvReplace(null)}><Icon name="x" />{t(lang, 'decks.clearCancel')}</button>
-              <button type="button" className="btn small deck-trash" onClick={applyCsvReplace}><Icon name="file-up" />{t(lang, 'catalog.csvReplace')}</button>
             </div>
           </div>
         </div>

@@ -1,4 +1,4 @@
-import { cardEur, cardInvest, cleanCopyBook, fitLots, parseEur, soldGroups, splitLot } from '../src/copies.ts'
+import { cardEur, cardInvest, cleanCopyBook, fitLots, lotCost, packShare, parseEur, soldGroups, splitLot, unsourcedCopies } from '../src/copies.ts'
 
 function assert(cond, msg) {
   if (!cond) throw new Error(msg)
@@ -42,6 +42,25 @@ const pulledBook = cleanCopyBook({ p: [{ id: 'p', n: 1, pulled: true, buy: 5 }, 
 assert(pulledBook.p[0].pulled === true && pulledBook.p[0].buy === null && !('pulled' in pulledBook.p[1]), 'pulled lot kept, price dropped')
 const invP = cardInvest(pulledBook.p, { qty: 2, foil: 0 }, false, price)
 assert(invP.copies === 1 && invP.paid === 2 && cardEur(pulledBook.p, { qty: 2, foil: 0 }, false, price) === 20, 'pulled copies have value, no cost')
+
+// Pulled with a pack price: each copy costs its share (booster 14 cards, display 24 boosters) and counts in paid / profit.
+assert(packShare({ kind: 'booster', eur: 7 }) === 0.5 && packShare({ kind: 'display', eur: 168 }) === 0.5, 'pack share')
+assert(packShare({ kind: 'booster', eur: null }) === null, 'no price, no share')
+const packBook = cleanCopyBook({
+  p: [{ id: 'p', n: 2, pulled: true, pack: { kind: 'booster', eur: 7 } }, { id: 'q', n: 1, pulled: true, pack: { kind: 'box', eur: 9 } }],
+  b: [{ id: 'b', n: 1, buy: 1, pack: { kind: 'booster', eur: 7 } }],
+})
+assert(packBook.p[0].pack.eur === 7 && !('pack' in packBook.p[1]) && !('pack' in packBook.b[0]), 'pack kept only on pulled lots with a known kind')
+assert(lotCost(packBook.p[0]) === 0.5 && lotCost(packBook.p[1]) === null && lotCost(packBook.b[0]) === 1, 'lot cost')
+const invPack = cardInvest(packBook.p, { qty: 3, foil: 0 }, false, price)
+assert(invPack.copies === 2 && invPack.paid === 1 && invPack.worth === 20, 'pulled copies with a pack price count, without one they do not')
+assert(splitLot(packBook.p, 'p', 'p2')[1].pulled === true, 'a copy split off a pulled lot stays pulled')
+
+// Source review: copies without a lot or bought without a price are open, pulled ones are done, bulk under the limit is left out.
+const rev = [lot('r1', false, 1, 2), lot('r2', false, 1, null), { ...lot('r3', false, 1, null), pulled: true }]
+assert(unsourcedCopies(rev, { qty: 5, foil: 0 }, false, { low: 3 }, 1) === 3, '1 bought without price + 2 without details')
+assert(unsourcedCopies(rev, { qty: 5, foil: 0 }, false, { low: 0.5 }, 1) === 0, 'bulk is left out')
+assert(unsourcedCopies([], { qty: 1, foil: 1 }, false, { low: 0.2, foilLow: 4 }, 1) === 1, 'only the foil is worth reviewing')
 
 // Splitting a lot: one copy moves into its own lot right after, without a price.
 const split = splitLot([a, b], 'a', 'a2')

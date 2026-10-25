@@ -241,6 +241,43 @@ button.side-value:hover { color: var(--primary); }
 .deck-export-box textarea.field { min-height: 220px; user-select: text; }
 .confirm-actions { display: flex; justify-content: flex-end; gap: 8px; }
 
+/* Backup tab */
+.backup-actions { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; margin: 16px 0; }
+.backup-action { display: grid; align-content: start; justify-items: start; gap: 6px; }
+.backup-action > .ico { color: var(--accent2); }
+.backup-action.replace > .ico { color: var(--danger); }
+.backup-action h3 { margin: 0; font-size: 16px; }
+.backup-action .help { margin: 0 0 6px; }
+.backup-notice {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 0 0 14px; padding: 10px 12px;
+  border-radius: 12px; border: 1px solid rgb(var(--positive-rgb) / .4); background: rgb(var(--positive-rgb) / .08);
+}
+.backup-notice.error { border-color: rgb(var(--danger-rgb) / .45); background: rgb(var(--danger-rgb) / .1); }
+.backup-files-head { display: flex; align-items: center; gap: 16px; margin-bottom: 10px; }
+.backup-files-head small { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.backup-count { display: grid; justify-items: center; min-width: 92px; padding: 8px 12px; border-radius: 12px; background: var(--panel2); }
+.backup-count b { font-size: 28px; line-height: 1.1; color: var(--accent2); font-variant-numeric: tabular-nums; }
+.backup-count span { font-size: 11px; font-weight: 650; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); }
+.backup-row {
+  display: grid; grid-template-columns: 140px 170px 1fr 70px auto; align-items: center; gap: 12px;
+  padding: 8px 10px; border-top: 1px solid var(--border); font-variant-numeric: tabular-nums;
+}
+.backup-kind {
+  display: inline-flex; align-items: center; gap: 6px; justify-self: start; padding: 3px 9px; border-radius: 999px;
+  font-size: 12px; font-weight: 600; background: rgb(var(--info-rgb) / .14); color: var(--info);
+}
+.backup-kind.manual { background: rgb(var(--positive-rgb) / .14); color: var(--positive); }
+.backup-kind.before-import { background: rgb(var(--warn-rgb) / .16); color: var(--warn); }
+.backup-sum { color: var(--muted); font-size: 13px; }
+.backup-size { text-align: right; font-size: 12px; }
+.backup-confirm { width: min(480px, 100%); }
+.backup-compare { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+.backup-compare th, .backup-compare td { padding: 5px 8px; text-align: right; border-bottom: 1px solid var(--border); }
+.backup-compare th:first-child { text-align: left; font-weight: 500; color: var(--muted); }
+.backup-compare thead th { font-size: 11px; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); }
+/* The file has fewer than you have now: that is what the import would drop. */
+.backup-compare tr.less td:last-child { color: var(--danger); font-weight: 700; }
+
 .grid {
   display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 18px;
 }
@@ -2152,7 +2189,8 @@ input[type="checkbox"] { accent-color: var(--primary); }
   font-size: 12.5px;
 }
 .copy-row-free { color: var(--muted); background: transparent; border: 1px dashed var(--border-strong); }
-.copy-free-text { flex: 1; min-width: 0; }
+/* Text on its own line, the Bought / Pulled buttons and the value below it. */
+.copy-free-text { flex: 1 1 100%; min-width: 0; }
 .copy-qty button { width: 24px; height: 24px; }
 .copy-select.select { width: auto; max-width: none; min-height: 28px; padding: 3px 26px 3px 10px; font-size: 12.5px; }
 .copy-tag { padding: 3px 10px; border-radius: 999px; background: var(--primary-soft); color: var(--accent2); font-weight: 600; font-size: 12px; }
@@ -2167,8 +2205,11 @@ input[type="checkbox"] { accent-color: var(--primary); }
 .copy-source button {
   border: 0; background: transparent; color: var(--muted); font: inherit; font-size: 12px; font-weight: 600;
   padding: 3px 10px; border-radius: 999px; cursor: pointer;
+  display: inline-flex; align-items: center; gap: 4px;
 }
 .copy-source button.on { background: var(--primary-soft); color: var(--accent2); }
+/* Pulled copies: their share of the booster / display price. */
+.copy-share { font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
 .copy-source button:hover:not(.on) { color: var(--text); }
 .copy-foot { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
 .copy-foot .sub { font-variant-numeric: tabular-nums; }
@@ -2226,6 +2267,32 @@ input[type="checkbox"] { accent-color: var(--primary); }
 
 /* Store tab: display price comparison (StoreDisplays.tsx). */
 .stores-view-switch { display: flex; gap: 6px; margin-bottom: 10px; flex: none; }
+
+/* Sales → source review: one card at a time, worked off like a stack. */
+.review-badge {
+  min-width: 20px; padding: 0 6px; border-radius: 999px; font-size: 11px; font-weight: 700; line-height: 18px; text-align: center;
+  background: var(--primary); color: var(--on-primary);
+}
+.review { display: grid; gap: 14px; max-width: 1100px; }
+.review-head { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
+.review-count { display: grid; justify-items: center; min-width: 92px; padding: 8px 12px; border-radius: 12px; background: var(--panel2); }
+.review-count b { font-size: 28px; line-height: 1.1; color: var(--accent2); font-variant-numeric: tabular-nums; }
+.review-count span { font-size: 11px; font-weight: 650; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); }
+.review-progress { height: 6px; margin: 8px 0 6px; border-radius: 999px; background: var(--panel2); overflow: hidden; }
+.review-progress span { display: block; height: 100%; background: var(--positive); border-radius: inherit; transition: width .3s; }
+.review-pack { display: grid; gap: 4px; }
+.link-btn { border: 0; padding: 0; background: none; color: var(--accent2); font: inherit; cursor: pointer; }
+.link-btn:hover { text-decoration: underline; }
+.review-card { display: grid; grid-template-columns: minmax(240px, 360px) 1fr; gap: 24px; align-items: start; }
+.review-art {
+  aspect-ratio: 744 / 1039; width: 100%; border: 0; padding: 0; border-radius: 14px; cursor: zoom-in;
+  background: var(--panel2) center / cover no-repeat; box-shadow: var(--shadow);
+}
+.review-info { display: grid; gap: 8px; min-width: 0; }
+.review-info h2 { margin: 0; font-size: 24px; }
+.review-actions { display: flex; align-items: center; justify-content: flex-end; gap: 12px; margin-top: 6px; }
+.review-actions > span { margin-right: auto; font-weight: 600; }
+@media (max-width: 760px) { .review-card { grid-template-columns: 1fr; } }
 .disp-page { flex: 1; min-height: 0; overflow: auto; display: flex; flex-direction: column; gap: 10px; padding-right: 2px; }
 .disp-toolbar { flex: none; }
 .disp-chips { display: flex; flex-wrap: wrap; gap: 6px; }

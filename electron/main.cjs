@@ -1,4 +1,4 @@
-const { app, BrowserWindow, shell, ipcMain, Menu, nativeImage, protocol, net } = require('electron')
+const { app, BrowserWindow, shell, ipcMain, Menu, nativeImage, protocol, net, dialog } = require('electron')
 const path = require('path')
 const fs = require('fs')
 const crypto = require('crypto')
@@ -512,6 +512,116 @@ ipcMain.handle('shell:openExternal', async (_e, url) => {
   if (typeof url !== 'string' || !/^(https?:\/\/|mailto:)/i.test(url)) return { ok: false }
   await shell.openExternal(url)
   return { ok: true }
+})
+
+// Backups: JSON files in Documents, outside the app's profile, so they survive an uninstall.
+// The renderer builds the JSON (src/backup.ts); this side only stores, lists and reads files.
+const BACKUP_KINDS = ['auto', 'manual', 'before-import']
+const BACKUP_KEEP = 14
+const BACKUP_MAX_BYTES = 50 * 1024 * 1024
+const BACKUP_NAME = /^(auto|manual|before-import)-\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}\.json$/
+
+function backupDir() {
+  return path.join(app.getPath('documents'), 'Deakrix Riftbound Tracker', 'Backups')
+}
+
+const pad2 = (n) => String(n).padStart(2, '0')
+function localStamp(d = new Date()) {
+  return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}_${pad2(d.getHours())}-${pad2(d.getMinutes())}-${pad2(d.getSeconds())}`
+}
+
+/** Temp file + rename: a crash mid write never leaves a half backup under a real name. */
+async function writeFileSafe(file, text) {
+  const tmp = file + '.tmp'
+  await fs.promises.writeFile(tmp, text, 'utf8')
+  await fs.promises.rename(tmp, file)
+}
+
+async function listBackups() {
+  let names = []
+  try {
+    names = await fs.promises.readdir(backupDir())
+  } catch {
+    return []
+  }
+  const out = []
+  for (const name of names) {
+    if (!BACKUP_NAME.test(name)) continue
+    try {
+      const st = await fs.promises.stat(path.join(backupDir(), name))
+      // "<kind>-<19 char stamp>.json"
+      out.push({ name, kind: name.slice(0, -25), size: st.size, at: st.mtimeMs })
+    } catch {
+      // Deleted meanwhile.
+    }
+  }
+  return out.sort((a, b) => b.name.slice(-24).localeCompare(a.name.slice(-24)))
+}
+
+ipcMain.handle('backup:list', async () => ({ ok: true, dir: backupDir(), files: await listBackups() }))
+
+ipcMain.handle('backup:write', async (_e, kind, text) => {
+  if (!BACKUP_KINDS.includes(kind) || typeof text !== 'string' || text.length > BACKUP_MAX_BYTES) return { ok: false, error: 'invalid' }
+  try {
+    const stamp = localStamp()
+    const files = await listBackups()
+    // One automatic backup per day is enough.
+    if (kind === 'auto' && files.some((f) => f.name.startsWith(`auto-${stamp.slice(0, 10)}_`))) return { ok: true, skipped: true }
+    await fs.promises.mkdir(backupDir(), { recursive: true })
+    const name = `${kind}-${stamp}.json`
+    await writeFileSafe(path.join(backupDir(), name), text)
+    for (const old of files.filter((f) => f.kind === kind).slice(BACKUP_KEEP - 1)) {
+      await fs.promises.unlink(path.join(backupDir(), old.name)).catch(() => {})
+    }
+    return { ok: true, name }
+  } catch (e) {
+    return { ok: false, error: String(e) }
+  }
+})
+
+ipcMain.handle('backup:read', async (_e, name) => {
+  if (typeof name !== 'string' || !BACKUP_NAME.test(name)) return { ok: false, error: 'invalid' }
+  try {
+    return { ok: true, text: await fs.promises.readFile(path.join(backupDir(), name), 'utf8') }
+  } catch (e) {
+    return { ok: false, error: String(e) }
+  }
+})
+
+ipcMain.handle('backup:exportAs', async (_e, text) => {
+  if (typeof text !== 'string' || text.length > BACKUP_MAX_BYTES) return { ok: false, error: 'invalid' }
+  const res = await dialog.showSaveDialog(mainWindow, {
+    defaultPath: path.join(app.getPath('documents'), `riftbound-backup-${localStamp().slice(0, 10)}.json`),
+    filters: [{ name: 'JSON', extensions: ['json'] }],
+  })
+  if (res.canceled || !res.filePath) return { ok: false, canceled: true }
+  try {
+    await writeFileSafe(res.filePath, text)
+    return { ok: true, path: res.filePath }
+  } catch (e) {
+    return { ok: false, error: String(e) }
+  }
+})
+
+ipcMain.handle('backup:importFile', async () => {
+  const res = await dialog.showOpenDialog(mainWindow, {
+    defaultPath: app.getPath('documents'),
+    filters: [{ name: 'JSON', extensions: ['json'] }],
+    properties: ['openFile'],
+  })
+  const file = res.filePaths?.[0]
+  if (res.canceled || !file) return { ok: false, canceled: true }
+  try {
+    if ((await fs.promises.stat(file)).size > BACKUP_MAX_BYTES) return { ok: false, error: 'too large' }
+    return { ok: true, name: path.basename(file), text: await fs.promises.readFile(file, 'utf8') }
+  } catch (e) {
+    return { ok: false, error: String(e) }
+  }
+})
+
+ipcMain.handle('backup:openFolder', async () => {
+  await fs.promises.mkdir(backupDir(), { recursive: true })
+  return { ok: !(await shell.openPath(backupDir())) }
 })
 
 app.whenReady().then(() => {

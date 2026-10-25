@@ -30,26 +30,3 @@ export function saleSplit(o: Owned | undefined, sellQty: number) {
   const r = subtractOwnedCopies(cur, sellQty)
   return { qty: cur.qty - r.qty, foil: cur.foil - r.foil }
 }
-
-/** German Excel saves CSV with ';', so the header line picks the separator. */
-export function csvSeparator(header: string) {
-  return header.includes(';') ? ';' : ','
-}
-
-export function splitCsv(line: string, sep = ','): string[] {
-  const out: string[] = []
-  let cur = ''
-  let inQ = false
-  for (let i = 0; i < line.length; i++) {
-    const ch = line[i]
-    if (ch === '"') {
-      if (inQ && line[i + 1] === '"') { cur += '"'; i++; continue }
-      inQ = !inQ
-      continue
-    }
-    if (ch === sep && !inQ) { out.push(cur); cur = ''; continue }
-    cur += ch
-  }
-  out.push(cur)
-  return out
-}
