@@ -75,7 +75,7 @@ import { Icon, type IconName } from './Icon'
 import { sellText, stockCsv, wantsText, type CmLine } from './cardmarket'
 import { historyPoints, loadPriceHistory, type PriceHistoryFile } from './priceHistory'
 import { ValueHistory, type InvestRow } from './ValueHistory'
-import { CONDITION_FACTOR, cardEur, cardInvest, copyGroups, fitCopyBook, lotCost, soldGroups, unitEur, unsourcedCopies, type CopyBook, type CopyLot, type PackSource } from './copies'
+import { CONDITION_FACTOR, cardEur, cardInvest, copyGroups, fitCopyBook, lotCost, PACK_KINDS, soldGroups, unitEur, unsourcedCopies, type CopyBook, type CopyLot, type PackSource } from './copies'
 import { CopyEditor, MoneyInput, fmtSignedEur } from './CopyEditor'
 import { cardArt, cardThumb, layeredArtBackground, loadThumbIndex, preloadArt, thumbForImage } from './cardImages'
 
@@ -4252,8 +4252,7 @@ export default function App() {
                     value={reviewPack.kind}
                     onChange={(e) => setReviewPack((p) => ({ ...p, kind: e.target.value as PackSource['kind'] }))}
                   >
-                    <option value="booster">{t(lang, 'copies.booster')}</option>
-                    <option value="display">{t(lang, 'copies.display')}</option>
+                    {PACK_KINDS.map((k) => <option key={k} value={k}>{t(lang, `copies.pack.${k}`)}</option>)}
                   </select>
                   <MoneyInput lang={lang} value={reviewPack.eur} label={t(lang, 'copies.packPrice')} placeholder={t(lang, 'copies.packPh')} onChange={(eur) => setReviewPack((p) => ({ ...p, eur }))} />
                 </div>

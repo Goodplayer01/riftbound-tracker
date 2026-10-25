@@ -21,7 +21,7 @@ Windows SmartScreen might complain the first time because the installer isn't si
 - Progress per rarity so you see what's still missing. In a set, click a rarity to show only those cards
 - Filters for owned, missing and missing foils in each set
 - Foil progress per set, what the missing cards would cost, and a missing list for Cardmarket or the wishlist
-- Language, condition and purchase price per copy, with profit or loss against today's price. Copies without details get Bought and Pulled buttons, so mixed copies take two clicks. Pulled copies can carry the price of the booster or display they came from: each card then costs its share (a booster holds 14 cards, a display 24 boosters) and counts for profit or loss. Split off a copy to give it its own price
+- Language, condition and purchase price per copy, with profit or loss against today's price. Copies without details get Bought and Pulled buttons, so mixed copies take two clicks. Pulled copies can carry the price of the product they came from (booster, display, Pre-Rift kit, box set like Proving Grounds, vault or precon deck): each card then costs its share of that product and counts for profit or loss. Split off a copy to give it its own price
 - Normal and foil counts for every card. Cards that only exist as foil get a single counter
 - Plain runes are bulk and not tracked: no counters, not in set progress, All owned or the value, and a deck never misses them. Alt art runes are tracked like any other card
 - Quick import: paste card codes or a whole deck list

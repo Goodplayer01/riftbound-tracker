@@ -46,6 +46,9 @@ assert(invP.copies === 1 && invP.paid === 2 && cardEur(pulledBook.p, { qty: 2, f
 // Pulled with a pack price: each copy costs its share (booster 14 cards, display 24 boosters) and counts in paid / profit.
 assert(packShare({ kind: 'booster', eur: 7 }) === 0.5 && packShare({ kind: 'display', eur: 168 }) === 0.5, 'pack share')
 assert(packShare({ kind: 'booster', eur: null }) === null, 'no price, no share')
+assert(packShare({ kind: 'precon', eur: 22 }) === 0.5 && packShare({ kind: 'vault', eur: 87 }) === 1, 'precon and vault share')
+assert(cleanCopyBook({ v: [{ id: 'v', n: 1, pulled: true, pack: { kind: 'prerift', eur: 30 } }] }).v[0].pack.kind === 'prerift', 'new kinds survive the cleaner')
+assert(!('pack' in cleanCopyBook({ t: [{ id: 't', n: 1, pulled: true, pack: { kind: 'toString', eur: 3 } }] }).t[0]), 'no prototype keys as kind')
 const packBook = cleanCopyBook({
   p: [{ id: 'p', n: 2, pulled: true, pack: { kind: 'booster', eur: 7 } }, { id: 'q', n: 1, pulled: true, pack: { kind: 'box', eur: 9 } }],
   b: [{ id: 'b', n: 1, buy: 1, pack: { kind: 'booster', eur: 7 } }],

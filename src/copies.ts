@@ -32,8 +32,23 @@ export const CM_LANGUAGE: Record<CardLang, string> = {
 export const DEFAULT_LANG: CardLang = 'EN'
 export const DEFAULT_COND: Condition = 'NM'
 
-/** The booster or display a pulled copy came from, with what it cost (null: not entered yet). */
-export type PackSource = { kind: 'booster' | 'display'; eur: number | null }
+/** Tracked cards per product, so each pulled card carries its share of the price. Plain runes are not
+ *  tracked, so they are left out. Sources: retailer / Asmodee listings and the published deck lists.
+ *  Pre-Rift kit: 5 boosters + 15 card mini precon + 1 promo. Box set (Proving Grounds): 4 decks of
+ *  40 + Legend + Battlefield. Vault: 6 boosters + 3 tokens (36 basic runes). Precon: Legend + 40 + 3 Battlefields. */
+export const PACK_CARDS = {
+  booster: CARDS_PER_BOOSTER,
+  display: BOOSTERS_PER_DISPLAY * CARDS_PER_BOOSTER,
+  prerift: 5 * CARDS_PER_BOOSTER + 15 + 1,
+  boxset: 4 * 42,
+  vault: 6 * CARDS_PER_BOOSTER + 3,
+  precon: 44,
+} as const
+export type PackKind = keyof typeof PACK_CARDS
+export const PACK_KINDS = Object.keys(PACK_CARDS) as PackKind[]
+
+/** The product a pulled copy came from, with what it cost (null: not entered yet). */
+export type PackSource = { kind: PackKind; eur: number | null }
 
 /** Some copies of one card that share foil, language, condition and purchase price per copy.
  *  `pulled`: opened from a pack, so there is no purchase price (buy stays null). With `pack` the copies
@@ -43,7 +58,7 @@ export type CopyLot = { id: string; foil: boolean; n: number; lang: CardLang; co
 
 /** One card's share of a pack: every card in it carries the same part of the price. */
 export function packShare(pack: PackSource): number | null {
-  return pack.eur == null ? null : pack.eur / (pack.kind === 'display' ? BOOSTERS_PER_DISPLAY * CARDS_PER_BOOSTER : CARDS_PER_BOOSTER)
+  return pack.eur == null ? null : pack.eur / PACK_CARDS[pack.kind]
 }
 
 /** What one copy of a lot cost: the purchase price, or for pulled copies their share of the pack. */
@@ -79,8 +94,8 @@ export function cleanCopyBook(raw: unknown): CopyBook {
       const pulled = l.pulled === true
       const kind = l.pack?.kind
       const packEur = l.pack?.eur == null ? null : Number(l.pack.eur)
-      const pack: PackSource | null = pulled && (kind === 'booster' || kind === 'display')
-        ? { kind, eur: packEur != null && Number.isFinite(packEur) && packEur >= 0 ? packEur : null }
+      const pack: PackSource | null = pulled && PACK_KINDS.includes(kind as PackKind)
+        ? { kind: kind as PackKind, eur: packEur != null && Number.isFinite(packEur) && packEur >= 0 ? packEur : null }
         : null
       ok.push({
         id: typeof l.id === 'string' && l.id ? l.id : crypto.randomUUID(),
