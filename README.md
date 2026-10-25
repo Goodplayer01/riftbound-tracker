@@ -55,14 +55,14 @@ Windows SmartScreen might complain the first time because the installer isn't si
 
 **Decks**
 
-- Legend, Champion, Main Deck (39), Battlefields, Runes and Sideboard, with the usual limits
+- Legend, Champion, Main Deck (39), Battlefields, Runes and Sideboard, with the usual limits. The 3 copy limit counts per full name, so "Evelynn, in Control" and "Evelynn, Entrancing" are separate cards
 - Find a Legend by typing the champion name
-- Drag cards from the search list into a deck section, and drag them out again to remove one copy per drag
+- Drag cards from the search list into a deck section, and drag them out again to remove one copy per drag. The search list shows how many copies are already in the deck
 - Every deck card shows how many you own and how many the deck needs, with buttons to add or remove normal and foil copies in your collection. Alt arts, overnumbered, signed and reprinted versions of a card count as the same card, so owning the alt art Kai'Sa covers the normal one in your deck and in the missing list
 - Cards that another deck uses get an "Also in Deck ×n" tag in the deck builder, red when your copies don't cover every deck at once. Click it to jump to that deck
 - Runes as one big counter per domain of your Legend. Add Runes lists the alt art and Nexus Night runes, the counters cover the normal ones
 - The open deck shows its Legend big, with the deck's value and what the missing copies would cost. Click the missing tile to list those cards by set with big images, add them to your collection, or copy them as a Cardmarket wants list
-- Import and export deck lists as text
+- Import and export deck lists as text. Card codes in brackets like `[RAD-SP3]` (Rift Atlas and similar) pick the exact print, alt arts included
 - Drag decks around to sort them
 - Delete asks first, and Delete all can be undone until you close the app
 - Once a deck is full you get a Share button that makes a clean image of the whole deck: Legend, runes, battlefields, main deck and sideboard with counts

@@ -1,4 +1,5 @@
-import { coverDeckLines } from '../src/deckHelpers.ts'
+import { readFileSync } from 'node:fs'
+import { canAddToSection, copyName, coverDeckLines, parseDeckImport } from '../src/deckHelpers.ts'
 
 function assert(cond, msg) {
   if (!cond) throw new Error(msg)
@@ -31,5 +32,30 @@ c = coverDeckLines(
   new Map([['x', 0], ['y', 3]]),
 )
 assert(c.get('a') === 0 && c.get('b') === 1, 'separate cards stay separate')
+
+// Real cards for the copy limit and the import.
+globalThis.localStorage ??= { getItem: () => null, setItem: () => {} }
+const cards = JSON.parse(readFileSync(new URL('../public/cards.json', import.meta.url))).cards
+const byId = new Map(cards.map((x) => [x.id, x]))
+const id = (code) => cards.find((x) => x.code.toUpperCase().startsWith(code))?.id
+
+// Copy limit is per full name: 2 "Evelynn, in Control" + 1 "Evelynn, Entrancing" still allows more of each.
+const deck = [
+  { id: id('UNL-232'), qty: 1, section: 'legend' },
+  { id: id('RAD-SP3'), qty: 2, section: 'main' },
+  { id: id('UNL-141'), qty: 1, section: 'main' },
+]
+assert(canAddToSection(deck, byId.get(id('UNL-141')), 'main', byId).ok, 'another Evelynn, Entrancing fits')
+assert(copyName(byId.get(id('RAD-SP3'))) === copyName(byId.get(id('RAD-109'))), 'alt art and base share the name')
+const full = [...deck, { id: id('RAD-109'), qty: 1, section: 'main' }]
+assert(!canAddToSection(full, byId.get(id('RAD-SP3')), 'main', byId).ok, 'a 4th Evelynn, in Control (any print) is blocked')
+
+// Import with Rift Atlas codes: the code picks the exact print, a missing comma still matches by name.
+const imp = parseDeckImport('MainDeck:\n2 Evelynn in Control [RAD-SP3]\n1 Pyke, Returned [UNL-145A]\n1 Evelynn in Control\nRunes:\n6 Calm Rune [SFD-R02B]', cards)
+const got = (code) => imp.cards.find((x) => x.id === id(code))?.qty
+assert(got('RAD-SP3') === 2, 'alt art Evelynn by code')
+assert(got('UNL-145A') === 1, 'alt art Pyke by code')
+assert(got('RAD-109') === 1, 'name without comma finds the base card')
+assert(imp.unmatched.length === 0 && imp.cards.some((x) => x.section === 'rune' && x.qty === 6), 'unknown code falls back to the name')
 
 console.log('ok')

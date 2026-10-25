@@ -1,5 +1,6 @@
 import type { Card, Deck, DeckCard, DeckSection } from './types'
 import { loadLang, t } from './i18n.ts'
+import { resolveToken } from './parseBulk.ts'
 
 export const SECTION_ORDER: DeckSection[] = [
   'legend',
@@ -128,6 +129,17 @@ function norm(s: string) {
   return s.toLowerCase().replace(/\s+/g, ' ').trim()
 }
 
+/** Name for the copy limit: the full name with title, so "Evelynn, in Control" and "Evelynn, Entrancing"
+ *  are different cards (3 of each), while alt arts and reprints of one card share their 3 copies. */
+export function copyName(c: Card) {
+  return norm(displayCardName(c))
+}
+
+/** Name without punctuation, so "Evelynn in Control" (deck sites drop the comma) matches "Evelynn, in Control". */
+function loose(s: string) {
+  return norm(s.replace(/[,'’.\-]/g, ' '))
+}
+
 /** Prefer base print (non-signed / non-ON / non-alt). */
 export function matchCardByName(cards: Card[], rawName: string, section?: DeckSection): Card | undefined {
   const cleaned = rawName.trim()
@@ -146,6 +158,7 @@ export function matchCardByName(cards: Card[], rawName: string, section?: DeckSe
     const disp = norm(displayCardName(c))
     let hit = 0
     if (disp === nClean) hit = 100
+    else if (loose(displayCardName(c)) === loose(cleaned)) hit = 98
     else if (nRight && cn === nLeft && cs === nRight) hit = 95
     else if (nRight && cn === nRight) hit = 90
     else if (nRight && cn === nLeft && cs && cs.includes(nRight)) hit = 85
@@ -199,8 +212,12 @@ export function parseDeckImport(text: string, cards: Card[]): ImportResult {
     }
 
     const qty = Math.max(1, Number(m[1]) || 1)
-    const name = m[2].trim()
-    const card = matchCardByName(cards, name, section)
+    // Deck sites (e.g. Rift Atlas) add the exact print as "[RAD-SP3]": that code wins over the name,
+    // so alt arts and showcase prints come in as themselves. Unknown codes fall back to the name.
+    const coded = m[2].match(/^(.*?)\s*\[([A-Za-z0-9*/-]+)\]\s*$/)
+    const name = (coded ? coded[1] : m[2]).trim()
+    const byCode = coded ? resolveToken(coded[2], cards) : undefined
+    const card = byCode && cardFitsSection(byCode, section) ? byCode : matchCardByName(cards, name, section)
     if (!card) {
       unmatched.push(`${qty} ${name}`)
       lines.push({ section, qty, name, unmatched: true })
@@ -351,12 +368,12 @@ export function canAddToSection(
   // The three-copy pool is shared by Champion, Main Deck and Sideboard.
   // Runes are intentionally excluded: they have their own 12-card cap.
   if (NAME_COPY_SECTIONS.includes(section)) {
-    const name = norm(card.name)
+    const name = copyName(card)
     const currentNameQty = deckCards.reduce((sum, dc) => {
       const dcSection = sectionOf(dc)
       if (!NAME_COPY_SECTIONS.includes(dcSection)) return sum
       const c = byId.get(dc.id)
-      return c && norm(c.name) === name ? sum + dc.qty : sum
+      return c && copyName(c) === name ? sum + dc.qty : sum
     }, 0)
     if (currentNameQty + qtyToAdd > NAME_COPY_LIMIT) {
       return { ok: false, reason: 'copies', message: t(lang, 'deck.copyLimit', { name: card.name }) }
@@ -366,11 +383,11 @@ export function canAddToSection(
   // Battlefields have a section cap of three, but only one copy of each
   // battlefield name is allowed.
   if (section === 'battlefield') {
-    const name = norm(card.name)
+    const name = copyName(card)
     const currentNameQty = deckCards.reduce((sum, dc) => {
       if (sectionOf(dc) !== 'battlefield') return sum
       const c = byId.get(dc.id)
-      return c && norm(c.name) === name ? sum + dc.qty : sum
+      return c && copyName(c) === name ? sum + dc.qty : sum
     }, 0)
     if (currentNameQty + qtyToAdd > BATTLEFIELD_NAME_COPY_LIMIT) {
       return { ok: false, reason: 'copies', message: t(lang, 'deck.battlefieldCopyLimit', { name: card.name }) }
@@ -448,7 +465,7 @@ export function sanitizeDeckCards(deckCards: DeckCard[], byId: Map<string, Card>
       nameCapped.push(dc)
       continue
     }
-    const key = norm(c.name)
+    const key = copyName(c)
     const counts = sec === 'battlefield' ? battlefieldNameQty : copyNameQty
     const used = counts.get(key) || 0
     const keep = Math.max(0, Math.min(dc.qty, limit - used))
