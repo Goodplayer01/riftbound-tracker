@@ -241,6 +241,43 @@ button.side-value:hover { color: var(--primary); }
 .deck-export-box textarea.field { min-height: 220px; user-select: text; }
 .confirm-actions { display: flex; justify-content: flex-end; gap: 8px; }
 
+/* Backup tab */
+.backup-actions { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; margin: 16px 0; }
+.backup-action { display: grid; align-content: start; justify-items: start; gap: 6px; }
+.backup-action > .ico { color: var(--accent2); }
+.backup-action.replace > .ico { color: var(--danger); }
+.backup-action h3 { margin: 0; font-size: 16px; }
+.backup-action .help { margin: 0 0 6px; }
+.backup-notice {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 0 0 14px; padding: 10px 12px;
+  border-radius: 12px; border: 1px solid rgb(var(--positive-rgb) / .4); background: rgb(var(--positive-rgb) / .08);
+}
+.backup-notice.error { border-color: rgb(var(--danger-rgb) / .45); background: rgb(var(--danger-rgb) / .1); }
+.backup-files-head { display: flex; align-items: center; gap: 16px; margin-bottom: 10px; }
+.backup-files-head small { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.backup-count { display: grid; justify-items: center; min-width: 92px; padding: 8px 12px; border-radius: 12px; background: var(--panel2); }
+.backup-count b { font-size: 28px; line-height: 1.1; color: var(--accent2); font-variant-numeric: tabular-nums; }
+.backup-count span { font-size: 11px; font-weight: 650; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); }
+.backup-row {
+  display: grid; grid-template-columns: 140px 170px 1fr 70px auto; align-items: center; gap: 12px;
+  padding: 8px 10px; border-top: 1px solid var(--border); font-variant-numeric: tabular-nums;
+}
+.backup-kind {
+  display: inline-flex; align-items: center; gap: 6px; justify-self: start; padding: 3px 9px; border-radius: 999px;
+  font-size: 12px; font-weight: 600; background: rgb(var(--info-rgb) / .14); color: var(--info);
+}
+.backup-kind.manual { background: rgb(var(--positive-rgb) / .14); color: var(--positive); }
+.backup-kind.before-import { background: rgb(var(--warn-rgb) / .16); color: var(--warn); }
+.backup-sum { color: var(--muted); font-size: 13px; }
+.backup-size { text-align: right; font-size: 12px; }
+.backup-confirm { width: min(480px, 100%); }
+.backup-compare { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+.backup-compare th, .backup-compare td { padding: 5px 8px; text-align: right; border-bottom: 1px solid var(--border); }
+.backup-compare th:first-child { text-align: left; font-weight: 500; color: var(--muted); }
+.backup-compare thead th { font-size: 11px; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); }
+/* The file has fewer than you have now: that is what the import would drop. */
+.backup-compare tr.less td:last-child { color: var(--danger); font-weight: 700; }
+
 .grid {
   display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 18px;
 }

@@ -1,10 +1,11 @@
-import { useDeferredValue, useEffect, useMemo, useRef, useState, type DragEvent as ReactDragEvent, type MouseEvent as ReactMouseEvent, type PointerEvent as ReactPointerEvent, type ReactNode, type RefObject } from 'react'
+import { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState, type DragEvent as ReactDragEvent, type MouseEvent as ReactMouseEvent, type PointerEvent as ReactPointerEvent, type ReactNode, type RefObject } from 'react'
 import { fetchRemotePrices, loadBundledPrices, loadCachedPrices, newerPriceBook } from './prices'
 import type { BorrowedCard, BorrowedGroup, Card, Catalog, Deck, DeckSection, PriceBook, PriceEntry } from './types'
 import { backupOnce, loadAlertsSeen, loadBorrowed, loadCollection, loadCopies, loadDecks, loadSales, loadWish, loadWishTargets, saveAlertsSeen, saveBorrowed, saveCollection, saveCopies, saveDecks, saveSales, saveWish, saveWishTargets, type Collection } from './storage'
-import { csvSeparator, ownedQty, saleSplit, splitCsv, subtractOwnedCopies } from './collection'
+import { ownedQty, saleSplit, subtractOwnedCopies } from './collection'
 import { fmtEur, loadLang, saveLang, t, type Lang } from './i18n'
 import { Dopamin } from './Dopamin'
+import { autoBackup, BackupView } from './BackupView'
 import { SearchInput } from './SearchInput'
 import {
   detectKeywordsInText,
@@ -78,7 +79,7 @@ import { CONDITION_FACTOR, cardEur, cardInvest, copyGroups, fitCopyBook, soldGro
 import { CopyEditor, MoneyInput, fmtSignedEur } from './CopyEditor'
 import { cardArt, cardThumb, loadThumbIndex, preloadArt, thumbForImage } from './cardImages'
 
-type Tab = 'collection' | 'owned' | 'catalog' | 'sales' | 'decks' | 'borrowed' | 'stores' | 'dopamin'
+type Tab = 'collection' | 'owned' | 'catalog' | 'sales' | 'decks' | 'borrowed' | 'stores' | 'dopamin' | 'backup'
 
 function uid() {
   return crypto.randomUUID()
@@ -846,7 +847,6 @@ function prettyEventType(type: string | null) {
 
 const HIDE_NN_KEY = 'riftbound-hide-nexus-night'
 const STORE_HOME_KEY = 'rb.storeHome.v1'
-const CSV_BACKUP_KEY = 'rb.backup.csvReplace.v1'
 
 /** Last list wiped by delete all. Module scope: gone when the app process exits. */
 let deckListUndo: Deck[] | null = null
@@ -957,8 +957,6 @@ export default function App() {
   const [clearSec, setClearSec] = useState<DeckSection | null>(null)
   const [deckUndoOn, setDeckUndoOn] = useState(false)
   const [borrowUndoOn, setBorrowUndoOn] = useState(false)
-  /** A read CSV waiting for the "replace your collection?" confirmation. */
-  const [csvReplace, setCsvReplace] = useState<{ name: string; rows: Collection } | null>(null)
   const [deckConfirm, setDeckConfirm] = useState<null | { kind: 'all' } | { kind: 'one'; id: string; name: string } | { kind: 'borrow'; id: string; name: string } | { kind: 'borrowAll' } | { kind: 'wish'; id: string; name: string }>(null)
   /** Official errata by lower case "name" or "name, subtitle" (public/card-errata.json). */
   const [errata, setErrata] = useState<Record<string, CardErrata>>({})
@@ -1159,6 +1157,7 @@ export default function App() {
 
   useEffect(() => {
     window.riftbound?.getVersion().then(setAppVersion).catch(() => {})
+    void autoBackup()
     window.riftbound?.windowIsFullScreen?.().then(setIsFullScreen).catch(() => {})
     const offUpdater = window.riftbound?.onUpdater((p) => setUpdateInfo(p))
     const offFs = window.riftbound?.onFullscreen?.((v) => setIsFullScreen(v))
@@ -1357,6 +1356,7 @@ export default function App() {
    *  left out of everything (value, progress, All owned, decks, sales). Nothing is deleted from storage;
    *  alt art runes stay tracked. */
   const collection = useMemo(() => withoutPlainRunes(rawCollection, byId), [rawCollection, byId])
+  const isUntracked = useCallback((id: string) => { const c = byId.get(id); return !!c && isPlainRune(c) }, [byId])
 
   // One time fold (and after imports): normal copies of foil only cards become foil.
   useEffect(() => {
@@ -2076,70 +2076,6 @@ export default function App() {
         copyWord: copyWord(lang, soldCopies),
       }) + (notes.length ? ` ${notes.slice(0, 4).join(' · ')}` : ''),
     )
-  }
-
-    function exportCsv() {
-    const lines = ['id,code,name,set,qty,foil']
-    for (const [id, o] of Object.entries(collection)) {
-      const c = byId.get(id)
-      if (!c || ownedQty(o) <= 0) continue
-      lines.push([id, c.code, JSON.stringify(c.name), c.set, o.qty, o.foil].join(','))
-    }
-    download('riftbound-collection.csv', lines.join('\n'))
-  }
-
-  function importCsv(file: File) {
-    const reader = new FileReader()
-    reader.onload = () => {
-      const text = String(reader.result || '')
-      const lines = text.split(/\r?\n/).filter(Boolean)
-      const start = lines[0]?.toLowerCase().includes('id') ? 1 : 0
-      const sep = csvSeparator(lines[0] || '')
-      const rows: Collection = {}
-      for (let i = start; i < lines.length; i++) {
-        const cols = splitCsv(lines[i], sep)
-        if (cols.length < 5) continue
-        const [id, , , , qty, foil] = cols
-        const card = byId.get(id) || resolveToken(cols[1] || id, cards)
-        if (!card) continue
-        rows[card.id] = {
-          qty: Math.max(0, Number(qty) || 0),
-          foil: Math.max(0, Number(foil) || 0),
-        }
-      }
-      // An empty or unreadable file must never wipe the collection.
-      if (!Object.keys(rows).length) {
-        setBulkReport(t(lang, 'catalog.csvEmpty', { name: file.name }))
-        setTab('collection')
-        return
-      }
-      setCsvReplace({ name: file.name, rows })
-    }
-    reader.readAsText(file)
-  }
-
-  /** The CSV becomes the collection: cards not in the file are removed. The old collection and copy
-   *  details go to rb.backup.csvReplace.v1 first, so a wrong file can be undone by hand. */
-  function applyCsvReplace() {
-    if (!csvReplace) return
-    const { name, rows } = csvReplace
-    setCsvReplace(null)
-    try {
-      localStorage.setItem(CSV_BACKUP_KEY, JSON.stringify({ at: new Date().toISOString(), file: name, collection: rawCollection, copies }))
-    } catch {
-      // Storage full: the replace still runs, the user confirmed it.
-    }
-    setCollection((prev) => {
-      // Plain runes are not tracked and not exported: keep whatever was stored for them.
-      const next: Collection = {}
-      for (const [id, o] of Object.entries(prev)) {
-        const c = byId.get(id)
-        if (c && isPlainRune(c)) next[id] = o
-      }
-      return { ...next, ...rows }
-    })
-    setBulkReport(t(lang, 'catalog.csvImported', { name, count: Object.keys(rows).length }))
-    setTab('collection')
   }
 
   function openWantsExport() {
@@ -3622,6 +3558,7 @@ export default function App() {
             ['borrowed', 'tab.borrowed', 'handshake'],
             ['stores', 'tab.stores', 'store'],
             ['dopamin', 'tab.dopamin', 'booster-open'],
+            ['backup', 'tab.backup', 'database-backup'],
           ] as const).map(([id, key, icon]) => (
             <button key={id} type="button" className={`side-item ${tab === id ? 'active' : ''}`} aria-current={tab === id ? 'page' : undefined} onClick={() => setTab(id)}>
               <Icon name={icon} />
@@ -3743,20 +3680,6 @@ export default function App() {
               >
                 <Icon name="eye-off" />{t(lang, 'collection.hideNexusNight')}
               </button>
-              <button className="btn" onClick={exportCsv}><Icon name="file-down" />{t(lang, 'catalog.csvExport')}</button>
-              <label className="btn">
-                <Icon name="file-up" />{t(lang, 'catalog.csvImport')}
-                <input
-                  type="file"
-                  accept=".csv,text/csv"
-                  hidden
-                  onChange={(e) => {
-                    const f = e.target.files?.[0]
-                    if (f) importCsv(f)
-                    e.target.value = ''
-                  }}
-                />
-              </label>
               <button type="button" className="btn" onClick={() => setQuickOpen((v) => !v)}>
                 <Icon name="zap" />{t(lang, 'collection.quickImport')}
               </button>
@@ -4196,20 +4119,6 @@ export default function App() {
                   <option key={ty} value={ty}>{ty}</option>
                 ))}
               </select>
-              <button className="btn" onClick={exportCsv}><Icon name="file-down" />{t(lang, 'catalog.csvExport')}</button>
-              <label className="btn">
-                <Icon name="file-up" />{t(lang, 'catalog.csvImport')}
-                <input
-                  type="file"
-                  accept=".csv,text/csv"
-                  hidden
-                  onChange={(e) => {
-                    const f = e.target.files?.[0]
-                    if (f) importCsv(f)
-                    e.target.value = ''
-                  }}
-                />
-              </label>
             </div>
             <div className="toolbar filter-bar">
               <RarityMenu
@@ -5102,6 +5011,7 @@ export default function App() {
         )}
 
         {tab === 'dopamin' && catalog && <Dopamin cards={catalog.cards} lang={lang} prices={priceBook} />}
+        {tab === 'backup' && <BackupView lang={lang} skip={isUntracked} />}
 
       </main>
       </div>
@@ -5221,29 +5131,6 @@ export default function App() {
             <div className="confirm-actions">
               <button type="button" className="btn small" onClick={() => setDeckConfirm(null)}><Icon name="x" />{t(lang, 'decks.clearCancel')}</button>
               <button type="button" className="btn small deck-trash" onClick={applyDeckConfirm}><Icon name="trash-2" />{t(lang, 'decks.clearConfirm')}</button>
-            </div>
-          </div>
-        </div>
-      )}
-      {csvReplace && (
-        <div
-          className="card-lightbox"
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="csv-replace-title"
-          onClick={() => setCsvReplace(null)}
-        >
-          <div className="panel confirm-box" onClick={(e) => e.stopPropagation()}>
-            <p id="csv-replace-title" className="help" style={{ margin: 0 }}>
-              {t(lang, 'catalog.csvReplaceConfirm', {
-                name: csvReplace.name,
-                now: totals.unique,
-                file: Object.values(csvReplace.rows).filter((o) => ownedQty(o) > 0).length,
-              })}
-            </p>
-            <div className="confirm-actions">
-              <button type="button" className="btn small" onClick={() => setCsvReplace(null)}><Icon name="x" />{t(lang, 'decks.clearCancel')}</button>
-              <button type="button" className="btn small deck-trash" onClick={applyCsvReplace}><Icon name="file-up" />{t(lang, 'catalog.csvReplace')}</button>
             </div>
           </div>
         </div>

@@ -1,5 +1,5 @@
 import { readFileSync } from 'node:fs'
-import { csvSeparator, saleSplit, splitCsv, subtractOwnedCopies } from '../src/collection.ts'
+import { saleSplit, subtractOwnedCopies } from '../src/collection.ts'
 import { resolveToken } from '../src/parseBulk.ts'
 
 function assert(cond, msg) {
@@ -24,13 +24,6 @@ assert(s.qty === 1 && s.foil === 1, 'normal first, then foil')
 s = saleSplit({ qty: 1, foil: 0 }, 3)
 assert(s.qty === 1 && s.foil === 0, 'never more than owned')
 assert(saleSplit(undefined, 2).qty === 0, 'nothing owned sells nothing')
-
-// CSV from the app (comma) and from German Excel (semicolon).
-assert(csvSeparator('id,code,name,set,qty,foil') === ',', 'comma header')
-assert(csvSeparator('id;code;name;set;qty;foil') === ';', 'semicolon header')
-assert(splitCsv('a,"Jinx, Loose Cannon",OGN,2,1').join('|') === 'a|Jinx, Loose Cannon|OGN|2|1', 'quoted comma')
-assert(splitCsv('a;"Jinx; X";OGN;2;1', ';').join('|') === 'a|Jinx; X|OGN|2|1', 'semicolon split')
-assert(splitCsv('"say ""hi""",1')[0] === 'say "hi"', 'escaped quote')
 
 // Card codes: plain, short, alt art, signed.
 const id = (t) => resolveToken(t, cards)?.id

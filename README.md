@@ -25,7 +25,6 @@ Windows SmartScreen might complain the first time because the installer isn't si
 - Normal and foil counts for every card. Cards that only exist as foil get a single counter
 - Plain runes are bulk and not tracked: no counters, not in set progress, All owned or the value, and a deck never misses them. Alt art runes are tracked like any other card
 - Quick import: paste card codes or a whole deck list
-- CSV export, and CSV import that replaces your collection with the file (after asking; the old collection is kept as a backup)
 
 **Wishlist**
 
@@ -87,6 +86,10 @@ The second view shows Riftbound stores on a map with a radius around you, taken 
 **Dopamin**
 
 Open simulated booster packs for each set with the real pack art. Every slot of a real pack is in there: commons, uncommons, the token or rune slot, the foil slot, the rare slot and the slot that can turn into an Epic, Alt Art, Overnumbered, Signature or Ultimate. Cards flip one at a time with price and pull chance, or reveal the whole pack at once and see what it was worth. A counter per set adds up what the packs would have cost on Cardmarket against what you pulled, so you see whether you are up or down, plus your best pull. The odds are the ones Riot published (Epic 1 in 4 packs, Alt Art 1 in 12, Overnumbered 1 in 72, 1 in 10 of those signed, Ultimate 0.025 % in Radiance); the few slots Riot gave no numbers for are marked as estimates.
+
+**Backup**
+
+Everything in the app fits in one JSON file: your collection with language, condition and purchase price, all decks, wishlist and price alerts, sales cart, borrowed lists, Dopamin counters and settings (your CardTrader token stays out). Export it to keep it safe or to move to another PC. Importing a file replaces everything in the app, after a warning that compares what you have now with what's in the file, and your current state is backed up first so you can go back. The app also backs up by itself once a day at startup into `Documents\Deakrix Riftbound Tracker\Backups`, outside the app, so the backups survive an uninstall. The Backup tab lists every backup with its date and contents and restores any of them with one click.
 
 **Look and feel**
 

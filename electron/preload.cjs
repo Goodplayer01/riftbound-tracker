@@ -24,4 +24,10 @@ contextBridge.exposeInMainWorld('riftbound', {
   cardtrader: (path, token) => ipcRenderer.invoke('net:cardtrader', path, token),
   rbEvents: (req) => ipcRenderer.invoke('net:rbEvents', req),
   fetchImageDataUrl: (url) => ipcRenderer.invoke('net:fetchImageDataUrl', url),
+  backupList: () => ipcRenderer.invoke('backup:list'),
+  backupWrite: (kind, text) => ipcRenderer.invoke('backup:write', kind, text),
+  backupRead: (name) => ipcRenderer.invoke('backup:read', name),
+  backupExportAs: (text) => ipcRenderer.invoke('backup:exportAs', text),
+  backupImportFile: () => ipcRenderer.invoke('backup:importFile'),
+  backupOpenFolder: () => ipcRenderer.invoke('backup:openFolder'),
 })
