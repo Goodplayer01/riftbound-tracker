@@ -2096,6 +2096,12 @@ button.card-lightbox-title-link:hover {
   pointer-events: auto;
   cursor: pointer;
 }
+/* "The image is in the clipboard" under the share toolbar. */
+.deck-share-status {
+  display: flex; align-items: center; gap: 8px; margin: 0 0 10px; padding: 8px 12px; border-radius: 10px; font-size: 13px; font-weight: 600;
+}
+.deck-share-status.ok { color: var(--positive); background: rgb(var(--positive-rgb) / .12); }
+.deck-share-status.fail { color: var(--danger); background: rgb(var(--danger-rgb) / .12); }
 .deck-share-img-wrap {
   overflow: auto;
   max-height: calc(94vh - 64px);

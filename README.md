@@ -64,7 +64,7 @@ Windows SmartScreen might complain the first time because the installer isn't si
 - Import and export deck lists as text. Card codes in brackets like `[RAD-SP3]` (Rift Atlas and similar) pick the exact print, alt arts included
 - Drag decks around to sort them
 - Delete asks first, and Delete all can be undone until you close the app
-- Once a deck is full you get a Share button that makes a clean image of the whole deck: Legend, runes, battlefields, main deck and sideboard with counts
+- Once a deck is full you get a Share button that makes a clean image of the whole deck: Legend, runes, battlefields, main deck and sideboard with counts. The image goes straight into your clipboard, so you just paste it into Discord or WhatsApp; saving it as a file is still there
 - Hand tester with mulligan
 
 **Sales**

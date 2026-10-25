@@ -1,4 +1,4 @@
-const { app, BrowserWindow, shell, ipcMain, Menu, nativeImage, protocol, net, dialog } = require('electron')
+const { app, BrowserWindow, shell, ipcMain, Menu, nativeImage, protocol, net, dialog, clipboard } = require('electron')
 const path = require('path')
 const fs = require('fs')
 const crypto = require('crypto')
@@ -506,6 +506,15 @@ ipcMain.handle('net:fetchImageDataUrl', async (_e, url) => {
   } catch (e) {
     return { ok: false, error: String(e) }
   }
+})
+
+/** Deck share image into the system clipboard, ready to paste into Discord / WhatsApp. Only PNG data URLs. */
+ipcMain.handle('clipboard:writeImage', (_e, dataUrl) => {
+  if (typeof dataUrl !== 'string' || !dataUrl.startsWith('data:image/png;base64,')) return { ok: false }
+  const img = nativeImage.createFromDataURL(dataUrl)
+  if (img.isEmpty()) return { ok: false }
+  clipboard.writeImage(img)
+  return { ok: true }
 })
 
 ipcMain.handle('shell:openExternal', async (_e, url) => {

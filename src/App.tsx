@@ -956,7 +956,8 @@ export default function App() {
   const [exportTitleKey, setExportTitleKey] = useState('decks.exportTitle')
   const [deckExportCopied, setDeckExportCopied] = useState(false)
   const [deckShotBusy, setDeckShotBusy] = useState(false)
-  const [sharePreview, setSharePreview] = useState<{ dataUrl: string; fileName: string; exportText: string } | null>(null)
+  /** `copied`: the image is in the clipboard (copied right when the preview opens). */
+  const [sharePreview, setSharePreview] = useState<{ dataUrl: string; fileName: string; exportText: string; copied: boolean } | null>(null)
   const [missingExpanded, setMissingExpanded] = useState(false)
   const [cardPreview, setCardPreview] = useState<{ src: string; x: number; y: number } | null>(null)
   const [cardLightbox, setCardLightbox] = useState<Card | null>(null)
@@ -3092,11 +3093,20 @@ export default function App() {
         window.alert(t(lang, 'decks.shareFail'))
         return
       }
-      setSharePreview({ dataUrl: res.dataUrl, fileName: res.fileName, exportText: formatDeckList(deck) })
+      setSharePreview({ dataUrl: res.dataUrl, fileName: res.fileName, exportText: formatDeckList(deck), copied: await copyShareImage(res.dataUrl) })
     } catch {
       window.alert(t(lang, 'decks.shareFail'))
     } finally {
       setDeckShotBusy(false)
+    }
+  }
+
+  /** The share image into the clipboard; false when it could not be copied (the preview says so). */
+  async function copyShareImage(dataUrl: string) {
+    try {
+      return (await window.riftbound?.copyImage(dataUrl))?.ok === true
+    } catch {
+      return false
     }
   }
 
@@ -5206,10 +5216,24 @@ export default function App() {
               >
                 <Icon name="download" />{t(lang, 'decks.export')}
               </button>
-              <button type="button" className="btn small primary" onClick={downloadDeckShare}>
-                <Icon name="share-2" />{t(lang, 'decks.share')}
+              <button type="button" className="btn small" onClick={downloadDeckShare}>
+                <Icon name="image-down" />{t(lang, 'decks.shareSave')}
+              </button>
+              <button
+                type="button"
+                className="btn small primary"
+                onClick={async () => {
+                  const copied = await copyShareImage(sharePreview.dataUrl)
+                  setSharePreview((p) => (p ? { ...p, copied } : p))
+                }}
+              >
+                <Icon name="copy" />{t(lang, 'decks.shareCopy')}
               </button>
             </div>
+            <p className={`deck-share-status${sharePreview.copied ? ' ok' : ' fail'}`} role="status">
+              <Icon name={sharePreview.copied ? 'check' : 'x'} size={14} />
+              {t(lang, sharePreview.copied ? 'decks.shareCopied' : 'decks.shareCopyFail')}
+            </p>
             <div className="deck-share-img-wrap">
               <img src={sharePreview.dataUrl} alt={sharePreview.fileName} />
             </div>
