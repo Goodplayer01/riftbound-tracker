@@ -97,7 +97,7 @@ Everything in the app fits in one JSON file: your collection with language, cond
 - Domain icons drawn for the app, sharp at every size
 - The window button maximizes the app and leaves the Windows taskbar visible, and the app then uses the full width of the screen
 - Click anywhere on a card to open its detail view, and drag a card from anywhere on its tile
-- The card search on the right looks and works the same in the wishlist, sales, deck builder and borrowed: tags, prices, how many you own, drag and add
+- The card search on the right looks and works the same in the wishlist, sales, deck builder and borrowed: tags, prices, how many you own, drag and add. A tag shows every deck the card is in, so you don't sell or lend a card a deck still needs
 - Prices show as small boxes (from, 30 day average, foil) on every card and in every list, and the price and counters always sit at the bottom of a card, so a row of cards lines up
 - Card names in deck lists get the full width, tags sit on their own line below
 - In the wishlist, sales and deck builder you can hide the card search on the right to get more room

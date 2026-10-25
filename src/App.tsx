@@ -1583,7 +1583,7 @@ export default function App() {
   /** "Also in Deck ×n" pills for the deck builder; orange when the copies do not cover every deck. */
   function otherDeckPills(id: string, deck: Deck) {
     const c = byId.get(id)
-    if (c && isPlainRune(c)) return null
+    if (c && isPlainRune(c)) return []
     const { uses, enough } = otherDeckUses(id, deck)
     return uses.map((u) => (
       <button
@@ -2905,7 +2905,7 @@ export default function App() {
     owns: number
     draggable: boolean
     note?: string
-    /** Extra pills in the tags line (deck builder: other decks that use the card). */
+    /** Replaces the deck pills in the tags line (deck builder: other decks that use any print of the card). */
     tags?: ReactNode
     /** Deck builder: copies of this print already in the open deck (all sections). */
     inDeck?: number
@@ -2938,7 +2938,16 @@ export default function App() {
             <SetBadge c={c} /><BanBadge status={banStatus(c)} lang={lang} />
             <ErrataBadge show={!!errataFor(c)} lang={lang} />
             <BorrowedBadge from={borrowedInFrom.get(c.id)} lang={lang} />
-            {o.tags}
+            {/* Deck builder passes its own "Also in" pills; every other search shows the decks using this print. */}
+            {o.tags ?? (decksByCard.get(c.id) || []).map((u) => (
+              <button
+                key={u.id}
+                type="button"
+                className="ban-badge other-deck-badge"
+                title={t(lang, 'collection.openDeck', { deck: u.name })}
+                onClick={() => openDeck(u.id)}
+              >{t(lang, 'decks.inPill', { deck: u.name, n: u.qty })}</button>
+            ))}
           </div>
           <div className="sub">
             {c.code}{o.note ? ` · ${o.note}` : ''}
