@@ -116,6 +116,34 @@ def match_missing(book: dict, products: list[dict]) -> int:
     return matched
 
 
+VERSION_SUFFIX = re.compile(r"-V\d+-[A-Za-z-]+$")
+
+
+def drop_needless_versions(book: dict, products: list[dict], keep: set[str]) -> int:
+    """Strip "-V1-Rare" style suffixes from cmUrls whose product name is unique in its expansion.
+
+    Cardmarket only adds "-V<n>-<Rarity>" when an expansion holds several products with the same
+    name (base + alt art ...); otherwise the URL is the bare name and the versioned one is a 404.
+    Card ids in `keep` (cm_url_overrides.json, checked by hand) stay as they are.
+    """
+    by_id = {p["idProduct"]: p for p in products}
+    same_name: dict[tuple[int, str], int] = defaultdict(int)
+    for p in products:
+        same_name[(p["idExpansion"], p["name"])] += 1
+    fixed = 0
+    for cid, e in book.items():
+        url = e.get("cmUrl")
+        p = by_id.get(int(e["cmId"])) if e.get("cmId") else None
+        if not url or not p or cid in keep or same_name[(p["idExpansion"], p["name"])] != 1:
+            continue
+        sp = urlsplit(url)
+        path = VERSION_SUFFIX.sub("", sp.path)
+        if path != sp.path:
+            e["cmUrl"] = urlunsplit((sp.scheme, sp.netloc, path, sp.query, sp.fragment))
+            fixed += 1
+    return fixed
+
+
 def apply_guide(entry: dict, g: dict) -> None:
     entry["low"] = g.get("low")
     entry["avg30"] = g.get("avg30")
@@ -137,6 +165,8 @@ def main() -> None:
         raise SystemExit(f"price guide looks incomplete: guide={len(guide)} products={len(products)}")
 
     newly_matched = match_missing(book, products)
+    overrides = json.loads((ROOT / "scripts" / "cm_url_overrides.json").read_text(encoding="utf-8"))
+    unversioned = drop_needless_versions(book, products, set(overrides))
 
     updated = 0
     missing = 0
@@ -173,7 +203,7 @@ def main() -> None:
     no_id = sum(1 for e in book.values() if not e.get("cmId"))
     unmatched = [cid for cid in cards if cid not in book]
     print(
-        f"guide={guide_doc.get('createdAt')} updated={updated} newly_matched={newly_matched} "
+        f"guide={guide_doc.get('createdAt')} updated={updated} newly_matched={newly_matched} unversioned_urls={unversioned} "
         f"id_not_in_guide={missing} rows_without_id={no_id} catalog_without_price={len(unmatched)}"
     )
     print(f"dropped_outliers={len(sanitize(book))}")
