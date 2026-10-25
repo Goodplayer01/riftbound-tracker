@@ -3924,7 +3924,7 @@ export default function App() {
                           {wishHits.has(id) && (
                             <div className="wish-alert-hit">{t(lang, 'alert.hit', { eur: fmtEur(lang, wishHits.get(id)) ?? '' })}</div>
                           )}
-                          <div className="row">
+                          <div className="wish-actions">
                             <button type="button" className="btn small positive" onClick={() => gotWish(id)}><Icon name="check" />{t(lang, 'wish.got')}</button>
                             <button
                               type="button"

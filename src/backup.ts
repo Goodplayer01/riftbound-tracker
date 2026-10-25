@@ -102,8 +102,27 @@ export function isEmptyBackup(b: BackupFile) {
   return Object.values(summarizeBackup(b)).every((n) => n === 0)
 }
 
-/** Replaces everything: our keys missing from the file are removed, the rest is written as stored. */
-export function restoreBackup(store: Store, b: BackupFile) {
-  for (const k of backupKeys(store)) if (!(k in b.data)) store.removeItem(k)
-  for (const [k, v] of Object.entries(b.data)) store.setItem(k, v)
+/** Parts of a backup that can be restored on their own (two people sharing a collection keep their own wishlist).
+ *  Copy details describe the collection's cards and price alerts the wishlist, so they travel with them.
+ *  "other" is everything else: Dopamin, display limits, store home, language and keys added later. */
+export const BACKUP_GROUPS = ['collection', 'decks', 'wish', 'sales', 'borrowed', 'other'] as const
+export type BackupGroup = (typeof BACKUP_GROUPS)[number]
+const GROUP_KEYS: [BackupGroup, string[]][] = [
+  ['collection', ['rb.collection.v1', 'rb.copies.v1']],
+  ['decks', ['rb.decks.v1']],
+  ['wish', ['rb.wishlist.v1', 'rb.wishTargets.v1', 'rb.wishAlertsSeen.v1']],
+  ['sales', ['rb.sales.v1']],
+  ['borrowed', ['rb.borrowed.v1']],
+]
+
+export function backupGroup(key: string): BackupGroup {
+  return GROUP_KEYS.find(([, keys]) => keys.includes(key))?.[0] ?? 'other'
+}
+
+/** Replaces the chosen parts (all by default): their keys missing from the file are removed, the rest is
+ *  written as stored. Keys of parts not chosen stay exactly as they are. */
+export function restoreBackup(store: Store, b: BackupFile, groups: ReadonlySet<BackupGroup> = new Set(BACKUP_GROUPS)) {
+  const chosen = (k: string) => groups.has(backupGroup(k))
+  for (const k of backupKeys(store)) if (chosen(k) && !(k in b.data)) store.removeItem(k)
+  for (const [k, v] of Object.entries(b.data)) if (chosen(k)) store.setItem(k, v)
 }

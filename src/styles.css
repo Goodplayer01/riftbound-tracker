@@ -270,13 +270,18 @@ button.side-value:hover { color: var(--primary); }
 .backup-kind.before-import { background: rgb(var(--warn-rgb) / .16); color: var(--warn); }
 .backup-sum { color: var(--muted); font-size: 13px; }
 .backup-size { text-align: right; font-size: 12px; }
-.backup-confirm { width: min(480px, 100%); }
+.backup-confirm { width: min(580px, 100%); }
+.backup-compare td, .backup-compare th { white-space: nowrap; }
 .backup-compare { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
 .backup-compare th, .backup-compare td { padding: 5px 8px; text-align: right; border-bottom: 1px solid var(--border); }
 .backup-compare th:first-child { text-align: left; font-weight: 500; color: var(--muted); }
 .backup-compare thead th { font-size: 11px; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); }
-/* The file has fewer than you have now: that is what the import would drop. */
-.backup-compare tr.less td:last-child { color: var(--danger); font-weight: 700; }
+/* The file has fewer than you have now: that is what the import would drop, if that part is ticked. */
+.backup-compare tr.picked.less td:last-child { color: var(--danger); font-weight: 700; }
+.backup-compare tr:not(.picked) td { opacity: .45; }
+.backup-pick { display: inline-flex; align-items: center; gap: 8px; cursor: pointer; color: var(--text); font-weight: 600; }
+.backup-pick input { width: 16px; height: 16px; accent-color: var(--primary); cursor: pointer; }
+.backup-compare thead .backup-pick { font-size: 11px; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); }
 
 .grid {
   display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 18px;
@@ -2241,8 +2246,17 @@ input[type="checkbox"] { accent-color: var(--primary); }
   background: var(--primary); color: var(--on-primary); font-size: 11px; font-weight: 700;
 }
 
-.wish-alert { display: flex; align-items: center; gap: 8px; justify-content: space-between; flex-wrap: wrap; font-size: 12px; color: var(--muted); }
-.wish-alert-label { display: inline-flex; align-items: center; gap: 4px; }
+/* Price alert: one bar, label left and the price field filling the rest, so it never wraps. */
+.wish-alert {
+  display: flex; align-items: center; gap: 8px; padding: 3px 3px 3px 10px; border-radius: 10px;
+  background: rgb(255 255 255 / .04); border: 1px solid var(--border); font-size: 12px; color: var(--muted);
+}
+.wish-alert-label { display: inline-flex; align-items: center; gap: 5px; flex: none; white-space: nowrap; }
+.wish-alert .money-input { flex: 1; }
+.wish-alert .money-input .field { width: 100%; }
+/* "Got it" takes the width, the trash stays small next to it. */
+.wish-actions { display: grid; grid-template-columns: 1fr auto; gap: 6px; align-items: center; }
+.wish-actions .btn.positive { justify-content: center; }
 .wish-alert.hit .wish-alert-label { color: var(--accent2); }
 .wish-alert.hit .money-input .field { box-shadow: 0 0 0 2px rgb(var(--primary-rgb) / .6); }
 .wish-alert-hit { color: var(--positive); font-size: 12px; font-weight: 600; }
