@@ -521,8 +521,19 @@ const BACKUP_KEEP = 14
 const BACKUP_MAX_BYTES = 50 * 1024 * 1024
 const BACKUP_NAME = /^(auto|manual|before-import)-\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}\.json$/
 
+/** The user's own backup folder, kept in the profile (not in localStorage, so a restored backup never moves it). */
+const backupSettingsFile = () => path.join(app.getPath('userData'), 'backup-settings.json')
+let backupDirOverride
+
 function backupDir() {
-  return path.join(app.getPath('documents'), 'Deakrix Riftbound Tracker', 'Backups')
+  if (backupDirOverride === undefined) {
+    try {
+      backupDirOverride = JSON.parse(fs.readFileSync(backupSettingsFile(), 'utf8')).dir || null
+    } catch {
+      backupDirOverride = null
+    }
+  }
+  return backupDirOverride || path.join(app.getPath('documents'), 'Deakrix Riftbound Tracker', 'Backups')
 }
 
 const pad2 = (n) => String(n).padStart(2, '0')
@@ -614,6 +625,20 @@ ipcMain.handle('backup:importFile', async () => {
   try {
     if ((await fs.promises.stat(file)).size > BACKUP_MAX_BYTES) return { ok: false, error: 'too large' }
     return { ok: true, name: path.basename(file), text: await fs.promises.readFile(file, 'utf8') }
+  } catch (e) {
+    return { ok: false, error: String(e) }
+  }
+})
+
+/** Picks the backup folder (also the old one after a reinstall) and returns its backups, newest first. */
+ipcMain.handle('backup:chooseFolder', async () => {
+  const res = await dialog.showOpenDialog(mainWindow, { defaultPath: backupDir(), properties: ['openDirectory', 'createDirectory'] })
+  const dir = res.filePaths?.[0]
+  if (res.canceled || !dir) return { ok: false, canceled: true }
+  try {
+    await writeFileSafe(backupSettingsFile(), JSON.stringify({ dir }))
+    backupDirOverride = dir
+    return { ok: true, dir, files: await listBackups() }
   } catch (e) {
     return { ok: false, error: String(e) }
   }

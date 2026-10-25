@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { makeBackup, parseBackup, restoreBackup, summarizeBackup, type BackupFile, type BackupSummary } from './backup'
+import { isEmptyBackup, makeBackup, parseBackup, restoreBackup, summarizeBackup, type BackupFile, type BackupSummary } from './backup'
 import { t, type Lang } from './i18n'
 import { Icon } from './Icon'
 import type { BackupFileInfo, BackupKind } from './vite-env'
@@ -16,7 +16,10 @@ async function currentJson() {
 export async function autoBackup() {
   if (!window.riftbound?.backupWrite) return
   try {
-    await window.riftbound.backupWrite('auto', await currentJson())
+    const text = await currentJson()
+    // A fresh install has nothing yet: an empty "newest" backup would push the real one down after a reinstall.
+    if (isEmptyBackup(JSON.parse(text))) return
+    await window.riftbound.backupWrite('auto', text)
   } catch {
     // Not fatal: the next start tries again.
   }
@@ -104,18 +107,38 @@ export function BackupView({ lang, skip }: { lang: Lang; skip: (id: string) => b
     ask(r.name ?? '', r.text)
   })
 
+  /** New folder for the backups. If it already holds some (the old folder after a reinstall),
+   *  the newest opens in the usual replace dialog, so it never loads without asking. */
+  const chooseFolder = () => run(async () => {
+    const r = await api!.backupChooseFolder()
+    if (r.canceled) return
+    if (!r.ok) throw new Error(r.error)
+    await load()
+    const newest = r.files?.[0]
+    if (!newest) {
+      setNotice({ text: t(lang, 'backup.folderSet', { dir: r.dir ?? '' }) })
+      return
+    }
+    const f = await api!.backupRead(newest.name)
+    if (!f.ok || f.text == null) throw new Error(f.error)
+    ask(kindLabel(newest.kind), f.text)
+  })
+
   const restoreListed = (f: Listed) => run(async () => {
     const r = await api!.backupRead(f.name)
     if (!r.ok || r.text == null) throw new Error(r.error)
     ask(kindLabel(f.kind), r.text)
   })
 
-  /** The current state goes to a before-import file first; without it nothing is overwritten. */
+  /** The current state goes to a before-import file first; if that fails nothing is overwritten. */
   const applyRestore = () => run(async () => {
     if (!confirm) return
     const pre = makeBackup(localStorage, (await api!.getVersion().catch(() => '')) || '')
-    const saved = await api!.backupWrite('before-import', JSON.stringify(pre))
-    if (!saved.ok) throw new Error(saved.error)
+    // An empty app (fresh install) has nothing to lose, and an empty file would become the newest one.
+    if (!isEmptyBackup(pre)) {
+      const saved = await api!.backupWrite('before-import', JSON.stringify(pre))
+      if (!saved.ok) throw new Error(saved.error)
+    }
     try {
       restoreBackup(localStorage, confirm.file)
     } catch (e) {
@@ -176,7 +199,8 @@ export function BackupView({ lang, skip }: { lang: Lang; skip: (id: string) => b
                 <div>{files?.[0] ? t(lang, 'backup.last', { date: fmtDate(files[0].at) }) : t(lang, 'backup.none')}</div>
                 <small className="muted" title={dir}>{dir}</small>
               </div>
-              <button type="button" className="btn" onClick={() => void api.backupOpenFolder()}><Icon name="folder-open" />{t(lang, 'backup.openFolder')}</button>
+              <button type="button" className="btn" disabled={busy} title={t(lang, 'backup.chooseFolderHint')} onClick={chooseFolder}><Icon name="folder-open" />{t(lang, 'backup.chooseFolder')}</button>
+              <button type="button" className="btn" onClick={() => void api.backupOpenFolder()}><Icon name="external-link" />{t(lang, 'backup.openFolder')}</button>
             </div>
             <p className="help">{t(lang, 'backup.keep')}</p>
             {files?.map((f) => (

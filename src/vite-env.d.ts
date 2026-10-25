@@ -37,6 +37,7 @@ declare global {
       backupExportAs: (text: string) => Promise<{ ok: boolean; path?: string; canceled?: boolean; error?: string }>
       backupImportFile: () => Promise<{ ok: boolean; name?: string; text?: string; canceled?: boolean; error?: string }>
       backupOpenFolder: () => Promise<{ ok: boolean }>
+      backupChooseFolder: () => Promise<{ ok: boolean; dir?: string; files?: BackupFileInfo[]; canceled?: boolean; error?: string }>
     }
   }
 }

@@ -30,4 +30,5 @@ contextBridge.exposeInMainWorld('riftbound', {
   backupExportAs: (text) => ipcRenderer.invoke('backup:exportAs', text),
   backupImportFile: () => ipcRenderer.invoke('backup:importFile'),
   backupOpenFolder: () => ipcRenderer.invoke('backup:openFolder'),
+  backupChooseFolder: () => ipcRenderer.invoke('backup:chooseFolder'),
 })

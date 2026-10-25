@@ -97,6 +97,11 @@ export function summarizeBackup(b: BackupFile, skip: (id: string) => boolean = (
   }
 }
 
+/** Nothing the user entered: no cards, decks, wishlist, sales or borrowed lists. */
+export function isEmptyBackup(b: BackupFile) {
+  return Object.values(summarizeBackup(b)).every((n) => n === 0)
+}
+
 /** Replaces everything: our keys missing from the file are removed, the rest is written as stored. */
 export function restoreBackup(store: Store, b: BackupFile) {
   for (const k of backupKeys(store)) if (!(k in b.data)) store.removeItem(k)

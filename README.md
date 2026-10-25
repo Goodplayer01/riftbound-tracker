@@ -91,7 +91,7 @@ Open simulated booster packs for each set with the real pack art. Every slot of 
 
 **Backup**
 
-Everything in the app fits in one JSON file: your collection with language, condition and purchase price, all decks, wishlist and price alerts, sales cart, borrowed lists, Dopamin counters and settings (your CardTrader token stays out). Export it to keep it safe or to move to another PC. Importing a file replaces everything in the app, after a warning that compares what you have now with what's in the file, and your current state is backed up first so you can go back. The app also backs up by itself once a day at startup into `Documents\Deakrix Riftbound Tracker\Backups`, outside the app, so the backups survive an uninstall. The Backup tab lists every backup with its date and contents and restores any of them with one click.
+Everything in the app fits in one JSON file: your collection with language, condition and purchase price, all decks, wishlist and price alerts, sales cart, borrowed lists, Dopamin counters and settings (your CardTrader token stays out). Export it to keep it safe or to move to another PC. Importing a file replaces everything in the app, after a warning that compares what you have now with what's in the file, and your current state is backed up first so you can go back. The app also backs up by itself once a day at startup into `Documents\Deakrix Riftbound Tracker\Backups`, outside the app, so the backups survive an uninstall. Pick your own backup folder if you like (a cloud drive folder, say). After a reinstall, choose your old folder again and the newest backup in it is offered for loading right away. The Backup tab lists every backup with its date and contents and restores any of them with one click.
 
 **Look and feel**
 
