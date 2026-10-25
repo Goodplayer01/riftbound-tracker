@@ -95,6 +95,18 @@ function isPlainRune(c: Card) {
   return (c.types || []).includes('Rune') && !isFoilOnly(c)
 }
 
+/** The collection without plain runes (nobody tracks them). Same object when there are none. */
+function withoutPlainRunes(col: Collection, byId: Map<string, Card>): Collection {
+  let out = col
+  for (const id of Object.keys(col)) {
+    const c = byId.get(id)
+    if (!c || !isPlainRune(c)) continue
+    if (out === col) out = { ...col }
+    delete out[id]
+  }
+  return out
+}
+
 /** Plain rune prices as 0 € (no foil price), so every value and total ignores them. */
 function zeroPlainRunes(book: PriceBook | null, cards: Card[]): PriceBook | null {
   if (!book) return book
@@ -798,16 +810,8 @@ function CardTile({
             </div>
           </div>
         ) : isPlainRune(c) ? (
-          <div className="qty-group qty-group-single">
-            <div className="qty-col">
-              <span className="qty-label">{t(lang, 'qty.normal')}</span>
-              <div className="qty">
-                <button aria-label={`${t(lang, 'qty.normal')} −1`} onClick={() => onBump(c.id, 'qty', -1)}>−</button>
-                <b className={o.qty > 0 ? 'have' : undefined}>{o.qty}</b>
-                <button aria-label={`${t(lang, 'qty.normal')} +1`} onClick={() => onBump(c.id, 'qty', 1)}>+</button>
-              </div>
-            </div>
-          </div>
+          // Plain runes are bulk nobody tracks: no counters (alt art runes keep theirs).
+          <div className="untracked-note">{t(lang, 'runes.untracked')}</div>
         ) : (
         <div className="qty-group">
           <div className="qty-col">
@@ -870,7 +874,8 @@ export default function App() {
   const langMenuRef = useRef<HTMLDivElement | null>(null)
   const [catalog, setCatalog] = useState<Catalog | null>(null)
   const [error, setError] = useState<string | null>(null)
-  const [collection, setCollection] = useState<Collection>(() => { backupOnce(); return loadCollection() })
+  /** Collection as stored. Use `collection` (plain runes left out) everywhere else. */
+  const [rawCollection, setCollection] = useState<Collection>(() => { backupOnce(); return loadCollection() })
   const [copies, setCopies] = useState<CopyBook>(loadCopies)
   const [wishTargets, setWishTargets] = useState<Record<string, number>>(loadWishTargets)
   const [alertsSeen, setAlertsSeen] = useState<Record<string, number>>(loadAlertsSeen)
@@ -1272,7 +1277,7 @@ export default function App() {
       .catch(() => {})
   }, [])
 
-  useEffect(() => saveCollection(collection), [collection])
+  useEffect(() => saveCollection(rawCollection), [rawCollection])
   useEffect(() => saveDecks(decks), [decks])
   useEffect(() => saveBorrowed(borrowed), [borrowed])
   useEffect(() => saveWish(wish), [wish])
@@ -1345,12 +1350,17 @@ export default function App() {
     return m
   }, [cards])
 
+  /** The collection the app works with: plain runes are bulk nobody tracks, so their stored counts are
+   *  left out of everything (value, progress, All owned, decks, sales). Nothing is deleted from storage;
+   *  alt art runes stay tracked. */
+  const collection = useMemo(() => withoutPlainRunes(rawCollection, byId), [rawCollection, byId])
+
   // One time fold (and after imports): normal copies of foil only cards become foil.
   useEffect(() => {
     if (!byId.size) return
     setCollection((prev) => foldFoilOnly(prev, byId))
     setWish((prev) => foldFoilOnly(prev, byId))
-  }, [byId, collection, wish])
+  }, [byId, rawCollection, wish])
 
   function foilOnlyId(id: string) {
     const c = byId.get(id)
@@ -1360,10 +1370,10 @@ export default function App() {
   // Copy details follow the counts: sold or removed copies drop their details too.
   // An empty collection is skipped so a failed load never wipes the details.
   useEffect(() => {
-    if (!byId.size || Object.keys(collection).length === 0) return
-    setCopies((prev) => fitCopyBook(prev, collection, foilOnlyId))
+    if (!byId.size || Object.keys(rawCollection).length === 0) return
+    setCopies((prev) => fitCopyBook(prev, rawCollection, foilOnlyId))
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [byId, collection])
+  }, [byId, rawCollection])
 
   useEffect(() => {
     if (!cards.length) return
@@ -1512,6 +1522,8 @@ export default function App() {
   const printsByKey = useMemo(() => {
     const m = new Map<string, string[]>()
     for (const c of cards) {
+      // Plain runes are not tracked: an alt art Fury Rune must not count as (or be covered by) a plain one.
+      if (isPlainRune(c)) continue
       const k = cardKey(c)
       m.set(k, [...(m.get(k) || []), c.id])
     }
@@ -1533,13 +1545,18 @@ export default function App() {
   function deckCoverage(d: Deck) {
     const lines: { id: string; key: string; need: number; own: number }[] = []
     const pool = new Map<string, number>()
+    const untracked = new Map<string, number>()
     for (const [id, need] of deckTotalQtyById(d.cards)) {
       const c = byId.get(id)
+      // Plain runes are not tracked, so a deck never misses them.
+      if (c && isPlainRune(c)) { untracked.set(id, need); continue }
       const key = c ? cardKey(c) : id
       lines.push({ id, key, need, own: availableForDecks(id) })
       if (!pool.has(key)) pool.set(key, poolAvailable(id))
     }
-    return coverDeckLines(lines, pool)
+    const out = coverDeckLines(lines, pool)
+    for (const [id, need] of untracked) out.set(id, need)
+    return out
   }
 
   /** Other decks that use this card in any print, with their copies, and whether the collection has
@@ -1562,6 +1579,8 @@ export default function App() {
 
   /** "Also in Deck ×n" pills for the deck builder; orange when the copies do not cover every deck. */
   function otherDeckPills(id: string, deck: Deck) {
+    const c = byId.get(id)
+    if (c && isPlainRune(c)) return null
     const { uses, enough } = otherDeckUses(id, deck)
     return uses.map((u) => (
       <button
@@ -1598,7 +1617,8 @@ export default function App() {
     if (hideNexusNight) order = order.filter((id) => !String(id).endsWith('-NN'))
     const out: { id: string; name: string; total: number; owned: number; pct: number; eur: number | null; foilOwned: number; foilTotal: number; missingEur: number | null }[] = []
     for (const id of order) {
-      const setCards = cards.filter((c) => c.set === id)
+      // Plain runes are not tracked, so they are not part of a set's progress either.
+      const setCards = cards.filter((c) => c.set === id && !isPlainRune(c))
       let owned = 0
       let foilOwned = 0
       let eur = 0
@@ -1660,11 +1680,12 @@ export default function App() {
     const query = deferredQ.trim().toLowerCase()
     let list: Card[]
     if (binderView === 'owned') {
-      list = cards.filter((c) => (ownedBorrowedOnly ? borrowedInTotals.has(c.id) : ownedQty(collection[c.id]) > 0 || borrowedInTotals.has(c.id))
+      list = cards.filter((c) => !isPlainRune(c)
+        && (ownedBorrowedOnly ? borrowedInTotals.has(c.id) : ownedQty(collection[c.id]) > 0 || borrowedInTotals.has(c.id))
         && (!ownedSet || c.set === ownedSet)
         && (!ownedNotInDeck || spareCopies(c.id) > 0))
     } else {
-      list = cards.filter((c) => c.set === binderView)
+      list = cards.filter((c) => c.set === binderView && !isPlainRune(c))
     }
     list = list.filter((c) => {
       const n = ownedQty(collection[c.id]) + (binderView === 'owned' ? borrowedInTotals.get(c.id) || 0 : 0)
@@ -1694,7 +1715,7 @@ export default function App() {
   /** Sets with owned cards, in binder order, for the All owned set filter. */
   const ownedSets = useMemo(() => {
     const counts = new Map<string, number>()
-    for (const c of cards) if (ownedQty(collection[c.id]) > 0 || borrowedInTotals.has(c.id)) counts.set(c.set, (counts.get(c.set) || 0) + 1)
+    for (const c of cards) if (!isPlainRune(c) && (ownedQty(collection[c.id]) > 0 || borrowedInTotals.has(c.id))) counts.set(c.set, (counts.get(c.set) || 0) + 1)
     const rank = (s: string) => { const i = (BINDER_SET_ORDER as readonly string[]).indexOf(s); return i < 0 ? BINDER_SET_ORDER.length : i }
     return [...counts].sort(([a], [b]) => rank(a) - rank(b) || a.localeCompare(b))
   }, [cards, collection, borrowedInTotals])
@@ -1704,7 +1725,7 @@ export default function App() {
     for (const id of Object.keys(sets)) {
       const counts = new Map<string, { total: number; owned: number }>()
       for (const c of cards) {
-        if (c.set !== id) continue
+        if (c.set !== id || isPlainRune(c)) continue
         const r = c.rarity || 'Other'
         const cur = counts.get(r) || { total: 0, owned: 0 }
         cur.total += 1
@@ -2103,7 +2124,7 @@ export default function App() {
   function binderMissingCards(foil: boolean) {
     if (!binderView || binderView === 'owned') return []
     return cards
-      .filter((c) => c.set === binderView && (!binderRarity || (c.rarity || 'Other') === binderRarity))
+      .filter((c) => c.set === binderView && !isPlainRune(c) && (!binderRarity || (c.rarity || 'Other') === binderRarity))
       .filter((c) => (foil ? !isPlainRune(c) && !hasFoilCopy(c, collection[c.id]) : ownedQty(collection[c.id]) <= 0))
       .sort((a, b) => a.cn - b.cn || a.code.localeCompare(b.code))
   }
@@ -2650,9 +2671,6 @@ export default function App() {
             {runeDomains.map((d) => {
               const inDeck = cardsIn.filter((dc) => isPlainIn(dc) && (byId.get(dc.id)?.domains || []).includes(d))
               const n = inDeck.reduce((s, dc) => s + dc.qty, 0)
-              const owned = cards
-                .filter((c) => isPlainRune(c) && (c.domains || []).includes(d))
-                .reduce((s, c) => s + availableForDecks(c.id), 0)
               const pick = inDeck[0]?.id ?? plainRuneFor(d)?.id
               const removeOne = () => {
                 const last = inDeck[inDeck.length - 1]
@@ -2661,7 +2679,7 @@ export default function App() {
               return (
                 <div
                   key={d}
-                  className={`rune-tile${n > owned ? ' short' : ''}`}
+                  className="rune-tile"
                   {...(n > 0 ? removeDragProps('deck', removeOne) : {})}
                 >
                   {d in DOMAIN_ICON && <img src={DOMAIN_ICON[d as keyof typeof DOMAIN_ICON]} alt="" draggable={false} />}
@@ -2682,7 +2700,6 @@ export default function App() {
                       onClick={() => pick && addToDeck(pick, 'rune')}
                     >+</button>
                   </div>
-                  <span className="sub">{t(lang, 'decks.ownsLabel')} {owned}</span>
                 </div>
               )
             })}
@@ -2730,11 +2747,13 @@ export default function App() {
                   <PriceBits entry={priceBook?.cards[c.id]} lang={lang} foilOnly={isFoilOnly(c)} />
                 </div>
                 {collectionButtons(c.id)}
-                <div className="row-stat" title={fromOtherPrints > 0 ? t(lang, 'decks.ownsOtherPrints', { n: fromOtherPrints }) : undefined}>
-                  <span className="qty-label">{t(lang, 'decks.ownsLabel')}</span>
-                  <b className={short ? 'short' : 'have'}>{have}</b>
-                  {fromOtherPrints > 0 && <span className="row-stat-note">{t(lang, 'decks.ownsAlt', { n: fromOtherPrints })}</span>}
-                </div>
+                {!isPlainRune(c) && (
+                  <div className="row-stat" title={fromOtherPrints > 0 ? t(lang, 'decks.ownsOtherPrints', { n: fromOtherPrints }) : undefined}>
+                    <span className="qty-label">{t(lang, 'decks.ownsLabel')}</span>
+                    <b className={short ? 'short' : 'have'}>{have}</b>
+                    {fromOtherPrints > 0 && <span className="row-stat-note">{t(lang, 'decks.ownsAlt', { n: fromOtherPrints })}</span>}
+                  </div>
+                )}
                 {isSingleSlotSection(sec) ? (
                   <button
                     type="button"
@@ -2876,8 +2895,9 @@ export default function App() {
   /** Collection −/+ for deck rows, normal and foil stacked; stays visible once the deck's copies are owned. */
   function collectionButtons(id: string) {
     const c = byId.get(id)
-    // Foil only cards have no normal copies, plain runes no foil.
-    const fields: ('qty' | 'foil')[] = !c ? ['qty'] : isFoilOnly(c) ? ['foil'] : isPlainRune(c) ? ['qty'] : ['qty', 'foil']
+    // Plain runes are not tracked; foil only cards have no normal copies.
+    if (c && isPlainRune(c)) return null
+    const fields: ('qty' | 'foil')[] = !c ? ['qty'] : isFoilOnly(c) ? ['foil'] : ['qty', 'foil']
     return (
       <div className="row-coll" onClick={(e) => e.stopPropagation()}>
         <span className="qty-label">{t(lang, 'decks.addToCollection')}</span>
@@ -3821,7 +3841,7 @@ export default function App() {
           const ids = Object.keys(wish)
           const total = ids.reduce((s, id) => s + ownedLineEur(wish[id], priceBook?.cards[id]), 0)
           const query = q.trim().toLowerCase()
-          const pick = cards.filter((c) => (!setFilter || c.set === setFilter) && matchesSharedFilters(c, query)).slice(0, 120)
+          const pick = cards.filter((c) => !isPlainRune(c) && (!setFilter || c.set === setFilter) && matchesSharedFilters(c, query)).slice(0, 120)
           return (
             <div className={`split deck-split${poolHidden ? ' pool-hidden' : ''}`}>
               <section className="panel col-fill" data-remove-src="wish">
@@ -4769,6 +4789,7 @@ export default function App() {
                   const query = q.trim().toLowerCase()
                   const from = activeBorrowed.direction === 'from'
                   const owned = cards.filter((c) => {
+                    if (isPlainRune(c)) return false
                     if (!from && ownedQty(collection[c.id]) <= 0) return false
                     if (remainingToLend(c.id) <= 0) return false
                     if (setFilter && c.set !== setFilter) return false
