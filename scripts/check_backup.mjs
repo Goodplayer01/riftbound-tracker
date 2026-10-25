@@ -1,4 +1,4 @@
-import { backupGroup, isBackupKey, isEmptyBackup, makeBackup, parseBackup, restoreBackup, summarizeBackup } from '../src/backup.ts'
+import { backupGroup, sameGroup, isBackupKey, isEmptyBackup, makeBackup, parseBackup, restoreBackup, summarizeBackup } from '../src/backup.ts'
 
 function assert(cond, msg) {
   if (!cond) throw new Error(msg)
@@ -96,5 +96,13 @@ restoreBackup(mine, parsed, new Set(['other']))
 assert(mine.getItem('rb.dopamin.v1') === null && mine.getItem('rb.storeHome.v1') === 'Köln', 'other: settings from the file, keys missing there removed')
 assert(mine.getItem('rb.decks.v1') === '[{"id":"my"}]', 'decks still kept')
 assert(backupGroup('rb.wishAlertsSeen.v1') === 'wish' && backupGroup('rb.someFutureKey.v1') === 'other', 'groups')
+
+// Same data in app and file: restoring that part changes nothing, so the dialog says so.
+const twin = store(user)
+assert(sameGroup(twin, parsed, 'collection') && sameGroup(twin, parsed, 'decks'), 'identical parts are the same')
+twin.setItem('rb.decks.v1', '[]')
+assert(!sameGroup(twin, parsed, 'decks') && sameGroup(twin, parsed, 'collection'), 'a changed part is not')
+twin.setItem('rb.someFutureKey.v1', '1')
+assert(!sameGroup(twin, parsed, 'other'), 'a key only the app has makes "other" differ')
 
 console.log('check_backup ok')

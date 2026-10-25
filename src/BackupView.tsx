@@ -1,11 +1,23 @@
 import { useEffect, useMemo, useState } from 'react'
-import { BACKUP_GROUPS, isEmptyBackup, makeBackup, parseBackup, restoreBackup, summarizeBackup, type BackupFile, type BackupGroup, type BackupSummary } from './backup'
+import { BACKUP_GROUPS, isEmptyBackup, makeBackup, parseBackup, restoreBackup, sameGroup, summarizeBackup, type BackupFile, type BackupGroup, type BackupSummary } from './backup'
 import { t, type Lang } from './i18n'
 import { Icon } from './Icon'
 import type { BackupFileInfo, BackupKind } from './vite-env'
 
 type Listed = BackupFileInfo & { summary: BackupSummary | null }
-type Confirm = { label: string; file: BackupFile; summary: BackupSummary }
+type Confirm = { label: string; file: BackupFile; summary: BackupSummary; same: Record<BackupGroup, boolean> }
+
+/** Parts just restored, kept across the reload so the Backup tab can say what happened. */
+const IMPORT_DONE_KEY = 'rb.importDone'
+
+/** The app opens on the Backup tab right after an import. */
+export function importJustDone() {
+  try {
+    return sessionStorage.getItem(IMPORT_DONE_KEY) != null
+  } catch {
+    return false
+  }
+}
 
 async function currentJson() {
   const version = (await window.riftbound?.getVersion().catch(() => '')) || ''
@@ -69,6 +81,14 @@ export function BackupView({ lang, skip }: { lang: Lang; skip: (id: string) => b
 
   useEffect(() => {
     void load()
+    // Right after an import (the app reloaded): say which parts were replaced.
+    try {
+      const done = JSON.parse(sessionStorage.getItem(IMPORT_DONE_KEY) || 'null') as BackupGroup[] | null
+      sessionStorage.removeItem(IMPORT_DONE_KEY)
+      if (done) setNotice({ text: t(lang, 'backup.imported', { parts: done.map((g) => t(lang, `backup.group.${g}`)).join(', ') }) })
+    } catch {
+      // No message then; the import itself is done.
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -79,7 +99,8 @@ export function BackupView({ lang, skip }: { lang: Lang; skip: (id: string) => b
       return
     }
     setPicked(new Set())
-    setConfirm({ label, file: b, summary: summarizeBackup(b, skip) })
+    const same = Object.fromEntries(BACKUP_GROUPS.map((g) => [g, sameGroup(localStorage, b, g)])) as Record<BackupGroup, boolean>
+    setConfirm({ label, file: b, summary: summarizeBackup(b, skip), same })
   }
 
   async function run(fn: () => Promise<void>) {
@@ -153,7 +174,14 @@ export function BackupView({ lang, skip }: { lang: Lang; skip: (id: string) => b
       restoreBackup(localStorage, pre)
       throw e
     }
-    location.reload()
+    try {
+      sessionStorage.setItem(IMPORT_DONE_KEY, JSON.stringify([...picked]))
+    } catch {
+      // Only the message after the reload is lost.
+    }
+    // In the app the main process reloads: the window's navigation lock blocks location.reload().
+    if (api?.reload) await api.reload()
+    else location.reload()
   })
 
   const kindLabel = (k: BackupKind) => t(lang, `backup.kind.${k}`)
@@ -271,6 +299,7 @@ export function BackupView({ lang, skip }: { lang: Lang; skip: (id: string) => b
                             })}
                           />
                           {t(lang, `backup.group.${g}`)}
+                          {confirm.same[g] && <span className="backup-same" title={t(lang, 'backup.sameHint')}>{t(lang, 'backup.same')}</span>}
                         </label>
                       </th>
                       <td>{count(now)}</td>
@@ -280,6 +309,9 @@ export function BackupView({ lang, skip }: { lang: Lang; skip: (id: string) => b
                 })}
               </tbody>
             </table>
+            {picked.size > 0 && [...picked].every((g) => confirm.same[g]) && (
+              <p className="backup-same-note">{t(lang, 'backup.allSame')}</p>
+            )}
             <p className="help" style={{ margin: 0 }}>{t(lang, 'backup.confirmSafe')}</p>
             <div className="confirm-actions">
               <button type="button" className="btn small" disabled={busy} onClick={() => setConfirm(null)}><Icon name="x" />{t(lang, 'decks.clearCancel')}</button>

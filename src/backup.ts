@@ -119,6 +119,12 @@ export function backupGroup(key: string): BackupGroup {
   return GROUP_KEYS.find(([, keys]) => keys.includes(key))?.[0] ?? 'other'
 }
 
+/** True when this part holds exactly the same data in the app and in the file, so restoring it changes nothing. */
+export function sameGroup(store: Store, b: BackupFile, group: BackupGroup) {
+  const keys = new Set([...backupKeys(store), ...Object.keys(b.data)].filter((k) => backupGroup(k) === group))
+  return [...keys].every((k) => (store.getItem(k) ?? null) === (b.data[k] ?? null))
+}
+
 /** Replaces the chosen parts (all by default): their keys missing from the file are removed, the rest is
  *  written as stored. Keys of parts not chosen stay exactly as they are. */
 export function restoreBackup(store: Store, b: BackupFile, groups: ReadonlySet<BackupGroup> = new Set(BACKUP_GROUPS)) {

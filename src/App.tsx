@@ -5,7 +5,7 @@ import { backupOnce, loadAlertsSeen, loadBorrowed, loadCollection, loadCopies, l
 import { ownedQty, saleSplit, subtractOwnedCopies } from './collection'
 import { fmtEur, loadLang, saveLang, t, type Lang } from './i18n'
 import { Dopamin } from './Dopamin'
-import { autoBackup, BackupView } from './BackupView'
+import { autoBackup, BackupView, importJustDone } from './BackupView'
 import { RulesView } from './RulesView'
 import { SearchInput } from './SearchInput'
 import {
@@ -872,7 +872,7 @@ function saveHideNexusNight(v: boolean) {
 }
 
 export default function App() {
-  const [tab, setTab] = useState<Tab>('collection')
+  const [tab, setTab] = useState<Tab>(() => (importJustDone() ? 'backup' : 'collection'))
   const [lang, setLang] = useState<Lang>(() => loadLang())
   const [langMenuOpen, setLangMenuOpen] = useState(false)
   const langMenuRef = useRef<HTMLDivElement | null>(null)
