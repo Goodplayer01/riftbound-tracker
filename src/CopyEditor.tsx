@@ -10,9 +10,12 @@ import {
   copyGroups,
   freeCopies,
   groupEur,
+  lotCost,
+  packShare,
   parseEur,
   splitLot,
   type CopyLot,
+  type PackSource,
 } from './copies'
 import { fmtEur, t, type Lang } from './i18n'
 import type { Owned, PriceEntry } from './types'
@@ -80,9 +83,13 @@ export function CopyEditor({ lang, owned, lots, foilOnly, price, onChange }: {
     onChange(fitted.map((l) => (l.id === id ? { ...l, ...change } : l)))
   }
 
-  function addLot() {
-    const foil = foilOnly || freeNormal === 0
-    onChange([...fitted, { id: crypto.randomUUID(), foil, n: 1, lang: DEFAULT_LANG, cond: DEFAULT_COND, buy: null }])
+  /** Copies without details become one lot at once, bought or pulled; lower its count to give the rest another source. */
+  function assign(foil: boolean, n: number, pulled: boolean) {
+    onChange([...fitted, { id: crypto.randomUUID(), foil, n, lang: DEFAULT_LANG, cond: DEFAULT_COND, buy: null, ...(pulled ? { pulled: true } : {}) }])
+  }
+
+  function setPack(l: CopyLot, change: Partial<PackSource>) {
+    patch(l.id, { pack: { kind: l.pack?.kind ?? 'booster', eur: l.pack?.eur ?? null, ...change } })
   }
 
   function setCount(l: CopyLot, n: number) {
@@ -94,7 +101,7 @@ export function CopyEditor({ lang, owned, lots, foilOnly, price, onChange }: {
   function setPulled(l: CopyLot, pulled: boolean) {
     if (pulled === !!l.pulled) return
     // undefined drops the flag when the book is saved as JSON.
-    onChange(fitted.map((x) => (x.id !== l.id ? x : pulled ? { ...x, buy: null, pulled: true } : { ...x, pulled: undefined })))
+    onChange(fitted.map((x) => (x.id !== l.id ? x : pulled ? { ...x, buy: null, pulled: true } : { ...x, pulled: undefined, pack: undefined })))
   }
 
   function setFoil(l: CopyLot, foil: boolean) {
@@ -108,7 +115,6 @@ export function CopyEditor({ lang, owned, lots, foilOnly, price, onChange }: {
     <div className="copy-editor">
       <div className="card-ocr-head">
         <strong>{t(lang, 'copies.title')}</strong>
-        {total > 0 && <span className="card-ocr-note">{t(lang, 'copies.note')}</span>}
       </div>
       {total === 0 ? (
         <p className="card-ocr-status muted">{t(lang, 'copies.none')}</p>
@@ -119,6 +125,8 @@ export function CopyEditor({ lang, owned, lots, foilOnly, price, onChange }: {
               const eur = groupEur(g, price)
               const l = g.lot
               const room = l ? (l.foil ? freeFoil : freeNormal) : 0
+              const cost = l ? lotCost(l) : null
+              const share = l?.pack ? packShare(l.pack) : null
               return (
                 <div key={l ? l.id : `free-${g.foil}`} className={`copy-row${l ? '' : ' copy-row-free'}`}>
                   {l ? (
@@ -161,6 +169,24 @@ export function CopyEditor({ lang, owned, lots, foilOnly, price, onChange }: {
                       {!l.pulled && (
                         <MoneyInput lang={lang} value={l.buy} label={t(lang, 'copies.buy')} placeholder={t(lang, 'copies.buyPh')} onChange={(buy) => patch(l.id, { buy })} />
                       )}
+                      {l.pulled && (
+                        <>
+                          <select
+                            className="select copy-select"
+                            aria-label={t(lang, 'copies.packKind')}
+                            title={t(lang, 'copies.packKind')}
+                            value={l.pack?.kind ?? 'booster'}
+                            onChange={(e) => setPack(l, { kind: e.target.value as PackSource['kind'] })}
+                          >
+                            <option value="booster">{t(lang, 'copies.booster')}</option>
+                            <option value="display">{t(lang, 'copies.display')}</option>
+                          </select>
+                          <MoneyInput lang={lang} value={l.pack?.eur ?? null} label={t(lang, 'copies.packPrice')} placeholder={t(lang, 'copies.packPh')} onChange={(eur) => setPack(l, { eur })} />
+                          {share != null && (
+                            <span className="copy-share" title={t(lang, 'copies.packHelp')}>{t(lang, 'copies.perCard', { eur: fmtEur(lang, share) ?? '' })}</span>
+                          )}
+                        </>
+                      )}
                       {l.n > 1 && (
                         <button
                           type="button"
@@ -172,8 +198,8 @@ export function CopyEditor({ lang, owned, lots, foilOnly, price, onChange }: {
                       )}
                       <span className="copy-eur">
                         {eur != null && <span>~{fmtEur(lang, eur)}</span>}
-                        {eur != null && l.buy != null && (
-                          <b className={eur - l.n * l.buy >= 0 ? 'value-up' : 'value-down'}>{fmtSignedEur(lang, eur - l.n * l.buy)}</b>
+                        {eur != null && cost != null && (
+                          <b className={eur - l.n * cost >= 0 ? 'value-up' : 'value-down'}>{fmtSignedEur(lang, eur - l.n * cost)}</b>
                         )}
                       </span>
                       </div>
@@ -183,6 +209,10 @@ export function CopyEditor({ lang, owned, lots, foilOnly, price, onChange }: {
                       <span className="copy-free-text">
                         {t(lang, 'copies.free', { n: g.n, kind: g.foil ? t(lang, 'qty.foil') : t(lang, 'qty.normal') })}
                       </span>
+                      <div className="copy-source" role="group" aria-label={t(lang, 'copies.assign')} title={t(lang, 'copies.assign')}>
+                        <button type="button" onClick={() => assign(g.foil, g.n, false)}><Icon name="plus" size={12} />{t(lang, 'copies.bought')}</button>
+                        <button type="button" onClick={() => assign(g.foil, g.n, true)}><Icon name="plus" size={12} />{t(lang, 'copies.pulled')}</button>
+                      </div>
                       <span className="copy-eur">{eur != null && <span>~{fmtEur(lang, eur)}</span>}</span>
                     </>
                   )}
@@ -191,9 +221,6 @@ export function CopyEditor({ lang, owned, lots, foilOnly, price, onChange }: {
             })}
           </div>
           <div className="copy-foot">
-            <button type="button" className="btn small add" disabled={freeNormal + freeFoil <= 0} onClick={addLot}>
-              <Icon name="tag" />{t(lang, 'copies.add')}
-            </button>
             <span className="sub">
               {t(lang, 'copies.value', { eur: fmtEur(lang, value) ?? '' })}
               {inv.copies > 0 && (

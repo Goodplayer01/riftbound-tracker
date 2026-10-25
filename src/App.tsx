@@ -75,7 +75,7 @@ import { Icon, type IconName } from './Icon'
 import { sellText, stockCsv, wantsText, type CmLine } from './cardmarket'
 import { historyPoints, loadPriceHistory, type PriceHistoryFile } from './priceHistory'
 import { ValueHistory, type InvestRow } from './ValueHistory'
-import { CONDITION_FACTOR, cardEur, cardInvest, copyGroups, fitCopyBook, soldGroups, unitEur, type CopyBook, type CopyLot } from './copies'
+import { CONDITION_FACTOR, cardEur, cardInvest, copyGroups, fitCopyBook, lotCost, soldGroups, unitEur, type CopyBook, type CopyLot } from './copies'
 import { CopyEditor, MoneyInput, fmtSignedEur } from './CopyEditor'
 import { cardArt, cardThumb, loadThumbIndex, preloadArt, thumbForImage } from './cardImages'
 
@@ -1466,7 +1466,7 @@ export default function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [collection, copies, byId])
 
-  /** Purchase price vs. worth today, for copies with a purchase price. */
+  /** Purchase price vs. worth today, for copies with a purchase price or a pack price. */
   const invest = useMemo(() => {
     let copiesN = 0
     let paid = 0
@@ -1474,7 +1474,7 @@ export default function App() {
     const rows: InvestRow[] = []
     for (const [id, lots] of Object.entries(copies)) {
       const card = byId.get(id)
-      if (!card || !lots.some((l) => l.buy != null)) continue
+      if (!card || !lots.some((l) => lotCost(l) != null)) continue
       const r = cardInvest(lots, collection[id], isFoilOnly(card), priceBook?.cards[id])
       if (!r.copies) continue
       copiesN += r.copies

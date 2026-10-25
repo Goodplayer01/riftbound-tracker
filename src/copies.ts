@@ -1,4 +1,8 @@
+import { BOOSTERS_PER_DISPLAY } from './displays.ts'
 import type { Owned, PriceEntry } from './types'
+
+/** Every Riftbound booster holds 14 cards (Riot's set overviews). */
+export const CARDS_PER_BOOSTER = 14
 
 /** Print languages a copy can have, in Cardmarket's order. */
 export const CARD_LANGS = ['EN', 'DE', 'FR', 'IT', 'ES', 'PT', 'ZH', 'JA', 'KO'] as const
@@ -28,10 +32,24 @@ export const CM_LANGUAGE: Record<CardLang, string> = {
 export const DEFAULT_LANG: CardLang = 'EN'
 export const DEFAULT_COND: Condition = 'NM'
 
+/** The booster or display a pulled copy came from, with what it cost (null: not entered yet). */
+export type PackSource = { kind: 'booster' | 'display'; eur: number | null }
+
 /** Some copies of one card that share foil, language, condition and purchase price per copy.
- *  `pulled`: opened from a pack, so there is no purchase price (buy stays null) and the copies
- *  stay out of the paid / profit math. Copies of a card without a lot are EN / NM with no purchase price. */
-export type CopyLot = { id: string; foil: boolean; n: number; lang: CardLang; cond: Condition; buy: number | null; pulled?: boolean }
+ *  `pulled`: opened from a pack, so there is no purchase price (buy stays null). With `pack` the copies
+ *  cost their share of that pack (`lotCost`) and count in paid / profit, without it they stay out.
+ *  Copies of a card without a lot are EN / NM with no purchase price. */
+export type CopyLot = { id: string; foil: boolean; n: number; lang: CardLang; cond: Condition; buy: number | null; pulled?: boolean; pack?: PackSource }
+
+/** One card's share of a pack: every card in it carries the same part of the price. */
+export function packShare(pack: PackSource): number | null {
+  return pack.eur == null ? null : pack.eur / (pack.kind === 'display' ? BOOSTERS_PER_DISPLAY * CARDS_PER_BOOSTER : CARDS_PER_BOOSTER)
+}
+
+/** What one copy of a lot cost: the purchase price, or for pulled copies their share of the pack. */
+export function lotCost(l: CopyLot): number | null {
+  return l.pulled ? (l.pack ? packShare(l.pack) : null) : l.buy
+}
 
 /** Lots per card id. Lives next to the collection; the counts in the collection stay the truth. */
 export type CopyBook = Record<string, CopyLot[]>
@@ -59,6 +77,11 @@ export function cleanCopyBook(raw: unknown): CopyBook {
       if (!l || !(n > 0)) continue
       const buy = l.buy == null ? null : Number(l.buy)
       const pulled = l.pulled === true
+      const kind = l.pack?.kind
+      const packEur = l.pack?.eur == null ? null : Number(l.pack.eur)
+      const pack: PackSource | null = pulled && (kind === 'booster' || kind === 'display')
+        ? { kind, eur: packEur != null && Number.isFinite(packEur) && packEur >= 0 ? packEur : null }
+        : null
       ok.push({
         id: typeof l.id === 'string' && l.id ? l.id : crypto.randomUUID(),
         foil: !!l.foil,
@@ -67,6 +90,7 @@ export function cleanCopyBook(raw: unknown): CopyBook {
         cond: isCond(l.cond) ? l.cond : DEFAULT_COND,
         buy: !pulled && buy != null && Number.isFinite(buy) && buy >= 0 ? buy : null,
         ...(pulled ? { pulled } : {}),
+        ...(pack ? { pack } : {}),
       })
     }
     if (ok.length) out[id] = ok
@@ -122,7 +146,7 @@ export function freeCopies(lots: CopyLot[], o: Owned | undefined, foilOnly: bool
 /** All copies of a card as groups: the lots, then the copies without details. */
 export function copyGroups(lots: CopyLot[] | undefined, o: Owned | undefined, foilOnly: boolean): CopyGroup[] {
   const fitted = fitLots(lots || [], o, foilOnly)
-  const out: CopyGroup[] = fitted.map((l) => ({ foil: l.foil, n: l.n, lang: l.lang, cond: l.cond, buy: l.buy, lot: l }))
+  const out: CopyGroup[] = fitted.map((l) => ({ foil: l.foil, n: l.n, lang: l.lang, cond: l.cond, buy: lotCost(l), lot: l }))
   for (const foil of [false, true]) {
     const n = freeCopies(fitted, o, foilOnly, foil)
     if (n > 0) out.push({ foil, n, lang: DEFAULT_LANG, cond: DEFAULT_COND, buy: null })
@@ -181,13 +205,13 @@ export function soldGroups(lots: CopyLot[] | undefined, o: Owned | undefined, fo
   return out
 }
 
-/** Moves one copy of a lot into a new lot right after it (same foil, language and condition, no price),
+/** Moves one copy of a lot into a new lot right after it (same foil, language, condition and source, no price),
  *  so copies bought for different prices can each get their own. Lots with one copy stay as they are. */
 export function splitLot(lots: CopyLot[], id: string, newId: string): CopyLot[] {
   const i = lots.findIndex((l) => l.id === id)
   const l = lots[i]
   if (!l || l.n < 2) return lots
-  const one: CopyLot = { id: newId, foil: l.foil, n: 1, lang: l.lang, cond: l.cond, buy: null }
+  const one: CopyLot = { id: newId, foil: l.foil, n: 1, lang: l.lang, cond: l.cond, buy: null, ...(l.pulled ? { pulled: true } : {}) }
   return [...lots.slice(0, i), { ...l, n: l.n - 1 }, one, ...lots.slice(i + 1)]
 }
 

@@ -2189,7 +2189,8 @@ input[type="checkbox"] { accent-color: var(--primary); }
   font-size: 12.5px;
 }
 .copy-row-free { color: var(--muted); background: transparent; border: 1px dashed var(--border-strong); }
-.copy-free-text { flex: 1; min-width: 0; }
+/* Text on its own line, the Bought / Pulled buttons and the value below it. */
+.copy-free-text { flex: 1 1 100%; min-width: 0; }
 .copy-qty button { width: 24px; height: 24px; }
 .copy-select.select { width: auto; max-width: none; min-height: 28px; padding: 3px 26px 3px 10px; font-size: 12.5px; }
 .copy-tag { padding: 3px 10px; border-radius: 999px; background: var(--primary-soft); color: var(--accent2); font-weight: 600; font-size: 12px; }
@@ -2204,8 +2205,11 @@ input[type="checkbox"] { accent-color: var(--primary); }
 .copy-source button {
   border: 0; background: transparent; color: var(--muted); font: inherit; font-size: 12px; font-weight: 600;
   padding: 3px 10px; border-radius: 999px; cursor: pointer;
+  display: inline-flex; align-items: center; gap: 4px;
 }
 .copy-source button.on { background: var(--primary-soft); color: var(--accent2); }
+/* Pulled copies: their share of the booster / display price. */
+.copy-share { font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
 .copy-source button:hover:not(.on) { color: var(--text); }
 .copy-foot { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
 .copy-foot .sub { font-variant-numeric: tabular-nums; }
