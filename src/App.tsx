@@ -23,6 +23,7 @@ import {
   cardFitsSection,
   cardMatchesLegendDomains,
   deckTotalQtyById,
+  coverDeckLines,
   displayCardName,
   getLegendDomains,
   hasLegend,
@@ -637,6 +638,12 @@ function ArtImg({ src }: { src?: string }) {
       onError={(e) => { e.currentTarget.style.visibility = 'hidden' }}
     />
   )
+}
+
+/** One card for deck ownership: every print with the same name, title and type (alt art, overnumbered,
+ *  signed, reprints such as Kai'Sa from Origins in a later set) counts as the same card. */
+function cardKey(c: Card) {
+  return `${c.name}|${c.subtitle || ''}|${(c.types || []).join('/')}`.toLowerCase()
 }
 
 /** A deck that uses a card, with the number of copies in it. */
@@ -1500,6 +1507,72 @@ export default function App() {
     }
     return m
   }, [decks])
+
+  /** Every print of a card (alt art, overnumbered, signed, reprints in later sets) by `cardKey`. */
+  const printsByKey = useMemo(() => {
+    const m = new Map<string, string[]>()
+    for (const c of cards) {
+      const k = cardKey(c)
+      m.set(k, [...(m.get(k) || []), c.id])
+    }
+    return m
+  }, [cards])
+
+  function printsOf(id: string) {
+    const c = byId.get(id)
+    return c ? printsByKey.get(cardKey(c)) || [id] : [id]
+  }
+
+  /** Copies a deck can use of a card, counting every print of it (owning the alt art covers the base card). */
+  function poolAvailable(id: string) {
+    return printsOf(id).reduce((s, pid) => s + availableForDecks(pid), 0)
+  }
+
+  /** Copies of each card in a deck that the collection covers. A card's own print serves it first, then
+   *  the spare copies of its other prints (alt arts, reprints) fill the gaps, so no copy counts twice. */
+  function deckCoverage(d: Deck) {
+    const lines: { id: string; key: string; need: number; own: number }[] = []
+    const pool = new Map<string, number>()
+    for (const [id, need] of deckTotalQtyById(d.cards)) {
+      const c = byId.get(id)
+      const key = c ? cardKey(c) : id
+      lines.push({ id, key, need, own: availableForDecks(id) })
+      if (!pool.has(key)) pool.set(key, poolAvailable(id))
+    }
+    return coverDeckLines(lines, pool)
+  }
+
+  /** Other decks that use this card in any print, with their copies, and whether the collection has
+   *  enough copies for this deck and all of them together. */
+  function otherDeckUses(id: string, deck: Deck) {
+    const byDeck = new Map<string, DeckUse>()
+    for (const pid of printsOf(id)) {
+      for (const u of decksByCard.get(pid) || []) {
+        if (u.id === deck.id) continue
+        const cur = byDeck.get(u.id)
+        byDeck.set(u.id, cur ? { ...cur, qty: cur.qty + u.qty } : { ...u })
+      }
+    }
+    const uses = [...byDeck.values()]
+    const own = new Set(printsOf(id))
+    const here = deck.cards.filter((dc) => own.has(dc.id)).reduce((s, dc) => s + dc.qty, 0)
+    const enough = poolAvailable(id) >= here + uses.reduce((s, u) => s + u.qty, 0)
+    return { uses, enough }
+  }
+
+  /** "Also in Deck ×n" pills for the deck builder; orange when the copies do not cover every deck. */
+  function otherDeckPills(id: string, deck: Deck) {
+    const { uses, enough } = otherDeckUses(id, deck)
+    return uses.map((u) => (
+      <button
+        key={u.id}
+        type="button"
+        className={`ban-badge other-deck-badge${enough ? '' : ' short'}`}
+        title={enough ? t(lang, 'decks.alsoInHint', { deck: u.name }) : t(lang, 'decks.alsoInShort', { deck: u.name })}
+        onClick={() => openDeck(u.id)}
+      >{t(lang, 'decks.alsoIn', { deck: u.name, n: u.qty })}</button>
+    ))
+  }
 
   /** Copies no deck needs: what you can play with (owned + borrowed in − lent out) minus what all decks
    *  together use, so a card in two built decks needs both decks' copies. */
@@ -2538,6 +2611,8 @@ export default function App() {
     const atCap = count >= cap
     const locked = sectionNeedsLegend(sec) && !hasLegend(deck.cards)
     const cardsIn = deck.cards.filter((dc) => sectionOf(dc) === sec)
+    const cover = deckCoverage(deck)
+    const deckTotals = deckTotalQtyById(deck.cards)
     // Rune deck: plain runes as one big counter per Legend domain, alt art runes stay as rows.
     const runeDomains = sec === 'rune' ? getLegendDomains(deck.cards, byId) || [] : []
     const isPlainIn = (dc: (typeof cardsIn)[number]) => { const c = byId.get(dc.id); return !!c && isPlainRune(c) }
@@ -2617,9 +2692,10 @@ export default function App() {
           {listed.map((dc) => {
             const c = byId.get(dc.id)
             if (!c) return null
-            const have = availableForDecks(c.id)
-            const shortQty = Math.max(0, dc.qty - have)
-            const short = shortQty > 0
+            // Owned copies of this card in any print; short when the deck's copies are not all covered.
+            const have = poolAvailable(c.id)
+            const fromOtherPrints = have - availableForDecks(c.id)
+            const short = (cover.get(c.id) ?? 0) < (deckTotals.get(c.id) ?? 0)
             return (
               <div
                 key={`${dc.id}-${sec}`}
@@ -2646,6 +2722,7 @@ export default function App() {
                     <SetBadge c={c} /><BanBadge status={banStatus(c)} lang={lang} />
                     <ErrataBadge show={!!errataFor(c)} lang={lang} />
                     <BorrowedBadge from={borrowedInFrom.get(c.id)} lang={lang} />
+                    {otherDeckPills(c.id, deck)}
                   </div>
                   <div className="sub">
                     {c.energy != null ? `E${c.energy} · ` : ''}{c.code}
@@ -2653,9 +2730,10 @@ export default function App() {
                   <PriceBits entry={priceBook?.cards[c.id]} lang={lang} foilOnly={isFoilOnly(c)} />
                 </div>
                 {collectionButtons(c.id)}
-                <div className="row-stat">
+                <div className="row-stat" title={fromOtherPrints > 0 ? t(lang, 'decks.ownsOtherPrints', { n: fromOtherPrints }) : undefined}>
                   <span className="qty-label">{t(lang, 'decks.ownsLabel')}</span>
                   <b className={short ? 'short' : 'have'}>{have}</b>
+                  {fromOtherPrints > 0 && <span className="row-stat-note">{t(lang, 'decks.ownsAlt', { n: fromOtherPrints })}</span>}
                 </div>
                 {isSingleSlotSection(sec) ? (
                   <button
@@ -2764,9 +2842,10 @@ export default function App() {
 
   function underOwnedLines(d: Deck) {
     const totals = deckTotalQtyById(d.cards)
+    const cover = deckCoverage(d)
     const out: { id: string; name: string; need: number; have: number; short: number }[] = []
     for (const [id, need] of totals) {
-      const have = availableForDecks(id)
+      const have = cover.get(id) ?? 0
       if (need > have) {
         const c = byId.get(id)
         out.push({ id, name: c ? displayCardName(c) : id, need, have, short: need - have })
@@ -2839,6 +2918,8 @@ export default function App() {
     owns: number
     draggable: boolean
     note?: string
+    /** Extra pills in the tags line (deck builder: other decks that use the card). */
+    tags?: ReactNode
     add: { onClick: () => void; disabled?: boolean; title?: string; icon?: IconName; label?: string }
   }) {
     return (
@@ -2868,6 +2949,7 @@ export default function App() {
             <SetBadge c={c} /><BanBadge status={banStatus(c)} lang={lang} />
             <ErrataBadge show={!!errataFor(c)} lang={lang} />
             <BorrowedBadge from={borrowedInFrom.get(c.id)} lang={lang} />
+            {o.tags}
           </div>
           <div className="sub">
             {c.energy != null ? `E${c.energy} · ` : ''}{c.code}{o.note ? ` · ${o.note}` : ''}
@@ -2905,6 +2987,7 @@ export default function App() {
   /** Deck aggregate using Cardmarket Low (`ab`), non-foil — same primary as Katalog totals. */
   function deckPriceSums(d: Deck) {
     const totals = deckTotalQtyById(d.cards)
+    const cover = deckCoverage(d)
     let deckLow = 0
     let missingLow = 0
     let priced = 0
@@ -2914,7 +2997,7 @@ export default function App() {
       if (low == null || Number.isNaN(low)) continue
       deckLow += low * need
       priced += need
-      const have = availableForDecks(id)
+      const have = cover.get(id) ?? 0
       const short = Math.max(0, need - have)
       if (short > 0) {
         missingLow += low * short
@@ -4412,8 +4495,9 @@ export default function App() {
                     const full = sectionCount(activeDeck.cards, activeSection) >= SECTION_CAPS[activeSection]
                     const locked = sectionNeedsLegend(activeSection) && !hasLegend(activeDeck.cards)
                     return pickerCard(c, {
-                      // Same number as the deck rows: borrowed-from copies count, lent copies do not.
-                      owns: availableForDecks(c.id),
+                      // Same number as the deck rows: every print counts, borrowed-from copies count, lent copies do not.
+                      owns: poolAvailable(c.id),
+                      tags: otherDeckPills(c.id, activeDeck),
                       // Any section can be a drop target; each one checks its own cap and Legend rule on drop.
                       draggable: true,
                       add: {

@@ -57,7 +57,8 @@ Windows SmartScreen might complain the first time because the installer isn't si
 - Legend, Champion, Main Deck (39), Battlefields, Runes and Sideboard, with the usual limits
 - Find a Legend by typing the champion name
 - Drag cards from the search list into a deck section, and drag them out again to remove one copy per drag
-- Every deck card shows how many you own and how many the deck needs, with buttons to add or remove normal and foil copies in your collection
+- Every deck card shows how many you own and how many the deck needs, with buttons to add or remove normal and foil copies in your collection. Alt arts, overnumbered, signed and reprinted versions of a card count as the same card, so owning the alt art Kai'Sa covers the normal one in your deck and in the missing list
+- Cards that another deck uses get an "Also in Deck ×n" tag in the deck builder, red when your copies don't cover every deck at once. Click it to jump to that deck
 - Runes as one big counter per domain of your Legend. Add Runes lists the alt art and Nexus Night runes, the counters cover the normal ones
 - The open deck shows its Legend big, with the deck's value and what the missing copies would cost. Click the missing tile to list those cards by set with big images, add them to your collection, or copy them as a Cardmarket wants list
 - Import and export deck lists as text

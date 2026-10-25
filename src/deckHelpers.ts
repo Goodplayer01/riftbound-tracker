@@ -502,6 +502,27 @@ export function sanitizeDeckCards(deckCards: DeckCard[], byId: Map<string, Card>
 }
 
 
+/** Copies of each deck card the collection covers, when several prints count as one card.
+ *  `lines`: the deck's cards with their print group (`key`), copies needed and own copies of that print;
+ *  `pool`: owned copies per group over every print. A print serves its own lines first, then the spare
+ *  copies of the group fill the gaps in deck order, so no copy counts twice. */
+export function coverDeckLines(
+  lines: { id: string; key: string; need: number; own: number }[],
+  pool: Map<string, number>,
+): Map<string, number> {
+  const spare = new Map<string, number>()
+  for (const [k, n] of pool) spare.set(k, n)
+  for (const l of lines) spare.set(l.key, (spare.get(l.key) ?? 0) - Math.min(l.need, l.own))
+  const out = new Map<string, number>()
+  for (const l of lines) {
+    const own = Math.min(l.need, l.own)
+    const extra = Math.max(0, Math.min(l.need - own, spare.get(l.key) ?? 0))
+    spare.set(l.key, (spare.get(l.key) ?? 0) - extra)
+    out.set(l.id, own + extra)
+  }
+  return out
+}
+
 export function deckTotalQtyById(cards: DeckCard[]): Map<string, number> {
   const m = new Map<string, number>()
   for (const dc of cards) {
