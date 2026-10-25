@@ -73,6 +73,7 @@ Keep these keys and their shapes backward compatible. Users' collections live he
 - `rb.collection.v1`: `{ [cardId]: { qty, foil } }`. Don't change this shape. May still hold plain rune counts from older versions; the app ignores them.
 - `rb.copies.v1`: per-copy language, condition and purchase price (`src/copies.ts`), layered on top of the collection counts. A lot can carry `pulled: true` (opened from a pack: no `buy`, counted in the value, left out of paid / profit); older lots simply lack the field. `splitLot` moves one copy into its own lot so copies can have different prices.
 - `rb.backup.v1`: automatic backup.
+- `rb.backup.csvReplace.v1`: `{ at, file, collection, copies }`, the collection and copy details right before the last CSV import. CSV import replaces the whole collection (`importCsv` → confirm dialog → `applyCsvReplace`); a file without recognised cards changes nothing; stored plain rune counts are kept.
 - `rb.decks.v1`, `rb.wishlist.v1`, `rb.wishTargets.v1` (price alert targets), `rb.wishAlertsSeen.v1`, `rb.sales.v1`, `rb.borrowed.v1`, `rb.poolHidden`, `riftbound-lang`.
 - `rb.storeHome.v1`: the store search home location, a plain place string.
 - `rb.dopamin.v1`: Dopamin counters per set, `{ [set]: { packs, spent, value, best?: { id, eur } } }` (Cardmarket trend for packs and cards).

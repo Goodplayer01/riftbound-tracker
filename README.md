@@ -25,7 +25,7 @@ Windows SmartScreen might complain the first time because the installer isn't si
 - Normal and foil counts for every card. Cards that only exist as foil get a single counter
 - Plain runes are bulk and not tracked: no counters, not in set progress, All owned or the value, and a deck never misses them. Alt art runes are tracked like any other card
 - Quick import: paste card codes or a whole deck list
-- CSV import and export
+- CSV export, and CSV import that replaces your collection with the file (after asking; the old collection is kept as a backup)
 
 **Wishlist**
 

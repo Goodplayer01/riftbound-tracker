@@ -846,6 +846,7 @@ function prettyEventType(type: string | null) {
 
 const HIDE_NN_KEY = 'riftbound-hide-nexus-night'
 const STORE_HOME_KEY = 'rb.storeHome.v1'
+const CSV_BACKUP_KEY = 'rb.backup.csvReplace.v1'
 
 /** Last list wiped by delete all. Module scope: gone when the app process exits. */
 let deckListUndo: Deck[] | null = null
@@ -956,6 +957,8 @@ export default function App() {
   const [clearSec, setClearSec] = useState<DeckSection | null>(null)
   const [deckUndoOn, setDeckUndoOn] = useState(false)
   const [borrowUndoOn, setBorrowUndoOn] = useState(false)
+  /** A read CSV waiting for the "replace your collection?" confirmation. */
+  const [csvReplace, setCsvReplace] = useState<{ name: string; rows: Collection } | null>(null)
   const [deckConfirm, setDeckConfirm] = useState<null | { kind: 'all' } | { kind: 'one'; id: string; name: string } | { kind: 'borrow'; id: string; name: string } | { kind: 'borrowAll' } | { kind: 'wish'; id: string; name: string }>(null)
   /** Official errata by lower case "name" or "name, subtitle" (public/card-errata.json). */
   const [errata, setErrata] = useState<Record<string, CardErrata>>({})
@@ -2104,11 +2107,39 @@ export default function App() {
           foil: Math.max(0, Number(foil) || 0),
         }
       }
-      setCollection((prev) => ({ ...prev, ...rows }))
-      setBulkReport(t(lang, 'catalog.csvImported', { name: file.name, count: Object.keys(rows).length }))
-      setTab('collection')
+      // An empty or unreadable file must never wipe the collection.
+      if (!Object.keys(rows).length) {
+        setBulkReport(t(lang, 'catalog.csvEmpty', { name: file.name }))
+        setTab('collection')
+        return
+      }
+      setCsvReplace({ name: file.name, rows })
     }
     reader.readAsText(file)
+  }
+
+  /** The CSV becomes the collection: cards not in the file are removed. The old collection and copy
+   *  details go to rb.backup.csvReplace.v1 first, so a wrong file can be undone by hand. */
+  function applyCsvReplace() {
+    if (!csvReplace) return
+    const { name, rows } = csvReplace
+    setCsvReplace(null)
+    try {
+      localStorage.setItem(CSV_BACKUP_KEY, JSON.stringify({ at: new Date().toISOString(), file: name, collection: rawCollection, copies }))
+    } catch {
+      // Storage full: the replace still runs, the user confirmed it.
+    }
+    setCollection((prev) => {
+      // Plain runes are not tracked and not exported: keep whatever was stored for them.
+      const next: Collection = {}
+      for (const [id, o] of Object.entries(prev)) {
+        const c = byId.get(id)
+        if (c && isPlainRune(c)) next[id] = o
+      }
+      return { ...next, ...rows }
+    })
+    setBulkReport(t(lang, 'catalog.csvImported', { name, count: Object.keys(rows).length }))
+    setTab('collection')
   }
 
   function openWantsExport() {
@@ -5176,6 +5207,29 @@ export default function App() {
             <div className="confirm-actions">
               <button type="button" className="btn small" onClick={() => setDeckConfirm(null)}><Icon name="x" />{t(lang, 'decks.clearCancel')}</button>
               <button type="button" className="btn small deck-trash" onClick={applyDeckConfirm}><Icon name="trash-2" />{t(lang, 'decks.clearConfirm')}</button>
+            </div>
+          </div>
+        </div>
+      )}
+      {csvReplace && (
+        <div
+          className="card-lightbox"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="csv-replace-title"
+          onClick={() => setCsvReplace(null)}
+        >
+          <div className="panel confirm-box" onClick={(e) => e.stopPropagation()}>
+            <p id="csv-replace-title" className="help" style={{ margin: 0 }}>
+              {t(lang, 'catalog.csvReplaceConfirm', {
+                name: csvReplace.name,
+                now: totals.unique,
+                file: Object.values(csvReplace.rows).filter((o) => ownedQty(o) > 0).length,
+              })}
+            </p>
+            <div className="confirm-actions">
+              <button type="button" className="btn small" onClick={() => setCsvReplace(null)}><Icon name="x" />{t(lang, 'decks.clearCancel')}</button>
+              <button type="button" className="btn small deck-trash" onClick={applyCsvReplace}><Icon name="file-up" />{t(lang, 'catalog.csvReplace')}</button>
             </div>
           </div>
         </div>
