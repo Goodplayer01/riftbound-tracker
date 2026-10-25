@@ -205,7 +205,10 @@ const de: Record<string, string> = {
   'catalog.ownedOnly': 'Nur im Besitz',
   'catalog.csvExport': 'CSV Export',
   'catalog.csvImport': 'CSV Import',
-  'catalog.csvImported': 'CSV importiert ({name}): {count} Karten übernommen',
+  'catalog.csvImported': 'CSV importiert ({name}): Sammlung durch {count} Karten ersetzt. Die alte Sammlung liegt als Sicherung im Speicher.',
+  'catalog.csvEmpty': 'In „{name}“ wurden keine Karten erkannt. Die Sammlung bleibt unverändert.',
+  'catalog.csvReplace': 'Sammlung ersetzen',
+  'catalog.csvReplaceConfirm': 'Deine Sammlung ({now} verschiedene Karten) wird durch „{name}“ ({file} Karten) ersetzt. Karten, die nicht in der Datei stehen, werden aus der Sammlung entfernt, samt Sprache, Zustand und Einkaufspreis. Fortfahren?',
 
   'price.openCm': 'Auf Cardmarket öffnen',
   'price.low': 'Niedrigster Preis (ab)',
@@ -733,7 +736,10 @@ const en: Record<string, string> = {
   'catalog.ownedOnly': 'Owned only',
   'catalog.csvExport': 'CSV export',
   'catalog.csvImport': 'CSV import',
-  'catalog.csvImported': 'CSV imported ({name}): {count} cards updated',
+  'catalog.csvImported': 'CSV imported ({name}): collection replaced by {count} cards. The old collection is kept as a backup in storage.',
+  'catalog.csvEmpty': 'No cards found in "{name}". Your collection is unchanged.',
+  'catalog.csvReplace': 'Replace collection',
+  'catalog.csvReplaceConfirm': 'Your collection ({now} different cards) will be replaced by "{name}" ({file} cards). Cards not in the file are removed from the collection, along with their language, condition and purchase price. Continue?',
 
   'price.openCm': 'Open on Cardmarket',
   'price.low': 'Lowest price',
