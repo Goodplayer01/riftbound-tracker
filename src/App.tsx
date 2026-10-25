@@ -2773,7 +2773,7 @@ export default function App() {
                     {otherDeckPills(c.id, deck)}
                   </div>
                   <div className="sub">
-                    {c.energy != null ? `E${c.energy} · ` : ''}{c.code}
+                    {c.code}
                   </div>
                   <PriceBits entry={priceBook?.cards[c.id]} lang={lang} foilOnly={isFoilOnly(c)} />
                 </div>
@@ -2971,6 +2971,8 @@ export default function App() {
     note?: string
     /** Extra pills in the tags line (deck builder: other decks that use the card). */
     tags?: ReactNode
+    /** Deck builder: copies of this print already in the open deck (all sections). */
+    inDeck?: number
     add: { onClick: () => void; disabled?: boolean; title?: string; icon?: IconName; label?: string }
   }) {
     return (
@@ -3003,10 +3005,16 @@ export default function App() {
             {o.tags}
           </div>
           <div className="sub">
-            {c.energy != null ? `E${c.energy} · ` : ''}{c.code}{o.note ? ` · ${o.note}` : ''}
+            {c.code}{o.note ? ` · ${o.note}` : ''}
           </div>
           <PriceBits entry={priceBook?.cards[c.id]} lang={lang} foilOnly={isFoilOnly(c)} />
         </div>
+        {o.inDeck != null && (
+          <div className="row-stat">
+            <span className="qty-label">{t(lang, 'decks.inDeckLabel')}</span>
+            <b className={o.inDeck > 0 ? 'in-deck' : 'none'}>{o.inDeck}</b>
+          </div>
+        )}
         <div className="row-stat">
           <span className="qty-label">{t(lang, 'decks.ownsLabel')}</span>
           <b className={o.owns > 0 ? 'have' : 'short'}>{o.owns}</b>
@@ -3399,6 +3407,7 @@ export default function App() {
                     return (
                       <div className="deck-warn">
                         <div className="toolbar deck-warn-tools">
+                          <h3 className="deck-warn-title"><Icon name="list-x" />{t(lang, 'decks.missingTitle')}</h3>
                           <button type="button" className="btn small" onClick={() => openDeckMissingExport(activeDeck)}>
                             <Icon name="download" />{t(lang, 'cm.wantsBtn')}
                           </button>
@@ -3447,7 +3456,11 @@ export default function App() {
                                       {byId.get(u.id) && <SetBadge c={byId.get(u.id)!} />}
                                     </div>
                                     <div className="sub">{byId.get(u.id)?.code}</div>
-                                    <div className="sub">{t(lang, 'decks.needHave', { need: u.need, have: u.have })}</div>
+                                    <div className="miss-stats">
+                                      <span><small>{t(lang, 'decks.needLabel')}</small><b>{u.need}</b></span>
+                                      <span><small>{t(lang, 'decks.ownsLabel')}</small><b className={u.have > 0 ? 'have' : ''}>{u.have}</b></span>
+                                      <span className="miss"><small>{t(lang, 'decks.missingLabel')}</small><b>{u.short}</b></span>
+                                    </div>
                                     {collectionButtons(u.id)}
                                   </div>
                                 </div>
@@ -3569,7 +3582,7 @@ export default function App() {
                                               <div className="name">{name}</div>
                                               {c && (
                                                 <div className="sub">
-                                                  {c.energy != null ? `E${c.energy} · ` : ''}{c.code}
+                                                  {c.code}
                                                 </div>
                                               )}
                                             </div>
@@ -4549,6 +4562,7 @@ export default function App() {
                       // Same number as the deck rows: every print counts, borrowed-from copies count, lent copies do not.
                       owns: poolAvailable(c.id),
                       tags: otherDeckPills(c.id, activeDeck),
+                      inDeck: activeDeck.cards.filter((dc) => dc.id === c.id).reduce((s, dc) => s + dc.qty, 0),
                       // Any section can be a drop target; each one checks its own cap and Legend rule on drop.
                       draggable: true,
                       add: {
