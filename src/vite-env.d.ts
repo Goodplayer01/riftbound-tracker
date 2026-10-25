@@ -15,6 +15,7 @@ declare global {
   interface Window {
     riftbound?: {
       getVersion: () => Promise<string>
+      reload: () => Promise<void>
       installUpdate: () => Promise<void>
       downloadUpdate: () => Promise<{ ok: boolean; error?: string }>
       checkForUpdates: () => Promise<{ ok: boolean; dev?: boolean; version?: string; error?: string }>

@@ -199,6 +199,8 @@ async function setupAutoUpdater() {
 }
 
 ipcMain.handle('app:getVersion', () => app.getVersion())
+// The renderer's location.reload() is blocked by the will-navigate lock; a reload started here is not.
+ipcMain.handle('app:reload', (e) => e.sender.reload())
 ipcMain.handle('updater:install', () => {
   try {
     const { autoUpdater } = require('electron-updater')

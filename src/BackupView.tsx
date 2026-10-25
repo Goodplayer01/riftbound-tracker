@@ -179,7 +179,9 @@ export function BackupView({ lang, skip }: { lang: Lang; skip: (id: string) => b
     } catch {
       // Only the message after the reload is lost.
     }
-    location.reload()
+    // In the app the main process reloads: the window's navigation lock blocks location.reload().
+    if (api?.reload) await api.reload()
+    else location.reload()
   })
 
   const kindLabel = (k: BackupKind) => t(lang, `backup.kind.${k}`)
