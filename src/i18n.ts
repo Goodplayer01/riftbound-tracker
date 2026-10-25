@@ -547,8 +547,8 @@ const de: Record<string, string> = {
 
   'card.enlarge': 'Karte vergrößern',
   'card.enlargeClose': 'Schließen',
-  'card.prev': 'Vorherige Karte (←)',
-  'card.next': 'Nächste Karte (→)',
+  'card.prev': 'Vorherige Karte (← oder A)',
+  'card.next': 'Nächste Karte (→ oder D)',
   'card.priceLow': 'Ab (Low)',
   'card.priceAvg': 'Ø 30 Tage',
   'card.priceFoil': 'Foil',
@@ -1143,8 +1143,8 @@ const en: Record<string, string> = {
 
   'card.enlarge': 'Enlarge card',
   'card.enlargeClose': 'Close',
-  'card.prev': 'Previous card (←)',
-  'card.next': 'Next card (→)',
+  'card.prev': 'Previous card (← or A)',
+  'card.next': 'Next card (→ or D)',
   'card.priceLow': 'From (low)',
   'card.priceAvg': '30-day avg',
   'card.priceFoil': 'Foil',

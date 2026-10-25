@@ -1601,25 +1601,25 @@ body[data-removing] .deck-split > section:not([data-remove-src]) {
   display: flex; align-items: center; justify-content: center; padding: 0;
 }
 /* Previous/next card, at the window edges. No transform: the lightbox pop animation owns it. */
+/* Prev / next sit right beside the detail panel (flex order around .card-lightbox-inner), in the accent color. */
 .card-lightbox-nav {
-  position: absolute;
-  top: calc(50% - 24px);
+  flex: none;
   z-index: 1;
-  width: 48px;
-  height: 48px;
+  width: 52px;
+  height: 52px;
   border-radius: 999px;
   border: 0;
-  background: var(--material);
-  backdrop-filter: var(--blur);
-  box-shadow: var(--shadow-lg);
-  color: var(--text);
+  background: var(--primary);
+  box-shadow: var(--shadow-lg), 0 0 0 4px rgb(var(--primary-rgb) / .22);
+  color: var(--on-primary);
   cursor: pointer;
   display: flex; align-items: center; justify-content: center; padding: 0;
 }
-.card-lightbox-nav.prev { left: 18px; }
-.card-lightbox-nav.next { right: 18px; }
-.card-lightbox-nav:hover:not(:disabled) { color: var(--accent2, var(--accent)); }
-.card-lightbox-nav:disabled { opacity: .35; cursor: default; }
+.card-lightbox-nav.prev { order: 0; margin-right: 16px; }
+.card-lightbox-nav.next { order: 2; margin-left: 16px; }
+.card-lightbox-nav ~ .card-lightbox-inner { order: 1; max-width: min(780px, calc(96vw - 136px)); }
+.card-lightbox-nav:hover:not(:disabled) { background: var(--accent2); }
+.card-lightbox-nav:disabled { opacity: .25; cursor: default; box-shadow: none; }
 .card-lightbox-close:hover {
   border-color: rgb(var(--primary-rgb) / .55);
 }

@@ -3272,10 +3272,12 @@ export default function App() {
     if (!cardLightbox && !clearSec && deckExportText == null && !sharePreview && !cmExport) return
     const onKey = (e: KeyboardEvent) => {
       const onTop = cmExport || sharePreview || deckExportText != null || clearSec
-      if ((e.key === 'ArrowLeft' || e.key === 'ArrowRight') && cardLightbox && !onTop) {
-        if ((e.target as HTMLElement).closest('input, textarea, select')) return
+      // ← → or A D; never while typing or with a modifier (Ctrl+A selects all).
+      const dir = { ArrowLeft: 'prev', ArrowRight: 'next', a: 'prev', d: 'next' }[e.key.length === 1 ? e.key.toLowerCase() : e.key] as 'prev' | 'next' | undefined
+      if (dir && cardLightbox && !onTop && !e.ctrlKey && !e.metaKey && !e.altKey) {
+        if ((e.target as HTMLElement)?.closest?.('input, textarea, select')) return
         e.preventDefault()
-        const to = e.key === 'ArrowRight' ? lbNav.next : lbNav.prev
+        const to = lbNav[dir]
         if (to) openCardLightbox(to)
         return
       }
@@ -3302,8 +3304,11 @@ export default function App() {
    * data-card-id, and the list is the closest ancestor that holds more than one.
    */
   useEffect(() => {
-    if (!cardLightbox) return setLbNav({})
-    const outside = (el: Element) => !el.closest('.card-lightbox')
+    // Browsing only makes sense in the card grids: All owned, a set binder, the catalogue and the sales cart.
+    const browsable = tab === 'owned' || tab === 'catalog' || (tab === 'collection' && binderView != null) || (tab === 'sales' && salesView === 'cart')
+    if (!cardLightbox || !browsable) return setLbNav({})
+    // The search lists on the right are not part of the grid.
+    const outside = (el: Element) => !el.closest('.card-lightbox, .picker-card')
     const self = [...document.querySelectorAll(`[data-card-id="${CSS.escape(cardLightbox.id)}"]`)].find(outside)
     let box = self?.parentElement
     while (box && box.querySelectorAll('[data-card-id]').length < 2) box = box.parentElement
@@ -3316,7 +3321,7 @@ export default function App() {
     preloadArt(next?.image)
     preloadArt(prev?.image)
     setLbNav({ prev, next })
-  }, [cardLightbox, byId])
+  }, [cardLightbox, byId, tab, binderView, salesView])
 
   /** Bundled thumbnail shown in the large view until the full art has loaded. */
   const lbThumb = cardLightbox && cardThumb(cardLightbox) !== cardArt(cardLightbox.image) ? cardThumb(cardLightbox) : undefined
