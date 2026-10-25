@@ -167,6 +167,17 @@ export function groupEur(g: { foil: boolean; n: number; cond: Condition }, p: Pr
   return u == null ? null : g.n * u * CONDITION_FACTOR[g.cond]
 }
 
+/** Copies whose source is still open, worth at least `minEur` each: no lot at all, or bought without a price.
+ *  Pulled lots count as done, with or without a pack price. Cheaper copies are bulk nobody wants to sort. */
+export function unsourcedCopies(lots: CopyLot[] | undefined, o: Owned | undefined, foilOnly: boolean, p: PriceEntry | null | undefined, minEur: number) {
+  let n = 0
+  for (const g of copyGroups(lots, o, foilOnly)) {
+    const open = !g.lot || (!g.lot.pulled && g.lot.buy == null)
+    if (open && (unitEur(p, g.foil) ?? 0) * CONDITION_FACTOR[g.cond] >= minEur) n += g.n
+  }
+  return n
+}
+
 /** Value of every owned copy of a card, condition included. */
 export function cardEur(lots: CopyLot[] | undefined, o: Owned | undefined, foilOnly: boolean, p: PriceEntry | null | undefined) {
   let sum = 0

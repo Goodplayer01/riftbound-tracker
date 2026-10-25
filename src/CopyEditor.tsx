@@ -62,13 +62,15 @@ export function MoneyInput({ lang, value, onChange, placeholder, label }: {
 }
 
 /** "My copies" block in the card lightbox: language, condition and purchase price per copy. */
-export function CopyEditor({ lang, owned, lots, foilOnly, price, onChange }: {
+export function CopyEditor({ lang, owned, lots, foilOnly, price, onChange, defaultPack }: {
   lang: Lang
   owned: Owned | undefined
   lots: CopyLot[]
   foilOnly: boolean
   price: PriceEntry | undefined
   onChange: (lots: CopyLot[]) => void
+  /** Pack that "+ Pulled" fills in (source review: one display for a whole stack of cards). */
+  defaultPack?: PackSource
 }) {
   const total = (owned?.qty || 0) + (owned?.foil || 0)
   const groups = copyGroups(lots, owned, foilOnly)
@@ -85,7 +87,8 @@ export function CopyEditor({ lang, owned, lots, foilOnly, price, onChange }: {
 
   /** Copies without details become one lot at once, bought or pulled; lower its count to give the rest another source. */
   function assign(foil: boolean, n: number, pulled: boolean) {
-    onChange([...fitted, { id: crypto.randomUUID(), foil, n, lang: DEFAULT_LANG, cond: DEFAULT_COND, buy: null, ...(pulled ? { pulled: true } : {}) }])
+    const source = pulled ? { pulled: true, ...(defaultPack?.eur != null ? { pack: defaultPack } : {}) } : {}
+    onChange([...fitted, { id: crypto.randomUUID(), foil, n, lang: DEFAULT_LANG, cond: DEFAULT_COND, buy: null, ...source }])
   }
 
   function setPack(l: CopyLot, change: Partial<PackSource>) {

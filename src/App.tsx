@@ -75,9 +75,9 @@ import { Icon, type IconName } from './Icon'
 import { sellText, stockCsv, wantsText, type CmLine } from './cardmarket'
 import { historyPoints, loadPriceHistory, type PriceHistoryFile } from './priceHistory'
 import { ValueHistory, type InvestRow } from './ValueHistory'
-import { CONDITION_FACTOR, cardEur, cardInvest, copyGroups, fitCopyBook, lotCost, soldGroups, unitEur, type CopyBook, type CopyLot } from './copies'
+import { CONDITION_FACTOR, cardEur, cardInvest, copyGroups, fitCopyBook, lotCost, soldGroups, unitEur, unsourcedCopies, type CopyBook, type CopyLot, type PackSource } from './copies'
 import { CopyEditor, MoneyInput, fmtSignedEur } from './CopyEditor'
-import { cardArt, cardThumb, loadThumbIndex, preloadArt, thumbForImage } from './cardImages'
+import { cardArt, cardThumb, layeredArtBackground, loadThumbIndex, preloadArt, thumbForImage } from './cardImages'
 
 type Tab = 'collection' | 'owned' | 'catalog' | 'sales' | 'decks' | 'borrowed' | 'stores' | 'dopamin' | 'backup'
 
@@ -847,6 +847,8 @@ function prettyEventType(type: string | null) {
 
 const HIDE_NN_KEY = 'riftbound-hide-nexus-night'
 const STORE_HOME_KEY = 'rb.storeHome.v1'
+/** Source review skips copies cheaper than this: nobody sorts bulk. */
+const REVIEW_MIN_EUR = 1
 
 /** Last list wiped by delete all. Module scope: gone when the app process exits. */
 let deckListUndo: Deck[] | null = null
@@ -936,6 +938,14 @@ export default function App() {
   const [saleQ, setSaleQ] = useState('')
   const [salePaste, setSalePaste] = useState('')
   const [saleReport, setSaleReport] = useState<string | null>(null)
+  /** Sales tab: the cart, or the source review stack (bought or pulled, one card at a time). */
+  const [salesView, setSalesView] = useState<'cart' | 'review'>('cart')
+  /** Review card being edited: stays on screen until "Next", even once its copies are done. */
+  const [reviewId, setReviewId] = useState<string | null>(null)
+  const [reviewSkipped, setReviewSkipped] = useState<string[]>([])
+  const [reviewDone, setReviewDone] = useState(0)
+  /** What "+ Pulled" fills in during the review, so a whole display is one price entry. */
+  const [reviewPack, setReviewPack] = useState<PackSource>({ kind: 'display', eur: null })
   const [activeDeckId, setActiveDeckId] = useState<string | null>(() => decks[0]?.id ?? null)
   const [deckOwnedOnly, setDeckOwnedOnly] = useState(false)
   const [activeSection, setActiveSection] = useState<DeckSection>('main')
@@ -1484,6 +1494,46 @@ export default function App() {
     }
     return { copies: copiesN, paid, worth, rows }
   }, [copies, collection, byId, priceBook])
+
+  /** Owned cards with copies of REVIEW_MIN_EUR or more whose source is still open, most valuable first.
+   *  Built from the data itself, so the review can stop any time and pick up where it left off. */
+  const reviewStack = useMemo(() => {
+    const out: { card: Card; n: number; eur: number }[] = []
+    for (const [id, o] of Object.entries(collection)) {
+      const card = byId.get(id)
+      if (!card) continue
+      const p = priceBook?.cards[id]
+      const n = unsourcedCopies(copies[id], o, isFoilOnly(card), p, REVIEW_MIN_EUR)
+      if (n) out.push({ card, n, eur: cardEur(copies[id], o, isFoilOnly(card), p) })
+    }
+    return out.sort((a, b) => b.eur - a.eur)
+  }, [collection, copies, byId, priceBook])
+  const reviewOpen = reviewStack.filter((r) => !reviewSkipped.includes(r.card.id))
+  const reviewCard = (reviewId && ownedQty(collection[reviewId]) > 0 ? byId.get(reviewId) : undefined) ?? reviewOpen[0]?.card
+  const reviewLeft = reviewStack.find((r) => r.card.id === reviewCard?.id)?.n ?? 0
+  const reviewNextCard = reviewOpen.find((r) => r.card.id !== reviewCard?.id)?.card
+
+  /** Done cards count, unfinished ones are skipped for this session. */
+  function reviewNext() {
+    if (!reviewCard) return
+    if (reviewLeft > 0) setReviewSkipped((s) => [...s, reviewCard.id])
+    else setReviewDone((d) => d + 1)
+    setReviewId(null)
+  }
+
+  useEffect(() => { preloadArt(reviewNextCard?.image) }, [reviewNextCard])
+
+  // → moves on, unless the user is typing a price.
+  useEffect(() => {
+    if (tab !== 'sales' || salesView !== 'review') return
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== 'ArrowRight' || (e.target as HTMLElement)?.closest?.('input, select, textarea')) return
+      e.preventDefault()
+      reviewNext()
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  })
 
   const pricePoints = useMemo(() => {
     const points = historyPoints(priceHistory, priceBook)
@@ -4156,6 +4206,107 @@ export default function App() {
         )}
 
         {tab === 'sales' && (
+          <div className="stores-view-switch" role="tablist">
+            {(['cart', 'review'] as const).map((v) => (
+              <button
+                key={v}
+                type="button"
+                role="tab"
+                aria-selected={salesView === v}
+                className={`chip${salesView === v ? ' active' : ''}`}
+                onClick={() => setSalesView(v)}
+              >
+                <Icon name={v === 'cart' ? 'shopping-cart' : 'tag'} />
+                {t(lang, v === 'cart' ? 'sales.viewCart' : 'sales.viewReview')}
+                {v === 'review' && reviewStack.length > 0 && <span className="review-badge">{reviewStack.length}</span>}
+              </button>
+            ))}
+          </div>
+        )}
+
+        {tab === 'sales' && salesView === 'review' && (
+          <div className="review">
+            <div className="panel review-head">
+              <div className="review-count">
+                <b>{reviewStack.length}</b>
+                <span>{t(lang, 'review.cardsLeft')}</span>
+              </div>
+              <div className="grow">
+                <div>{t(lang, 'review.left', { copies: reviewStack.reduce((s, r) => s + r.n, 0), min: fmtEur(lang, REVIEW_MIN_EUR) ?? '' })}</div>
+                <div className="review-progress" aria-hidden="true">
+                  <span style={{ width: `${reviewDone + reviewStack.length ? (100 * reviewDone) / (reviewDone + reviewStack.length) : 100}%` }} />
+                </div>
+                <small className="muted">
+                  {t(lang, 'review.done', { n: reviewDone })}
+                  {reviewSkipped.length > 0 && (
+                    <> · <button type="button" className="link-btn" onClick={() => setReviewSkipped([])}>{t(lang, 'review.showSkipped', { n: reviewSkipped.length })}</button></>
+                  )}
+                </small>
+              </div>
+              <div className="review-pack">
+                <span className="qty-label">{t(lang, 'review.packLabel')}</span>
+                <div className="copy-line">
+                  <select
+                    className="select copy-select"
+                    aria-label={t(lang, 'copies.packKind')}
+                    value={reviewPack.kind}
+                    onChange={(e) => setReviewPack((p) => ({ ...p, kind: e.target.value as PackSource['kind'] }))}
+                  >
+                    <option value="booster">{t(lang, 'copies.booster')}</option>
+                    <option value="display">{t(lang, 'copies.display')}</option>
+                  </select>
+                  <MoneyInput lang={lang} value={reviewPack.eur} label={t(lang, 'copies.packPrice')} placeholder={t(lang, 'copies.packPh')} onChange={(eur) => setReviewPack((p) => ({ ...p, eur }))} />
+                </div>
+              </div>
+            </div>
+            {reviewCard ? (
+              <div className="panel review-card">
+                <button
+                  type="button"
+                  className="review-art"
+                  style={{ backgroundImage: layeredArtBackground(reviewCard) }}
+                  title={t(lang, 'card.enlarge')}
+                  aria-label={t(lang, 'card.enlarge')}
+                  onClick={() => openCardLightbox(reviewCard)}
+                />
+                <div className="review-info">
+                  <h2>{displayName(reviewCard)}</h2>
+                  <div className="card-tags">
+                    <SetBadge c={reviewCard} />
+                    {(decksByCard.get(reviewCard.id) || []).map((u) => (
+                      <button key={u.id} type="button" className="ban-badge other-deck-badge" title={t(lang, 'collection.openDeck', { deck: u.name })} onClick={() => openDeck(u.id)}>
+                        {t(lang, 'decks.inPill', { deck: u.name, n: u.qty })}
+                      </button>
+                    ))}
+                  </div>
+                  <div className="sub">{reviewCard.code}</div>
+                  <PriceBits entry={priceBook?.cards[reviewCard.id]} lang={lang} foilOnly={isFoilOnly(reviewCard)} />
+                  <CopyEditor
+                    lang={lang}
+                    owned={collection[reviewCard.id]}
+                    lots={copies[reviewCard.id] || []}
+                    foilOnly={isFoilOnly(reviewCard)}
+                    price={priceBook?.cards[reviewCard.id]}
+                    defaultPack={reviewPack}
+                    onChange={(lots) => { setReviewId(reviewCard.id); setCardLots(reviewCard.id, lots) }}
+                  />
+                  <div className="review-actions">
+                    <span className={reviewLeft > 0 ? 'muted' : 'value-up'}>
+                      {reviewLeft > 0 ? t(lang, 'review.openHere', { n: reviewLeft }) : t(lang, 'review.cardDone')}
+                    </span>
+                    <button type="button" className={`btn${reviewLeft > 0 ? '' : ' primary'}`} onClick={reviewNext} title={t(lang, 'review.keyHint')}>
+                      {t(lang, reviewLeft > 0 ? 'review.skip' : 'review.next')}<Icon name="chevron-right" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="panel empty">{t(lang, reviewStack.length ? 'review.allSkipped' : 'review.empty', { min: fmtEur(lang, REVIEW_MIN_EUR) ?? '' })}</div>
+            )}
+          </div>
+        )}
+
+        {tab === 'sales' && salesView === 'cart' && (
           <div className={`split deck-split${poolHidden ? ' pool-hidden' : ''}`}>
             <section className="panel col-fill" data-remove-src="sale">
               <div className="toolbar">

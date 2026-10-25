@@ -1,4 +1,4 @@
-import { cardEur, cardInvest, cleanCopyBook, fitLots, lotCost, packShare, parseEur, soldGroups, splitLot } from '../src/copies.ts'
+import { cardEur, cardInvest, cleanCopyBook, fitLots, lotCost, packShare, parseEur, soldGroups, splitLot, unsourcedCopies } from '../src/copies.ts'
 
 function assert(cond, msg) {
   if (!cond) throw new Error(msg)
@@ -55,6 +55,12 @@ assert(lotCost(packBook.p[0]) === 0.5 && lotCost(packBook.p[1]) === null && lotC
 const invPack = cardInvest(packBook.p, { qty: 3, foil: 0 }, false, price)
 assert(invPack.copies === 2 && invPack.paid === 1 && invPack.worth === 20, 'pulled copies with a pack price count, without one they do not')
 assert(splitLot(packBook.p, 'p', 'p2')[1].pulled === true, 'a copy split off a pulled lot stays pulled')
+
+// Source review: copies without a lot or bought without a price are open, pulled ones are done, bulk under the limit is left out.
+const rev = [lot('r1', false, 1, 2), lot('r2', false, 1, null), { ...lot('r3', false, 1, null), pulled: true }]
+assert(unsourcedCopies(rev, { qty: 5, foil: 0 }, false, { low: 3 }, 1) === 3, '1 bought without price + 2 without details')
+assert(unsourcedCopies(rev, { qty: 5, foil: 0 }, false, { low: 0.5 }, 1) === 0, 'bulk is left out')
+assert(unsourcedCopies([], { qty: 1, foil: 1 }, false, { low: 0.2, foilLow: 4 }, 1) === 1, 'only the foil is worth reviewing')
 
 // Splitting a lot: one copy moves into its own lot right after, without a price.
 const split = splitLot([a, b], 'a', 'a2')

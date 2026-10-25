@@ -2267,6 +2267,32 @@ input[type="checkbox"] { accent-color: var(--primary); }
 
 /* Store tab: display price comparison (StoreDisplays.tsx). */
 .stores-view-switch { display: flex; gap: 6px; margin-bottom: 10px; flex: none; }
+
+/* Sales → source review: one card at a time, worked off like a stack. */
+.review-badge {
+  min-width: 20px; padding: 0 6px; border-radius: 999px; font-size: 11px; font-weight: 700; line-height: 18px; text-align: center;
+  background: var(--primary); color: var(--on-primary);
+}
+.review { display: grid; gap: 14px; max-width: 1100px; }
+.review-head { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
+.review-count { display: grid; justify-items: center; min-width: 92px; padding: 8px 12px; border-radius: 12px; background: var(--panel2); }
+.review-count b { font-size: 28px; line-height: 1.1; color: var(--accent2); font-variant-numeric: tabular-nums; }
+.review-count span { font-size: 11px; font-weight: 650; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); }
+.review-progress { height: 6px; margin: 8px 0 6px; border-radius: 999px; background: var(--panel2); overflow: hidden; }
+.review-progress span { display: block; height: 100%; background: var(--positive); border-radius: inherit; transition: width .3s; }
+.review-pack { display: grid; gap: 4px; }
+.link-btn { border: 0; padding: 0; background: none; color: var(--accent2); font: inherit; cursor: pointer; }
+.link-btn:hover { text-decoration: underline; }
+.review-card { display: grid; grid-template-columns: minmax(240px, 360px) 1fr; gap: 24px; align-items: start; }
+.review-art {
+  aspect-ratio: 744 / 1039; width: 100%; border: 0; padding: 0; border-radius: 14px; cursor: zoom-in;
+  background: var(--panel2) center / cover no-repeat; box-shadow: var(--shadow);
+}
+.review-info { display: grid; gap: 8px; min-width: 0; }
+.review-info h2 { margin: 0; font-size: 24px; }
+.review-actions { display: flex; align-items: center; justify-content: flex-end; gap: 12px; margin-top: 6px; }
+.review-actions > span { margin-right: auto; font-weight: 600; }
+@media (max-width: 760px) { .review-card { grid-template-columns: 1fr; } }
 .disp-page { flex: 1; min-height: 0; overflow: auto; display: flex; flex-direction: column; gap: 10px; padding-right: 2px; }
 .disp-toolbar { flex: none; }
 .disp-chips { display: flex; flex-wrap: wrap; gap: 6px; }

@@ -71,6 +71,8 @@ Windows SmartScreen might complain the first time because the installer isn't si
 
 Put cards you want to sell in a cart by dragging them in, pasting a list or clicking the cart button, and drag them out again to take them back. Each card shows its price and the cart shows the total. Mark them as sold when they're gone and your collection is updated. You can't add more copies than you own. Export the cart as a list with trend prices or as a CSV with Cardmarket product ids.
 
+The second view, Add sources, works through every card whose copies don't say yet whether you bought or pulled them, one card at a time like a stack, most valuable first, with a counter of what's left. Bulk under 1 € per copy is left out. Set the booster or display you opened once and "+ Pulled" fills it in for every card. Skip a card or press → to move on, stop whenever you like and continue later right where you were.
+
 **Borrowed**
 
 Keep track of cards you lent to friends, sorted by person. Drag cards in from the search and out again when you get them back. Those copies don't count as available when you build decks.
