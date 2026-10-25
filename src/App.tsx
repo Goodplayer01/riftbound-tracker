@@ -6,6 +6,7 @@ import { ownedQty, saleSplit, subtractOwnedCopies } from './collection'
 import { fmtEur, loadLang, saveLang, t, type Lang } from './i18n'
 import { Dopamin } from './Dopamin'
 import { autoBackup, BackupView } from './BackupView'
+import { RulesView } from './RulesView'
 import { SearchInput } from './SearchInput'
 import {
   detectKeywordsInText,
@@ -75,11 +76,11 @@ import { Icon, type IconName } from './Icon'
 import { sellText, stockCsv, wantsText, type CmLine } from './cardmarket'
 import { historyPoints, loadPriceHistory, type PriceHistoryFile } from './priceHistory'
 import { ValueHistory, type InvestRow } from './ValueHistory'
-import { CONDITION_FACTOR, cardEur, cardInvest, copyGroups, fitCopyBook, lotCost, soldGroups, unitEur, unsourcedCopies, type CopyBook, type CopyLot, type PackSource } from './copies'
+import { CONDITION_FACTOR, cardEur, cardInvest, copyGroups, fitCopyBook, lotCost, PACK_KINDS, soldGroups, unitEur, unsourcedCopies, type CopyBook, type CopyLot, type PackSource } from './copies'
 import { CopyEditor, MoneyInput, fmtSignedEur } from './CopyEditor'
 import { cardArt, cardThumb, layeredArtBackground, loadThumbIndex, preloadArt, thumbForImage } from './cardImages'
 
-type Tab = 'collection' | 'owned' | 'catalog' | 'sales' | 'decks' | 'borrowed' | 'stores' | 'dopamin' | 'backup'
+type Tab = 'collection' | 'owned' | 'catalog' | 'sales' | 'decks' | 'borrowed' | 'stores' | 'dopamin' | 'rules' | 'backup'
 
 function uid() {
   return crypto.randomUUID()
@@ -956,7 +957,8 @@ export default function App() {
   const [exportTitleKey, setExportTitleKey] = useState('decks.exportTitle')
   const [deckExportCopied, setDeckExportCopied] = useState(false)
   const [deckShotBusy, setDeckShotBusy] = useState(false)
-  const [sharePreview, setSharePreview] = useState<{ dataUrl: string; fileName: string; exportText: string } | null>(null)
+  /** `copied`: the image is in the clipboard (copied right when the preview opens). */
+  const [sharePreview, setSharePreview] = useState<{ dataUrl: string; fileName: string; exportText: string; copied: boolean } | null>(null)
   const [missingExpanded, setMissingExpanded] = useState(false)
   const [cardPreview, setCardPreview] = useState<{ src: string; x: number; y: number } | null>(null)
   const [cardLightbox, setCardLightbox] = useState<Card | null>(null)
@@ -3092,11 +3094,20 @@ export default function App() {
         window.alert(t(lang, 'decks.shareFail'))
         return
       }
-      setSharePreview({ dataUrl: res.dataUrl, fileName: res.fileName, exportText: formatDeckList(deck) })
+      setSharePreview({ dataUrl: res.dataUrl, fileName: res.fileName, exportText: formatDeckList(deck), copied: await copyShareImage(res.dataUrl) })
     } catch {
       window.alert(t(lang, 'decks.shareFail'))
     } finally {
       setDeckShotBusy(false)
+    }
+  }
+
+  /** The share image into the clipboard; false when it could not be copied (the preview says so). */
+  async function copyShareImage(dataUrl: string) {
+    try {
+      return (await window.riftbound?.copyImage(dataUrl))?.ok === true
+    } catch {
+      return false
     }
   }
 
@@ -3272,10 +3283,12 @@ export default function App() {
     if (!cardLightbox && !clearSec && deckExportText == null && !sharePreview && !cmExport) return
     const onKey = (e: KeyboardEvent) => {
       const onTop = cmExport || sharePreview || deckExportText != null || clearSec
-      if ((e.key === 'ArrowLeft' || e.key === 'ArrowRight') && cardLightbox && !onTop) {
-        if ((e.target as HTMLElement).closest('input, textarea, select')) return
+      // ← → or A D; never while typing or with a modifier (Ctrl+A selects all).
+      const dir = { ArrowLeft: 'prev', ArrowRight: 'next', a: 'prev', d: 'next' }[e.key.length === 1 ? e.key.toLowerCase() : e.key] as 'prev' | 'next' | undefined
+      if (dir && cardLightbox && !onTop && !e.ctrlKey && !e.metaKey && !e.altKey) {
+        if ((e.target as HTMLElement)?.closest?.('input, textarea, select')) return
         e.preventDefault()
-        const to = e.key === 'ArrowRight' ? lbNav.next : lbNav.prev
+        const to = lbNav[dir]
         if (to) openCardLightbox(to)
         return
       }
@@ -3302,8 +3315,11 @@ export default function App() {
    * data-card-id, and the list is the closest ancestor that holds more than one.
    */
   useEffect(() => {
-    if (!cardLightbox) return setLbNav({})
-    const outside = (el: Element) => !el.closest('.card-lightbox')
+    // Browsing only makes sense in the card grids: All owned, a set binder, the catalogue and the sales cart.
+    const browsable = tab === 'owned' || tab === 'catalog' || (tab === 'collection' && binderView != null) || (tab === 'sales' && salesView === 'cart')
+    if (!cardLightbox || !browsable) return setLbNav({})
+    // The search lists on the right are not part of the grid.
+    const outside = (el: Element) => !el.closest('.card-lightbox, .picker-card')
     const self = [...document.querySelectorAll(`[data-card-id="${CSS.escape(cardLightbox.id)}"]`)].find(outside)
     let box = self?.parentElement
     while (box && box.querySelectorAll('[data-card-id]').length < 2) box = box.parentElement
@@ -3316,7 +3332,7 @@ export default function App() {
     preloadArt(next?.image)
     preloadArt(prev?.image)
     setLbNav({ prev, next })
-  }, [cardLightbox, byId])
+  }, [cardLightbox, byId, tab, binderView, salesView])
 
   /** Bundled thumbnail shown in the large view until the full art has loaded. */
   const lbThumb = cardLightbox && cardThumb(cardLightbox) !== cardArt(cardLightbox.image) ? cardThumb(cardLightbox) : undefined
@@ -3617,6 +3633,7 @@ export default function App() {
             ['borrowed', 'tab.borrowed', 'handshake'],
             ['stores', 'tab.stores', 'store'],
             ['dopamin', 'tab.dopamin', 'booster-open'],
+            ['rules', 'tab.rules', 'book-open'],
             ['backup', 'tab.backup', 'database-backup'],
           ] as const).map(([id, key, icon]) => (
             <button key={id} type="button" className={`side-item ${tab === id ? 'active' : ''}`} aria-current={tab === id ? 'page' : undefined} onClick={() => setTab(id)}>
@@ -4252,8 +4269,7 @@ export default function App() {
                     value={reviewPack.kind}
                     onChange={(e) => setReviewPack((p) => ({ ...p, kind: e.target.value as PackSource['kind'] }))}
                   >
-                    <option value="booster">{t(lang, 'copies.booster')}</option>
-                    <option value="display">{t(lang, 'copies.display')}</option>
+                    {PACK_KINDS.map((k) => <option key={k} value={k}>{t(lang, `copies.pack.${k}`)}</option>)}
                   </select>
                   <MoneyInput lang={lang} value={reviewPack.eur} label={t(lang, 'copies.packPrice')} placeholder={t(lang, 'copies.packPh')} onChange={(eur) => setReviewPack((p) => ({ ...p, eur }))} />
                 </div>
@@ -5171,6 +5187,7 @@ export default function App() {
         )}
 
         {tab === 'dopamin' && catalog && <Dopamin cards={catalog.cards} lang={lang} prices={priceBook} />}
+        {tab === 'rules' && <RulesView lang={lang} openLink={openLink} />}
         {tab === 'backup' && <BackupView lang={lang} skip={isUntracked} />}
 
       </main>
@@ -5202,10 +5219,24 @@ export default function App() {
               >
                 <Icon name="download" />{t(lang, 'decks.export')}
               </button>
-              <button type="button" className="btn small primary" onClick={downloadDeckShare}>
-                <Icon name="share-2" />{t(lang, 'decks.share')}
+              <button type="button" className="btn small" onClick={downloadDeckShare}>
+                <Icon name="image-down" />{t(lang, 'decks.shareSave')}
+              </button>
+              <button
+                type="button"
+                className="btn small primary"
+                onClick={async () => {
+                  const copied = await copyShareImage(sharePreview.dataUrl)
+                  setSharePreview((p) => (p ? { ...p, copied } : p))
+                }}
+              >
+                <Icon name="copy" />{t(lang, 'decks.shareCopy')}
               </button>
             </div>
+            <p className={`deck-share-status${sharePreview.copied ? ' ok' : ' fail'}`} role="status">
+              <Icon name={sharePreview.copied ? 'check' : 'x'} size={14} />
+              {t(lang, sharePreview.copied ? 'decks.shareCopied' : 'decks.shareCopyFail')}
+            </p>
             <div className="deck-share-img-wrap">
               <img src={sharePreview.dataUrl} alt={sharePreview.fileName} />
             </div>

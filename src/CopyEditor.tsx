@@ -11,6 +11,7 @@ import {
   freeCopies,
   groupEur,
   lotCost,
+  PACK_KINDS,
   packShare,
   parseEur,
   splitLot,
@@ -181,8 +182,7 @@ export function CopyEditor({ lang, owned, lots, foilOnly, price, onChange, defau
                             value={l.pack?.kind ?? 'booster'}
                             onChange={(e) => setPack(l, { kind: e.target.value as PackSource['kind'] })}
                           >
-                            <option value="booster">{t(lang, 'copies.booster')}</option>
-                            <option value="display">{t(lang, 'copies.display')}</option>
+                            {PACK_KINDS.map((k) => <option key={k} value={k}>{t(lang, `copies.pack.${k}`)}</option>)}
                           </select>
                           <MoneyInput lang={lang} value={l.pack?.eur ?? null} label={t(lang, 'copies.packPrice')} placeholder={t(lang, 'copies.packPh')} onChange={(eur) => setPack(l, { eur })} />
                           {share != null && (

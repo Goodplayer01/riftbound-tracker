@@ -1,4 +1,4 @@
-import { isBackupKey, makeBackup, parseBackup, restoreBackup, summarizeBackup } from '../src/backup.ts'
+import { isBackupKey, isEmptyBackup, makeBackup, parseBackup, restoreBackup, summarizeBackup } from '../src/backup.ts'
 
 function assert(cond, msg) {
   if (!cond) throw new Error(msg)
@@ -52,6 +52,10 @@ const parsed = parseBackup(text)
 assert(typeof parsed === 'object' && parsed.version === '0.9.35', 'own file parses')
 const s = summarizeBackup(parsed, (id) => id === 'rune')
 assert(s.cards === 1 && s.copies === 3 && s.decks === 2 && s.wish === 1 && s.sales === 1 && s.borrowed === 1, 'summary counts, untracked cards left out')
+
+// A fresh install (only the language set) is empty, so no automatic backup pushes the real one down.
+assert(isEmptyBackup(makeBackup(store({ 'riftbound-lang': 'de', 'rb.collection.v1': '{}' }), '1')), 'fresh install is empty')
+assert(!isEmptyBackup(parsed), 'real data is not empty')
 
 // Bad files change nothing.
 assert(parseBackup('not json') === 'invalid', 'not json')

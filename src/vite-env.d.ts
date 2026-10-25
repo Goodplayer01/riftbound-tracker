@@ -25,6 +25,7 @@ declare global {
       onFullscreen: (cb: (isFullScreen: boolean) => void) => () => void
       windowClose: () => Promise<void>
       openExternal: (url: string) => Promise<{ ok: boolean }>
+      copyImage: (dataUrl: string) => Promise<{ ok: boolean }>
       fetchJson: (url: string) => Promise<{ ok: boolean; data?: unknown; error?: string }>
       cardtrader: (path: string, token: string) => Promise<{ ok: boolean; data?: unknown; error?: string; status?: number }>
       rbEvents: (
@@ -37,6 +38,7 @@ declare global {
       backupExportAs: (text: string) => Promise<{ ok: boolean; path?: string; canceled?: boolean; error?: string }>
       backupImportFile: () => Promise<{ ok: boolean; name?: string; text?: string; canceled?: boolean; error?: string }>
       backupOpenFolder: () => Promise<{ ok: boolean }>
+      backupChooseFolder: () => Promise<{ ok: boolean; dir?: string; files?: BackupFileInfo[]; canceled?: boolean; error?: string }>
     }
   }
 }

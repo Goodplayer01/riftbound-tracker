@@ -20,6 +20,7 @@ contextBridge.exposeInMainWorld('riftbound', {
   },
   windowClose: () => ipcRenderer.invoke('window:close'),
   openExternal: (url) => ipcRenderer.invoke('shell:openExternal', url),
+  copyImage: (dataUrl) => ipcRenderer.invoke('clipboard:writeImage', dataUrl),
   fetchJson: (url) => ipcRenderer.invoke('net:fetchJson', url),
   cardtrader: (path, token) => ipcRenderer.invoke('net:cardtrader', path, token),
   rbEvents: (req) => ipcRenderer.invoke('net:rbEvents', req),
@@ -30,4 +31,5 @@ contextBridge.exposeInMainWorld('riftbound', {
   backupExportAs: (text) => ipcRenderer.invoke('backup:exportAs', text),
   backupImportFile: () => ipcRenderer.invoke('backup:importFile'),
   backupOpenFolder: () => ipcRenderer.invoke('backup:openFolder'),
+  backupChooseFolder: () => ipcRenderer.invoke('backup:chooseFolder'),
 })

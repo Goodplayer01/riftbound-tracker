@@ -21,7 +21,7 @@ Windows SmartScreen might complain the first time because the installer isn't si
 - Progress per rarity so you see what's still missing. In a set, click a rarity to show only those cards
 - Filters for owned, missing and missing foils in each set
 - Foil progress per set, what the missing cards would cost, and a missing list for Cardmarket or the wishlist
-- Language, condition and purchase price per copy, with profit or loss against today's price. Copies without details get Bought and Pulled buttons, so mixed copies take two clicks. Pulled copies can carry the price of the booster or display they came from: each card then costs its share (a booster holds 14 cards, a display 24 boosters) and counts for profit or loss. Split off a copy to give it its own price
+- Language, condition and purchase price per copy, with profit or loss against today's price. Copies without details get Bought and Pulled buttons, so mixed copies take two clicks. Pulled copies can carry the price of the product they came from (booster, display, Pre-Rift kit, box set like Proving Grounds, vault or precon deck): each card then costs its share of that product and counts for profit or loss. Split off a copy to give it its own price
 - Normal and foil counts for every card. Cards that only exist as foil get a single counter
 - Plain runes are bulk and not tracked: no counters, not in set progress, All owned or the value, and a deck never misses them. Alt art runes are tracked like any other card
 - Quick import: paste card codes or a whole deck list
@@ -64,7 +64,7 @@ Windows SmartScreen might complain the first time because the installer isn't si
 - Import and export deck lists as text. Card codes in brackets like `[RAD-SP3]` (Rift Atlas and similar) pick the exact print, alt arts included
 - Drag decks around to sort them
 - Delete asks first, and Delete all can be undone until you close the app
-- Once a deck is full you get a Share button that makes a clean image of the whole deck: Legend, runes, battlefields, main deck and sideboard with counts
+- Once a deck is full you get a Share button that makes a clean image of the whole deck: Legend, runes, battlefields, main deck and sideboard with counts. The image goes straight into your clipboard, so you just paste it into Discord or WhatsApp; saving it as a file is still there
 - Hand tester with mulligan
 
 **Sales**
@@ -89,9 +89,13 @@ The second view shows Riftbound stores on a map with a radius around you, taken 
 
 Open simulated booster packs for each set with the real pack art. Every slot of a real pack is in there: commons, uncommons, the token or rune slot, the foil slot, the rare slot and the slot that can turn into an Epic, Alt Art, Overnumbered, Signature or Ultimate. Cards flip one at a time with price and pull chance, or reveal the whole pack at once and see what it was worth. A counter per set adds up what the packs would have cost on Cardmarket against what you pulled, so you see whether you are up or down, plus your best pull. The odds are the ones Riot published (Epic 1 in 4 packs, Alt Art 1 in 12, Overnumbered 1 in 72, 1 in 10 of those signed, Ultimate 0.025 % in Radiance); the few slots Riot gave no numbers for are marked as estimates.
 
+**Da Rules**
+
+The official Riftbound Core Rules and Tournament Rules right in the app, with a search: type a rule number like `350.2` or a few words like `token play` in any order, matches are highlighted, and a click on a rule number shows it in context. The rules come from the PDFs Riot links on playriftbound.com and are checked every day, so a rules update shows up in the app without a new version.
+
 **Backup**
 
-Everything in the app fits in one JSON file: your collection with language, condition and purchase price, all decks, wishlist and price alerts, sales cart, borrowed lists, Dopamin counters and settings (your CardTrader token stays out). Export it to keep it safe or to move to another PC. Importing a file replaces everything in the app, after a warning that compares what you have now with what's in the file, and your current state is backed up first so you can go back. The app also backs up by itself once a day at startup into `Documents\Deakrix Riftbound Tracker\Backups`, outside the app, so the backups survive an uninstall. The Backup tab lists every backup with its date and contents and restores any of them with one click.
+Everything in the app fits in one JSON file: your collection with language, condition and purchase price, all decks, wishlist and price alerts, sales cart, borrowed lists, Dopamin counters and settings (your CardTrader token stays out). Export it to keep it safe or to move to another PC. Importing a file replaces everything in the app, after a warning that compares what you have now with what's in the file, and your current state is backed up first so you can go back. The app also backs up by itself once a day at startup into `Documents\Deakrix Riftbound Tracker\Backups`, outside the app, so the backups survive an uninstall. Pick your own backup folder if you like (a cloud drive folder, say). After a reinstall, choose your old folder again and the newest backup in it is offered for loading right away. The Backup tab lists every backup with its date and contents and restores any of them with one click.
 
 **Look and feel**
 
