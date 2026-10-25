@@ -281,6 +281,12 @@ button.side-value:hover { color: var(--primary); }
 .backup-compare tr:not(.picked) td { opacity: .45; }
 .backup-pick { display: inline-flex; align-items: center; gap: 8px; cursor: pointer; color: var(--text); font-weight: 600; }
 .backup-pick input { width: 16px; height: 16px; accent-color: var(--primary); cursor: pointer; }
+/* App and file already hold the same data for this part. */
+.backup-same {
+  padding: 1px 7px; border-radius: 999px; font-size: 10.5px; font-weight: 650; letter-spacing: .03em;
+  background: rgb(var(--info-rgb) / .16); color: var(--info);
+}
+.backup-same-note { margin: 0; padding: 8px 10px; border-radius: 10px; font-size: 13px; color: var(--info); background: rgb(var(--info-rgb) / .1); }
 .backup-compare thead .backup-pick { font-size: 11px; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); }
 
 .grid {
