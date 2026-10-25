@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { isEmptyBackup, makeBackup, parseBackup, restoreBackup, summarizeBackup, type BackupFile, type BackupSummary } from './backup'
+import { BACKUP_GROUPS, isEmptyBackup, makeBackup, parseBackup, restoreBackup, summarizeBackup, type BackupFile, type BackupGroup, type BackupSummary } from './backup'
 import { t, type Lang } from './i18n'
 import { Icon } from './Icon'
 import type { BackupFileInfo, BackupKind } from './vite-env'
@@ -34,6 +34,11 @@ const SUMMARY_ROWS: [keyof BackupSummary, string][] = [
   ['borrowed', 'backup.borrowed'],
 ]
 
+/** The main count per part for the now / file comparison; "other" has none. */
+const GROUP_COUNT: Record<BackupGroup, keyof BackupSummary | null> = {
+  collection: 'cards', decks: 'decks', wish: 'wish', sales: 'sales', borrowed: 'borrowed', other: null,
+}
+
 export function BackupView({ lang, skip }: { lang: Lang; skip: (id: string) => boolean }) {
   const api = window.riftbound
   const [dir, setDir] = useState('')
@@ -41,6 +46,8 @@ export function BackupView({ lang, skip }: { lang: Lang; skip: (id: string) => b
   const [notice, setNotice] = useState<{ error?: boolean; text: string } | null>(null)
   const [busy, setBusy] = useState(false)
   const [confirm, setConfirm] = useState<Confirm | null>(null)
+  /** Parts to replace. Starts empty: nothing is overwritten unless it was ticked on purpose. */
+  const [picked, setPicked] = useState<ReadonlySet<BackupGroup>>(new Set())
   const now = useMemo(() => summarizeBackup(makeBackup(localStorage, ''), skip), [skip])
   const fmtDate = (ms: number | string) =>
     new Date(ms).toLocaleString(lang === 'de' ? 'de-DE' : 'en-GB', { dateStyle: 'medium', timeStyle: 'short' })
@@ -71,6 +78,7 @@ export function BackupView({ lang, skip }: { lang: Lang; skip: (id: string) => b
       setNotice({ error: true, text: t(lang, b === 'newer' ? 'backup.newer' : 'backup.invalid', { name: label }) })
       return
     }
+    setPicked(new Set())
     setConfirm({ label, file: b, summary: summarizeBackup(b, skip) })
   }
 
@@ -132,7 +140,7 @@ export function BackupView({ lang, skip }: { lang: Lang; skip: (id: string) => b
 
   /** The current state goes to a before-import file first; if that fails nothing is overwritten. */
   const applyRestore = () => run(async () => {
-    if (!confirm) return
+    if (!confirm || picked.size === 0) return
     const pre = makeBackup(localStorage, (await api!.getVersion().catch(() => '')) || '')
     // An empty app (fresh install) has nothing to lose, and an empty file would become the newest one.
     if (!isEmptyBackup(pre)) {
@@ -140,7 +148,7 @@ export function BackupView({ lang, skip }: { lang: Lang; skip: (id: string) => b
       if (!saved.ok) throw new Error(saved.error)
     }
     try {
-      restoreBackup(localStorage, confirm.file)
+      restoreBackup(localStorage, confirm.file, picked)
     } catch (e) {
       restoreBackup(localStorage, pre)
       throw e
@@ -226,22 +234,62 @@ export function BackupView({ lang, skip }: { lang: Lang; skip: (id: string) => b
             </p>
             <table className="backup-compare">
               <thead>
-                <tr><th /><th>{t(lang, 'backup.now.col')}</th><th>{t(lang, 'backup.file.col')}</th></tr>
+                <tr>
+                  <th>
+                    <label className="backup-pick">
+                      <input
+                        type="checkbox"
+                        checked={picked.size === BACKUP_GROUPS.length}
+                        ref={(el) => { if (el) el.indeterminate = picked.size > 0 && picked.size < BACKUP_GROUPS.length }}
+                        onChange={(e) => setPicked(new Set(e.target.checked ? BACKUP_GROUPS : []))}
+                      />
+                      {t(lang, 'backup.pickAll')}
+                    </label>
+                  </th>
+                  <th>{t(lang, 'backup.now.col')}</th>
+                  <th>{t(lang, 'backup.file.col')}</th>
+                </tr>
               </thead>
               <tbody>
-                {SUMMARY_ROWS.map(([k, key]) => (
-                  <tr key={k} className={now[k] > confirm.summary[k] ? 'less' : ''}>
-                    <th>{t(lang, key)}</th>
-                    <td>{now[k].toLocaleString(lang)}</td>
-                    <td>{confirm.summary[k].toLocaleString(lang)}</td>
-                  </tr>
-                ))}
+                {BACKUP_GROUPS.map((g) => {
+                  const k = GROUP_COUNT[g]
+                  const count = (s: BackupSummary) => (!k ? '—' : g === 'collection'
+                    ? t(lang, 'backup.cardsCopies', { cards: s.cards.toLocaleString(lang), copies: s.copies.toLocaleString(lang) })
+                    : s[k].toLocaleString(lang))
+                  return (
+                    <tr key={g} className={`${picked.has(g) ? 'picked' : ''}${k && now[k] > confirm.summary[k] ? ' less' : ''}`}>
+                      <th>
+                        <label className="backup-pick" title={g === 'other' ? t(lang, 'backup.otherHint') : undefined}>
+                          <input
+                            type="checkbox"
+                            checked={picked.has(g)}
+                            onChange={(e) => setPicked((p) => {
+                              const n = new Set(p)
+                              if (e.target.checked) n.add(g)
+                              else n.delete(g)
+                              return n
+                            })}
+                          />
+                          {t(lang, `backup.group.${g}`)}
+                        </label>
+                      </th>
+                      <td>{count(now)}</td>
+                      <td>{count(confirm.summary)}</td>
+                    </tr>
+                  )
+                })}
               </tbody>
             </table>
             <p className="help" style={{ margin: 0 }}>{t(lang, 'backup.confirmSafe')}</p>
             <div className="confirm-actions">
               <button type="button" className="btn small" disabled={busy} onClick={() => setConfirm(null)}><Icon name="x" />{t(lang, 'decks.clearCancel')}</button>
-              <button type="button" className="btn small deck-trash" disabled={busy} onClick={applyRestore}><Icon name="file-up" />{t(lang, 'backup.confirmReplace')}</button>
+              <button
+                type="button"
+                className="btn small deck-trash"
+                disabled={busy || picked.size === 0}
+                title={picked.size === 0 ? t(lang, 'backup.pickFirst') : undefined}
+                onClick={applyRestore}
+              ><Icon name="file-up" />{t(lang, 'backup.confirmReplace', { n: picked.size })}</button>
             </div>
           </div>
         </div>

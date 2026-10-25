@@ -1,4 +1,4 @@
-import { isBackupKey, isEmptyBackup, makeBackup, parseBackup, restoreBackup, summarizeBackup } from '../src/backup.ts'
+import { backupGroup, isBackupKey, isEmptyBackup, makeBackup, parseBackup, restoreBackup, summarizeBackup } from '../src/backup.ts'
 
 function assert(cond, msg) {
   if (!cond) throw new Error(msg)
@@ -78,5 +78,23 @@ assert(target.getItem('rb.collection.v1') === user['rb.collection.v1'], 'collect
 assert(target.getItem('rb.decks.v1') === user['rb.decks.v1'], 'decks restored')
 assert(target.getItem('rb.dopamin.v1') === null, 'keys not in the file are removed')
 assert(target.getItem('rb.cardtrader.token.v1') === 'mine' && target.getItem('rb.prices.remote.v1') === '{}', 'token and caches untouched')
+
+// Restoring only some parts: same collection, own wishlist (and price alerts) and own decks stay.
+const mine = store({
+  'rb.collection.v1': '{"z":{"qty":9,"foil":0}}',
+  'rb.copies.v1': '{"z":[]}',
+  'rb.wishlist.v1': '{"mine":{"qty":1,"foil":0}}',
+  'rb.wishTargets.v1': '{"mine":5}',
+  'rb.decks.v1': '[{"id":"my"}]',
+  'rb.dopamin.v1': '{"OGN":{"packs":3}}',
+})
+restoreBackup(mine, parsed, new Set(['collection']))
+assert(mine.getItem('rb.collection.v1') === user['rb.collection.v1'] && mine.getItem('rb.copies.v1') === user['rb.copies.v1'], 'collection and its copy details replaced')
+assert(mine.getItem('rb.wishlist.v1') === '{"mine":{"qty":1,"foil":0}}' && mine.getItem('rb.wishTargets.v1') === '{"mine":5}', 'wishlist and alerts kept')
+assert(mine.getItem('rb.decks.v1') === '[{"id":"my"}]' && mine.getItem('rb.dopamin.v1') === '{"OGN":{"packs":3}}', 'other parts kept')
+restoreBackup(mine, parsed, new Set(['other']))
+assert(mine.getItem('rb.dopamin.v1') === null && mine.getItem('rb.storeHome.v1') === 'Köln', 'other: settings from the file, keys missing there removed')
+assert(mine.getItem('rb.decks.v1') === '[{"id":"my"}]', 'decks still kept')
+assert(backupGroup('rb.wishAlertsSeen.v1') === 'wish' && backupGroup('rb.someFutureKey.v1') === 'other', 'groups')
 
 console.log('check_backup ok')
