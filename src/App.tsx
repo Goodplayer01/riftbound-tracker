@@ -6,6 +6,7 @@ import { ownedQty, saleSplit, subtractOwnedCopies } from './collection'
 import { fmtEur, loadLang, saveLang, t, type Lang } from './i18n'
 import { Dopamin } from './Dopamin'
 import { autoBackup, BackupView } from './BackupView'
+import { RulesView } from './RulesView'
 import { SearchInput } from './SearchInput'
 import {
   detectKeywordsInText,
@@ -79,7 +80,7 @@ import { CONDITION_FACTOR, cardEur, cardInvest, copyGroups, fitCopyBook, lotCost
 import { CopyEditor, MoneyInput, fmtSignedEur } from './CopyEditor'
 import { cardArt, cardThumb, layeredArtBackground, loadThumbIndex, preloadArt, thumbForImage } from './cardImages'
 
-type Tab = 'collection' | 'owned' | 'catalog' | 'sales' | 'decks' | 'borrowed' | 'stores' | 'dopamin' | 'backup'
+type Tab = 'collection' | 'owned' | 'catalog' | 'sales' | 'decks' | 'borrowed' | 'stores' | 'dopamin' | 'rules' | 'backup'
 
 function uid() {
   return crypto.randomUUID()
@@ -3632,6 +3633,7 @@ export default function App() {
             ['borrowed', 'tab.borrowed', 'handshake'],
             ['stores', 'tab.stores', 'store'],
             ['dopamin', 'tab.dopamin', 'booster-open'],
+            ['rules', 'tab.rules', 'book-open'],
             ['backup', 'tab.backup', 'database-backup'],
           ] as const).map(([id, key, icon]) => (
             <button key={id} type="button" className={`side-item ${tab === id ? 'active' : ''}`} aria-current={tab === id ? 'page' : undefined} onClick={() => setTab(id)}>
@@ -5185,6 +5187,7 @@ export default function App() {
         )}
 
         {tab === 'dopamin' && catalog && <Dopamin cards={catalog.cards} lang={lang} prices={priceBook} />}
+        {tab === 'rules' && <RulesView lang={lang} openLink={openLink} />}
         {tab === 'backup' && <BackupView lang={lang} skip={isUntracked} />}
 
       </main>
