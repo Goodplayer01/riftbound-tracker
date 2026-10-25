@@ -31,6 +31,7 @@ Notes for Claude Code working in this repo. The README is the user-facing featur
 - Card tile layout: set / ban / errata pills in `.card-tags` on their own line under the name, borrowed pills in `.borrowed-tags` (one line each), then prices and the normal / foil counters in `.tile-foot`, pinned to the bottom so they line up across a grid row. Deck rows put their pills in a `.card-tags` line under the name too, so the name keeps the full width in window mode.
 - Prices: `PriceBits` is the only price display, `.price-boxes` with a small label over the value (From / Ø30 / Foil; foil only cards get one Foil box). Tiles stretch the boxes, list rows (`.list-item .price-boxes`) keep them compact and wrap. The card detail uses the bigger `.card-price-tiles`.
 - Drag and drop: search cards set `text/riftbound-card` and drop into deck sections, wishlist, sales cart and borrowed (`onSectionDrop`, `cartDrop`, `onBorrowDrop`). Cards in those lists drag out with `removeDragProps` (`text/riftbound-remove`): a drop outside the panel marked `data-remove-src` removes one copy.
+- Prints of one card: `cardKey` (name + subtitle + types) groups alt art, overnumbered, signed and reprints (`printsByKey`). Deck ownership uses the whole group: `poolAvailable` for the Owns numbers in the deck builder (rows and search), `deckCoverage` → `coverDeckLines` (deckHelpers, own print first, then spare copies of other prints, `scripts/check_decks.mjs`) for short rows, the Still missing list and the missing value. `otherDeckPills` tags deck rows and deck search cards with the other decks using any print of the card (red when the group's copies do not cover all decks). The All owned "Not needed in decks" filter still counts per print.
 - Deck rows: Collection panel (normal / foil steppers, `collectionButtons`) and Owns / Need. The "Still missing" list groups by set and exports a Cardmarket wants list. Runes show one counter per Legend domain.
 - Dopamin (`src/Dopamin.tsx`, `src/dopaminPacks.ts`): pack layout from Riot's Radiance overview, rates as constants with their source in `dopaminPacks.ts`. Slots without a published rate (token / alt rune, foil split) set `estimate` and the UI says so. `scripts/check-dopamin.mjs` checks layout and simulated rates.
 - Check `styles.css` before naming a new class. Reusing an existing name (e.g. `.deck-stat`, the deck header value tiles) silently pulls in its styles.
@@ -43,7 +44,7 @@ npm ci
 npm run dev:app      # Vite + Electron for local development
 npm run build        # tsc --noEmit + vite build (use this to check a change compiles)
 npm run dist         # build + Windows installer into release/
-node --experimental-strip-types scripts/check_v050.mjs   # same for check_v080, check_copies, check-dopamin, check_displays, check_borrow, check_stores
+node --experimental-strip-types scripts/check_v050.mjs   # same for check_v080, check_copies, check-dopamin, check_displays, check_borrow, check_stores, check_decks
 node scripts/check_errata.mjs
 ```
 
