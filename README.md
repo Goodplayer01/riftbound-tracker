@@ -23,6 +23,7 @@ Windows SmartScreen might complain the first time because the installer isn't si
 - Foil progress per set, what the missing cards would cost, and a missing list for Cardmarket or the wishlist
 - Language, condition and purchase price per copy, with profit or loss against today's price. Split off a copy to give it its own price, or mark copies as pulled from a pack (they count for the value, not for what you paid)
 - Normal and foil counts for every card. Cards that only exist as foil get a single counter
+- Plain runes are bulk and not tracked: no counters, not in set progress, All owned or the value, and a deck never misses them. Alt art runes are tracked like any other card
 - Quick import: paste card codes or a whole deck list
 - CSV import and export
 
