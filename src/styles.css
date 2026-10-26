@@ -885,20 +885,14 @@ textarea.field { min-height: 160px; resize: vertical; font-family: ui-monospace,
 .split.deck-split.pool-hidden { grid-template-columns: minmax(0, 1fr); }
 .split.deck-split.pool-hidden > .panel:last-child { display: none; }
 .sale-cart .row { align-items: center; }
-.sale-check { gap: 6px; cursor: pointer; }
-
-.sale-check {
-  display: flex;
-  align-items: center;
-  margin-right: 4px;
-  flex-shrink: 0;
-}
-.sale-check input {
-  width: 16px;
-  height: 16px;
-  accent-color: var(--accent);
-  cursor: pointer;
-}
+/* Cart tile foot: owned count and line value, then the full width "mark as sold" button. */
+.sale-foot { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+.sale-foot b { font-variant-numeric: tabular-nums; }
+.btn.sale-sold { width: 100%; justify-content: center; }
+/* "Mark as sold?" dialog: one line per card with the copies that leave the collection. */
+.sold-list { list-style: none; margin: 0; padding: 0; max-height: 40vh; overflow: auto; border-top: 1px solid var(--border); }
+.sold-list li { display: flex; justify-content: space-between; gap: 12px; padding: 6px 2px; border-bottom: 1px solid var(--border); font-size: 13px; }
+.sold-list b { white-space: nowrap; color: var(--danger); font-variant-numeric: tabular-nums; }
 .deck-acc-summary-row {
   display: flex;
   gap: 8px;

@@ -939,7 +939,8 @@ export default function App() {
   const [saleAsks, setSaleAsks] = useState<Record<string, number>>(loadSaleAsks)
   /** Sales search: all catalogue cards, or only owned ones. */
   const [saleOwnedOnly, setSaleOwnedOnly] = useState(false)
-  const [saleSelected, setSaleSelected] = useState<Record<string, boolean>>({})
+  /** Cards waiting for the "mark as sold?" confirmation (one tile or the whole cart). */
+  const [soldAsk, setSoldAsk] = useState<string[] | null>(null)
   const [saleQ, setSaleQ] = useState('')
   const [salePaste, setSalePaste] = useState('')
   const [saleReport, setSaleReport] = useState<string | null>(null)
@@ -2035,15 +2036,8 @@ export default function App() {
       const cur = prev[id] || 0
       const nextQty = Math.max(0, Math.min(have, cur + delta))
       const copy = { ...prev }
-      if (nextQty <= 0) {
-        delete copy[id]
-        setSaleSelected((sel) => {
-          if (!(id in sel)) return sel
-          const n = { ...sel }
-          delete n[id]
-          return n
-        })
-      } else copy[id] = nextQty
+      if (nextQty <= 0) delete copy[id]
+      else copy[id] = nextQty
       return copy
     })
   }
@@ -2053,25 +2047,13 @@ export default function App() {
     const nextQty = Math.max(0, Math.min(have, Math.floor(raw) || 0))
     setSaleList((prev) => {
       const copy = { ...prev }
-      if (nextQty <= 0) {
-        delete copy[id]
-        setSaleSelected((sel) => {
-          if (!(id in sel)) return sel
-          const n = { ...sel }
-          delete n[id]
-          return n
-        })
-      } else copy[id] = nextQty
+      if (nextQty <= 0) delete copy[id]
+      else copy[id] = nextQty
       return copy
     })
   }
 
-  function toggleSaleSelected(id: string) {
-    setSaleSelected((prev) => ({ ...prev, [id]: !prev[id] }))
-  }
-
-  const saleSelectedEntries = Object.entries(saleList).filter(([id, q]) => q > 0 && saleSelected[id])
-  const saleSelectedCount = saleSelectedEntries.length
+  const saleCartCount = Object.values(saleList).filter((q) => q > 0).length
   const saleQuery = saleQ.trim().toLowerCase()
   // The whole catalogue by default (owned counts can be set right there); plain runes are not tracked.
   const saleHits = (saleOwnedOnly ? ownedCards : cards.filter((c) => !isPlainRune(c))).filter((c) => {
@@ -2125,12 +2107,10 @@ export default function App() {
     )
   }
 
-  function confirmSale() {
-    const entries = Object.entries(saleList).filter(([id, q]) => q > 0 && saleSelected[id])
-    if (!entries.length) {
-      setSaleReport(t(lang, 'sales.noneSelected'))
-      return
-    }
+  /** Books the cart copies of these cards as sold: they leave the collection (normal first, then foil). */
+  function confirmSale(ids: string[]) {
+    const entries = Object.entries(saleList).filter(([id, q]) => q > 0 && ids.includes(id))
+    if (!entries.length) return
     let soldCards = 0
     let soldCopies = 0
     const notes: string[] = []
@@ -2153,11 +2133,6 @@ export default function App() {
     }
     setCollection(next)
     setSaleList((prev) => {
-      const copy = { ...prev }
-      for (const id of soldIds) delete copy[id]
-      return copy
-    })
-    setSaleSelected((prev) => {
       const copy = { ...prev }
       for (const id of soldIds) delete copy[id]
       return copy
@@ -4381,11 +4356,10 @@ export default function App() {
                 <span style={{ flex: 1 }} />
                 <button
                   className="btn primary"
-                  disabled={saleSelectedCount === 0}
-                  onClick={confirmSale}
-                  title={saleSelectedCount === 0 ? t(lang, 'sales.pickFirst') : undefined}
+                  disabled={saleCartCount === 0}
+                  onClick={() => setSoldAsk(Object.keys(saleList).filter((id) => saleList[id] > 0))}
                 >
-                  <Icon name="badge-check" />{t(lang, 'sales.markSold')}{saleSelectedCount > 0 ? ` (${saleSelectedCount})` : ''}
+                  <Icon name="badge-check" />{t(lang, 'sales.markAllSold')}{saleCartCount > 0 ? ` (${saleCartCount})` : ''}
                 </button>
                 <button type="button" className="btn" disabled={Object.keys(saleList).length === 0} onClick={openSellExport}><Icon name="file-down" />{t(lang, 'cm.sellBtn')}</button>
                 {poolToggle()}
@@ -4444,13 +4418,13 @@ export default function App() {
                             })}
                           />
                         </div>
-                        <div className="row">
-                          <label className="sale-check" title={t(lang, 'sales.selectForSale')}>
-                            <input type="checkbox" checked={!!saleSelected[id]} onChange={() => toggleSaleSelected(id)} />
-                            <span className="sub">{t(lang, 'decks.owns', { have })}</span>
-                          </label>
+                        <div className="sale-foot">
+                          <span className="sub">{t(lang, 'decks.owns', { have })}</span>
                           <b>{fmtEur(lang, line)}</b>
                         </div>
+                        <button type="button" className="btn small positive sale-sold" onClick={() => setSoldAsk([id])}>
+                          <Icon name="badge-check" />{t(lang, 'sales.markSold')}
+                        </button>
                       </CardTile>
                     )
                   })}
@@ -5368,6 +5342,39 @@ export default function App() {
               <button type="button" className="btn small primary" onClick={() => void copyDeckExport()}>
                 <Icon name={deckExportCopied ? 'check' : 'copy'} />{deckExportCopied ? t(lang, 'decks.copied') : t(lang, 'decks.copy')}
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {soldAsk && (
+        <div className="card-lightbox" role="dialog" aria-modal="true" aria-labelledby="sold-ask-title" onClick={() => setSoldAsk(null)}>
+          <div className="panel confirm-box" onClick={(e) => e.stopPropagation()}>
+            <h2 id="sold-ask-title">{t(lang, 'sales.soldConfirmTitle')}</h2>
+            <p className="help" style={{ margin: 0 }}>{t(lang, 'sales.soldConfirmText')}</p>
+            <ul className="sold-list">
+              {soldAsk.map((id) => {
+                const c = byId.get(id)
+                const split = saleSplit(collection[id], saleList[id] || 0)
+                return (
+                  <li key={id}>
+                    <span>{c ? displayName(c) : id}</span>
+                    <b>
+                      {[
+                        split.qty ? `${split.qty}× ${t(lang, 'qty.normal')}` : '',
+                        split.foil ? `${split.foil}× ${t(lang, 'qty.foil')}` : '',
+                      ].filter(Boolean).join(' · ')}
+                    </b>
+                  </li>
+                )
+              })}
+            </ul>
+            <div className="confirm-actions">
+              <button type="button" className="btn small" onClick={() => setSoldAsk(null)}><Icon name="x" />{t(lang, 'decks.clearCancel')}</button>
+              <button
+                type="button"
+                className="btn small deck-trash"
+                onClick={() => { const ids = soldAsk; setSoldAsk(null); confirmSale(ids) }}
+              ><Icon name="badge-check" />{t(lang, 'sales.soldConfirmOk', { n: soldAsk.reduce((s, id) => s + (saleList[id] || 0), 0) })}</button>
             </div>
           </div>
         </div>
