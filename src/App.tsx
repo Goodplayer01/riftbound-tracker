@@ -1,7 +1,7 @@
 import { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState, type DragEvent as ReactDragEvent, type MouseEvent as ReactMouseEvent, type PointerEvent as ReactPointerEvent, type ReactNode, type RefObject } from 'react'
 import { fetchRemotePrices, loadBundledPrices, loadCachedPrices, newerPriceBook } from './prices'
 import type { BorrowedCard, BorrowedGroup, Card, Catalog, Deck, DeckSection, PriceBook, PriceEntry } from './types'
-import { backupOnce, loadAlertsSeen, loadBorrowed, loadCollection, loadCopies, loadDecks, loadSales, loadWish, loadWishTargets, saveAlertsSeen, saveBorrowed, saveCollection, saveCopies, saveDecks, saveSales, saveWish, saveWishTargets, type Collection } from './storage'
+import { backupOnce, loadAlertsSeen, loadBorrowed, loadCollection, loadCopies, loadDecks, loadSaleAsks, loadSales, loadWish, loadWishTargets, saveAlertsSeen, saveBorrowed, saveCollection, saveCopies, saveDecks, saveSaleAsks, saveSales, saveWish, saveWishTargets, type Collection } from './storage'
 import { ownedQty, saleSplit, subtractOwnedCopies } from './collection'
 import { fmtEur, loadLang, saveLang, t, type Lang } from './i18n'
 import { Dopamin } from './Dopamin'
@@ -480,7 +480,7 @@ function AbilityMenu({ lang, open, setOpen, value, onChange, menuRef }: {
     <div className={`lang-menu${open ? ' open' : ''}`} ref={menuRef}>
       <button
         type="button"
-        className={`lang-trigger${open || value.length ? ' open' : ''}`}
+        className={`lang-trigger${open ? ' open' : ''}${value.length ? ' filtered' : ''}`}
         title={t(lang, 'filter.ability')}
         aria-label={t(lang, 'filter.ability')}
         aria-haspopup="menu"
@@ -547,7 +547,7 @@ function RarityMenu({
     <div className={`lang-menu${open ? ' open' : ''}`} ref={menuRef}>
       <button
         type="button"
-        className={`lang-trigger${open || signed || over || promo || ultimate ? ' open' : ''}`}
+        className={`lang-trigger${open ? ' open' : ''}${signed || over || promo || ultimate ? ' filtered' : ''}`}
         title={t(lang, 'filter.rarity')}
         aria-label={t(lang, 'filter.rarity')}
         aria-haspopup="menu"
@@ -935,6 +935,10 @@ export default function App() {
   const [quickMode, setQuickMode] = useState<'codes' | 'list'>('codes')
   const [bulkReport, setBulkReport] = useState<string | null>(null)
   const [saleList, setSaleList] = useState<Record<string, number>>(loadSales)
+  /** Cardmarket listing price per copy of a cart card, as entered by the user. */
+  const [saleAsks, setSaleAsks] = useState<Record<string, number>>(loadSaleAsks)
+  /** Sales search: all catalogue cards, or only owned ones. */
+  const [saleOwnedOnly, setSaleOwnedOnly] = useState(false)
   const [saleSelected, setSaleSelected] = useState<Record<string, boolean>>({})
   const [saleQ, setSaleQ] = useState('')
   const [salePaste, setSalePaste] = useState('')
@@ -1296,6 +1300,17 @@ export default function App() {
   useEffect(() => saveBorrowed(borrowed), [borrowed])
   useEffect(() => saveWish(wish), [wish])
   useEffect(() => saveSales(saleList), [saleList])
+  useEffect(() => saveSaleAsks(saleAsks), [saleAsks])
+  // A card that leaves the cart (sold or removed) drops its listing price.
+  useEffect(() => {
+    setSaleAsks((prev) => {
+      const gone = Object.keys(prev).filter((id) => !saleList[id])
+      if (!gone.length) return prev
+      const next = { ...prev }
+      for (const id of gone) delete next[id]
+      return next
+    })
+  }, [saleList])
   useEffect(() => saveCopies(copies), [copies])
   useEffect(() => saveWishTargets(wishTargets), [wishTargets])
   useEffect(() => saveAlertsSeen(alertsSeen), [alertsSeen])
@@ -1653,6 +1668,32 @@ export default function App() {
   function spareCopies(id: string) {
     const need = (decksByCard.get(id) || []).reduce((s, u) => s + u.qty, 0)
     return Math.max(0, availableForDecks(id) - need)
+  }
+
+  /** Sidebar tab change: every search and filter starts clean in the new tab (they are shared between tabs). */
+  function switchTab(next: Tab) {
+    if (next !== tab) {
+      setQ('')
+      setSetFilter('')
+      setTypeFilter('')
+      setOwnedOnly(false)
+      setRaritySigned(false)
+      setRarityOver(false)
+      setRarityPromo(false)
+      setRarityUltimate(false)
+      setAbilityFilter([])
+      setDomainFilter([])
+      setBinderRarity(null)
+      setBinderMissing(false)
+      setBinderMissingFoil(false)
+      setOwnedSet('')
+      setOwnedBorrowedOnly(false)
+      setOwnedNotInDeck(false)
+      setSaleQ('')
+      setSaleOwnedOnly(false)
+      setDeckOwnedOnly(false)
+    }
+    setTab(next)
   }
 
   /** Opens a deck in the Decks tab (from a card tile or the card detail). */
@@ -2032,7 +2073,8 @@ export default function App() {
   const saleSelectedEntries = Object.entries(saleList).filter(([id, q]) => q > 0 && saleSelected[id])
   const saleSelectedCount = saleSelectedEntries.length
   const saleQuery = saleQ.trim().toLowerCase()
-  const saleHits = ownedCards.filter((c) => {
+  // The whole catalogue by default (owned counts can be set right there); plain runes are not tracked.
+  const saleHits = (saleOwnedOnly ? ownedCards : cards.filter((c) => !isPlainRune(c))).filter((c) => {
     if (!saleQuery) return true
     return (
       c.name.toLowerCase().includes(saleQuery) ||
@@ -2961,6 +3003,8 @@ export default function App() {
     tags?: ReactNode
     /** Deck builder: copies of this print already in the open deck (all sections). */
     inDeck?: number
+    /** Normal / foil steppers to change the owned count right in the list (sales search). */
+    coll?: boolean
     add: { onClick: () => void; disabled?: boolean; title?: string; icon?: IconName; label?: string }
   }) {
     return (
@@ -3006,6 +3050,7 @@ export default function App() {
           </div>
           <PriceBits entry={priceBook?.cards[c.id]} lang={lang} foilOnly={isFoilOnly(c)} />
         </div>
+        {o.coll && collectionButtons(c.id)}
         {o.inDeck != null && (
           <div className="row-stat">
             <span className="qty-label">{t(lang, 'decks.inDeckLabel')}</span>
@@ -3636,7 +3681,7 @@ export default function App() {
             ['rules', 'tab.rules', 'book-open'],
             ['backup', 'tab.backup', 'database-backup'],
           ] as const).map(([id, key, icon]) => (
-            <button key={id} type="button" className={`side-item ${tab === id ? 'active' : ''}`} aria-current={tab === id ? 'page' : undefined} onClick={() => setTab(id)}>
+            <button key={id} type="button" className={`side-item ${tab === id ? 'active' : ''}`} aria-current={tab === id ? 'page' : undefined} onClick={() => switchTab(id)}>
               <Icon name={icon} />
               <span className="side-label">{t(lang, key)}</span>
               {id === 'collection' && newWishHits.length > 0 && (
@@ -4327,7 +4372,13 @@ export default function App() {
             <section className="panel col-fill" data-remove-src="sale">
               <div className="toolbar">
                 <h2 style={{ margin: 0 }}>{t(lang, 'sales.cart')}</h2>
-                <span className="deck-list-count" style={{ flex: 1 }}>{t(lang, 'wish.total', { eur: fmtEur(lang, Object.entries(saleList).reduce((sum, [id, n]) => { const c = byId.get(id); return sum + (c ? ownedLineEur(saleSplit(collection[id], n), priceBook?.cards[id]) : 0) }, 0)) ?? '' })}</span>
+                <span className="deck-list-count">{t(lang, 'wish.total', { eur: fmtEur(lang, Object.entries(saleList).reduce((sum, [id, n]) => { const c = byId.get(id); return sum + (c ? ownedLineEur(saleSplit(collection[id], n), priceBook?.cards[id]) : 0) }, 0)) ?? '' })}</span>
+                {Object.keys(saleAsks).some((id) => saleList[id]) && (
+                  <span className="deck-list-count">
+                    {t(lang, 'sales.listedTotal', { eur: fmtEur(lang, Object.entries(saleAsks).reduce((sum, [id, eur]) => sum + eur * (saleList[id] || 0), 0)) ?? '' })}
+                  </span>
+                )}
+                <span style={{ flex: 1 }} />
                 <button
                   className="btn primary"
                   disabled={saleSelectedCount === 0}
@@ -4377,6 +4428,22 @@ export default function App() {
                           </div>
                         }
                       >
+                        {/* Same bar as the wishlist price alert (wish-alert look on purpose). */}
+                        <div className="wish-alert">
+                          <span className="wish-alert-label"><Icon name="tag" size={13} />{t(lang, 'sales.listedFor')}</span>
+                          <MoneyInput
+                            lang={lang}
+                            value={saleAsks[id] ?? null}
+                            label={t(lang, 'sales.listedForHint')}
+                            placeholder={t(lang, 'alert.targetPh')}
+                            onChange={(v) => setSaleAsks((p) => {
+                              const n = { ...p }
+                              if (v == null) delete n[id]
+                              else n[id] = v
+                              return n
+                            })}
+                          />
+                        </div>
                         <div className="row">
                           <label className="sale-check" title={t(lang, 'sales.selectForSale')}>
                             <input type="checkbox" checked={!!saleSelected[id]} onChange={() => toggleSaleSelected(id)} />
@@ -4392,13 +4459,18 @@ export default function App() {
             </section>
             <section className="panel col-fill">
               <h2>{t(lang, 'sales.addTitle')}</h2>
-              <SearchInput
-                lang={lang}
-                placeholder={t(lang, 'sales.searchOwned')}
-                value={saleQ}
-                onChange={setSaleQ}
-                style={{ marginBottom: 10 }}
-              />
+              <div className="toolbar" style={{ marginBottom: 10 }}>
+                <SearchInput
+                  lang={lang}
+                  wrapClassName="grow"
+                  placeholder={t(lang, 'sales.search')}
+                  value={saleQ}
+                  onChange={setSaleQ}
+                />
+                <button type="button" className={`chip ${saleOwnedOnly ? 'active' : ''}`} aria-pressed={saleOwnedOnly} onClick={() => setSaleOwnedOnly((v) => !v)}>
+                  {t(lang, 'catalog.ownedOnly')}
+                </button>
+              </div>
               <div className="list">
                 {saleHits.map((c) => {
                   const have = ownedQty(collection[c.id])
@@ -4407,13 +4479,14 @@ export default function App() {
                     owns: have,
                     draggable: room > 0,
                     note: room < have ? t(lang, 'sales.inCart', { n: have - room }) : undefined,
+                    coll: true,
                     add: { onClick: () => addToSale(c.id, 1), disabled: room <= 0, title: t(lang, 'sales.toCart'), icon: 'shopping-cart', label: '' },
                   })
                 })}
-                {ownedCards.length === 0 && (
+                {saleOwnedOnly && ownedCards.length === 0 && (
                   <div className="empty">{t(lang, 'sales.noOwned')}</div>
                 )}
-                {ownedCards.length > 0 && saleHits.length === 0 && (
+                {saleHits.length === 0 && (!saleOwnedOnly || ownedCards.length > 0) && (
                   <div className="empty">{t(lang, 'sales.noHits', { q: saleQ.trim() })}</div>
                 )}
               </div>

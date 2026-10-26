@@ -62,6 +62,17 @@ export function saveSales(s: Record<string, number>) {
   writeJson(SALES_KEY, s)
 }
 
+/** What each cart card is listed for on Cardmarket, per copy: `{ [cardId]: eur }`. */
+const SALE_ASKS_KEY = 'rb.saleAsks.v1'
+
+export function loadSaleAsks(): Record<string, number> {
+  return readJson(SALE_ASKS_KEY, {})
+}
+
+export function saveSaleAsks(s: Record<string, number>) {
+  writeJson(SALE_ASKS_KEY, s)
+}
+
 const COPIES_KEY = 'rb.copies.v1'
 
 /** Language, condition and purchase price per copy. Separate from rb.collection.v1 so older

@@ -421,6 +421,8 @@ textarea.field { min-height: 160px; resize: vertical; font-family: ui-monospace,
   font-size: 12px; color: var(--muted); line-height: 1; white-space: nowrap;
 }
 .lang-trigger:hover, .lang-trigger.open { color: var(--text); background: var(--fill-hover); }
+/* A filter menu with something ticked: amber like an active chip, so a hidden filter is never missed. */
+.lang-trigger.filtered, .lang-trigger.filtered:hover { color: var(--on-primary); background: var(--primary); font-weight: 600; }
 .lang-caret { opacity: 0.7; transition: transform .15s ease; }
 .lang-trigger.open .lang-caret { transform: rotate(180deg); }
 .side-footer .lang-trigger .lang-caret { transform: rotate(180deg); }

@@ -95,7 +95,7 @@ assert(mine.getItem('rb.decks.v1') === '[{"id":"my"}]' && mine.getItem('rb.dopam
 restoreBackup(mine, parsed, new Set(['other']))
 assert(mine.getItem('rb.dopamin.v1') === null && mine.getItem('rb.storeHome.v1') === 'Köln', 'other: settings from the file, keys missing there removed')
 assert(mine.getItem('rb.decks.v1') === '[{"id":"my"}]', 'decks still kept')
-assert(backupGroup('rb.wishAlertsSeen.v1') === 'wish' && backupGroup('rb.someFutureKey.v1') === 'other', 'groups')
+assert(backupGroup('rb.wishAlertsSeen.v1') === 'wish' && backupGroup('rb.saleAsks.v1') === 'sales' && backupGroup('rb.someFutureKey.v1') === 'other', 'groups')
 
 // Same data in app and file: restoring that part changes nothing, so the dialog says so.
 const twin = store(user)
