@@ -25,7 +25,7 @@
    "oldText": "[Reaction] (Play any time, even before spells and abilities resolve.)\nChoose a friendly unit. Increase its Might until it equals the Might of another friendly unit.",
    "source": "https://playriftbound.com/en-us/news/rules-and-releases/riftbound-origins-card-errata/"
   },
-  "dark child, starter": {
+  "annie, dark child": {
    "newText": "At the end of your turn, ready up to 2 runes.",
    "oldText": "At the end of your turn, ready 2 runes.",
    "source": "https://playriftbound.com/en-us/news/rules-and-releases/riftbound-origins-card-errata/"
@@ -115,7 +115,7 @@
    "oldText": "[Hidden] (Hide now for [A] to react with later for [0].)\nWhen I defend or I'm played from [Hidden], reveal the top 5 cards of your Main Deck. Deal 1 to an enemy unit here for each card with [Hidden], then recycle them.",
    "source": "https://playriftbound.com/en-us/news/rules-and-releases/riftbound-origins-card-errata/"
   },
-  "the boss": {
+  "sett, the boss": {
    "newText": "If a buffed unit you control would die, you may pay [C], exhaust me, and spend its buff to heal it, exhaust it, and recall it instead. (Send it to base. This isn't a move.)\nWhen you conquer, ready me.",
    "oldText": "When a buffed unit you control would die, you may pay [C] and exhaust me to spend its buff and recall it exhausted instead. (Send it to base. This isn't a move.)\nWhen you conquer, ready me.",
    "source": "https://playriftbound.com/en-us/news/rules-and-releases/riftbound-origins-card-errata/"
@@ -135,7 +135,7 @@
    "oldText": "[Hidden] (Hide now for [A] to react with later for [0].)\nWhen you play me, you may choose a friendly unit. Move me to its location and it to my original location.",
    "source": "https://playriftbound.com/en-us/news/rules-and-releases/riftbound-origins-card-errata/"
   },
-  "unforgiven": {
+  "yasuo, unforgiven": {
    "newText": "[2], [E]: Move a friendly unit to or from its base.",
    "oldText": "[2], [E]: Move a friendly unit to or from your base.\nNote: Text only differs for English version of the card",
    "source": "https://playriftbound.com/en-us/news/rules-and-releases/riftbound-origins-card-errata/"
@@ -220,7 +220,7 @@
    "oldText": "[Deflect] (Opponents must pay [A] to choose me with a spell or ability.)\nWhile I'm at a battlefield, opponents can't score points.",
    "source": "https://playriftbound.com/en-us/news/rules-and-releases/riftbound-spiritforged-errata/"
   },
-  "void burrower": {
+  "rek'sai, void burrower": {
    "newText": "When you conquer, you may exhaust me to reveal the top 2 cards of your Main Deck. You may banish one, then play it. Recycle the rest.",
    "oldText": "When you conquer, you may exhaust me to reveal the top 2 cards of your Main Deck. You may play one. Then recycle the rest.",
    "source": "https://playriftbound.com/en-us/news/rules-and-releases/riftbound-spiritforged-errata/"
@@ -255,7 +255,7 @@
    "oldText": "[Hidden] (Hide now for [A] to react with later for [0].)\nChoose a battlefield. An opponent reveals their hand. You may choose a unit from it. They play that unit to that battlefield, ignoring any and all costs. When they do, [Stun] it. (It doesn't deal combat damage this turn.)",
    "source": "https://playriftbound.com/en-us/news/rules-and-releases/unleashed-errata-updates/"
   },
-  "deceiver": {
+  "leblanc, deceiver": {
    "newText": "When you conquer or hold, you may discard 1 and exhaust me to play a ready Reflection unit token there. Then do this: It becomes a copy of another unit there. Give it [Temporary].",
    "oldText": "When you conquer or hold, you may discard 1 and exhaust me to play a ready Reflection unit token there. It becomes a copy of another unit there. Give it [Temporary].",
    "source": "https://playriftbound.com/en-us/news/rules-and-releases/unleashed-errata-updates/"

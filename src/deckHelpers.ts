@@ -164,6 +164,8 @@ export function matchCardByName(cards: Card[], rawName: string, section?: DeckSe
     else if (nRight && cn === nLeft && cs && cs.includes(nRight)) hit = 85
     else if (!nRight && cn === nLeft) hit = 80
     else if (nRight && cs === nRight && cn.includes(nLeft)) hit = 70
+    // Old lists name a legend by its title alone ("Pridestalker"); the catalog says "Rengar, Pridestalker".
+    else if (!nRight && cs === nLeft && (c.types || []).includes('Legend')) hit = 75
     else continue
     const sectionBonus = section && cardFitsSection(c, section) ? 60 : 0
     scored.push({ c, score: hit + sectionBonus + printScore(c) })
