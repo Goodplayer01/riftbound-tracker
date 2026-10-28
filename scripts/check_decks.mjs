@@ -58,4 +58,15 @@ assert(got('UNL-145A') === 1, 'alt art Pyke by code')
 assert(got('RAD-109') === 1, 'name without comma finds the base card')
 assert(imp.unmatched.length === 0 && imp.cards.some((x) => x.section === 'rune' && x.qty === 6), 'unknown code falls back to the name')
 
+// Legends are "Champion, Title" like units, so every search finds them by champion.
+const legends = cards.filter((x) => x.types.includes('Legend'))
+assert(legends.every((x) => x.subtitle), `legends without a title: ${legends.filter((x) => !x.subtitle).map((x) => x.id).join(', ')}`)
+const rengar = byId.get(id('UNL-183'))
+assert(rengar.name === 'Rengar' && rengar.subtitle === 'Pridestalker', 'Pridestalker is Rengar, Pridestalker')
+assert(byId.get(id('RAD-139')).subtitle === 'Boy Who Shattered Time', 'Radiance legends got their title')
+// Old deck lists with the title alone still import; new ones carry the champion.
+const legImp = parseDeckImport('Legend:\n1 Pridestalker\nChampion:\n1 Rengar, Trophy Hunter', cards)
+assert(legImp.cards.some((x) => x.section === 'legend' && byId.get(x.id)?.subtitle === 'Pridestalker') && legImp.unmatched.length === 0, 'title-only legend imports')
+assert(parseDeckImport('Legend:\n1 Rengar, Pridestalker', cards).cards[0]?.id === id('UNL-183'), 'full legend name imports')
+
 console.log('ok')

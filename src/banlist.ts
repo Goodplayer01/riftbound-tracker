@@ -33,8 +33,8 @@ const STANDARD_BANNED = new Set(
 )
 
 /**
- * Extra 2v2-only bans. Catalog: name `Wuju Bladesman`, subtitle `Starter`
- * (ids ogs-019-024 / ogs-019-p). Also accept Rules Hub / display aliases.
+ * Extra 2v2-only bans. Catalog: legend `Master Yi, Wuju Bladesman` (ids ogs-019-024 / ogs-019-p,
+ * "Wuju Bladesman, Starter" before legends carried their champion). Also accept Rules Hub aliases.
  */
 const BANNED_2V2 = new Set(
   [

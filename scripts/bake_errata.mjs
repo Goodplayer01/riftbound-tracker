@@ -2,7 +2,7 @@
 // errata articles. Keyed by lower case card name ("name" or "name, subtitle"), so every printing
 // of a card gets its errata. Add new errata articles to PAGES and run:
 //   node scripts/bake_errata.mjs
-import { readFileSync, writeFileSync } from 'node:fs'
+import { writeFileSync } from 'node:fs'
 
 const BASE = 'https://playriftbound.com/en-us/news/'
 // Oldest first: a later article overrides an earlier errata of the same card.
@@ -66,13 +66,8 @@ export function parseErrata(html) {
 }
 
 if (process.argv[1]?.endsWith('bake_errata.mjs')) {
-  // Legends are listed as "Champion, Title" in the articles but only "Title" in the catalog.
-  const { cards } = JSON.parse(readFileSync(new URL('../public/cards.json', import.meta.url), 'utf8'))
-  const legends = new Set(cards.filter((c) => c.types?.includes('Legend')).map((c) => c.name.toLowerCase()))
-  const keyFor = (name) => {
-    const title = name.toLowerCase().split(', ')[1]
-    return legends.has(title) ? title : name.toLowerCase()
-  }
+  // Legends are "Champion, Title" in the articles and in the catalog (name + subtitle), like units.
+  const keyFor = (name) => name.toLowerCase()
   const byName = {}
   for (const slug of PAGES) {
     const res = await fetch(`${BASE}${slug}/`, { headers: { 'User-Agent': 'Mozilla/5.0' } })

@@ -306,28 +306,6 @@ function DeckThumb({ cardId, src, onOpen, openTitle, zoomIcon, lg }: { cardId?: 
   )
 }
 
-/** Champion name printed on legend art, taken from the Cardmarket slug (Rengar-Pridestalker). */
-function legendIdentityByName(cards: Card[], book: PriceBook | null) {
-  const m = new Map<string, string>()
-  if (!book) return m
-  for (const c of cards) {
-    if (!(c.types || []).includes('Legend')) continue
-    const url = book.cards[c.id]?.cmUrl
-    if (!url) continue
-    const slug = decodeURIComponent(url.split('?')[0].split('/').pop() || '').toLowerCase().replace(/['’.]/g, '')
-    const nameSlug = c.name.toLowerCase().replace(/['’.]/g, '').replace(/\s+/g, '-')
-    const idx = slug.indexOf(nameSlug)
-    if (idx <= 0) continue
-    const prefix = slug.slice(0, idx).replace(/-+$/, '').replace(/-/g, ' ').trim()
-    if (!prefix) continue
-    const key = c.name.toLowerCase()
-    const prev = m.get(key)
-    if (!prev) m.set(key, prefix)
-    else if (!prev.split(' ').includes(prefix) && prev !== prefix) m.set(key, `${prev} ${prefix}`)
-  }
-  return m
-}
-
 const RARITY_ORDER = ['Common', 'Uncommon', 'Rare', 'Epic', 'Showcase', 'Ultimate Rare'] as const
 
 function raritySlug(rarity: string) {
@@ -1322,7 +1300,6 @@ export default function App() {
   // Units are errata'd as "Name, Subtitle"; spells carry a champion subtitle but are listed by name.
   const errataFor = (c: Card): CardErrata | undefined =>
     (c.subtitle ? errata[`${c.name}, ${c.subtitle}`.toLowerCase()] : undefined) || errata[c.name.toLowerCase()]
-  const legendIds = useMemo(() => legendIdentityByName(cards, priceBook), [cards, priceBook])
   const allTypes = useMemo(() => {
     const s = new Set<string>()
     for (const c of cards) for (const t of c.types || []) if (t) s.add(t)
@@ -1348,7 +1325,6 @@ export default function App() {
       ...(c.types || []),
       c.rarity || '',
       ...(c.tags || []),
-      legendIds.get(c.name.toLowerCase()) || '',
     ].join(' ').toLowerCase()
   }
 
@@ -1440,7 +1416,7 @@ export default function App() {
       if (ownedOnly && ownedQty(collection[c.id]) <= 0) return false
       return matchesFilters(c, query)
     })
-  }, [cards, deferredQ, setFilter, typeFilter, domainFilter, raritySigned, rarityOver, rarityPromo, rarityUltimate, abilityFilter, ownedOnly, collection, legendIds])
+  }, [cards, deferredQ, setFilter, typeFilter, domainFilter, raritySigned, rarityOver, rarityPromo, rarityUltimate, abilityFilter, ownedOnly, collection])
 
   const ownedCards = useMemo(
     () => cards.filter((c) => ownedQty(collection[c.id]) > 0),
@@ -1807,7 +1783,7 @@ export default function App() {
       if (pa == null || pb == null) return (pa == null ? 1 : 0) - (pb == null ? 1 : 0) || bySet(a, b)
       return dir * (pa - pb) || bySet(a, b)
     })
-  }, [binderView, cards, collection, borrowedInTotals, deferredQ, binderOwnedOnly, binderMissing, binderMissingFoil, binderRarity, ownedSet, ownedSort, ownedBorrowedOnly, ownedNotInDeck, decksByCard, borrowedTotals, priceBook, domainFilter, raritySigned, rarityOver, rarityPromo, rarityUltimate, abilityFilter, legendIds])
+  }, [binderView, cards, collection, borrowedInTotals, deferredQ, binderOwnedOnly, binderMissing, binderMissingFoil, binderRarity, ownedSet, ownedSort, ownedBorrowedOnly, ownedNotInDeck, decksByCard, borrowedTotals, priceBook, domainFilter, raritySigned, rarityOver, rarityPromo, rarityUltimate, abilityFilter])
 
   /** Sets with owned cards, in binder order, for the All owned set filter. */
   const ownedSets = useMemo(() => {
@@ -4682,8 +4658,7 @@ export default function App() {
                     return (
                       c.name.toLowerCase().includes(query) ||
                       (c.subtitle || '').toLowerCase().includes(query) ||
-                      c.code.toLowerCase().includes(query) ||
-                      (legendIds.get(c.name.toLowerCase()) || '').includes(query)
+                      c.code.toLowerCase().includes(query)
                     )
                   })
                   .slice(0, 100)
