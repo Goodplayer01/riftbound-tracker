@@ -111,7 +111,7 @@ const GROUP_KEYS: [BackupGroup, string[]][] = [
   ['collection', ['rb.collection.v1', 'rb.copies.v1']],
   ['decks', ['rb.decks.v1']],
   ['wish', ['rb.wishlist.v1', 'rb.wishTargets.v1', 'rb.wishAlertsSeen.v1']],
-  ['sales', ['rb.sales.v1', 'rb.saleAsks.v1']],
+  ['sales', ['rb.sales.v1', 'rb.saleAsks.v1', 'rb.soldLog.v1']],
   ['borrowed', ['rb.borrowed.v1']],
 ]
 
