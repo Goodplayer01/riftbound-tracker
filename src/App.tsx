@@ -1,6 +1,6 @@
 import { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState, type DragEvent as ReactDragEvent, type MouseEvent as ReactMouseEvent, type PointerEvent as ReactPointerEvent, type ReactNode, type RefObject } from 'react'
 import { fetchRemotePrices, loadBundledPrices, loadCachedPrices, newerPriceBook } from './prices'
-import type { BorrowedCard, BorrowedGroup, Card, Catalog, Deck, DeckSection, PriceBook, PriceEntry } from './types'
+import type { BorrowedCard, BorrowedGroup, Card, Catalog, Deck, DeckSection, Owned, PriceBook, PriceEntry } from './types'
 import { backupOnce, loadAlertsSeen, loadBorrowed, loadCollection, loadCopies, loadDecks, loadSaleAsks, loadSales, loadSoldLog, loadWish, loadWishTargets, saveAlertsSeen, saveBorrowed, saveCollection, saveCopies, saveDecks, saveSaleAsks, saveSales, saveSoldLog, saveWish, saveWishTargets, type Collection } from './storage'
 import { ownedQty, saleSplit } from './collection'
 import { fmtEur, loadLang, saveLang, t, type Lang } from './i18n'
@@ -77,11 +77,26 @@ import { sellText, stockCsv, wantsText, type CmLine } from './cardmarket'
 import { historyPoints, loadPriceHistory, type PriceHistoryFile } from './priceHistory'
 import { ValueHistory, type InvestRow } from './ValueHistory'
 import { CONDITION_FACTOR, cardEur, cardInvest, copyGroups, fitCopyBook, lotCost, PACK_KINDS, soldGroups, unitEur, unsourcedCopies, type CopyBook, type CopyLot, type PackSource } from './copies'
-import { defaultPicks, groupKey, localDay, soldTotals, takeCopies, type SoldEntry } from './soldLog'
+import { CM_FEE_PCT, defaultPicks, entryProfit, feeFor, groupKey, localDay, parseCmSold, saleEntries, soldTotals, takeCopies, type SaleItem, type SoldEntry } from './soldLog'
 import { CopyEditor, MoneyInput, fmtSignedEur } from './CopyEditor'
 import { cardArt, cardThumb, layeredArtBackground, loadThumbIndex, preloadArt, thumbForImage } from './cardImages'
 
 type Tab = 'collection' | 'owned' | 'catalog' | 'sales' | 'decks' | 'borrowed' | 'stores' | 'dopamin' | 'rules' | 'backup'
+
+/** One sale line in the "mark as sold?" dialog: `n` copies of a card for `price` each. Import rows carry their own
+ *  date, Cardmarket shipment and `ref` (so a row is never booked twice). */
+type SoldItem = { id: string; n: number; price: number | null; at?: string; ref?: string; shipment?: string }
+type SoldAsk = {
+  items: SoldItem[]
+  picks: Record<string, number>[]
+  gone: number[]
+  source: 'cart' | 'manual' | 'import'
+  at: string
+  feePct: number
+  ship: number | null
+  dupes: number
+  unmatched: string[]
+}
 
 function uid() {
   return crypto.randomUUID()
@@ -918,18 +933,20 @@ export default function App() {
   const [saleAsks, setSaleAsks] = useState<Record<string, number>>(loadSaleAsks)
   /** Sales search: all catalogue cards, or only owned ones. */
   const [saleOwnedOnly, setSaleOwnedOnly] = useState(false)
-  /** Cards waiting for the "mark as sold?" confirmation (one tile or the whole cart), with the copies picked
-   *  per card (`groupKey` → count), the price per copy and the sale date. */
-  const [soldAsk, setSoldAsk] = useState<{ ids: string[]; picks: Record<string, Record<string, number>>; price: Record<string, number | null>; at: string } | null>(null)
-  /** Every sale: from "Mark as sold" and typed in by hand (`rb.soldLog.v1`). */
+  /** Sales waiting for the "mark as sold?" confirmation: from the cart, one card from the search or a Cardmarket
+   *  import. Per item the copies picked from the collection (`groupKey` → count) and the copies logged without
+   *  touching it (`gone`, e.g. already removed by hand); commission and shipping apply to the whole batch. */
+  const [soldAsk, setSoldAsk] = useState<SoldAsk | null>(null)
+  /** Every sale with price, cost, commission and shipping (`rb.soldLog.v1`). */
   const [soldLog, setSoldLog] = useState<SoldEntry[]>(loadSoldLog)
-  /** "Add a sale" form in the sold view; null while closed. */
-  const [soldDraft, setSoldDraft] = useState<{ name: string; n: number; foil: boolean; eur: number | null; cost: number | null; at: string; note: string } | null>(null)
+  const soldImportRef = useRef<HTMLInputElement>(null)
+  /** The last deleted log entry, for "Undo" (session only). */
+  const [soldUndo, setSoldUndo] = useState<SoldEntry | null>(null)
   const [saleQ, setSaleQ] = useState('')
   const [salePaste, setSalePaste] = useState('')
   const [saleReport, setSaleReport] = useState<string | null>(null)
   /** Sales tab: the cart, or the source review stack (bought or pulled, one card at a time). */
-  const [salesView, setSalesView] = useState<'cart' | 'review' | 'sold'>('cart')
+  const [salesView, setSalesView] = useState<'cart' | 'review'>('cart')
   /** Review card being edited: stays on screen until "Next", even once its copies are done. */
   const [reviewId, setReviewId] = useState<string | null>(null)
   const [reviewSkipped, setReviewSkipped] = useState<string[]>([])
@@ -1287,6 +1304,12 @@ export default function App() {
   useEffect(() => saveSales(saleList), [saleList])
   useEffect(() => saveSaleAsks(saleAsks), [saleAsks])
   useEffect(() => saveSoldLog(soldLog), [soldLog])
+  /** The sold list by month (YYYY-MM), newest first. */
+  const soldMonths = useMemo(() => {
+    const m = new Map<string, SoldEntry[]>()
+    for (const e of [...soldLog].sort((a, b) => b.at.localeCompare(a.at))) m.set(e.at.slice(0, 7), [...(m.get(e.at.slice(0, 7)) || []), e])
+    return [...m]
+  }, [soldLog])
   // A card that leaves the cart (sold or removed) drops its listing price.
   useEffect(() => {
     setSaleAsks((prev) => {
@@ -2100,74 +2123,119 @@ export default function App() {
   }
 
   /** Books the cart copies of these cards as sold: they leave the collection (normal first, then foil). */
-  function openSoldAsk(ids: string[]) {
-    const picks: Record<string, Record<string, number>> = {}
-    const price: Record<string, number | null> = {}
-    for (const id of ids) {
-      picks[id] = defaultPicks(copies[id], collection[id], foilOnlyId(id), saleSplit(collection[id], saleList[id] || 0))
-      price[id] = saleAsks[id] ?? null
-    }
-    setSoldAsk({ ids, picks, price, at: localDay() })
+  /** Walks the items in order and takes each one's picked copies, so two items of one card (two Cardmarket
+   *  orders) never take the same copy. `step` sees every item with what it took. */
+  function walkSoldItems(items: SoldItem[], pick: (i: number, before: { lots: CopyLot[] | undefined; owned: Owned | undefined }) => Record<string, number>, step: (i: number, before: { lots: CopyLot[] | undefined; owned: Owned | undefined }, r: ReturnType<typeof takeCopies>) => void) {
+    const lots = new Map<string, CopyLot[] | undefined>()
+    const owned = new Map<string, Owned | undefined>()
+    items.forEach((it, i) => {
+      const before = { lots: lots.has(it.id) ? lots.get(it.id) : copies[it.id], owned: owned.has(it.id) ? owned.get(it.id) : collection[it.id] }
+      const r = takeCopies(before.lots, before.owned, foilOnlyId(it.id), pick(i, before))
+      lots.set(it.id, r.lots)
+      owned.set(it.id, r.owned)
+      step(i, before, r)
+    })
+    return { lots, owned }
   }
 
-  function confirmSale(ask: NonNullable<typeof soldAsk>) {
-    const entries = Object.entries(saleList).filter(([id, q]) => q > 0 && ask.ids.includes(id))
-    if (!entries.length) return
-    let soldCards = 0
-    let soldCopies = 0
-    const notes: string[] = []
-    // Raw collection, so stored plain rune counts survive (the app only hides them).
+  function openSoldAsk(items: SoldItem[], source: SoldAsk['source'], extra?: { dupes?: number; unmatched?: string[] }) {
+    // Default picks item by item on what the earlier items left, like the old rule (normal first, no details first).
+    const picks: Record<string, number>[] = []
+    const gone: number[] = []
+    walkSoldItems(
+      items,
+      (i, before) => (picks[i] = defaultPicks(before.lots, before.owned, foilOnlyId(items[i].id), saleSplit(before.owned, items[i].n))),
+      (i, _before, r) => { gone[i] = Math.max(0, items[i].n - r.taken.reduce((s, x) => s + x.n, 0)) },
+    )
+    setSoldAsk({
+      items,
+      picks,
+      gone,
+      source,
+      at: localDay(),
+      // A card logged from the search is usually sold outside Cardmarket (cash), so no commission there.
+      feePct: source === 'manual' ? 0 : CM_FEE_PCT,
+      ship: null,
+      dupes: extra?.dupes ?? 0,
+      unmatched: extra?.unmatched ?? [],
+    })
+  }
+
+  function confirmSale(ask: SoldAsk) {
+    const items: SaleItem[] = []
+    // Only cards that really lost copies get written back: the others (e.g. a plain rune, hidden from
+    // `collection` but still counted in rawCollection) must keep their stored counts.
+    const touched = new Set<string>()
+    const nextLots = walkSoldItems(ask.items, (i) => ask.picks[i] || {}, (i, _before, r) => {
+      const it = ask.items[i]
+      const c = byId.get(it.id)
+      if (r.taken.length) touched.add(it.id)
+      items.push({
+        cardId: it.id,
+        name: c ? displayName(c) : it.id,
+        at: it.at ?? ask.at,
+        price: it.price,
+        ref: it.ref,
+        shipment: it.shipment,
+        lines: [
+          ...r.taken.map(({ g, n }) => ({ n, foil: g.foil, cost: g.buy, pulled: !!g.lot?.pulled })),
+          { n: ask.gone[i], foil: c ? isFoilOnly(c) : false, cost: null },
+        ],
+      })
+    })
+    const logged = saleEntries(items, { feePct: ask.feePct, ship: ask.ship, perShipment: ask.source === 'import', newId: () => crypto.randomUUID() })
+    if (!logged.length) return
+    const used = new Map<string, number>()
+    for (const e of logged) used.set(e.cardId!, (used.get(e.cardId!) || 0) + e.n)
+    const soldCopies = logged.reduce((s, e) => s + e.n, 0)
     const next = { ...rawCollection }
     const nextCopies = { ...copies }
-    const logged: SoldEntry[] = []
-    const soldIds = new Set<string>()
-    for (const [id, want] of entries) {
-      const c = byId.get(id)
-      const r = takeCopies(copies[id], collection[id], foilOnlyId(id), ask.picks[id] || {})
-      const sold = r.taken.reduce((s, x) => s + x.n, 0)
-      if (sold > 0) {
-        soldCards += 1
-        soldCopies += sold
-        soldIds.add(id)
-      }
-      if (sold < want && sold >= ownedQty(collection[id])) {
-        notes.push(t(lang, 'sales.short', { name: c ? displayName(c) : id, short: want - sold }))
-      }
-      if (r.owned.qty === 0 && r.owned.foil === 0) delete next[id]
-      else next[id] = r.owned
-      if (r.lots.length) nextCopies[id] = r.lots
+    for (const id of touched) {
+      const o = nextLots.owned.get(id)
+      if (!o || (o.qty === 0 && o.foil === 0)) delete next[id]
+      else next[id] = o
+      const lots = nextLots.lots.get(id)
+      if (lots?.length) nextCopies[id] = lots
       else delete nextCopies[id]
-      const price = ask.price[id] ?? null
-      for (const { g, n } of r.taken) {
-        logged.push({
-          id: crypto.randomUUID(),
-          at: ask.at,
-          cardId: id,
-          name: c ? displayName(c) : id,
-          foil: g.foil,
-          n,
-          eur: price == null ? null : price * n,
-          cost: g.buy == null ? null : g.buy * n,
-          ...(g.lot?.pulled ? { pulled: true } : {}),
-        })
-      }
     }
     setCopies(nextCopies)
     setCollection(next)
-    if (logged.length) setSoldLog((prev) => [...logged, ...prev])
+    setSoldLog((prev) => [...logged, ...prev])
+    // Sold copies leave the cart too, whichever way they were booked.
     setSaleList((prev) => {
       const copy = { ...prev }
-      for (const id of soldIds) delete copy[id]
+      for (const [id, n] of used) {
+        const left = (copy[id] || 0) - n
+        if (ask.source === 'cart' || left <= 0) delete copy[id]
+        else copy[id] = left
+      }
       return copy
     })
-    setSaleReport(
-      t(lang, 'sales.sold', {
-        cards: soldCards,
-        copies: soldCopies,
-        cardWord: cardWord(lang, soldCards),
-        copyWord: copyWord(lang, soldCopies),
-      }) + (notes.length ? ` ${notes.slice(0, 4).join(' · ')}` : ''),
-    )
+    const cards = used.size
+    setSaleReport(t(lang, 'sales.sold', { cards, copies: soldCopies, cardWord: cardWord(lang, cards), copyWord: copyWord(lang, soldCopies) }))
+  }
+
+  /** Reads Cardmarket's "Sold Articles" CSV and opens the sold dialog with the rows not booked yet. */
+  async function importCmSold(file: File) {
+    const { rows, skipped } = parseCmSold(await file.text())
+    const byCm = new Map<string, string>()
+    for (const [id, p] of Object.entries(priceBook?.cards || {})) if (p.cmId) byCm.set(String(p.cmId), id)
+    const booked = new Set(soldLog.map((e) => e.ref).filter(Boolean))
+    const unmatched: string[] = []
+    let dupes = 0
+    const items: SoldItem[] = []
+    for (const r of rows) {
+      if (booked.has(r.ref)) { dupes += 1; continue }
+      const id = byCm.get(r.productId)
+      if (!id) { unmatched.push(r.name); continue }
+      items.push({ id, n: r.n, price: r.price, at: r.at, ref: r.ref, shipment: r.shipment })
+    }
+    if (skipped) unmatched.push(t(lang, 'sold.badRows', { n: skipped }))
+    if (!items.length) {
+      setSaleReport(t(lang, 'sold.importNothing', { dupes, unmatched: unmatched.length }))
+      return
+    }
+    openSoldAsk(items, 'import', { dupes, unmatched })
   }
 
   function openWantsExport() {
@@ -3042,6 +3110,8 @@ export default function App() {
     /** Normal / foil steppers to change the owned count right in the list (sales search). */
     coll?: boolean
     add: { onClick: () => void; disabled?: boolean; title?: string; icon?: IconName; label?: string }
+    /** A second action next to the add button (sales search: log a sale of this card). */
+    extra?: ReactNode
   }) {
     return (
       <div
@@ -3097,6 +3167,7 @@ export default function App() {
           <span className="qty-label">{t(lang, 'decks.ownsLabel')}</span>
           <b className={o.owns > 0 ? 'have' : 'short'}>{o.owns}</b>
         </div>
+        {o.extra}
         <button
           type="button"
           className="btn small add"
@@ -4305,7 +4376,7 @@ export default function App() {
 
         {tab === 'sales' && (
           <div className="stores-view-switch" role="tablist">
-            {(['cart', 'review', 'sold'] as const).map((v) => (
+            {(['cart', 'review'] as const).map((v) => (
               <button
                 key={v}
                 type="button"
@@ -4314,8 +4385,8 @@ export default function App() {
                 className={`chip${salesView === v ? ' active' : ''}`}
                 onClick={() => setSalesView(v)}
               >
-                <Icon name={v === 'cart' ? 'shopping-cart' : v === 'review' ? 'tag' : 'coins'} />
-                {t(lang, v === 'cart' ? 'sales.viewCart' : v === 'review' ? 'sales.viewReview' : 'sales.viewSold')}
+                <Icon name={v === 'cart' ? 'shopping-cart' : 'tag'} />
+                {t(lang, v === 'cart' ? 'sales.viewCart' : 'sales.viewReview')}
                 {v === 'review' && reviewStack.length > 0 && <span className="review-badge">{reviewStack.length}</span>}
               </button>
             ))}
@@ -4403,120 +4474,6 @@ export default function App() {
           </div>
         )}
 
-        {tab === 'sales' && salesView === 'sold' && (() => {
-          const tot = soldTotals(soldLog)
-          const d = soldDraft
-          const canSave = !!d && d.name.trim() !== '' && d.n > 0
-          const saveDraft = () => {
-            if (!d || !canSave) return
-            const name = d.name.trim()
-            const card = cards.find((c) => displayName(c) === name)
-            setSoldLog((prev) => [{
-              id: crypto.randomUUID(),
-              at: d.at,
-              ...(card ? { cardId: card.id } : {}),
-              name,
-              foil: d.foil,
-              n: d.n,
-              eur: d.eur,
-              cost: d.cost,
-              ...(d.note.trim() ? { note: d.note.trim() } : {}),
-            }, ...prev])
-            setSoldDraft(null)
-          }
-          const sorted = [...soldLog].sort((a, b) => b.at.localeCompare(a.at))
-          return (
-            <div className="review">
-              <div className="panel sold-summary">
-                <div className="deck-stat"><span>{t(lang, 'sold.revenue')}</span><b>{fmtEur(lang, tot.revenue)}</b></div>
-                <div className="deck-stat"><span>{t(lang, 'sold.paid')}</span><b>{fmtEur(lang, tot.paid)}</b></div>
-                <div className={`deck-stat ${tot.profit >= 0 ? 'sold-up' : 'sold-down'}`}>
-                  <span>{t(lang, 'sold.profit')}</span>
-                  <b>{fmtSignedEur(lang, tot.profit)}</b>
-                  {tot.open > 0 && <small>{t(lang, 'sold.open', { n: tot.open })}</small>}
-                </div>
-                <button type="button" className="btn small add" onClick={() => setSoldDraft({ name: '', n: 1, foil: false, eur: null, cost: null, at: localDay(), note: '' })}>
-                  <Icon name="plus" />{t(lang, 'sold.add')}
-                </button>
-              </div>
-              {d && (
-                // No submit on Enter: the money fields commit on blur, so Enter would save the old amount.
-                <form className="panel sold-form" onSubmit={(e) => e.preventDefault()}>
-                  <label className="sold-form-name">
-                    {t(lang, 'sold.card')}
-                    <input className="field" list="sold-card-names" value={d.name} placeholder={t(lang, 'sold.cardPh')} onChange={(e) => setSoldDraft({ ...d, name: e.target.value })} autoFocus />
-                  </label>
-                  <datalist id="sold-card-names">
-                    {cards.filter((c) => !isPlainRune(c)).map((c) => <option key={c.id} value={displayName(c)} />)}
-                  </datalist>
-                  <label>
-                    {t(lang, 'sold.count')}
-                    <input className="field" type="number" min={1} value={d.n} onChange={(e) => setSoldDraft({ ...d, n: Math.max(1, Math.floor(Number(e.target.value)) || 1) })} />
-                  </label>
-                  <label className="sold-form-check">
-                    <input type="checkbox" checked={d.foil} onChange={(e) => setSoldDraft({ ...d, foil: e.target.checked })} />
-                    {t(lang, 'qty.foil')}
-                  </label>
-                  <label>
-                    {t(lang, 'sold.eurTotal')}
-                    <MoneyInput lang={lang} value={d.eur} label={t(lang, 'sold.eurTotal')} onChange={(eur) => setSoldDraft((p) => p && { ...p, eur })} />
-                  </label>
-                  <label>
-                    {t(lang, 'sold.costTotal')}
-                    <MoneyInput lang={lang} value={d.cost} label={t(lang, 'sold.costTotal')} onChange={(cost) => setSoldDraft((p) => p && { ...p, cost })} />
-                  </label>
-                  <label>
-                    {t(lang, 'sold.date')}
-                    <input className="field" type="date" value={d.at} onChange={(e) => e.target.value && setSoldDraft({ ...d, at: e.target.value })} />
-                  </label>
-                  <label className="sold-form-name">
-                    {t(lang, 'sold.note')}
-                    <input className="field" value={d.note} placeholder={t(lang, 'sold.notePh')} onChange={(e) => setSoldDraft({ ...d, note: e.target.value })} />
-                  </label>
-                  <p className="help sold-form-help">{t(lang, 'sold.addHelp')}</p>
-                  <div className="confirm-actions sold-form-actions">
-                    <button type="button" className="btn small" onClick={() => setSoldDraft(null)}><Icon name="x" />{t(lang, 'decks.clearCancel')}</button>
-                    <button type="button" className="btn small primary" disabled={!canSave} onClick={saveDraft}><Icon name="check" />{t(lang, 'sold.save')}</button>
-                  </div>
-                </form>
-              )}
-              {sorted.length === 0 ? (
-                <p className="help">{t(lang, 'sold.empty')}</p>
-              ) : (
-                <div className="panel sold-log">
-                  {sorted.map((e) => {
-                    const profit = e.eur != null && e.cost != null ? e.eur - e.cost : null
-                    const card = e.cardId ? byId.get(e.cardId) : undefined
-                    return (
-                      <div key={e.id} className="sold-row">
-                        <span className="sold-at">{new Date(`${e.at}T12:00:00`).toLocaleDateString(lang === 'de' ? 'de-DE' : 'en-GB')}</span>
-                        <span className="sold-name">
-                          {card ? (
-                            <button type="button" className="name-link" onClick={() => openCardLightbox(card)}>{e.n}× {e.name}</button>
-                          ) : <b>{e.n}× {e.name}</b>}
-                          <small>
-                            {[e.foil ? t(lang, 'qty.foil') : t(lang, 'qty.normal'), e.pulled ? t(lang, 'sold.pulled') : '', e.note ?? ''].filter(Boolean).join(' · ')}
-                          </small>
-                        </span>
-                        <span className="sold-num"><small>{t(lang, 'sold.eur')}</small>{fmtEur(lang, e.eur) ?? '—'}</span>
-                        <span className="sold-num"><small>{t(lang, 'sold.cost')}</small>{fmtEur(lang, e.cost) ?? '—'}</span>
-                        <span className={`sold-num ${profit == null ? '' : profit >= 0 ? 'sold-up' : 'sold-down'}`}><small>{t(lang, 'sold.profit')}</small>{profit == null ? '—' : fmtSignedEur(lang, profit)}</span>
-                        <button
-                          type="button"
-                          className="btn icon deck-trash"
-                          aria-label={t(lang, 'sold.delete')}
-                          title={t(lang, 'sold.delete')}
-                          onClick={() => { if (window.confirm(t(lang, 'sold.deleteAsk', { name: e.name }))) setSoldLog((prev) => prev.filter((x) => x.id !== e.id)) }}
-                        ><Icon name="trash-2" size={16} /></button>
-                      </div>
-                    )
-                  })}
-                </div>
-              )}
-            </div>
-          )
-        })()}
-
         {tab === 'sales' && salesView === 'cart' && (
           <div className={`split deck-split${poolHidden ? ' pool-hidden' : ''}`}>
             <section className="panel col-fill" data-remove-src="sale">
@@ -4532,7 +4489,7 @@ export default function App() {
                 <button
                   className="btn primary"
                   disabled={saleCartCount === 0}
-                  onClick={() => openSoldAsk(Object.keys(saleList).filter((id) => saleList[id] > 0))}
+                  onClick={() => openSoldAsk(Object.entries(saleList).filter(([, n]) => n > 0).map(([id, n]) => ({ id, n, price: saleAsks[id] ?? null })), 'cart')}
                 >
                   <Icon name="badge-check" />{t(lang, 'sales.markAllSold')}{saleCartCount > 0 ? ` (${saleCartCount})` : ''}
                 </button>
@@ -4540,6 +4497,31 @@ export default function App() {
                 {poolToggle()}
               </div>
               {saleReport && <p className="help">{saleReport}</p>}
+              {(() => {
+                const tot = soldTotals(soldLog)
+                return (
+                  <div className="sold-summary">
+                    <div className="deck-stat"><span>{t(lang, 'sold.revenue')}</span><b>{fmtEur(lang, tot.revenue)}</b></div>
+                    <div className="deck-stat"><span>{t(lang, 'sold.fees')}</span><b>{fmtEur(lang, tot.fees)}</b></div>
+                    <div className="deck-stat"><span>{t(lang, 'sold.paid')}</span><b>{fmtEur(lang, tot.paid)}</b></div>
+                    <div className={`deck-stat ${tot.profit >= 0 ? 'sold-up' : 'sold-down'}`}>
+                      <span>{t(lang, 'sold.profit')}</span>
+                      <b>{fmtSignedEur(lang, tot.profit)}</b>
+                      {tot.open > 0 && <small>{t(lang, 'sold.open', { n: tot.open })}</small>}
+                    </div>
+                    <button type="button" className="btn" title={t(lang, 'sold.importHelp')} onClick={() => soldImportRef.current?.click()}>
+                      <Icon name="file-up" />{t(lang, 'sold.import')}
+                    </button>
+                    <input
+                      ref={soldImportRef}
+                      type="file"
+                      accept=".csv,text/csv"
+                      hidden
+                      onChange={(e) => { const f = e.target.files?.[0]; e.target.value = ''; if (f) void importCmSold(f) }}
+                    />
+                  </div>
+                )
+              })()}
               <div {...cartDrop('sale', (id) => ownedQty(collection[id]) > 0 && saleRemaining(id) > 0, (id) => addToSale(id, 1))}>
                 {Object.keys(saleList).length === 0 && (
                   <div className="empty">{t(lang, 'sales.emptyCart')}</div>
@@ -4597,13 +4579,74 @@ export default function App() {
                           <span className="sub">{t(lang, 'decks.owns', { have })}</span>
                           <b>{fmtEur(lang, line)}</b>
                         </div>
-                        <button type="button" className="btn small positive sale-sold" onClick={() => openSoldAsk([id])}>
+                        <button type="button" className="btn small positive sale-sold" onClick={() => openSoldAsk([{ id, n: qty, price: saleAsks[id] ?? null }], 'cart')}>
                           <Icon name="badge-check" />{t(lang, 'sales.markSold')}
                         </button>
                       </CardTile>
                     )
                   })}
                 </div>
+              </div>
+              <div className="sold-history">
+                <h3>{t(lang, 'sold.history')}</h3>
+                {soldUndo && (
+                  <p className="help sold-undo">
+                    {t(lang, 'sold.deleted', { name: soldUndo.name })}
+                    <button type="button" className="btn small" onClick={() => { setSoldLog((prev) => [soldUndo, ...prev]); setSoldUndo(null) }}>
+                      <Icon name="rotate-ccw" />{t(lang, 'sold.undo')}
+                    </button>
+                  </p>
+                )}
+                {soldLog.length === 0 ? (
+                  <p className="help">{t(lang, 'sold.empty')}</p>
+                ) : (
+                  // One block per month: column heads once, with that month's totals.
+                  soldMonths.map(([month, entries]) => {
+                    const sum = soldTotals(entries)
+                    return (
+                      <section key={month} className="sold-month" aria-label={month}>
+                        <div className="sold-row sold-head">
+                          <b className="sold-month-name">{new Date(`${month}-15T12:00:00`).toLocaleDateString(lang === 'de' ? 'de-DE' : 'en-GB', { month: 'long', year: 'numeric' })}</b>
+                          <span className="sold-num">{t(lang, 'sold.eur')}<b>{fmtEur(lang, sum.revenue)}</b></span>
+                          <span className="sold-num sold-detail">{t(lang, 'sold.feesRow')}<b>{fmtEur(lang, sum.fees)}</b></span>
+                          <span className="sold-num sold-detail">{t(lang, 'sold.cost')}<b>{fmtEur(lang, sum.paid)}</b></span>
+                          <span className={`sold-num ${sum.profit >= 0 ? 'sold-up' : 'sold-down'}`}>{t(lang, 'sold.profit')}<b>{fmtSignedEur(lang, sum.profit)}</b></span>
+                          <span />
+                        </div>
+                        {entries.map((e) => {
+                          const profit = entryProfit(e)
+                          const card = e.cardId ? byId.get(e.cardId) : undefined
+                          const costs = (e.fee || 0) + (e.ship || 0)
+                          return (
+                            <div key={e.id} className="sold-row">
+                              <span className="sold-at">{new Date(`${e.at}T12:00:00`).toLocaleDateString(lang === 'de' ? 'de-DE' : 'en-GB', { day: '2-digit', month: '2-digit' })}</span>
+                              {card ? <DeckThumb cardId={card.id} src={card.image} onOpen={() => openCardLightbox(card)} openTitle={t(lang, 'card.enlarge')} /> : <span />}
+                              <span className="sold-name">
+                                <b title={`${e.n}× ${e.name}`}>{e.n}× {e.name}</b>
+                                <small>
+                                  {[e.foil ? t(lang, 'qty.foil') : t(lang, 'qty.normal'), e.pulled ? t(lang, 'sold.pulled') : '', e.ref?.startsWith('cm:') ? 'Cardmarket' : '', e.note ?? ''].filter(Boolean).join(' · ')}
+                                </small>
+                              </span>
+                              <span className="sold-num">{fmtEur(lang, e.eur) ?? '—'}</span>
+                              <span className="sold-num sold-detail">{costs ? fmtEur(lang, costs) : '—'}</span>
+                              <span className="sold-num sold-detail">{fmtEur(lang, e.cost) ?? '—'}</span>
+                              <span className={`sold-num ${profit == null ? 'sold-open' : profit >= 0 ? 'sold-up' : 'sold-down'}`} title={profit == null ? t(lang, 'sold.openRow') : undefined}>
+                                {profit == null ? '—' : fmtSignedEur(lang, profit)}
+                              </span>
+                              <button
+                                type="button"
+                                className="sold-del"
+                                aria-label={t(lang, 'sold.delete')}
+                                title={t(lang, 'sold.delete')}
+                                onClick={() => { setSoldLog((prev) => prev.filter((x) => x.id !== e.id)); setSoldUndo(e) }}
+                              ><Icon name="trash-2" size={15} /></button>
+                            </div>
+                          )
+                        })}
+                      </section>
+                    )
+                  })
+                )}
               </div>
             </section>
             <section className="panel col-fill">
@@ -4630,6 +4673,15 @@ export default function App() {
                     note: room < have ? t(lang, 'sales.inCart', { n: have - room }) : undefined,
                     coll: true,
                     add: { onClick: () => addToSale(c.id, 1), disabled: room <= 0, title: t(lang, 'sales.toCart'), icon: 'shopping-cart', label: '' },
+                    extra: (
+                      <button
+                        type="button"
+                        className="btn small"
+                        title={t(lang, 'sold.logOne')}
+                        aria-label={t(lang, 'sold.logOne')}
+                        onClick={() => openSoldAsk([{ id: c.id, n: 1, price: saleAsks[c.id] ?? null }], 'manual')}
+                      ><Icon name="badge-check" /></button>
+                    ),
                   })
                 })}
                 {saleOwnedOnly && ownedCards.length === 0 && (
@@ -5520,71 +5572,123 @@ export default function App() {
           </div>
         </div>
       )}
-      {soldAsk && (
-        <div className="card-lightbox" role="dialog" aria-modal="true" aria-labelledby="sold-ask-title" onClick={() => setSoldAsk(null)}>
-          <div className="panel confirm-box sold-box" onClick={(e) => e.stopPropagation()}>
-            <h2 id="sold-ask-title">{t(lang, 'sales.soldConfirmTitle')}</h2>
-            <p className="help" style={{ margin: 0 }}>{t(lang, 'sales.soldConfirmText')}</p>
-            <label className="sold-date">
-              {t(lang, 'sold.date')}
-              <input type="date" className="field" value={soldAsk.at} onChange={(e) => e.target.value && setSoldAsk({ ...soldAsk, at: e.target.value })} />
-            </label>
-            <ul className="sold-list">
-              {soldAsk.ids.map((id) => {
-                const c = byId.get(id)
-                const picks = soldAsk.picks[id] || {}
-                const setPick = (key: string, n: number) => setSoldAsk({ ...soldAsk, picks: { ...soldAsk.picks, [id]: { ...picks, [key]: n } } })
-                return (
-                  <li key={id} className="sold-card">
-                    <div className="sold-card-head">
-                      <span>{c ? displayName(c) : id}</span>
-                      <MoneyInput
-                        lang={lang}
-                        value={soldAsk.price[id] ?? null}
-                        label={t(lang, 'sold.pricePer')}
-                        placeholder={t(lang, 'sold.pricePer')}
-                        onChange={(eur) => setSoldAsk({ ...soldAsk, price: { ...soldAsk.price, [id]: eur } })}
-                      />
-                    </div>
-                    {copyGroups(copies[id], collection[id], c ? isFoilOnly(c) : false).map((g) => {
-                      const key = groupKey(g)
-                      const n = Math.min(picks[key] || 0, g.n)
-                      return (
-                        <div key={key} className="sold-group">
-                          <span>
-                            {g.n}× {t(lang, g.foil ? 'qty.foil' : 'qty.normal')} · {g.lot?.pulled
-                              ? (g.buy != null ? t(lang, 'sold.pulledCost', { eur: fmtEur(lang, g.buy) ?? '' }) : t(lang, 'sold.pulled'))
-                              : g.buy != null ? t(lang, 'sold.bought', { eur: fmtEur(lang, g.buy) ?? '' }) : t(lang, 'sold.noSource')}
-                          </span>
-                          <div className="qty">
-                            <button type="button" disabled={n <= 0} aria-label={t(lang, 'sold.less')} onClick={() => setPick(key, n - 1)}>−</button>
-                            <b>{n}</b>
-                            <button type="button" disabled={n >= g.n} aria-label={t(lang, 'sold.more')} onClick={() => setPick(key, n + 1)}>+</button>
+      {soldAsk && (() => {
+        const ask = soldAsk
+        // What each item can still take: the copies the items before it did not pick.
+        const before: { lots: CopyLot[] | undefined; owned: Owned | undefined }[] = []
+        // Counts from what the walk really takes (picks are capped by what the earlier items left).
+        const took: number[] = []
+        walkSoldItems(ask.items, (i, b) => { before[i] = b; return ask.picks[i] || {} }, (i, _b, r) => { took[i] = r.taken.reduce((s, x) => s + x.n, 0) })
+        const countOf = (i: number) => took[i] + ask.gone[i]
+        const total = ask.items.reduce((s, _it, i) => s + countOf(i), 0)
+        const revenue = ask.items.reduce((s, it, i) => s + (it.price ?? 0) * countOf(i), 0)
+        const shipments = ask.source === 'import' ? new Set(ask.items.filter((_it, i) => countOf(i) > 0).map((it) => it.shipment)).size : 1
+        const fees = ask.items.reduce((s, it, i) => s + feeFor(it.price == null ? null : it.price * countOf(i), ask.feePct), 0) + (ask.ship || 0) * shipments
+        const setItem = (i: number, patch: Partial<SoldItem>) => setSoldAsk({ ...ask, items: ask.items.map((x, j) => (j === i ? { ...x, ...patch } : x)) })
+        return (
+          <div className="card-lightbox" role="dialog" aria-modal="true" aria-labelledby="sold-ask-title" onClick={() => setSoldAsk(null)}>
+            <div className="panel confirm-box sold-box" onClick={(e) => e.stopPropagation()}>
+              <h2 id="sold-ask-title">{t(lang, ask.source === 'import' ? 'sold.importTitle' : 'sales.soldConfirmTitle')}</h2>
+              <p className="help" style={{ margin: 0 }}>{t(lang, 'sales.soldConfirmText')}</p>
+              {(ask.dupes > 0 || ask.unmatched.length > 0) && (
+                <p className="help sold-import-note">
+                  {[
+                    ask.dupes > 0 ? t(lang, 'sold.dupes', { n: ask.dupes }) : '',
+                    ask.unmatched.length > 0 ? t(lang, 'sold.unmatched', { names: ask.unmatched.join(', ') }) : '',
+                  ].filter(Boolean).join(' ')}
+                </p>
+              )}
+              <div className="sold-settings">
+                {ask.source !== 'import' && (
+                  <label>
+                    {t(lang, 'sold.date')}
+                    <input type="date" className="field" value={ask.at} onChange={(e) => e.target.value && setSoldAsk({ ...ask, at: e.target.value })} />
+                  </label>
+                )}
+                <label>
+                  {t(lang, 'sold.feePct')}
+                  <input
+                    type="number"
+                    className="field"
+                    min={0}
+                    max={100}
+                    step={0.5}
+                    value={ask.feePct}
+                    onChange={(e) => setSoldAsk({ ...ask, feePct: Math.min(100, Math.max(0, Number(e.target.value) || 0)) })}
+                  />
+                </label>
+                <label>
+                  {t(lang, ask.source === 'import' ? 'sold.shipPer' : 'sold.ship')}
+                  <MoneyInput lang={lang} value={ask.ship} label={t(lang, ask.source === 'import' ? 'sold.shipPer' : 'sold.ship')} placeholder="0,00" onChange={(ship) => setSoldAsk((p) => p && { ...p, ship })} />
+                </label>
+              </div>
+              <ul className="sold-list">
+                {ask.items.map((it, i) => {
+                  const c = byId.get(it.id)
+                  const picks = ask.picks[i] || {}
+                  const setPick = (key: string, n: number) => setSoldAsk({ ...ask, picks: ask.picks.map((p, j) => (j === i ? { ...p, [key]: n } : p)) })
+                  const groups = copyGroups(before[i]?.lots, before[i]?.owned, c ? isFoilOnly(c) : false)
+                  return (
+                    <li key={`${it.id}-${i}`} className="sold-card">
+                      <div className="sold-card-head">
+                        {c && <DeckThumb cardId={c.id} src={c.image} />}
+                        <span className="sold-card-name">
+                          {c ? displayName(c) : it.id}
+                          <small>
+                            {[c?.code, it.at ? new Date(`${it.at}T12:00:00`).toLocaleDateString(lang === 'de' ? 'de-DE' : 'en-GB') : '', ask.source === 'import' ? t(lang, 'sold.ordered', { n: it.n }) : ''].filter(Boolean).join(' · ')}
+                          </small>
+                        </span>
+                        <label className="sold-price">
+                          {t(lang, 'sold.pricePer')}
+                          <MoneyInput lang={lang} value={it.price} label={t(lang, 'sold.pricePer')} placeholder="0,00" onChange={(price) => setItem(i, { price })} />
+                        </label>
+                      </div>
+                      {groups.map((g) => {
+                        const key = groupKey(g)
+                        const n = Math.min(picks[key] || 0, g.n)
+                        return (
+                          <div key={key} className="sold-group">
+                            <span>
+                              {g.n}× {t(lang, g.foil ? 'qty.foil' : 'qty.normal')} · {g.lot?.pulled
+                                ? (g.buy != null ? t(lang, 'sold.pulledCost', { eur: fmtEur(lang, g.buy) ?? '' }) : t(lang, 'sold.pulled'))
+                                : g.buy != null ? t(lang, 'sold.bought', { eur: fmtEur(lang, g.buy) ?? '' }) : t(lang, 'sold.noSource')}
+                            </span>
+                            <div className="qty">
+                              <button type="button" disabled={n <= 0} aria-label={t(lang, 'sold.less')} onClick={() => setPick(key, n - 1)}>−</button>
+                              <b>{n}</b>
+                              <button type="button" disabled={n >= g.n} aria-label={t(lang, 'sold.more')} onClick={() => setPick(key, n + 1)}>+</button>
+                            </div>
                           </div>
+                        )
+                      })}
+                      <div className="sold-group">
+                        <span title={t(lang, 'sold.goneHelp')}>{t(lang, 'sold.gone')}</span>
+                        <div className="qty">
+                          <button type="button" disabled={ask.gone[i] <= 0} aria-label={t(lang, 'sold.less')} onClick={() => setSoldAsk({ ...ask, gone: ask.gone.map((g, j) => (j === i ? g - 1 : g)) })}>−</button>
+                          <b>{ask.gone[i]}</b>
+                          <button type="button" aria-label={t(lang, 'sold.more')} onClick={() => setSoldAsk({ ...ask, gone: ask.gone.map((g, j) => (j === i ? g + 1 : g)) })}>+</button>
                         </div>
-                      )
-                    })}
-                  </li>
-                )
-              })}
-            </ul>
-            <div className="confirm-actions">
-              <button type="button" className="btn small" onClick={() => setSoldAsk(null)}><Icon name="x" />{t(lang, 'decks.clearCancel')}</button>
-              {(() => {
-                const total = soldAsk.ids.reduce((s, id) => s + Object.values(soldAsk.picks[id] || {}).reduce((a, b) => a + b, 0), 0)
-                return (
-                  <button
-                    type="button"
-                    className="btn small deck-trash"
-                    disabled={total === 0}
-                    onClick={() => { const ask = soldAsk; setSoldAsk(null); confirmSale(ask) }}
-                  ><Icon name="badge-check" />{t(lang, 'sales.soldConfirmOk', { n: total })}</button>
-                )
-              })()}
+                      </div>
+                    </li>
+                  )
+                })}
+              </ul>
+              <p className="sold-sum">
+                {t(lang, 'sold.sum', { revenue: fmtEur(lang, revenue) ?? '', fees: fmtEur(lang, fees) ?? '', net: fmtEur(lang, revenue - fees) ?? '' })}
+              </p>
+              <div className="confirm-actions">
+                <button type="button" className="btn small" onClick={() => setSoldAsk(null)}><Icon name="x" />{t(lang, 'decks.clearCancel')}</button>
+                <button
+                  type="button"
+                  className="btn small primary"
+                  disabled={total === 0}
+                  onClick={() => { setSoldAsk(null); confirmSale(ask) }}
+                ><Icon name="badge-check" />{t(lang, 'sales.soldConfirmOk', { n: total })}</button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )
+      })()}
       {deckConfirm && (
         <div
           className="card-lightbox"

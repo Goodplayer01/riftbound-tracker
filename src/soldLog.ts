@@ -15,6 +15,93 @@ export type SoldEntry = {
   cost: number | null
   pulled?: boolean
   note?: string
+  /** Marketplace commission and shipping the seller paid, both in EUR; missing means none. */
+  fee?: number
+  ship?: number
+  /** Import key ("cm:<shipment>:<product>:<price>") so the same Cardmarket row is never booked twice. */
+  ref?: string
+}
+
+/** Cardmarket's commission on the article price (5 % for private sellers). */
+export const CM_FEE_PCT = 5
+
+const cents = (x: number) => Math.round(x * 100) / 100
+
+/** Commission on a sale, in whole cents. */
+export function feeFor(eur: number | null, pct: number) {
+  return eur == null || !(pct > 0) ? 0 : cents((eur * pct) / 100)
+}
+
+/** What a sale left over: price minus cost, commission and shipping; null while price or cost is unknown. */
+export function entryProfit(e: SoldEntry) {
+  return e.eur == null || e.cost == null ? null : cents(e.eur - e.cost - (e.fee || 0) - (e.ship || 0))
+}
+
+/** Copies of one card that leave in one sale line: from a lot (with its cost per copy) or logged without one. */
+export type SaleLine = { n: number; foil: boolean; cost: number | null; pulled?: boolean }
+/** One sold item as the dialog confirmed it: price per copy and the lines its copies came from. */
+export type SaleItem = { cardId: string; name: string; at: string; price: number | null; ref?: string; shipment?: string; lines: SaleLine[] }
+
+/** Log entries for one confirmed sale: price and cost per line, commission per line, and shipping once
+ *  per Cardmarket shipment (`perShipment`) or once for the whole sale. */
+export function saleEntries(items: SaleItem[], o: { feePct: number; ship: number | null; perShipment: boolean; newId: () => string }): SoldEntry[] {
+  const out: SoldEntry[] = []
+  const shipped = new Set<string>()
+  items.forEach((it, i) => {
+    for (const l of it.lines) {
+      if (!(l.n > 0)) continue
+      const eur = it.price == null ? null : cents(it.price * l.n)
+      const key = o.perShipment ? it.shipment ?? it.ref ?? String(i) : 'all'
+      const ship = o.ship && !shipped.has(key) ? o.ship : 0
+      shipped.add(key)
+      const fee = feeFor(eur, o.feePct)
+      out.push({
+        id: o.newId(),
+        at: it.at,
+        cardId: it.cardId,
+        name: it.name,
+        foil: l.foil,
+        n: l.n,
+        eur,
+        cost: l.cost == null ? null : cents(l.cost * l.n),
+        ...(l.pulled ? { pulled: true } : {}),
+        ...(fee ? { fee } : {}),
+        ...(ship ? { ship } : {}),
+        ...(it.ref ? { ref: it.ref } : {}),
+      })
+    }
+  })
+  return out
+}
+
+/** Cardmarket writes "3.3" in the English export; other site languages may write "3,3". */
+const csvNumber = (s: string | undefined) => Number((s || '').trim().replace(',', '.'))
+
+/** One sold article from Cardmarket's "Sold Articles" CSV export. */
+export type CmSoldRow = { shipment: string; at: string; productId: string; name: string; n: number; price: number; ref: string }
+
+/** Parses Cardmarket's "Sold Articles" CSV (Sales > Sold articles > Export): semicolon separated, one row per
+ *  article: shipment nr; date of purchase; article; product id; localized name; expansion; category; amount;
+ *  article value; total; currency; comments. Rows that do not fit are skipped and counted. */
+export function parseCmSold(text: string) {
+  const rows: CmSoldRow[] = []
+  let skipped = 0
+  // shortcut: plain split by ';' and fixed column order, as in the English export of Oct 2026; Cardmarket
+  // quotes nothing there. Read the header by name if they ever add columns or quoting.
+  for (const line of text.replace(/^﻿/, '').split(/\r?\n/).slice(1)) {
+    if (!line.trim()) continue
+    const f = line.split(';')
+    const [shipment, date, name, productId] = f
+    const n = csvNumber(f[7])
+    const price = csvNumber(f[8])
+    const at = /^\d{4}-\d{2}-\d{2}/.exec(date || '')?.[0]
+    if (!shipment || !at || !/^\d+$/.test(productId || '') || !(n > 0) || !Number.isInteger(n) || !(price >= 0) || (f[10] && f[10] !== 'EUR')) {
+      skipped += 1
+      continue
+    }
+    rows.push({ shipment, at, productId, name: name.trim(), n, price, ref: `cm:${shipment}:${productId}:${price}` })
+  }
+  return { rows, skipped }
 }
 
 /** Today as YYYY-MM-DD in local time (toISOString alone would give the UTC day). */
@@ -67,20 +154,25 @@ export function takeCopies(lots: CopyLot[] | undefined, o: Owned | undefined, fo
   return { lots: nextLots, owned: { qty, foil }, taken }
 }
 
-/** Revenue of all priced entries; paid and profit only over entries with both price and cost. */
+/** Revenue, commission and shipping of all entries; cost and profit only over entries whose price and cost are known
+ *  (`open` counts the others). */
 export function soldTotals(log: SoldEntry[]) {
   let revenue = 0
+  let fees = 0
   let paid = 0
   let profit = 0
   let open = 0
   for (const e of log) {
-    if (e.eur != null) revenue += e.eur
-    if (e.eur != null && e.cost != null) {
-      paid += e.cost
-      profit += e.eur - e.cost
-    } else open += 1
+    revenue += e.eur || 0
+    fees += (e.fee || 0) + (e.ship || 0)
+    const p = entryProfit(e)
+    if (p == null) open += 1
+    else {
+      paid += e.cost || 0
+      profit += p
+    }
   }
-  return { revenue, paid, profit, open }
+  return { revenue: cents(revenue), fees: cents(fees), paid: cents(paid), profit: cents(profit), open }
 }
 
 const money = (x: unknown) => {
@@ -106,6 +198,9 @@ export function cleanSoldLog(raw: unknown): SoldEntry[] {
       cost: money(e.cost),
       ...(e.pulled ? { pulled: true } : {}),
       ...(typeof e.note === 'string' && e.note.trim() ? { note: e.note.trim() } : {}),
+      ...(money(e.fee) ? { fee: money(e.fee)! } : {}),
+      ...(money(e.ship) ? { ship: money(e.ship)! } : {}),
+      ...(typeof e.ref === 'string' && e.ref ? { ref: e.ref } : {}),
     }]
   })
 }
