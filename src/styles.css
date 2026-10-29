@@ -2483,25 +2483,39 @@ input[type="checkbox"] { accent-color: var(--primary); }
 .sold-form .money-input .field { width: 100%; min-height: 34px; }
 .sold-form .money-input { display: flex; }
 
-/* "n× in other prints" under a deck row's Owns: hover / focus lists those prints. */
+/* "n× in other prints" under a deck row's Owns: hover / focus shows those prints as art tiles. */
 /* shortcut: positioned inside the scrolling deck list, so it can be clipped at the very bottom row; move to a portal if that bites. */
-.prints-pop { position: relative; cursor: help; text-decoration: underline dotted; text-underline-offset: 2px; }
+.prints-pop { position: relative; cursor: default; text-decoration: underline dotted; text-underline-offset: 2px; }
 .prints-pop:focus-visible { outline-offset: 2px; }
+/* Hover intent: shows at once, hides only after a short grace, so the pointer can travel into the popover. */
 .prints-pop-list {
-  display: none; position: absolute; top: 100%; right: -8px; z-index: 30; padding-top: 6px;
-  width: max-content; max-width: 320px; cursor: default; text-decoration: none; white-space: normal;
+  position: absolute; top: 100%; right: -10px; z-index: 30; margin-top: 8px;
+  display: flex; flex-wrap: wrap; gap: 6px; padding: 8px; width: max-content; max-width: 340px;
+  background: rgb(44 44 46 / .92); -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur);
+  border-radius: 14px; box-shadow: var(--shadow-lg);
+  white-space: normal; text-decoration: none;
+  opacity: 0; visibility: hidden; transform: translateY(-4px);
+  transition: opacity .16s var(--ease), transform .16s var(--ease), visibility 0s linear .22s;
 }
-.prints-pop:hover .prints-pop-list, .prints-pop:focus-within .prints-pop-list { display: grid; }
-.prints-pop-list::before {
-  content: ''; position: absolute; inset: 6px 0 0; z-index: -1;
-  background: var(--panel2); border-radius: 12px; box-shadow: var(--shadow-lg);
+/* Invisible bridge over the gap, so moving down from the label never leaves the hover area. */
+.prints-pop-list::before { content: ''; position: absolute; left: 0; right: 0; top: -10px; height: 10px; }
+.prints-pop:hover .prints-pop-list, .prints-pop:focus-within .prints-pop-list {
+  opacity: 1; visibility: visible; transform: none;
+  transition: opacity .16s var(--ease), transform .16s var(--ease), visibility 0s;
 }
-.prints-pop-head { padding: 10px 12px 6px; font-size: 12px; color: var(--muted); line-height: 1.4; }
 .prints-pop-list button {
-  display: flex; align-items: center; gap: 8px; margin: 0 4px; padding: 6px 8px; border: 0; border-radius: 8px;
-  background: transparent; color: var(--text); font-size: 13px; text-align: left;
+  display: grid; justify-items: center; align-content: start; gap: 5px; width: 96px; padding: 6px; border: 0; border-radius: 10px;
+  background: transparent; color: var(--text); text-align: center;
+  transition: background-color .12s var(--ease);
 }
-.prints-pop-list button:last-child { margin-bottom: 4px; }
 .prints-pop-list button:hover, .prints-pop-list button:focus-visible { background: var(--fill-hover); }
-.prints-pop-list button b { margin-left: auto; font-variant-numeric: tabular-nums; }
-.prints-pop-list button small { color: var(--muted); font-size: 12px; }
+.prints-pop-art { position: relative; width: 84px; aspect-ratio: 5 / 7; border-radius: 6px; overflow: hidden; background: var(--fill); box-shadow: 0 2px 8px rgb(0 0 0 / .35); }
+.prints-pop-art img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.prints-pop-art b {
+  position: absolute; right: 4px; bottom: 4px; padding: 1px 6px; border-radius: 999px;
+  background: rgb(0 0 0 / .72); color: var(--text); font-size: 11px; font-weight: 700; font-variant-numeric: tabular-nums;
+}
+.prints-pop-name { font-size: 12px; font-weight: 600; line-height: 1.25; }
+@media (prefers-reduced-motion: reduce) {
+  .prints-pop-list, .prints-pop:hover .prints-pop-list, .prints-pop:focus-within .prints-pop-list { transform: none; }
+}

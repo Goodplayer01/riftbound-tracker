@@ -2818,18 +2818,31 @@ export default function App() {
                       // Hover or keyboard focus shows the other prints; each one jumps to All owned.
                       <span className="row-stat-note prints-pop" tabIndex={0}>
                         {t(lang, 'decks.ownsAlt', { n: otherCopies })}
-                        <span className="prints-pop-list" role="list">
-                          <span className="prints-pop-head">{t(lang, 'decks.ownsOtherPrints')}</span>
+                        {/* The row's floating card preview follows the mouse and would cover this popover. */}
+                        <span
+                          className="prints-pop-list"
+                          role="list"
+                          aria-label={t(lang, 'decks.ownsOtherPrints')}
+                          onMouseEnter={hideCardPreview}
+                          onMouseMove={(e) => e.stopPropagation()}
+                        >
                           {otherPrints.map((pid) => {
                             const p = byId.get(pid)
                             if (!p) return null
-                            const inDeck = deckTotals.get(pid) ?? 0
                             return (
-                              <button key={pid} type="button" role="listitem" onClick={(e) => { e.stopPropagation(); showInOwned(p) }}>
+                              <button
+                                key={pid}
+                                type="button"
+                                role="listitem"
+                                title={t(lang, 'decks.showInOwned')}
+                                onClick={(e) => { e.stopPropagation(); showInOwned(p) }}
+                              >
+                                <span className="prints-pop-art">
+                                  {p.image ? <img src={thumbForImage(p.image)} alt="" loading="lazy" decoding="async" /> : null}
+                                  <b>×{availableForDecks(pid)}</b>
+                                </span>
                                 <SetBadge c={p} />
-                                <span>{p.code}</span>
-                                <b>×{availableForDecks(pid)}</b>
-                                {inDeck > 0 && <small>{t(lang, 'decks.printInDeck', { n: inDeck })}</small>}
+                                <span className="prints-pop-name">{displayName(p)}</span>
                               </button>
                             )
                           })}
