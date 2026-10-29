@@ -7,7 +7,7 @@ Notes for Claude Code working in this repo. The README is the user-facing featur
 - Deakrix Riftbound Tracker: Windows desktop app for the Riftbound TCG (collection, wishlist, decks, prices, sales, borrowed cards, stores, booster sim "Dopamin").
 - Made by Stefan (GitHub `Goodplayer01`). The app icon is his Bengal cat Dante.
 - Riftbound only. Don't add other card games or make things generic for other TCGs.
-- Stefan writes German. Answer him in German. Code, comments, commit messages and the README stay in English. The app UI is German and English (`src/i18n.ts`, German is the default).
+- Stefan writes German. Answer him in German. Code, comments, commit messages and the README stay in English. The app UI is German and English (`src/i18n.ts`, German is the default). German texts keep Riftbound game terms in English, the way German players say them: Battlefield, Unit, Spell, Gear, Legend, Champion, Rune, Might, Energy, Trash, Showdown, keywords, and so on.
 
 ## Stack
 
