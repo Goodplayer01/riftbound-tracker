@@ -1680,6 +1680,15 @@ export default function App() {
     setTab(next)
   }
 
+  /** Shows one card in All owned: the tab's filters reset, then the search holds its code. */
+  function showInOwned(c: Card) {
+    setCardLightbox(null)
+    switchTab('owned')
+    // binderView too, else the effect that syncs it with the tab clears the search again.
+    setBinderView('owned')
+    setQ(c.code)
+  }
+
   /** Opens a deck in the Decks tab (from a card tile or the card detail). */
   function openDeck(deckId: string) {
     setCardLightbox(null)
@@ -2759,10 +2768,14 @@ export default function App() {
           {listed.map((dc) => {
             const c = byId.get(dc.id)
             if (!c) return null
-            // Owned copies of this card in any print; short when the deck's copies are not all covered.
-            const have = poolAvailable(c.id)
-            const fromOtherPrints = have - availableForDecks(c.id)
-            const short = (cover.get(c.id) ?? 0) < (deckTotals.get(c.id) ?? 0)
+            // Own copies plus the spare copies of other prints this line really gets (coverDeckLines), so
+            // several prints of one card in a deck never count the same copies twice.
+            const own = availableForDecks(c.id)
+            const covered = cover.get(c.id) ?? 0
+            const have = own + Math.max(0, covered - own)
+            const otherPrints = printsOf(c.id).filter((pid) => pid !== c.id && availableForDecks(pid) > 0)
+            const otherCopies = otherPrints.reduce((s, pid) => s + availableForDecks(pid), 0)
+            const short = covered < (deckTotals.get(c.id) ?? 0)
             return (
               <div
                 key={`${dc.id}-${sec}`}
@@ -2798,10 +2811,31 @@ export default function App() {
                 </div>
                 {collectionButtons(c.id)}
                 {!isPlainRune(c) && (
-                  <div className="row-stat" title={fromOtherPrints > 0 ? t(lang, 'decks.ownsOtherPrints', { n: fromOtherPrints }) : undefined}>
+                  <div className="row-stat">
                     <span className="qty-label">{t(lang, 'decks.ownsLabel')}</span>
                     <b className={short ? 'short' : 'have'}>{have}</b>
-                    {fromOtherPrints > 0 && <span className="row-stat-note">{t(lang, 'decks.ownsAlt', { n: fromOtherPrints })}</span>}
+                    {otherCopies > 0 && (
+                      // Hover or keyboard focus shows the other prints; each one jumps to All owned.
+                      <span className="row-stat-note prints-pop" tabIndex={0}>
+                        {t(lang, 'decks.ownsAlt', { n: otherCopies })}
+                        <span className="prints-pop-list" role="list">
+                          <span className="prints-pop-head">{t(lang, 'decks.ownsOtherPrints')}</span>
+                          {otherPrints.map((pid) => {
+                            const p = byId.get(pid)
+                            if (!p) return null
+                            const inDeck = deckTotals.get(pid) ?? 0
+                            return (
+                              <button key={pid} type="button" role="listitem" onClick={(e) => { e.stopPropagation(); showInOwned(p) }}>
+                                <SetBadge c={p} />
+                                <span>{p.code}</span>
+                                <b>×{availableForDecks(pid)}</b>
+                                {inDeck > 0 && <small>{t(lang, 'decks.printInDeck', { n: inDeck })}</small>}
+                              </button>
+                            )
+                          })}
+                        </span>
+                      </span>
+                    )}
                   </div>
                 )}
                 {isSingleSlotSection(sec) ? (
