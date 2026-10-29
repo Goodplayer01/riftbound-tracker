@@ -2478,8 +2478,7 @@ input[type="checkbox"] { accent-color: var(--primary); }
 .sold-down b, .sold-num.sold-down { color: var(--danger); }
 .sold-history { margin-top: 24px; }
 .sold-history h3 { margin: 0 0 8px; font-size: 15px; }
-.sold-log { display: grid; }
-.sold-row { display: grid; grid-template-columns: 84px 36px minmax(0, 1fr) repeat(4, 96px) 40px; gap: 12px; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--border); }
+.sold-row { display: grid; grid-template-columns: 52px 36px minmax(0, 1fr) repeat(4, 96px) 36px; gap: 12px; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--border); }
 .sold-row:last-child { border-bottom: 0; }
 .sold-row .deck-thumb { width: 36px; height: 50px; }
 .sold-at { font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
@@ -2487,6 +2486,19 @@ input[type="checkbox"] { accent-color: var(--primary); }
 .sold-name b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .sold-name small { font-size: 12px; color: var(--muted); }
 .sold-num { display: grid; text-align: right; font-weight: 600; font-variant-numeric: tabular-nums; }
-.sold-num small { font-size: 10.5px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); }
+.sold-month { display: grid; margin-bottom: 18px; }
+.sold-head { border-bottom: 1px solid var(--border-strong); padding-bottom: 6px; }
+.sold-head .sold-month-name { grid-column: span 3; font-size: 14px; }
+/* Column heads carry the month totals: small caps label over the value. */
+.sold-head .sold-num { font-size: 10.5px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); }
+.sold-head .sold-num b { font-size: 13px; letter-spacing: 0; text-transform: none; color: var(--text); }
+.sold-head .sold-up b { color: var(--positive); }
+.sold-head .sold-down b { color: var(--danger); }
+.sold-open { color: var(--muted); font-weight: 400; }
+/* Quiet delete: grey until hovered, red only then (undo covers mistakes). */
+.sold-del { width: 32px; height: 32px; display: grid; place-items: center; border: 0; border-radius: 8px; background: transparent; color: var(--muted); opacity: .55; transition: opacity .15s var(--ease), color .15s var(--ease), background-color .15s var(--ease); }
+.sold-row:hover .sold-del, .sold-del:focus-visible { opacity: 1; }
+.sold-del:hover { color: var(--danger); background: rgb(var(--danger-rgb) / .1); }
+.sold-undo { display: flex; align-items: center; gap: 10px; margin: 0 0 10px; }
 /* Narrow window: keep price and profit, the breakdown is in the totals above. */
-@media (max-width: 1100px) { .sold-row { grid-template-columns: 76px 36px minmax(0, 1fr) repeat(2, 90px) 40px; } .sold-row .sold-detail { display: none; } }
+@media (max-width: 1100px) { .sold-row { grid-template-columns: 52px 36px minmax(0, 1fr) repeat(2, 90px) 36px; } .sold-row .sold-detail { display: none; } }

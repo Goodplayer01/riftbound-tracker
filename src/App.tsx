@@ -940,6 +940,8 @@ export default function App() {
   /** Every sale with price, cost, commission and shipping (`rb.soldLog.v1`). */
   const [soldLog, setSoldLog] = useState<SoldEntry[]>(loadSoldLog)
   const soldImportRef = useRef<HTMLInputElement>(null)
+  /** The last deleted log entry, for "Undo" (session only). */
+  const [soldUndo, setSoldUndo] = useState<SoldEntry | null>(null)
   const [saleQ, setSaleQ] = useState('')
   const [salePaste, setSalePaste] = useState('')
   const [saleReport, setSaleReport] = useState<string | null>(null)
@@ -1302,6 +1304,12 @@ export default function App() {
   useEffect(() => saveSales(saleList), [saleList])
   useEffect(() => saveSaleAsks(saleAsks), [saleAsks])
   useEffect(() => saveSoldLog(soldLog), [soldLog])
+  /** The sold list by month (YYYY-MM), newest first. */
+  const soldMonths = useMemo(() => {
+    const m = new Map<string, SoldEntry[]>()
+    for (const e of [...soldLog].sort((a, b) => b.at.localeCompare(a.at))) m.set(e.at.slice(0, 7), [...(m.get(e.at.slice(0, 7)) || []), e])
+    return [...m]
+  }, [soldLog])
   // A card that leaves the cart (sold or removed) drops its listing price.
   useEffect(() => {
     setSaleAsks((prev) => {
@@ -4544,39 +4552,63 @@ export default function App() {
               </div>
               <div className="sold-history">
                 <h3>{t(lang, 'sold.history')}</h3>
+                {soldUndo && (
+                  <p className="help sold-undo">
+                    {t(lang, 'sold.deleted', { name: soldUndo.name })}
+                    <button type="button" className="btn small" onClick={() => { setSoldLog((prev) => [soldUndo, ...prev]); setSoldUndo(null) }}>
+                      <Icon name="rotate-ccw" />{t(lang, 'sold.undo')}
+                    </button>
+                  </p>
+                )}
                 {soldLog.length === 0 ? (
                   <p className="help">{t(lang, 'sold.empty')}</p>
                 ) : (
-                  <div className="sold-log">
-                    {[...soldLog].sort((a, b) => b.at.localeCompare(a.at)).map((e) => {
-                      const profit = entryProfit(e)
-                      const card = e.cardId ? byId.get(e.cardId) : undefined
-                      const costs = (e.fee || 0) + (e.ship || 0)
-                      return (
-                        <div key={e.id} className="sold-row">
-                          <span className="sold-at">{new Date(`${e.at}T12:00:00`).toLocaleDateString(lang === 'de' ? 'de-DE' : 'en-GB')}</span>
-                          {card ? <DeckThumb cardId={card.id} src={card.image} onOpen={() => openCardLightbox(card)} openTitle={t(lang, 'card.enlarge')} /> : <span />}
-                          <span className="sold-name">
-                            <b>{e.n}× {e.name}</b>
-                            <small>
-                              {[e.foil ? t(lang, 'qty.foil') : t(lang, 'qty.normal'), e.pulled ? t(lang, 'sold.pulled') : '', e.ref?.startsWith('cm:') ? 'Cardmarket' : '', e.note ?? ''].filter(Boolean).join(' · ')}
-                            </small>
-                          </span>
-                          <span className="sold-num"><small>{t(lang, 'sold.eur')}</small>{fmtEur(lang, e.eur) ?? '—'}</span>
-                          <span className="sold-num sold-detail"><small>{t(lang, 'sold.feesRow')}</small>{costs ? fmtEur(lang, costs) : '—'}</span>
-                          <span className="sold-num sold-detail"><small>{t(lang, 'sold.cost')}</small>{fmtEur(lang, e.cost) ?? '—'}</span>
-                          <span className={`sold-num ${profit == null ? '' : profit >= 0 ? 'sold-up' : 'sold-down'}`}><small>{t(lang, 'sold.profit')}</small>{profit == null ? '—' : fmtSignedEur(lang, profit)}</span>
-                          <button
-                            type="button"
-                            className="btn icon deck-trash"
-                            aria-label={t(lang, 'sold.delete')}
-                            title={t(lang, 'sold.delete')}
-                            onClick={() => { if (window.confirm(t(lang, 'sold.deleteAsk', { name: e.name }))) setSoldLog((prev) => prev.filter((x) => x.id !== e.id)) }}
-                          ><Icon name="trash-2" size={16} /></button>
+                  // One block per month: column heads once, with that month's totals.
+                  soldMonths.map(([month, entries]) => {
+                    const sum = soldTotals(entries)
+                    return (
+                      <section key={month} className="sold-month" aria-label={month}>
+                        <div className="sold-row sold-head">
+                          <b className="sold-month-name">{new Date(`${month}-15T12:00:00`).toLocaleDateString(lang === 'de' ? 'de-DE' : 'en-GB', { month: 'long', year: 'numeric' })}</b>
+                          <span className="sold-num">{t(lang, 'sold.eur')}<b>{fmtEur(lang, sum.revenue)}</b></span>
+                          <span className="sold-num sold-detail">{t(lang, 'sold.feesRow')}<b>{fmtEur(lang, sum.fees)}</b></span>
+                          <span className="sold-num sold-detail">{t(lang, 'sold.cost')}<b>{fmtEur(lang, sum.paid)}</b></span>
+                          <span className={`sold-num ${sum.profit >= 0 ? 'sold-up' : 'sold-down'}`}>{t(lang, 'sold.profit')}<b>{fmtSignedEur(lang, sum.profit)}</b></span>
+                          <span />
                         </div>
-                      )
-                    })}
-                  </div>
+                        {entries.map((e) => {
+                          const profit = entryProfit(e)
+                          const card = e.cardId ? byId.get(e.cardId) : undefined
+                          const costs = (e.fee || 0) + (e.ship || 0)
+                          return (
+                            <div key={e.id} className="sold-row">
+                              <span className="sold-at">{new Date(`${e.at}T12:00:00`).toLocaleDateString(lang === 'de' ? 'de-DE' : 'en-GB', { day: '2-digit', month: '2-digit' })}</span>
+                              {card ? <DeckThumb cardId={card.id} src={card.image} onOpen={() => openCardLightbox(card)} openTitle={t(lang, 'card.enlarge')} /> : <span />}
+                              <span className="sold-name">
+                                <b title={`${e.n}× ${e.name}`}>{e.n}× {e.name}</b>
+                                <small>
+                                  {[e.foil ? t(lang, 'qty.foil') : t(lang, 'qty.normal'), e.pulled ? t(lang, 'sold.pulled') : '', e.ref?.startsWith('cm:') ? 'Cardmarket' : '', e.note ?? ''].filter(Boolean).join(' · ')}
+                                </small>
+                              </span>
+                              <span className="sold-num">{fmtEur(lang, e.eur) ?? '—'}</span>
+                              <span className="sold-num sold-detail">{costs ? fmtEur(lang, costs) : '—'}</span>
+                              <span className="sold-num sold-detail">{fmtEur(lang, e.cost) ?? '—'}</span>
+                              <span className={`sold-num ${profit == null ? 'sold-open' : profit >= 0 ? 'sold-up' : 'sold-down'}`} title={profit == null ? t(lang, 'sold.openRow') : undefined}>
+                                {profit == null ? '—' : fmtSignedEur(lang, profit)}
+                              </span>
+                              <button
+                                type="button"
+                                className="sold-del"
+                                aria-label={t(lang, 'sold.delete')}
+                                title={t(lang, 'sold.delete')}
+                                onClick={() => { setSoldLog((prev) => prev.filter((x) => x.id !== e.id)); setSoldUndo(e) }}
+                              ><Icon name="trash-2" size={15} /></button>
+                            </div>
+                          )
+                        })}
+                      </section>
+                    )
+                  })
                 )}
               </div>
             </section>
