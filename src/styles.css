@@ -2454,31 +2454,39 @@ input[type="checkbox"] { accent-color: var(--primary); }
 .card > .meta { flex: 1; display: flex; flex-direction: column; }
 .tile-foot { margin-top: auto; display: grid; gap: 6px; padding-top: 2px; }
 
-/* Sales log: the "mark as sold" picker and the sold view. */
-.sold-box { width: min(600px, 100%); }
-.sold-date { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--muted); }
-.sold-date .field { width: auto; }
+/* Sales log: the "mark as sold" dialog (cart, search and Cardmarket import) and the sold list under the cart. */
+.sold-box { width: min(680px, 100%); max-height: calc(100vh - 48px); overflow: auto; }
+.sold-import-note { margin: 0; color: var(--warn); }
+.sold-settings { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px 14px; }
+.sold-settings label, .sold-price { display: grid; gap: 4px; font-size: 12.5px; color: var(--muted); }
+.sold-settings .field { width: 100%; }
+.sold-settings .money-input, .sold-price .money-input { display: flex; }
+.sold-settings .money-input .field, .sold-price .money-input .field { width: 100%; min-height: 34px; }
 .sold-card { display: grid; gap: 6px; padding: 10px 2px; }
 .sold-list li.sold-card { display: grid; justify-content: stretch; }
-.sold-card-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; font-weight: 600; }
+.sold-card-head { display: grid; grid-template-columns: auto minmax(0, 1fr) 130px; align-items: center; gap: 12px; }
+.sold-card-head .deck-thumb { width: 40px; height: 56px; }
+.sold-card-name { display: grid; gap: 2px; font-weight: 600; min-width: 0; }
+.sold-card-name small { font-size: 12px; font-weight: 400; color: var(--muted); }
 .sold-group { display: flex; align-items: center; justify-content: space-between; gap: 12px; font-size: 13px; color: var(--muted); }
-.sold-summary { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.sold-list .qty b { color: var(--text); }
+.sold-sum { margin: 0; font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; text-align: right; }
+.sold-summary { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; }
+.sold-summary .deck-stat { min-width: 130px; }
 .sold-summary .btn { margin-left: auto; }
 .sold-up b, .sold-num.sold-up { color: var(--positive); }
 .sold-down b, .sold-num.sold-down { color: var(--danger); }
-.sold-form { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 10px 14px; align-items: end; }
-.sold-form label { display: grid; gap: 4px; font-size: 12.5px; color: var(--muted); }
-.sold-form-name { grid-column: 1 / -1; }
-.sold-form-check { display: flex !important; align-items: center; gap: 8px; min-height: 34px; color: var(--text) !important; }
-.sold-form-help, .sold-form-actions { grid-column: 1 / -1; margin: 0; }
-.sold-log { display: grid; padding: 4px 14px; }
-.sold-row { display: grid; grid-template-columns: 90px minmax(0, 1fr) 100px 100px 100px 40px; gap: 12px; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--border); }
+.sold-history { margin-top: 24px; }
+.sold-history h3 { margin: 0 0 8px; font-size: 15px; }
+.sold-log { display: grid; }
+.sold-row { display: grid; grid-template-columns: 84px 36px minmax(0, 1fr) repeat(4, 96px) 40px; gap: 12px; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--border); }
 .sold-row:last-child { border-bottom: 0; }
+.sold-row .deck-thumb { width: 36px; height: 50px; }
 .sold-at { font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
 .sold-name { display: grid; min-width: 0; }
+.sold-name b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .sold-name small { font-size: 12px; color: var(--muted); }
 .sold-num { display: grid; text-align: right; font-weight: 600; font-variant-numeric: tabular-nums; }
 .sold-num small { font-size: 10.5px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); }
-.sold-list .qty b { color: var(--text); }
-.sold-form .money-input .field { width: 100%; min-height: 34px; }
-.sold-form .money-input { display: flex; }
+/* Narrow window: keep price and profit, the breakdown is in the totals above. */
+@media (max-width: 1100px) { .sold-row { grid-template-columns: 76px 36px minmax(0, 1fr) repeat(2, 90px) 40px; } .sold-row .sold-detail { display: none; } }

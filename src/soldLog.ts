@@ -15,6 +15,53 @@ export type SoldEntry = {
   cost: number | null
   pulled?: boolean
   note?: string
+  /** Marketplace commission and shipping the seller paid, both in EUR; missing means none. */
+  fee?: number
+  ship?: number
+  /** Import key ("cm:<shipment>:<product>:<price>") so the same Cardmarket row is never booked twice. */
+  ref?: string
+}
+
+/** Cardmarket's commission on the article price (5 % for private sellers). */
+export const CM_FEE_PCT = 5
+
+const cents = (x: number) => Math.round(x * 100) / 100
+
+/** Commission on a sale, in whole cents. */
+export function feeFor(eur: number | null, pct: number) {
+  return eur == null || !(pct > 0) ? 0 : cents((eur * pct) / 100)
+}
+
+/** What a sale left over: price minus cost, commission and shipping; null while price or cost is unknown. */
+export function entryProfit(e: SoldEntry) {
+  return e.eur == null || e.cost == null ? null : cents(e.eur - e.cost - (e.fee || 0) - (e.ship || 0))
+}
+
+/** One sold article from Cardmarket's "Sold Articles" CSV export. */
+export type CmSoldRow = { shipment: string; at: string; productId: string; name: string; n: number; price: number; ref: string }
+
+/** Parses Cardmarket's "Sold Articles" CSV (Sales > Sold articles > Export): semicolon separated, one row per
+ *  article: shipment nr; date of purchase; article; product id; localized name; expansion; category; amount;
+ *  article value; total; currency; comments. Rows that do not fit are skipped and counted. */
+export function parseCmSold(text: string) {
+  const rows: CmSoldRow[] = []
+  let skipped = 0
+  // shortcut: plain split by ';' and fixed column order, as in the English export of Oct 2026; Cardmarket
+  // quotes nothing there. Read the header by name if they ever add columns or quoting.
+  for (const line of text.replace(/^﻿/, '').split(/\r?\n/).slice(1)) {
+    if (!line.trim()) continue
+    const f = line.split(';')
+    const [shipment, date, name, productId] = f
+    const n = Number(f[7])
+    const price = Number(f[8])
+    const at = /^\d{4}-\d{2}-\d{2}/.exec(date || '')?.[0]
+    if (!shipment || !at || !/^\d+$/.test(productId || '') || !(n > 0) || !Number.isInteger(n) || !(price >= 0) || (f[10] && f[10] !== 'EUR')) {
+      skipped += 1
+      continue
+    }
+    rows.push({ shipment, at, productId, name: name.trim(), n, price, ref: `cm:${shipment}:${productId}:${price}` })
+  }
+  return { rows, skipped }
 }
 
 /** Today as YYYY-MM-DD in local time (toISOString alone would give the UTC day). */
@@ -67,20 +114,25 @@ export function takeCopies(lots: CopyLot[] | undefined, o: Owned | undefined, fo
   return { lots: nextLots, owned: { qty, foil }, taken }
 }
 
-/** Revenue of all priced entries; paid and profit only over entries with both price and cost. */
+/** Revenue, commission and shipping of all entries; cost and profit only over entries whose price and cost are known
+ *  (`open` counts the others). */
 export function soldTotals(log: SoldEntry[]) {
   let revenue = 0
+  let fees = 0
   let paid = 0
   let profit = 0
   let open = 0
   for (const e of log) {
-    if (e.eur != null) revenue += e.eur
-    if (e.eur != null && e.cost != null) {
-      paid += e.cost
-      profit += e.eur - e.cost
-    } else open += 1
+    revenue += e.eur || 0
+    fees += (e.fee || 0) + (e.ship || 0)
+    const p = entryProfit(e)
+    if (p == null) open += 1
+    else {
+      paid += e.cost || 0
+      profit += p
+    }
   }
-  return { revenue, paid, profit, open }
+  return { revenue: cents(revenue), fees: cents(fees), paid: cents(paid), profit: cents(profit), open }
 }
 
 const money = (x: unknown) => {
@@ -106,6 +158,9 @@ export function cleanSoldLog(raw: unknown): SoldEntry[] {
       cost: money(e.cost),
       ...(e.pulled ? { pulled: true } : {}),
       ...(typeof e.note === 'string' && e.note.trim() ? { note: e.note.trim() } : {}),
+      ...(money(e.fee) ? { fee: money(e.fee)! } : {}),
+      ...(money(e.ship) ? { ship: money(e.ship)! } : {}),
+      ...(typeof e.ref === 'string' && e.ref ? { ref: e.ref } : {}),
     }]
   })
 }
