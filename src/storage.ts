@@ -1,4 +1,5 @@
 import { cleanCopyBook, type CopyBook } from './copies'
+import { cleanSoldLog, type SoldEntry } from './soldLog'
 import type { BorrowedGroup, Deck, Owned } from './types'
 
 const COLLECTION_KEY = 'rb.collection.v1'
@@ -71,6 +72,17 @@ export function loadSaleAsks(): Record<string, number> {
 
 export function saveSaleAsks(s: Record<string, number>) {
   writeJson(SALE_ASKS_KEY, s)
+}
+
+/** Every sale with what came in and what the copies cost (`src/soldLog.ts`). */
+const SOLD_LOG_KEY = 'rb.soldLog.v1'
+
+export function loadSoldLog(): SoldEntry[] {
+  return cleanSoldLog(readJson(SOLD_LOG_KEY, []))
+}
+
+export function saveSoldLog(s: SoldEntry[]) {
+  writeJson(SOLD_LOG_KEY, s)
 }
 
 const COPIES_KEY = 'rb.copies.v1'
