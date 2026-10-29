@@ -1,4 +1,4 @@
-import { cleanSoldLog, defaultPicks, entryProfit, feeFor, groupKey, parseCmSold, soldTotals, takeCopies } from '../src/soldLog.ts'
+import { cleanSoldLog, defaultPicks, entryProfit, feeFor, groupKey, parseCmSold, saleEntries, soldTotals, takeCopies } from '../src/soldLog.ts'
 import { copyGroups } from '../src/copies.ts'
 
 function assert(cond, msg) {
@@ -72,6 +72,32 @@ assert(p.rows.length === 3 && p.skipped === 1, `cm rows: ${p.rows.length} skippe
 assert(p.rows[0].n === 2 && p.rows[0].price === 3.3 && p.rows[0].at === '2026-10-23' && p.rows[0].productId === '111111', 'cm row fields')
 assert(p.rows[1].name === 'Big Dragon (V.1 - Epic)' && p.rows[1].shipment === '1002', 'cm name and shipment')
 assert(new Set(p.rows.map((x) => x.ref)).size === 3, 'same card in two shipments keeps two refs')
+
+// A German export with decimal commas reads the same.
+const de = parseCmSold('header\n1003;2026-10-28 18:29:12;Hook;333333;Hook;Origins;Riftbound Single;1;33,5;33,5;EUR;')
+assert(de.rows.length === 1 && de.rows[0].price === 33.5, `decimal comma: ${JSON.stringify(de)}`)
+
+// Booking a sale: shipping once per shipment, commission per line, lines without a lot have no cost, empty lines vanish.
+let k = 0
+const entries = saleEntries(
+  [
+    { cardId: 'a', name: 'A', at: '2026-10-27', price: 3.3, shipment: 's1', ref: 'cm:s1:1:3.3', lines: [{ n: 1, foil: false, cost: 4 }, { n: 1, foil: true, cost: null }] },
+    { cardId: 'b', name: 'B', at: '2026-10-27', price: 10, shipment: 's1', ref: 'cm:s1:2:10', lines: [{ n: 0, foil: false, cost: null }, { n: 2, foil: false, cost: 0.5, pulled: true }] },
+    { cardId: 'c', name: 'C', at: '2026-10-28', price: null, shipment: 's2', lines: [{ n: 1, foil: false, cost: 1 }] },
+  ],
+  { feePct: 5, ship: 1.2, perShipment: true, newId: () => `e${k++}` },
+)
+assert(entries.length === 4, `four entries, the empty line is dropped: ${entries.length}`)
+assert(entries.filter((e) => e.ship).map((e) => e.cardId).join() === 'a,c', 'shipping once per shipment')
+assert(entries[0].eur === 3.3 && entries[0].fee === 0.17 && entries[0].cost === 4 && entries[0].ref === 'cm:s1:1:3.3', 'first line with fee, cost and ref')
+assert(entries[1].cost === null && entries[1].foil === true, 'copy without a lot keeps its foil flag and no cost')
+assert(entries[2].eur === 20 && entries[2].cost === 1 && entries[2].pulled === true && entries[2].fee === 1, 'two pulled copies')
+assert(entries[3].eur === null && !entries[3].fee, 'no price, no commission')
+const once = saleEntries(
+  [{ cardId: 'a', name: 'A', at: '2026-10-27', price: 5, lines: [{ n: 1, foil: false, cost: 1 }] }, { cardId: 'b', name: 'B', at: '2026-10-27', price: 5, lines: [{ n: 1, foil: false, cost: 1 }] }],
+  { feePct: 0, ship: 2, perShipment: false, newId: () => `f${k++}` },
+)
+assert(once.filter((e) => e.ship).length === 1 && !once.some((e) => e.fee), 'cart sale: shipping once, no commission at 0 %')
 
 // Cleaning keeps good entries, drops broken ones, normalises money.
 const clean = cleanSoldLog([

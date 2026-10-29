@@ -77,7 +77,7 @@ import { sellText, stockCsv, wantsText, type CmLine } from './cardmarket'
 import { historyPoints, loadPriceHistory, type PriceHistoryFile } from './priceHistory'
 import { ValueHistory, type InvestRow } from './ValueHistory'
 import { CONDITION_FACTOR, cardEur, cardInvest, copyGroups, fitCopyBook, lotCost, PACK_KINDS, soldGroups, unitEur, unsourcedCopies, type CopyBook, type CopyLot, type PackSource } from './copies'
-import { CM_FEE_PCT, defaultPicks, entryProfit, feeFor, groupKey, localDay, parseCmSold, soldTotals, takeCopies, type SoldEntry } from './soldLog'
+import { CM_FEE_PCT, defaultPicks, entryProfit, feeFor, groupKey, localDay, parseCmSold, saleEntries, soldTotals, takeCopies, type SaleItem, type SoldEntry } from './soldLog'
 import { CopyEditor, MoneyInput, fmtSignedEur } from './CopyEditor'
 import { cardArt, cardThumb, layeredArtBackground, loadThumbIndex, preloadArt, thumbForImage } from './cardImages'
 
@@ -2153,49 +2153,39 @@ export default function App() {
   }
 
   function confirmSale(ask: SoldAsk) {
-    let soldCopies = 0
-    const logged: SoldEntry[] = []
-    const used = new Map<string, number>()
-    const shipped = new Set<string>()
+    const items: SaleItem[] = []
+    // Only cards that really lost copies get written back: the others (e.g. a plain rune, hidden from
+    // `collection` but still counted in rawCollection) must keep their stored counts.
+    const touched = new Set<string>()
     const nextLots = walkSoldItems(ask.items, (i) => ask.picks[i] || {}, (i, _before, r) => {
       const it = ask.items[i]
       const c = byId.get(it.id)
-      const name = c ? displayName(c) : it.id
-      const at = it.at ?? ask.at
-      const lines = [...r.taken.map(({ g, n }) => ({ n, foil: g.foil, cost: g.buy, pulled: !!g.lot?.pulled })), ...(ask.gone[i] > 0 ? [{ n: ask.gone[i], foil: false, cost: null, pulled: false }] : [])]
-      for (const l of lines) {
-        const eur = it.price == null ? null : Math.round(it.price * l.n * 100) / 100
-        // Shipping is paid once per Cardmarket shipment, or once for a whole cart / search sale.
-        const shipKey = ask.source === 'import' ? it.shipment ?? it.ref ?? String(i) : 'all'
-        const ship = ask.ship && !shipped.has(shipKey) ? ask.ship : 0
-        shipped.add(shipKey)
-        logged.push({
-          id: crypto.randomUUID(),
-          at,
-          cardId: it.id,
-          name,
-          foil: l.foil,
-          n: l.n,
-          eur,
-          cost: l.cost == null ? null : Math.round(l.cost * l.n * 100) / 100,
-          ...(l.pulled ? { pulled: true } : {}),
-          ...(feeFor(eur, ask.feePct) ? { fee: feeFor(eur, ask.feePct) } : {}),
-          ...(ship ? { ship } : {}),
-          ...(it.ref ? { ref: it.ref } : {}),
-        })
-        soldCopies += l.n
-        used.set(it.id, (used.get(it.id) || 0) + l.n)
-      }
+      if (r.taken.length) touched.add(it.id)
+      items.push({
+        cardId: it.id,
+        name: c ? displayName(c) : it.id,
+        at: it.at ?? ask.at,
+        price: it.price,
+        ref: it.ref,
+        shipment: it.shipment,
+        lines: [
+          ...r.taken.map(({ g, n }) => ({ n, foil: g.foil, cost: g.buy, pulled: !!g.lot?.pulled })),
+          { n: ask.gone[i], foil: c ? isFoilOnly(c) : false, cost: null },
+        ],
+      })
     })
+    const logged = saleEntries(items, { feePct: ask.feePct, ship: ask.ship, perShipment: ask.source === 'import', newId: () => crypto.randomUUID() })
     if (!logged.length) return
-    // Raw collection, so stored plain rune counts survive (the app only hides them).
+    const used = new Map<string, number>()
+    for (const e of logged) used.set(e.cardId!, (used.get(e.cardId!) || 0) + e.n)
+    const soldCopies = logged.reduce((s, e) => s + e.n, 0)
     const next = { ...rawCollection }
     const nextCopies = { ...copies }
-    for (const [id, o] of nextLots.owned) {
+    for (const id of touched) {
+      const o = nextLots.owned.get(id)
       if (!o || (o.qty === 0 && o.foil === 0)) delete next[id]
       else next[id] = o
-    }
-    for (const [id, lots] of nextLots.lots) {
+      const lots = nextLots.lots.get(id)
       if (lots?.length) nextCopies[id] = lots
       else delete nextCopies[id]
     }
@@ -5539,8 +5529,10 @@ export default function App() {
         const ask = soldAsk
         // What each item can still take: the copies the items before it did not pick.
         const before: { lots: CopyLot[] | undefined; owned: Owned | undefined }[] = []
-        walkSoldItems(ask.items, (i, b) => { before[i] = b; return ask.picks[i] || {} }, () => {})
-        const countOf = (i: number) => Object.values(ask.picks[i] || {}).reduce((a, b) => a + b, 0) + ask.gone[i]
+        // Counts from what the walk really takes (picks are capped by what the earlier items left).
+        const took: number[] = []
+        walkSoldItems(ask.items, (i, b) => { before[i] = b; return ask.picks[i] || {} }, (i, _b, r) => { took[i] = r.taken.reduce((s, x) => s + x.n, 0) })
+        const countOf = (i: number) => took[i] + ask.gone[i]
         const total = ask.items.reduce((s, _it, i) => s + countOf(i), 0)
         const revenue = ask.items.reduce((s, it, i) => s + (it.price ?? 0) * countOf(i), 0)
         const shipments = ask.source === 'import' ? new Set(ask.items.filter((_it, i) => countOf(i) > 0).map((it) => it.shipment)).size : 1

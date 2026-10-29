@@ -37,6 +37,46 @@ export function entryProfit(e: SoldEntry) {
   return e.eur == null || e.cost == null ? null : cents(e.eur - e.cost - (e.fee || 0) - (e.ship || 0))
 }
 
+/** Copies of one card that leave in one sale line: from a lot (with its cost per copy) or logged without one. */
+export type SaleLine = { n: number; foil: boolean; cost: number | null; pulled?: boolean }
+/** One sold item as the dialog confirmed it: price per copy and the lines its copies came from. */
+export type SaleItem = { cardId: string; name: string; at: string; price: number | null; ref?: string; shipment?: string; lines: SaleLine[] }
+
+/** Log entries for one confirmed sale: price and cost per line, commission per line, and shipping once
+ *  per Cardmarket shipment (`perShipment`) or once for the whole sale. */
+export function saleEntries(items: SaleItem[], o: { feePct: number; ship: number | null; perShipment: boolean; newId: () => string }): SoldEntry[] {
+  const out: SoldEntry[] = []
+  const shipped = new Set<string>()
+  items.forEach((it, i) => {
+    for (const l of it.lines) {
+      if (!(l.n > 0)) continue
+      const eur = it.price == null ? null : cents(it.price * l.n)
+      const key = o.perShipment ? it.shipment ?? it.ref ?? String(i) : 'all'
+      const ship = o.ship && !shipped.has(key) ? o.ship : 0
+      shipped.add(key)
+      const fee = feeFor(eur, o.feePct)
+      out.push({
+        id: o.newId(),
+        at: it.at,
+        cardId: it.cardId,
+        name: it.name,
+        foil: l.foil,
+        n: l.n,
+        eur,
+        cost: l.cost == null ? null : cents(l.cost * l.n),
+        ...(l.pulled ? { pulled: true } : {}),
+        ...(fee ? { fee } : {}),
+        ...(ship ? { ship } : {}),
+        ...(it.ref ? { ref: it.ref } : {}),
+      })
+    }
+  })
+  return out
+}
+
+/** Cardmarket writes "3.3" in the English export; other site languages may write "3,3". */
+const csvNumber = (s: string | undefined) => Number((s || '').trim().replace(',', '.'))
+
 /** One sold article from Cardmarket's "Sold Articles" CSV export. */
 export type CmSoldRow = { shipment: string; at: string; productId: string; name: string; n: number; price: number; ref: string }
 
@@ -52,8 +92,8 @@ export function parseCmSold(text: string) {
     if (!line.trim()) continue
     const f = line.split(';')
     const [shipment, date, name, productId] = f
-    const n = Number(f[7])
-    const price = Number(f[8])
+    const n = csvNumber(f[7])
+    const price = csvNumber(f[8])
     const at = /^\d{4}-\d{2}-\d{2}/.exec(date || '')?.[0]
     if (!shipment || !at || !/^\d+$/.test(productId || '') || !(n > 0) || !Number.isInteger(n) || !(price >= 0) || (f[10] && f[10] !== 'EUR')) {
       skipped += 1
