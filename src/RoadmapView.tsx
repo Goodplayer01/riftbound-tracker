@@ -45,6 +45,8 @@ export function RoadmapView({ lang, openLink }: { lang: Lang; openLink: (url: st
             {items.map((i) => {
               const n = daysUntil(i, today)
               const inGermany = i.country === 'DE'
+              // Release and Pre-Rift always mean product in stores; other events only when Riot announced it.
+              const buy = i.buy ? t(lang, 'roadmap.buyAt', { what: i.buy }) : i.kind === 'release' || i.kind === 'prerift' ? t(lang, `roadmap.buy.${i.kind}`) : null
               return (
                 <div key={`${i.kind}-${i.name}-${i.from}`} className={`roadmap-row${inGermany ? ' roadmap-home' : ''}`}>
                   <span className="roadmap-date">{range(i)}</span>
@@ -54,6 +56,7 @@ export function RoadmapView({ lang, openLink }: { lang: Lang; openLink: (url: st
                     {(i.city || i.country) && (
                       <small>{[i.city, i.country ? countries.of(i.country) : ''].filter(Boolean).join(', ')}</small>
                     )}
+                    {buy && <small className="roadmap-buy"><Icon name="package" size={12} />{buy}</small>}
                   </span>
                   <span className="roadmap-when">{n === 0 ? t(lang, i.from < today ? 'roadmap.running' : 'roadmap.today') : t(lang, n === 1 ? 'roadmap.tomorrow' : 'roadmap.inDays', { n })}</span>
                 </div>

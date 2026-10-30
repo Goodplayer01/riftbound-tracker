@@ -2651,6 +2651,8 @@ input[type="checkbox"] { accent-color: var(--primary); }
   .mu-lists, .mu-detail { overflow: visible; }
 }
 /* Stores tab, "Dates" view: Riot's official dates by month. */
+/* The Stores tab's main does not scroll (map view), so the dates list scrolls itself like .disp-page. */
+.roadmap-page { flex: 1; min-height: 0; overflow-y: auto; padding-right: 2px; }
 .roadmap-page .help { margin: 0 0 14px; }
 .roadmap-month { display: grid; gap: 2px; padding: 14px 18px; margin-bottom: 14px; }
 .roadmap-month h3 { margin: 0 0 6px; font-size: 15px; }
@@ -2664,5 +2666,6 @@ input[type="checkbox"] { accent-color: var(--primary); }
 .roadmap-name { display: grid; min-width: 0; }
 .roadmap-name b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .roadmap-name small { color: var(--muted); font-size: 12.5px; }
+.roadmap-name small.roadmap-buy { display: inline-flex; align-items: center; gap: 5px; color: var(--accent2); }
 .roadmap-when { font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
 @media (max-width: 900px) { .roadmap-row { grid-template-columns: 100px minmax(0, 1fr) auto; } .roadmap-kind { display: none; } }

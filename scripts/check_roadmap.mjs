@@ -13,6 +13,7 @@ assert(bad === -1, `item ${bad} is invalid`)
 assert(!isRoadmapFile({ ...file, items: [{ kind: 'release', name: 'X', from: '2027-02-30x' }] }), 'bad day rejected')
 assert(!isRoadmapFile({ ...file, items: [{ kind: 'release', name: 'X', from: '2027-02-10', to: '2027-02-01' }] }), 'end before start rejected')
 assert(!isRoadmapFile({ ...file, items: [{ kind: 'party', name: 'X', from: '2027-02-10' }] }), 'unknown kind rejected')
+assert(!isRoadmapFile({ ...file, items: [{ kind: 'regional', name: 'X', from: '2027-02-10', buy: 3 }] }), 'non-text buy rejected')
 
 // Upcoming: running dates stay, past ones go, soonest first.
 const items = [

@@ -4,7 +4,7 @@
   "items": [
     { "kind": "convention", "name": "Lucca Comics & Games", "from": "2026-10-28", "to": "2026-11-01", "city": "Lucca", "country": "IT" },
     { "kind": "showdown", "name": "CoolStuffCon Orlando", "from": "2026-10-30", "city": "Orlando", "country": "US" },
-    { "kind": "regional", "name": "European Regional Championship", "from": "2026-11-06", "to": "2026-11-08", "city": "Stuttgart", "country": "DE" },
+    { "kind": "regional", "name": "European Regional Championship", "from": "2026-11-06", "to": "2026-11-08", "city": "Stuttgart", "country": "DE", "buy": "Worlds 2026 Bundle" },
     { "kind": "skirmish", "name": "Summoner Skirmish (Radiance)", "from": "2026-11-09" },
     { "kind": "convention", "name": "TwitchCon", "from": "2026-11-13", "to": "2026-11-15", "city": "San Diego", "country": "US" },
     { "kind": "showdown", "name": "Gen.G Riftbound Showdown Series", "from": "2026-11-21", "to": "2026-11-22", "city": "Los Angeles", "country": "US" },
