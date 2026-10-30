@@ -2586,3 +2586,6 @@ input[type="checkbox"] { accent-color: var(--primary); }
 
 /* Card detail: "Add a purchase with shipping" under My copies. */
 .btn.buy-open { justify-self: start; margin-top: -4px; }
+
+/* Search card being dragged: the big preview centred on the pointer (pointer-events: none from .card-float-preview keeps drops working). */
+.card-float-preview.drag-ghost { transform: translate(-50%, -50%); opacity: .92; }

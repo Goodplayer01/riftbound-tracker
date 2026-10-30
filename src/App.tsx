@@ -41,6 +41,8 @@ import {
   sectionCount,
   sectionNeedsLegend,
   sectionOf,
+  cardKey,
+  groupPrints,
 } from './deckHelpers'
 import { banStatus, type BanStatus } from './banlist'
 import { cardMatchesDomains, deckDropIndex, moveDeckTo } from './domainMatch.ts'
@@ -105,6 +107,9 @@ function uid() {
 
 /** Rare and up (plus alt, overnumbered, signed) only exist as foil: one counter, stored as foil. */
 const FOIL_ONLY_RARITIES = new Set(['Rare', 'Epic', 'Showcase', 'Ultimate Rare'])
+/** Invisible native drag image: search cards draw their own big preview while dragged. */
+const EMPTY_DRAG_IMAGE = Object.assign(new Image(), { src: 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7' })
+
 function isFoilOnly(c: Card) {
   return FOIL_ONLY_RARITIES.has(c.rarity || '') || !!(c.altArt || c.signed || c.overnumbered)
 }
@@ -649,12 +654,6 @@ function ArtImg({ src }: { src?: string }) {
   )
 }
 
-/** One card for deck ownership: every print with the same name, title and type (alt art, overnumbered,
- *  signed, reprints such as Kai'Sa from Origins in a later set) counts as the same card. */
-function cardKey(c: Card) {
-  return `${c.name}|${c.subtitle || ''}|${(c.types || []).join('/')}`.toLowerCase()
-}
-
 /** A deck that uses a card, with the number of copies in it. */
 type DeckUse = { id: string; name: string; qty: number }
 
@@ -979,6 +978,23 @@ export default function App() {
   const [sharePreview, setSharePreview] = useState<{ dataUrl: string; fileName: string; exportText: string; copied: boolean } | null>(null)
   const [missingExpanded, setMissingExpanded] = useState(false)
   const [cardPreview, setCardPreview] = useState<{ src: string; x: number; y: number } | null>(null)
+  /** Big card preview that follows the pointer while a search card is dragged (centred on it). */
+  const [dragGhost, setDragGhost] = useState<{ src: string; x: number; y: number } | null>(null)
+  const dragging = dragGhost != null
+  useEffect(() => {
+    if (!dragging) return
+    // dragover fires on whatever is under the pointer, so the document sees every move of the drag.
+    const move = (e: DragEvent) => setDragGhost((g) => g && (g.x === e.clientX && g.y === e.clientY ? g : { ...g, x: e.clientX, y: e.clientY }))
+    const end = () => setDragGhost(null)
+    document.addEventListener('dragover', move, true)
+    document.addEventListener('drop', end, true)
+    document.addEventListener('dragend', end, true)
+    return () => {
+      document.removeEventListener('dragover', move, true)
+      document.removeEventListener('drop', end, true)
+      document.removeEventListener('dragend', end, true)
+    }
+  }, [dragging])
   const [cardLightbox, setCardLightbox] = useState<Card | null>(null)
   const [bfTurn, setBfTurn] = useState(false)
   /** Lightbox art is hidden until fully loaded, so a half drawn PNG never shows. */
@@ -2576,13 +2592,11 @@ export default function App() {
     e.dataTransfer.setData('text/plain', cardId)
     e.dataTransfer.effectAllowed = 'copy'
     const row = e.currentTarget as HTMLElement
-    // Drag the big hover preview (already loaded, 240 px) instead of the small row thumbnail; the browser
-    // snapshots it right here, so hiding the preview above does not matter. Without one, the thumbnail.
-    const big = document.querySelector('.card-float-preview img') as HTMLImageElement | null
-    const img = big && big.complete && big.naturalWidth > 0 ? big : (row.querySelector('img.deck-thumb') as HTMLImageElement | null)
-    if (img && img.complete && img.naturalWidth > 0) {
-      try { e.dataTransfer.setDragImage(img, img === big ? 24 : img.clientWidth / 2, img === big ? 24 : img.clientHeight / 2) } catch {}
-    }
+    // Chromium drops (row) or shrinks (thumbnail) the native drag image, so it stays invisible and the app
+    // draws the big preview itself, centred on the pointer, while the drag lasts (`dragGhost`).
+    try { e.dataTransfer.setDragImage(EMPTY_DRAG_IMAGE, 0, 0) } catch {}
+    const c = byId.get(cardId)
+    if (c?.image) setDragGhost({ src: thumbForImage(c.image) ?? c.image, x: e.clientX, y: e.clientY })
     row.classList.add('dragging')
   }
 
@@ -2615,6 +2629,7 @@ export default function App() {
 
   function onPickerDragEnd(e: ReactDragEvent) {
     (e.currentTarget as HTMLElement).classList.remove('dragging')
+    setDragGhost(null)
     setDraggingCardId(null)
     setDragOverSection(null)
     setDragRejectSection(null)
@@ -2813,7 +2828,8 @@ export default function App() {
     // Rune deck: plain runes as one big counter per Legend domain, alt art runes stay as rows.
     const runeDomains = sec === 'rune' ? getLegendDomains(deck.cards, byId) || [] : []
     const isPlainIn = (dc: (typeof cardsIn)[number]) => { const c = byId.get(dc.id); return !!c && isPlainRune(c) }
-    const listed = runeDomains.length ? cardsIn.filter((dc) => !isPlainIn(dc)) : cardsIn
+    // Prints of one card stay together (an alt art added later sits under its base card).
+    const listed = groupPrints(runeDomains.length ? cardsIn.filter((dc) => !isPlainIn(dc)) : cardsIn, byId)
     return (
       <div
         key={sec}
@@ -5991,6 +6007,11 @@ export default function App() {
       )}
       {removing && (
         <div className="remove-hint" role="status"><Icon name="minus" size={14} />{t(lang, 'drag.removeHint')}</div>
+      )}
+      {dragGhost && (dragGhost.x !== 0 || dragGhost.y !== 0) && (
+        <div className="card-float-preview drag-ghost" style={{ left: dragGhost.x, top: dragGhost.y }} aria-hidden>
+          <img src={dragGhost.src} alt="" />
+        </div>
       )}
       {cardPreview && !cardLightbox && (
         <div

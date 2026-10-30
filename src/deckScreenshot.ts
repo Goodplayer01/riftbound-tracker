@@ -1,5 +1,5 @@
 import type { Card, Deck, DeckCard } from './types'
-import { sectionOf } from './deckHelpers'
+import { mergePrints, sectionOf } from './deckHelpers'
 
 // Same palette as the app: near-black canvas, amber accent, Apple grey for secondary text.
 const BG = '#0f0f11'
@@ -199,11 +199,12 @@ export async function renderDeckShareCanvas(
     const champion = sectionCards(deck, 'champion')[0]
     const main = sectionCards(deck, 'main')
     const battlefields = sectionCards(deck, 'battlefield')
-    const sideboard = sectionCards(deck, 'sideboard')
+    const sideboard = mergePrints(sectionCards(deck, 'sideboard'), byId)
     const domainCounts = runeDomainCounts(deck, byId)
 
-    // Champion is the first card of the main grid (not under Legend).
-    const mainGrid: DeckCard[] = champion ? [champion, ...main] : main
+    // Champion is the first card of the main grid (not under Legend). One tile per card: alt art and base
+    // print of the same card become one tile with the copies added up.
+    const mainGrid: DeckCard[] = mergePrints(champion ? [champion, ...main] : main, byId)
 
     const allIds = [
       legend?.id,
