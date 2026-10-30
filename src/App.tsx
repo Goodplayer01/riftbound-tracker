@@ -7,6 +7,7 @@ import { fmtEur, loadLang, saveLang, t, type Lang } from './i18n'
 import { Dopamin } from './Dopamin'
 import { autoBackup, BackupView, importJustDone } from './BackupView'
 import { RulesView } from './RulesView'
+import { MatchupView } from './MatchupView'
 import { SearchInput } from './SearchInput'
 import {
   detectKeywordsInText,
@@ -976,6 +977,8 @@ export default function App() {
   const [deckShotBusy, setDeckShotBusy] = useState(false)
   /** `copied`: the image is in the clipboard (copied right when the preview opens). */
   const [sharePreview, setSharePreview] = useState<{ dataUrl: string; fileName: string; exportText: string; copied: boolean } | null>(null)
+  /** Deck whose Matchup view is open. */
+  const [matchupDeckId, setMatchupDeckId] = useState<string | null>(null)
   const [missingExpanded, setMissingExpanded] = useState(false)
   const [cardPreview, setCardPreview] = useState<{ src: string; x: number; y: number } | null>(null)
   /** Big card preview that follows the pointer while a search card is dragged (centred on it). */
@@ -3515,6 +3518,18 @@ export default function App() {
     return () => window.removeEventListener('keydown', onKey)
   }, [cardLightbox, clearSec, deckExportText, sharePreview, cmExport, lbNav])
 
+  const matchupDeck = matchupDeckId ? decks.find((d) => d.id === matchupDeckId) : undefined
+  const matchupLegendId = matchupDeck?.cards.find((c) => sectionOf(c) === 'legend')?.id
+  const matchupLegend = matchupLegendId ? byId.get(matchupLegendId) : undefined
+  const matchupDeckCopies = useMemo(() => {
+    const m = new Map<string, number>()
+    for (const dc of matchupDeck?.cards || []) {
+      const c = byId.get(dc.id)
+      if (c) m.set(displayCardName(c), (m.get(displayCardName(c)) || 0) + dc.qty)
+    }
+    return m
+  }, [matchupDeck, byId])
+
   function openCardLightbox(c: Card) {
     setCardPreview(null)
     setBfTurn(false)
@@ -4898,6 +4913,11 @@ export default function App() {
                                   <Icon name="share-2" />{deckShotBusy ? t(lang, 'decks.shareBusy') : t(lang, 'decks.share')}
                                 </button>
                               )}
+                              {legendId && (
+                                <button type="button" className="btn small" title={t(lang, 'decks.matchupTitle')} onClick={() => setMatchupDeckId(d.id)}>
+                                  <Icon name="swords" />{t(lang, 'decks.matchup')}
+                                </button>
+                              )}
                               <button type="button" className="btn small" onClick={openDeckExport}>
                                 <Icon name="download" />{t(lang, 'decks.export')}
                               </button>
@@ -6013,6 +6033,19 @@ export default function App() {
           <img src={dragGhost.src} alt="" />
         </div>
       )}
+      {matchupDeck && matchupLegend && catalog && (
+        <MatchupView
+          lang={lang}
+          legend={matchupLegend}
+          cards={catalog.cards}
+          deckCopies={matchupDeckCopies}
+          owned={(c) => poolAvailable(c.id)}
+          onOpenCard={openCardLightbox}
+          openLink={openLink}
+          onClose={() => setMatchupDeckId(null)}
+        />
+      )}
+
       {cardPreview && !cardLightbox && (
         <div
           className="card-float-preview"

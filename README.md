@@ -66,6 +66,7 @@ Windows SmartScreen might complain the first time because the installer isn't si
 - Delete asks first, and Delete all can be undone until you close the app
 - Once a deck is full you get a Share button that makes a clean image of the whole deck: Legend, runes, battlefields, main deck and sideboard with counts. The image goes straight into your clipboard, so you just paste it into Discord or WhatsApp; saving it as a file is still there
 - Hand tester with mulligan
+- Matchup button (once the deck has a Legend): how that Legend does against every other Legend, good and bad matchups with win rate and number of games, like lolalytics. Details on an opponent lists counter cards (cards from your domains that win more often against it, marked when they are in your deck or collection) and what that Legend usually plays. Numbers come from RiftLite's community games of the current season and update daily
 
 **Purchases**
 

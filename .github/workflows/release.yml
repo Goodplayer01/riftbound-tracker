@@ -41,6 +41,7 @@ jobs:
           node --experimental-strip-types scripts/check_borrow.mjs
           node --experimental-strip-types scripts/check_stores.mjs
           node --experimental-strip-types scripts/check_decks.mjs
+          node --experimental-strip-types scripts/check_matchups.mjs
           node --experimental-strip-types scripts/check_backup.mjs
           node --experimental-strip-types scripts/check_soldlog.mjs
           node --experimental-strip-types scripts/check_purchase.mjs

@@ -13,6 +13,7 @@ on:
       - public/price-history.json
       - public/sealed.json
       - public/rules.json
+      - public/matchups.json
 
 jobs:
   checks:
