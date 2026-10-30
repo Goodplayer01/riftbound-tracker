@@ -43,6 +43,7 @@ jobs:
           node --experimental-strip-types scripts/check_decks.mjs
           node --experimental-strip-types scripts/check_backup.mjs
           node --experimental-strip-types scripts/check_soldlog.mjs
+          node --experimental-strip-types scripts/check_purchase.mjs
           node --experimental-strip-types scripts/check_rules.mjs
           node scripts/check_errata.mjs
 

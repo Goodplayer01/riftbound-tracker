@@ -2583,3 +2583,6 @@ input[type="checkbox"] { accent-color: var(--primary); }
 @media (prefers-reduced-motion: reduce) {
   .prints-pop-list, .prints-pop:hover .prints-pop-list, .prints-pop:focus-within .prints-pop-list { transform: none; }
 }
+
+/* Card detail: "Add a purchase with shipping" under My copies. */
+.btn.buy-open { justify-self: start; margin-top: -4px; }
