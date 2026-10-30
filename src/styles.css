@@ -2650,3 +2650,19 @@ input[type="checkbox"] { accent-color: var(--primary); }
   .mu-body { grid-template-columns: 1fr; }
   .mu-lists, .mu-detail { overflow: visible; }
 }
+/* Stores tab, "Dates" view: Riot's official dates by month. */
+.roadmap-page .help { margin: 0 0 14px; }
+.roadmap-month { display: grid; gap: 2px; padding: 14px 18px; margin-bottom: 14px; }
+.roadmap-month h3 { margin: 0 0 6px; font-size: 15px; }
+.roadmap-row { display: grid; grid-template-columns: 120px 150px minmax(0, 1fr) auto; gap: 14px; align-items: center; padding: 9px 10px; border-radius: 10px; }
+.roadmap-row + .roadmap-row { border-top: 1px solid var(--border); }
+.roadmap-row.roadmap-home { background: var(--primary-soft); border-top-color: transparent; }
+.roadmap-date { font-variant-numeric: tabular-nums; color: var(--muted); font-size: 13px; }
+.roadmap-kind { justify-self: start; padding: 2px 9px; border-radius: 999px; font-size: 12px; font-weight: 600; background: var(--fill); color: var(--text); }
+.roadmap-kind.roadmap-release, .roadmap-kind.roadmap-prerift { color: var(--accent2); background: var(--primary-soft); }
+.roadmap-kind.roadmap-regional, .roadmap-kind.roadmap-continental { color: rgb(var(--info-rgb)); background: rgb(var(--info-rgb) / .14); }
+.roadmap-name { display: grid; min-width: 0; }
+.roadmap-name b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.roadmap-name small { color: var(--muted); font-size: 12.5px; }
+.roadmap-when { font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
+@media (max-width: 900px) { .roadmap-row { grid-template-columns: 100px minmax(0, 1fr) auto; } .roadmap-kind { display: none; } }

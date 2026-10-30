@@ -90,6 +90,8 @@ Compare booster display prices before you buy. For each set you see the Cardmark
 
 The second view shows Riftbound stores on a map with a radius around you, taken from the official event search on playriftbound.com: every store with upcoming events, its contact info, its next events (date, type, entry fee, sign-ups) with a link to each event, and a stock hint where the shop publishes one. Save a place as home location and the search runs there as soon as you open the view.
 
+The third view, Dates, lists Riot's official dates still ahead: set releases and Pre-Rift weeks, Summoner Skirmish, Regional and Continental Championships, Showdown Series and conventions, by month with a countdown. Dates in Germany are highlighted. New dates come with the app's data updates, no new version needed.
+
 **Dopamin**
 
 Open simulated booster packs for each set with the real pack art. Every slot of a real pack is in there: commons, uncommons, the token or rune slot, the foil slot, the rare slot and the slot that can turn into an Epic, Alt Art, Overnumbered, Signature or Ultimate. Cards flip one at a time with price and pull chance, or reveal the whole pack at once and see what it was worth. A counter per set adds up what the packs would have cost on Cardmarket against what you pulled, so you see whether you are up or down, plus your best pull. The odds are the ones Riot published (Epic 1 in 4 packs, Alt Art 1 in 12, Overnumbered 1 in 72, 1 in 10 of those signed, Ultimate 0.025 % in Radiance); the few slots Riot gave no numbers for are marked as estimates.

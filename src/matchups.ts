@@ -2,6 +2,8 @@
  *  baked daily by scripts/bake_matchups.mjs (workflow "Bake matchups"). Loaded live from main like the
  *  prices, so new numbers reach every app without a release; the bundled copy covers offline. */
 
+import { loadLiveJson } from './liveJson.ts'
+
 /** [games, wins] */
 export type Rec = [number, number]
 export type Bucket = { n: Rec; cards: Record<string, Rec> }
@@ -22,42 +24,16 @@ export type MatchupsFile = {
   by: Record<string, Bucket>
 }
 
-const REMOTE_MATCHUPS_URL = 'https://raw.githubusercontent.com/Goodplayer01/riftbound-tracker/main/public/matchups.json'
-const REMOTE_TIMEOUT_MS = 15000
-
 function isMatchupsFile(x: unknown): x is MatchupsFile {
   const f = x as MatchupsFile
-  return !!f && typeof f.matrix === 'object' && typeof f.legends === 'object' && typeof f.vs === 'object'
-}
-
-async function getMatchups(url: string | URL, init?: RequestInit) {
-  const r = await fetch(url, init)
-  if (!r.ok) return null
-  const data = await r.json()
-  return isMatchupsFile(data) ? data : null
+  return !!f && ['legends', 'matrix', 'vs', 'pair', 'by'].every((k) => !!f[k as keyof MatchupsFile] && typeof f[k as keyof MatchupsFile] === 'object')
 }
 
 let cached: Promise<MatchupsFile | null> | null = null
 
 /** Live copy from main (once per app start), the bundled file when offline. */
 export function loadMatchups(): Promise<MatchupsFile | null> {
-  cached ??= (async () => {
-    const ctrl = new AbortController()
-    const timer = setTimeout(() => ctrl.abort(), REMOTE_TIMEOUT_MS)
-    try {
-      const remote = await getMatchups(REMOTE_MATCHUPS_URL, { cache: 'no-cache', signal: ctrl.signal })
-      if (remote) return remote
-    } catch {
-      // offline: fall through to the bundled copy
-    } finally {
-      clearTimeout(timer)
-    }
-    try {
-      return await getMatchups(new URL('matchups.json', window.location.href))
-    } catch {
-      return null
-    }
-  })()
+  cached ??= loadLiveJson('matchups.json', isMatchupsFile)
   cached.then((f) => { if (!f) cached = null })
   return cached
 }
