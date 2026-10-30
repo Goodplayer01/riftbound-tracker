@@ -53,9 +53,11 @@ npm ci
 npm run dev:app      # Vite + Electron for local development
 npm run build        # tsc --noEmit + vite build (use this to check a change compiles)
 npm run dist         # build + Windows installer into release/
-node --experimental-strip-types scripts/check_v050.mjs   # same for check_v080, check_copies, check-dopamin, check_displays, check_borrow, check_stores, check_decks, check_backup, check_soldlog, check_purchase, check_rules
-node scripts/check_errata.mjs
+for f in scripts/check*.mjs; do node --experimental-strip-types "$f" || break; done   # all checks, like checks.yml
+node --experimental-strip-types scripts/check_decks.mjs   # one check
 ```
+
+A new `scripts/check_*.mjs` runs in `checks.yml` by itself; add it to the list in `release.yml` too. Keep `checks.yml` green before asking Stefan to merge.
 
 ## Data files (public/)
 
