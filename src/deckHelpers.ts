@@ -98,6 +98,48 @@ export function sectionOf(dc: DeckCard): DeckSection {
   return dc.section || 'main'
 }
 
+/** One card for deck ownership: every print with the same name, title and type (alt art, overnumbered,
+ *  signed, reprints such as Kai'Sa from Origins in a later set) counts as the same card. */
+export function cardKey(c: Card) {
+  return `${c.name}|${c.subtitle || ''}|${(c.types || []).join('/')}`.toLowerCase()
+}
+
+/** Deck lines in deck order, but every print of a card right after its first one, so an alt art added
+ *  later sits next to the base card instead of at the end. */
+export function groupPrints<T extends { id: string }>(lines: T[], byId: Map<string, Card>): T[] {
+  const keyOf = (l: T) => { const c = byId.get(l.id); return c ? cardKey(c) : l.id }
+  const order = new Map<string, number>()
+  lines.forEach((l, i) => { if (!order.has(keyOf(l))) order.set(keyOf(l), i) })
+  return lines.map((l, i) => ({ l, i })).sort((a, b) => order.get(keyOf(a.l))! - order.get(keyOf(b.l))! || a.i - b.i).map((x) => x.l)
+}
+
+/** One line per card for the share image: the prints added up, shown with the print that has the most
+ *  copies (an alt art / overnumbered / signed print wins a tie, it is the one people show off). */
+export function mergePrints(lines: DeckCard[], byId: Map<string, Card>): DeckCard[] {
+  const special = (id: string) => { const c = byId.get(id); return !!c && !!(c.altArt || c.overnumbered || c.signed) }
+  const out: DeckCard[] = []
+  const at = new Map<string, number>()
+  const best = new Map<string, number>()
+  for (const l of groupPrints(lines, byId)) {
+    const c = byId.get(l.id)
+    const key = c ? cardKey(c) : l.id
+    const i = at.get(key)
+    if (i == null) {
+      at.set(key, out.length)
+      best.set(key, l.qty)
+      out.push({ ...l })
+      continue
+    }
+    const shown = out[i]
+    if (l.qty > best.get(key)! || (l.qty === best.get(key) && special(l.id) && !special(shown.id))) {
+      best.set(key, l.qty)
+      shown.id = l.id
+    }
+    shown.qty += l.qty
+  }
+  return out
+}
+
 export function migrateDeck(d: Deck, byId: Map<string, Card>): Deck {
   let changed = false
   const cards = d.cards.map((dc) => {

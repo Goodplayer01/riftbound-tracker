@@ -1,5 +1,5 @@
 import { readFileSync } from 'node:fs'
-import { canAddToSection, copyName, coverDeckLines, parseDeckImport } from '../src/deckHelpers.ts'
+import { canAddToSection, copyName, coverDeckLines, groupPrints, mergePrints, parseDeckImport } from '../src/deckHelpers.ts'
 
 function assert(cond, msg) {
   if (!cond) throw new Error(msg)
@@ -69,4 +69,13 @@ const legImp = parseDeckImport('Legend:\n1 Pridestalker\nChampion:\n1 Rengar, Tr
 assert(legImp.cards.some((x) => x.section === 'legend' && byId.get(x.id)?.subtitle === 'Pridestalker') && legImp.unmatched.length === 0, 'title-only legend imports')
 assert(parseDeckImport('Legend:\n1 Rengar, Pridestalker', cards).cards[0]?.id === id('UNL-183'), 'full legend name imports')
 
+// Prints of one card: an alt art added later sits under its base card, and the share image shows one tile.
+const pyke = byId.get('unl-028-219')
+const pykeAlt = byId.get('unl-028a-219')
+const lines = [{ id: pyke.id, qty: 1 }, { id: id('SFD-097'), qty: 3 }, { id: id('UNL-097'), qty: 3 }, { id: pykeAlt.id, qty: 1 }]
+assert(groupPrints(lines, byId).map((l) => l.id).join() === [pyke.id, pykeAlt.id, id('SFD-097'), id('UNL-097')].join(), 'alt art grouped under its base card')
+const merged = mergePrints(lines, byId)
+assert(merged.length === 3 && merged[0].qty === 2 && merged[0].id === pykeAlt.id, `one Pyke tile with both copies, showing the alt art on a tie: ${JSON.stringify(merged[0])}`)
+assert(mergePrints([{ id: pyke.id, qty: 2 }, { id: pykeAlt.id, qty: 1 }], byId)[0].id === pyke.id, 'the print with more copies is shown')
+assert(lines[0].qty === 1 && lines[0].id === pyke.id, 'merging does not change the deck lines')
 console.log('ok')
