@@ -5,11 +5,18 @@
 //   matches: [{ result, myChampion, oppChampion, superseded, mergedIntoMatchId, deckSnapshot }]
 // where deckSnapshot (when the player linked a deck) lists the uploader's own cards.
 
-/** The RSC stream behind a Next.js page. */
+/** The RSC stream behind a Next.js page. Scanned by hand: one chunk is ~20 MB, too big for a regex. */
 export function nextPayload(html) {
-  const re = /self\.__next_f\.push\(\[1,"((?:[^"\\]|\\.)*)"\]\)/g
+  const start = 'self.__next_f.push([1,"'
   let out = ''
-  for (const m of html.matchAll(re)) out += JSON.parse(`"${m[1]}"`)
+  let at = html.indexOf(start)
+  while (at >= 0) {
+    const from = at + start.length
+    let i = from
+    while (i < html.length && html[i] !== '"') i += html[i] === '\\' ? 2 : 1
+    out += JSON.parse(html.slice(from - 1, i + 1))
+    at = html.indexOf(start, i)
+  }
   return out
 }
 
