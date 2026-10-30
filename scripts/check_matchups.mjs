@@ -1,5 +1,5 @@
 import { nextPayload, findMatrixData, buildMatchups } from './matchups_parse.mjs'
-import { counterCards, legendKey, legendRecord, matchupRows, typicalCards, MIN_COUNTER_GAMES } from '../src/matchups.ts'
+import { counterCards, deckInMatchup, legendKey, legendRecord, matchupRows, trickKind, typicalCards, typicalTricks, MIN_COUNTER_GAMES } from '../src/matchups.ts'
 
 function assert(cond, msg) {
   if (!cond) throw new Error(msg)
@@ -62,7 +62,7 @@ const file = {
     'Akali, Silent': [6, 5], // not allowed for this deck
   } } },
   pair: { Rengar: { Akali: { n: [2, 1], cards: { 'Cannon Barrage': [2, 1] } } } },
-  by: { Akali: { n: [4, 2], cards: { 'Akali, Silent': [4, 2], 'Shuriken Flip': [3, 1] } } },
+  by: { Akali: { n: [4, 2], cards: { 'Akali, Silent': [4, 2], 'Shuriken Flip': [3, 1] } }, Rengar: { n: [10, 5], cards: { 'Cannon Barrage': [5, 3] } } },
 }
 assert(legendKey(file, 'Rengar', 'Rengar, Pridestalker') === 'Rengar', 'legend by champion name')
 assert(legendKey(file, 'Master Yi', 'Master Yi, Wuju Bladesman') === 'Master Yi, Wuju Bladesman', 'full name wins')
@@ -76,8 +76,32 @@ assert(MIN_COUNTER_GAMES === 3, 'min games')
 assert(cc.cards.map((c) => c.name).join(' ') === 'Decree of Rage Cannon Barrage', 'ranked by smoothed lift, weak, rare and banned cards out')
 assert(cc.cards[1].own?.join() === '2,1' && !cc.cards[0].own, 'own legend numbers attached')
 assert(cc.base.join() === '40,20', 'baseline')
+assert(cc.cards[1].inLegend === 0.5 && cc.cards[0].inLegend === 0, 'share of the own Legend decks')
 assert(counterCards(file, 'Rengar', 'Teemo', () => true).cards.length === 0, 'no data, no cards')
 const typ = typicalCards(file, 'Akali')
 assert(typ.decks === 4 && typ.cards[0].name === 'Akali, Silent' && typ.cards[0].share === 1, 'typical cards by deck share')
+
+// Tips: tricks the opponent usually runs, by keyword at line start.
+assert(trickKind('[Hidden] (Hide now.)\n[Action] (Play on your turn.)\nStun a unit.') === 'hidden', 'hidden beats action')
+assert(trickKind('[Quick-Draw] (This has [Reaction].)\n[Equip] [1]') === 'reaction', 'quick-draw is a reaction')
+assert(trickKind('Deal 3 to a unit.\nYour spells have [Reaction].') === null, 'a mention in prose is no trick')
+assert(trickKind('[Action] (Play on your turn or in showdowns.)\nDeal 2.') === 'action', 'action')
+const text = (n) => (n === 'Shuriken Flip' ? '[Action] Deal 2.' : 'When you play me, draw 1.')
+const tricks = typicalTricks(file, 'Akali', text)
+assert(tricks.length === 1 && tricks[0].name === 'Shuriken Flip' && tricks[0].kind === 'action' && tricks[0].share === 0.75, 'only tricks, with deck share')
+assert(typicalTricks(file, 'Akali', text, 0.8).length === 0, 'rare tricks left out')
+
+// The open deck against Akali: base 50 %, smoothed like the counter cards.
+const dm = deckInMatchup(file, 'Akali', [
+  { name: 'Decree of Rage', side: true },
+  { name: 'Hextech Ray', side: false },
+  { name: 'Cannon Barrage', side: false },
+  { name: 'Repulse', side: true },
+  { name: 'Unknown Card', side: false },
+])
+assert(dm.better.length === 1 && dm.better[0].name === 'Decree of Rage' && dm.better[0].side, 'clearly better sideboard card')
+assert(dm.worse.length === 1 && dm.worse[0].name === 'Hextech Ray' && dm.worse[0].lift < 0, 'clearly worse main deck card')
+assert(dm.unknown === 2, 'too few games and unseen cards are counted, Cannon Barrage is too close to the average')
+assert(deckInMatchup(file, 'Teemo', [{ name: 'Repulse', side: true }]).unknown === 1, 'no data for the opponent')
 
 console.log('check_matchups: ok')
