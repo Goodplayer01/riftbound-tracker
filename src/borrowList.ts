@@ -1,4 +1,5 @@
-import type { BorrowedCard, Card } from './types'
+import type { BorrowedCard, BorrowedGroup, Card, Owned } from './types'
+import { subtractOwnedCopies } from './collection.ts'
 import { displayCardName, parseDeckImport } from './deckHelpers.ts'
 
 /** First line of an exported lent list; importing it into an empty entry marks that entry as borrowed from someone. */
@@ -28,4 +29,27 @@ export function parseBorrowList(text: string, cards: Card[]): { cards: BorrowedC
   const named = parseDeckImport(rest.join('\n'), cards)
   for (const c of named.cards) m.set(c.id, (m.get(c.id) || 0) + c.qty)
   return { cards: [...m.entries()].map(([id, qty]) => ({ id, qty })), unmatched: named.unmatched }
+}
+
+/**
+ * The cards `ids` of entry `groupId` changed hands for good (traded, sold, kept): borrowed-from copies join
+ * the collection as normal copies, lent copies leave it (normal first, then foil, like a sale). Either way they
+ * leave the entry. Returns new groups and collection, the inputs stay untouched.
+ */
+export function settleBorrowed(groups: BorrowedGroup[], groupId: string, ids: string[], collection: Record<string, Owned>) {
+  const g = groups.find((x) => x.id === groupId)
+  if (!g) return { groups, collection, copies: 0 }
+  const pick = new Set(ids)
+  const out = { ...collection }
+  let copies = 0
+  for (const bc of g.cards) {
+    if (!pick.has(bc.id) || bc.qty <= 0) continue
+    const cur = out[bc.id] || { qty: 0, foil: 0 }
+    const next = g.direction === 'from' ? { ...cur, qty: (cur.qty || 0) + bc.qty } : (({ qty, foil }) => ({ ...cur, qty, foil }))(subtractOwnedCopies(cur, bc.qty))
+    copies += bc.qty
+    if (next.qty + next.foil > 0) out[bc.id] = next
+    else delete out[bc.id]
+  }
+  const left = { ...g, cards: g.cards.filter((c) => !pick.has(c.id)), updatedAt: new Date().toISOString() }
+  return { groups: groups.map((x) => (x.id === groupId ? left : x)), collection: out, copies }
 }
