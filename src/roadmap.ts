@@ -6,8 +6,9 @@ import { loadLiveJson } from './liveJson.ts'
 
 export const ROADMAP_KINDS = ['release', 'prerift', 'skirmish', 'regional', 'continental', 'showdown', 'convention'] as const
 export type RoadmapKind = (typeof ROADMAP_KINDS)[number]
-/** One date: `from` (and `to` for several days) as YYYY-MM-DD, local to the event's place. */
-export type RoadmapItem = { kind: RoadmapKind; name: string; from: string; to?: string; city?: string; country?: string }
+/** One date: `from` (and `to` for several days) as YYYY-MM-DD, local to the event's place.
+ *  `buy`: product Riot says can be bought on site (English product name), only when announced. */
+export type RoadmapItem = { kind: RoadmapKind; name: string; from: string; to?: string; city?: string; country?: string; buy?: string }
 export type RoadmapFile = { updatedAt: string; source: string; items: RoadmapItem[] }
 
 const DAY = /^\d{4}-\d{2}-\d{2}$/
@@ -17,6 +18,7 @@ export function isRoadmapItem(x: unknown): x is RoadmapItem {
   return !!i && (ROADMAP_KINDS as readonly string[]).includes(i.kind) && typeof i.name === 'string' && !!i.name.trim()
     && DAY.test(i.from) && (i.to == null || (DAY.test(i.to) && i.to >= i.from))
     && (i.country == null || /^[A-Z]{2}$/.test(i.country))
+    && (i.buy == null || (typeof i.buy === 'string' && !!i.buy.trim()))
 }
 
 export function isRoadmapFile(x: unknown): x is RoadmapFile {
