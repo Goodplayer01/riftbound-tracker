@@ -10,27 +10,26 @@ jobs:
       - name: Fetch pages
         shell: python
         run: |
-          import re, urllib.request
+          import re, json, urllib.request, collections
           UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Safari/537.36"
           def get(u):
-              return urllib.request.urlopen(urllib.request.Request(u, headers={"User-Agent": UA}), timeout=25).read().decode("utf-8", "replace")
-          sm = get("https://www.riftlite.com/sitemap.xml")
-          locs = re.findall(r"<loc>([^<]+)</loc>", sm)
-          print("SITEMAP", len(locs)); print([l for l in locs if "community" in l or "stat" in l or "meta" in l or "matchup" in l][:60])
+              return urllib.request.urlopen(urllib.request.Request(u, headers={"User-Agent": UA}), timeout=30).read().decode("utf-8", "replace")
           h = get("https://www.riftlite.com/community/matrix")
-          print("LEN", len(h))
-          i = h.find("Rengar"); print("FIRST RENGAR", i)
-          tds = re.findall(r"<td[^>]*>.*?</td>", h, re.S)
-          print("TD", len(tds));
-          for td in tds[50:54]: print(re.sub(r"\s+", " ", td)[:700]); print("--")
-          trs = re.findall(r"<tr[^>]*>", h)[:5]; print("TR ATTRS", trs)
-          ths = re.findall(r"<th[^>]*>.*?</th>", h, re.S); print("TH", len(ths), [re.sub(r"<[^>]+>", "", x)[:40] for x in ths[:12]])
-          # what dominates the 23 MB
-          chunks = re.findall(r'self\.__next_f\.push\(\[1,"(.{0,300})', h)
-          print("NEXTF", len(chunks)); 
-          for c in chunks[:3]: print(c[:300])
-          for kw in ["winRate", "winrate", "matches", "cardId", "card_id", "\\\"cards\\\"", "deckId", "legendId", "captures", "sampleSize", "wins"]:
-              print("KW", kw, h.count(kw))
-          j = h.find("captures"); print("CAP CTX", h[max(0,j-400):j+400])
-          k = h.find("cardId"); print("CARD CTX", h[max(0,k-400):k+600] if k >= 0 else None)
-          print("TEXT INTRO", re.sub(r"\s+", " ", re.sub(r"<[^>]+>", " ", h[:200000]))[:3000])
+          pushes = re.findall(r'self\.__next_f\.push\(\[1,"((?:[^"\\]|\\.)*)"\]\)', h)
+          print("PUSHES", len(pushes), [len(p) for p in pushes])
+          payload = "".join(json.loads('"' + p + '"') for p in pushes)
+          print("PAYLOAD", len(payload))
+          i = payload.find('"deckSnapshot"')
+          # walk back to the start of the enclosing record
+          s = payload.rfind('{"', 0, i - 2000) if i > 2000 else 0
+          print("BEFORE SNAPSHOT", payload[max(0, i - 2500):i])
+          print("AFTER SNAPSHOT", payload[i:i + 1500])
+          keys = collections.Counter(re.findall(r'"([A-Za-z_]{3,30})":', payload))
+          print("KEYS", keys.most_common(120))
+          for kw in ['"winner"', '"result"', '"outcome"', '"opponentLegend"', '"won"', '"playerLegend"', '"oppLegend"', '"season"', '"format"', '"mainDeck"', '"main"', '"sideboard"', '"createdAt"', '"playedAt"']:
+              j = payload.find(kw); print("KW", kw, payload.count(kw), payload[max(0, j - 150):j + 250] if j >= 0 else "")
+          lines = payload.split("\n"); print("LINES", len(lines), [ (l[:60], len(l)) for l in lines[:40] ])
+          leg = get("https://www.riftlite.com/community/legends/Akali")
+          print("LEGEND PAGE", len(leg), re.findall(r"<title>([^<]*)", leg)[:1])
+          txt = re.sub(r"\s+", " ", re.sub(r"<[^>]+>", " ", re.sub(r"<script.*?</script>", "", leg, flags=re.S)))
+          print("LEGEND TEXT", txt[:4000])
