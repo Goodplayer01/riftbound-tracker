@@ -173,6 +173,12 @@ export function CopyEditor({ lang, owned, lots, foilOnly, price, onChange, defau
                       {!l.pulled && (
                         <MoneyInput lang={lang} value={l.buy} label={t(lang, 'copies.buy')} placeholder={t(lang, 'copies.buyPh')} onChange={(buy) => patch(l.id, { buy })} />
                       )}
+                      {!l.pulled && (l.from || l.at) && (
+                        // Entered with "Add a purchase": the price already holds this copy's shipping share.
+                        <span className="copy-share" title={t(lang, 'copies.purchaseHint')}>
+                          {[l.from, l.at ? new Date(`${l.at}T12:00:00`).toLocaleDateString(lang === 'de' ? 'de-DE' : 'en-GB') : ''].filter(Boolean).join(' · ')}
+                        </span>
+                      )}
                       {l.pulled && (
                         <>
                           <select

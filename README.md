@@ -67,6 +67,10 @@ Windows SmartScreen might complain the first time because the installer isn't si
 - Once a deck is full you get a Share button that makes a clean image of the whole deck: Legend, runes, battlefields, main deck and sideboard with counts. The image goes straight into your clipboard, so you just paste it into Discord or WhatsApp; saving it as a file is still there
 - Hand tester with mulligan
 
+**Purchases**
+
+Enter a whole order at once with "Add a purchase" (in All owned, or from a card's detail): seller, day and shipping, then the cards with their price per copy. The cards join your collection and every copy carries its share of the shipping in its purchase price, so profit and value stay exact even when you bought the same card from different sellers for different prices.
+
 **Sales**
 
 Put cards you want to sell in a cart by dragging them in, pasting a list or clicking the cart button, and drag them out again to take them back. The search lists the whole catalogue (or only what you own) and lets you fix your owned count right there, and each cart card takes the price you listed it for on Cardmarket. Each card shows its price and the cart shows the total. Mark a card (or the whole cart) as sold when it's gone: you pick which copies leave (the one you bought for 4 €, the one you pulled, ...), enter what you got per copy and the date, then your collection is updated. Every sale lands in the list under the cart with what came in, Cardmarket's commission and your shipping, what the copies cost you (purchase price or their share of the booster / display) and the profit, with totals on top. Import Cardmarket's "Sold Articles" CSV to take over all your sales at once (rows already taken over are skipped), and log a card sold outside Cardmarket, like a cash sale at a tournament, with the tick next to it in the search. You can't add more copies than you own. Export the cart as a list with trend prices or as a CSV with Cardmarket product ids.

@@ -54,7 +54,8 @@ export type PackSource = { kind: PackKind; eur: number | null }
  *  `pulled`: opened from a pack, so there is no purchase price (buy stays null). With `pack` the copies
  *  cost their share of that pack (`lotCost`) and count in paid / profit, without it they stay out.
  *  Copies of a card without a lot are EN / NM with no purchase price. */
-export type CopyLot = { id: string; foil: boolean; n: number; lang: CardLang; cond: Condition; buy: number | null; pulled?: boolean; pack?: PackSource }
+/** `from` / `at`: seller and day of a purchase entered with "Add a purchase" (buy then includes the shipping share). */
+export type CopyLot = { id: string; foil: boolean; n: number; lang: CardLang; cond: Condition; buy: number | null; pulled?: boolean; pack?: PackSource; from?: string; at?: string }
 
 /** One card's share of a pack: every card in it carries the same part of the price. */
 export function packShare(pack: PackSource): number | null {
@@ -106,6 +107,8 @@ export function cleanCopyBook(raw: unknown): CopyBook {
         buy: !pulled && buy != null && Number.isFinite(buy) && buy >= 0 ? buy : null,
         ...(pulled ? { pulled } : {}),
         ...(pack ? { pack } : {}),
+        ...(typeof l.from === 'string' && l.from.trim() ? { from: l.from.trim().slice(0, 60) } : {}),
+        ...(typeof l.at === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(l.at) ? { at: l.at } : {}),
       })
     }
     if (ok.length) out[id] = ok
