@@ -77,7 +77,7 @@ import { sellText, stockCsv, wantsText, type CmLine } from './cardmarket'
 import { historyPoints, loadPriceHistory, type PriceHistoryFile } from './priceHistory'
 import { ValueHistory, type InvestRow } from './ValueHistory'
 import { CONDITION_FACTOR, cardEur, cardInvest, copyGroups, fitCopyBook, lotCost, PACK_KINDS, soldGroups, unitEur, unsourcedCopies, type CopyBook, type CopyLot, type PackSource } from './copies'
-import { CM_FEE_PCT, defaultPicks, entryProfit, feeFor, groupKey, localDay, parseCmSold, saleEntries, soldTotals, takeCopies, type SaleItem, type SoldEntry } from './soldLog'
+import { CM_FEE_PCT, defaultPicks, entryProfit, feeFor, groupKey, localDay, parseCmSold, postageKey, saleEntries, soldTotals, takeCopies, type Postage, type SaleItem, type SoldEntry } from './soldLog'
 import { CopyEditor, MoneyInput, fmtSignedEur } from './CopyEditor'
 import { cardArt, cardThumb, layeredArtBackground, loadThumbIndex, preloadArt, thumbForImage } from './cardImages'
 
@@ -93,7 +93,7 @@ type SoldAsk = {
   source: 'cart' | 'manual' | 'import'
   at: string
   feePct: number
-  ship: number | null
+  postage: Record<string, Postage>
   dupes: number
   unmatched: string[]
 }
@@ -1703,6 +1703,15 @@ export default function App() {
     setTab(next)
   }
 
+  /** Opens the other prints popover upward when the deck list has no room for it below (it would be clipped). */
+  function placePrintsPop(el: HTMLElement) {
+    const list = el.querySelector('.prints-pop-list') as HTMLElement | null
+    const clip = el.closest('.deck-accordion')?.getBoundingClientRect()
+    if (!list || !clip) return
+    const r = el.getBoundingClientRect()
+    el.classList.toggle('up', r.bottom + list.offsetHeight + 12 > clip.bottom && r.top - list.offsetHeight - 12 > clip.top)
+  }
+
   /** Shows one card in All owned: the tab's filters reset, then the search holds its code. */
   function showInOwned(c: Card) {
     setCardLightbox(null)
@@ -2155,7 +2164,7 @@ export default function App() {
       at: localDay(),
       // A card logged from the search is usually sold outside Cardmarket (cash), so no commission there.
       feePct: source === 'manual' ? 0 : CM_FEE_PCT,
-      ship: null,
+      postage: {},
       dupes: extra?.dupes ?? 0,
       unmatched: extra?.unmatched ?? [],
     })
@@ -2183,7 +2192,7 @@ export default function App() {
         ],
       })
     })
-    const logged = saleEntries(items, { feePct: ask.feePct, ship: ask.ship, perShipment: ask.source === 'import', newId: () => crypto.randomUUID() })
+    const logged = saleEntries(items, { feePct: ask.feePct, postage: ask.postage, perShipment: ask.source === 'import', newId: () => crypto.randomUUID() })
     if (!logged.length) return
     const used = new Map<string, number>()
     for (const e of logged) used.set(e.cardId!, (used.get(e.cardId!) || 0) + e.n)
@@ -2530,9 +2539,12 @@ export default function App() {
     e.dataTransfer.setData('text/plain', cardId)
     e.dataTransfer.effectAllowed = 'copy'
     const row = e.currentTarget as HTMLElement
-    const img = row.querySelector('img.deck-thumb') as HTMLImageElement | null
+    // Drag the big hover preview (already loaded, 240 px) instead of the small row thumbnail; the browser
+    // snapshots it right here, so hiding the preview above does not matter. Without one, the thumbnail.
+    const big = document.querySelector('.card-float-preview img') as HTMLImageElement | null
+    const img = big && big.complete && big.naturalWidth > 0 ? big : (row.querySelector('img.deck-thumb') as HTMLImageElement | null)
     if (img && img.complete && img.naturalWidth > 0) {
-      try { e.dataTransfer.setDragImage(img, img.clientWidth / 2, img.clientHeight / 2) } catch {}
+      try { e.dataTransfer.setDragImage(img, img === big ? 24 : img.clientWidth / 2, img === big ? 24 : img.clientHeight / 2) } catch {}
     }
     row.classList.add('dragging')
   }
@@ -2884,16 +2896,11 @@ export default function App() {
                     <b className={short ? 'short' : 'have'}>{have}</b>
                     {otherCopies > 0 && (
                       // Hover or keyboard focus shows the other prints; each one jumps to All owned.
-                      <span className="row-stat-note prints-pop" tabIndex={0}>
+                      // The row's floating card preview follows the mouse and would stack on this popover: no preview
+                      // anywhere over the label or the popover.
+                      <span className="row-stat-note prints-pop" tabIndex={0} onMouseEnter={(e) => { hideCardPreview(); placePrintsPop(e.currentTarget) }} onFocus={(e) => placePrintsPop(e.currentTarget)} onMouseMove={(e) => e.stopPropagation()}>
                         {t(lang, 'decks.ownsAlt', { n: otherCopies })}
-                        {/* The row's floating card preview follows the mouse and would cover this popover. */}
-                        <span
-                          className="prints-pop-list"
-                          role="list"
-                          aria-label={t(lang, 'decks.ownsOtherPrints')}
-                          onMouseEnter={hideCardPreview}
-                          onMouseMove={(e) => e.stopPropagation()}
-                        >
+                        <span className="prints-pop-list" role="list" aria-label={t(lang, 'decks.ownsOtherPrints')}>
                           {otherPrints.map((pid) => {
                             const p = byId.get(pid)
                             if (!p) return null
@@ -4502,7 +4509,7 @@ export default function App() {
                 return (
                   <div className="sold-summary">
                     <div className="deck-stat"><span>{t(lang, 'sold.revenue')}</span><b>{fmtEur(lang, tot.revenue)}</b></div>
-                    <div className="deck-stat"><span>{t(lang, 'sold.fees')}</span><b>{fmtEur(lang, tot.fees)}</b></div>
+                    <div className="deck-stat" title={t(lang, 'sold.feesHelp')}><span>{t(lang, 'sold.fees')}</span><b>{fmtSignedEur(lang, -(tot.fees + tot.postage))}</b></div>
                     <div className="deck-stat"><span>{t(lang, 'sold.paid')}</span><b>{fmtEur(lang, tot.paid)}</b></div>
                     <div className={`deck-stat ${tot.profit >= 0 ? 'sold-up' : 'sold-down'}`}>
                       <span>{t(lang, 'sold.profit')}</span>
@@ -4608,7 +4615,7 @@ export default function App() {
                         <div className="sold-row sold-head">
                           <b className="sold-month-name">{new Date(`${month}-15T12:00:00`).toLocaleDateString(lang === 'de' ? 'de-DE' : 'en-GB', { month: 'long', year: 'numeric' })}</b>
                           <span className="sold-num">{t(lang, 'sold.eur')}<b>{fmtEur(lang, sum.revenue)}</b></span>
-                          <span className="sold-num sold-detail">{t(lang, 'sold.feesRow')}<b>{fmtEur(lang, sum.fees)}</b></span>
+                          <span className="sold-num sold-detail">{t(lang, 'sold.feesRow')}<b>{fmtSignedEur(lang, -(sum.fees + sum.postage))}</b></span>
                           <span className="sold-num sold-detail">{t(lang, 'sold.cost')}<b>{fmtEur(lang, sum.paid)}</b></span>
                           <span className={`sold-num ${sum.profit >= 0 ? 'sold-up' : 'sold-down'}`}>{t(lang, 'sold.profit')}<b>{fmtSignedEur(lang, sum.profit)}</b></span>
                           <span />
@@ -4616,7 +4623,8 @@ export default function App() {
                         {entries.map((e) => {
                           const profit = entryProfit(e)
                           const card = e.cardId ? byId.get(e.cardId) : undefined
-                          const costs = (e.fee || 0) + (e.ship || 0)
+                          // Effect on the profit: commission and own postage take, the buyer's postage adds.
+                          const costs = (e.shipIn || 0) - (e.fee || 0) - (e.ship || 0)
                           return (
                             <div key={e.id} className="sold-row">
                               <span className="sold-at">{new Date(`${e.at}T12:00:00`).toLocaleDateString(lang === 'de' ? 'de-DE' : 'en-GB', { day: '2-digit', month: '2-digit' })}</span>
@@ -4628,7 +4636,7 @@ export default function App() {
                                 </small>
                               </span>
                               <span className="sold-num">{fmtEur(lang, e.eur) ?? '—'}</span>
-                              <span className="sold-num sold-detail">{costs ? fmtEur(lang, costs) : '—'}</span>
+                              <span className="sold-num sold-detail">{costs ? fmtSignedEur(lang, costs) : '—'}</span>
                               <span className="sold-num sold-detail">{fmtEur(lang, e.cost) ?? '—'}</span>
                               <span className={`sold-num ${profit == null ? 'sold-open' : profit >= 0 ? 'sold-up' : 'sold-down'}`} title={profit == null ? t(lang, 'sold.openRow') : undefined}>
                                 {profit == null ? '—' : fmtSignedEur(lang, profit)}
@@ -5574,21 +5582,53 @@ export default function App() {
       )}
       {soldAsk && (() => {
         const ask = soldAsk
+        const perShipment = ask.source === 'import'
         // What each item can still take: the copies the items before it did not pick.
         const before: { lots: CopyLot[] | undefined; owned: Owned | undefined }[] = []
-        // Counts from what the walk really takes (picks are capped by what the earlier items left).
+        // Counts and cost from what the walk really takes (picks are capped by what the earlier items left).
         const took: number[] = []
-        walkSoldItems(ask.items, (i, b) => { before[i] = b; return ask.picks[i] || {} }, (i, _b, r) => { took[i] = r.taken.reduce((s, x) => s + x.n, 0) })
+        let cost = 0
+        let noCost = 0
+        walkSoldItems(ask.items, (i, b) => { before[i] = b; return ask.picks[i] || {} }, (i, _b, r) => {
+          took[i] = r.taken.reduce((s, x) => s + x.n, 0)
+          for (const { g, n } of r.taken) {
+            if (g.buy == null) noCost += n
+            else cost += g.buy * n
+          }
+        })
         const countOf = (i: number) => took[i] + ask.gone[i]
+        ask.items.forEach((_it, i) => { noCost += ask.gone[i] })
         const total = ask.items.reduce((s, _it, i) => s + countOf(i), 0)
-        const revenue = ask.items.reduce((s, it, i) => s + (it.price ?? 0) * countOf(i), 0)
-        const shipments = ask.source === 'import' ? new Set(ask.items.filter((_it, i) => countOf(i) > 0).map((it) => it.shipment)).size : 1
-        const fees = ask.items.reduce((s, it, i) => s + feeFor(it.price == null ? null : it.price * countOf(i), ask.feePct), 0) + (ask.ship || 0) * shipments
+        const price = ask.items.reduce((s, it, i) => s + (it.price ?? 0) * countOf(i), 0)
+        const fee = ask.items.reduce((s, it, i) => s + feeFor(it.price, countOf(i), ask.feePct), 0)
+        // Postage counts once per sale, or once per shipment that still sells something.
+        const keys = new Set(ask.items.flatMap((it, i) => (countOf(i) > 0 ? [postageKey(it, i, perShipment)] : [])))
+        const shipIn = [...keys].reduce((s, k) => s + (ask.postage[k]?.in || 0), 0)
+        const shipOut = [...keys].reduce((s, k) => s + (ask.postage[k]?.out || 0), 0)
+        const payout = price - fee + shipIn
+        const profit = payout - shipOut - cost
         const setItem = (i: number, patch: Partial<SoldItem>) => setSoldAsk({ ...ask, items: ask.items.map((x, j) => (j === i ? { ...x, ...patch } : x)) })
+        const setPostage = (key: string, patch: Partial<Postage>) =>
+          setSoldAsk((p) => p && { ...p, postage: { ...p.postage, [key]: { in: p.postage[key]?.in ?? null, out: p.postage[key]?.out ?? null, ...patch } } })
+        const postageFields = (key: string) => (
+          <>
+            <label title={t(lang, 'sold.shipInHelp')}>
+              {t(lang, 'sold.shipIn')}
+              <MoneyInput lang={lang} value={ask.postage[key]?.in ?? null} label={t(lang, 'sold.shipIn')} placeholder="0,00" onChange={(v) => setPostage(key, { in: v })} />
+            </label>
+            <label title={t(lang, 'sold.shipOutHelp')}>
+              {t(lang, 'sold.shipOut')}
+              <MoneyInput lang={lang} value={ask.postage[key]?.out ?? null} label={t(lang, 'sold.shipOut')} placeholder="0,00" onChange={(v) => setPostage(key, { out: v })} />
+            </label>
+          </>
+        )
+        const line = (label: string, value: number, cls = '') => (
+          <div className={cls}><dt>{label}</dt><dd>{fmtSignedEur(lang, value)}</dd></div>
+        )
         return (
           <div className="card-lightbox" role="dialog" aria-modal="true" aria-labelledby="sold-ask-title" onClick={() => setSoldAsk(null)}>
             <div className="panel confirm-box sold-box" onClick={(e) => e.stopPropagation()}>
-              <h2 id="sold-ask-title">{t(lang, ask.source === 'import' ? 'sold.importTitle' : 'sales.soldConfirmTitle')}</h2>
+              <h2 id="sold-ask-title">{t(lang, perShipment ? 'sold.importTitle' : 'sales.soldConfirmTitle')}</h2>
               <p className="help" style={{ margin: 0 }}>{t(lang, 'sales.soldConfirmText')}</p>
               {(ask.dupes > 0 || ask.unmatched.length > 0) && (
                 <p className="help sold-import-note">
@@ -5599,7 +5639,7 @@ export default function App() {
                 </p>
               )}
               <div className="sold-settings">
-                {ask.source !== 'import' && (
+                {!perShipment && (
                   <label>
                     {t(lang, 'sold.date')}
                     <input type="date" className="field" value={ask.at} onChange={(e) => e.target.value && setSoldAsk({ ...ask, at: e.target.value })} />
@@ -5617,25 +5657,31 @@ export default function App() {
                     onChange={(e) => setSoldAsk({ ...ask, feePct: Math.min(100, Math.max(0, Number(e.target.value) || 0)) })}
                   />
                 </label>
-                <label>
-                  {t(lang, ask.source === 'import' ? 'sold.shipPer' : 'sold.ship')}
-                  <MoneyInput lang={lang} value={ask.ship} label={t(lang, ask.source === 'import' ? 'sold.shipPer' : 'sold.ship')} placeholder="0,00" onChange={(ship) => setSoldAsk((p) => p && { ...p, ship })} />
-                </label>
+                {!perShipment && postageFields('all')}
               </div>
+              <p className="help sold-postage-help">{t(lang, perShipment ? 'sold.postageHelpImport' : 'sold.postageHelp')}</p>
               <ul className="sold-list">
                 {ask.items.map((it, i) => {
                   const c = byId.get(it.id)
                   const picks = ask.picks[i] || {}
                   const setPick = (key: string, n: number) => setSoldAsk({ ...ask, picks: ask.picks.map((p, j) => (j === i ? { ...p, [key]: n } : p)) })
                   const groups = copyGroups(before[i]?.lots, before[i]?.owned, c ? isFoilOnly(c) : false)
+                  // Import: one postage block above the first item of each Cardmarket shipment.
+                  const newShipment = perShipment && (i === 0 || ask.items[i - 1].shipment !== it.shipment)
                   return (
                     <li key={`${it.id}-${i}`} className="sold-card">
+                      {newShipment && (
+                        <div className="sold-shipment">
+                          <b>{t(lang, 'sold.shipment', { nr: it.shipment ?? '' })}</b>
+                          {postageFields(postageKey(it, i, true))}
+                        </div>
+                      )}
                       <div className="sold-card-head">
                         {c && <DeckThumb cardId={c.id} src={c.image} />}
                         <span className="sold-card-name">
                           {c ? displayName(c) : it.id}
                           <small>
-                            {[c?.code, it.at ? new Date(`${it.at}T12:00:00`).toLocaleDateString(lang === 'de' ? 'de-DE' : 'en-GB') : '', ask.source === 'import' ? t(lang, 'sold.ordered', { n: it.n }) : ''].filter(Boolean).join(' · ')}
+                            {[c?.code, it.at ? new Date(`${it.at}T12:00:00`).toLocaleDateString(lang === 'de' ? 'de-DE' : 'en-GB') : '', perShipment ? t(lang, 'sold.ordered', { n: it.n }) : ''].filter(Boolean).join(' · ')}
                           </small>
                         </span>
                         <label className="sold-price">
@@ -5673,9 +5719,19 @@ export default function App() {
                   )
                 })}
               </ul>
-              <p className="sold-sum">
-                {t(lang, 'sold.sum', { revenue: fmtEur(lang, revenue) ?? '', fees: fmtEur(lang, fees) ?? '', net: fmtEur(lang, revenue - fees) ?? '' })}
-              </p>
+              {/* The sale as a receipt: what Cardmarket pays out, then what is left after postage and cost. */}
+              <dl className="sold-receipt">
+                {line(t(lang, 'sold.rPrice'), price)}
+                {line(t(lang, 'sold.rFee', { pct: ask.feePct }), -fee)}
+                {line(t(lang, 'sold.shipIn'), shipIn)}
+                {line(t(lang, 'sold.rPayout'), payout, 'sold-receipt-sum')}
+                {line(t(lang, 'sold.shipOut'), -shipOut)}
+                {line(t(lang, 'sold.cost'), -cost)}
+                <div className={`sold-receipt-sum sold-receipt-total ${noCost ? '' : profit >= 0 ? 'sold-up' : 'sold-down'}`}>
+                  <dt>{t(lang, 'sold.profit')}{noCost > 0 && <small>{t(lang, 'sold.rNoCost', { n: noCost })}</small>}</dt>
+                  <dd>{fmtSignedEur(lang, profit)}</dd>
+                </div>
+              </dl>
               <div className="confirm-actions">
                 <button type="button" className="btn small" onClick={() => setSoldAsk(null)}><Icon name="x" />{t(lang, 'decks.clearCancel')}</button>
                 <button
@@ -5683,7 +5739,7 @@ export default function App() {
                   className="btn small primary"
                   disabled={total === 0}
                   onClick={() => { setSoldAsk(null); confirmSale(ask) }}
-                ><Icon name="badge-check" />{t(lang, 'sales.soldConfirmOk', { n: total })}</button>
+                ><Icon name="badge-check" />{t(lang, 'sales.soldConfirmOk', { n: total, copyWord: copyWord(lang, total) })}</button>
               </div>
             </div>
           </div>

@@ -15,9 +15,11 @@ export type SoldEntry = {
   cost: number | null
   pulled?: boolean
   note?: string
-  /** Marketplace commission and shipping the seller paid, both in EUR; missing means none. */
+  /** Marketplace commission, postage the seller paid (`ship`) and postage the buyer paid (`shipIn`), all in
+   *  EUR; missing means none. A free letter with 1.25 € buyer postage is a small plus. */
   fee?: number
   ship?: number
+  shipIn?: number
   /** Import key ("cm:<shipment>:<product>:<price>") so the same Cardmarket row is never booked twice. */
   ref?: string
 }
@@ -27,14 +29,16 @@ export const CM_FEE_PCT = 5
 
 const cents = (x: number) => Math.round(x * 100) / 100
 
-/** Commission on a sale, in whole cents. */
-export function feeFor(eur: number | null, pct: number) {
-  return eur == null || !(pct > 0) ? 0 : cents((eur * pct) / 100)
+/** Commission on `n` copies at `price` each. Cardmarket rounds it per copy to the cent (2 × 3.30 € at 5 %
+ *  is 2 × 0.17 €, not 0.33 €), checked against Stefan's transaction list. */
+export function feeFor(price: number | null, n: number, pct: number) {
+  return price == null || !(pct > 0) ? 0 : cents((Math.round(price * pct + 1e-6) * n) / 100)
 }
 
-/** What a sale left over: price minus cost, commission and shipping; null while price or cost is unknown. */
+/** What a sale left over: price plus the buyer's postage, minus cost, commission and own postage;
+ *  null while price or cost is unknown. */
 export function entryProfit(e: SoldEntry) {
-  return e.eur == null || e.cost == null ? null : cents(e.eur - e.cost - (e.fee || 0) - (e.ship || 0))
+  return e.eur == null || e.cost == null ? null : cents(e.eur + (e.shipIn || 0) - e.cost - (e.fee || 0) - (e.ship || 0))
 }
 
 /** Copies of one card that leave in one sale line: from a lot (with its cost per copy) or logged without one. */
@@ -42,19 +46,29 @@ export type SaleLine = { n: number; foil: boolean; cost: number | null; pulled?:
 /** One sold item as the dialog confirmed it: price per copy and the lines its copies came from. */
 export type SaleItem = { cardId: string; name: string; at: string; price: number | null; ref?: string; shipment?: string; lines: SaleLine[] }
 
-/** Log entries for one confirmed sale: price and cost per line, commission per line, and shipping once
- *  per Cardmarket shipment (`perShipment`) or once for the whole sale. */
-export function saleEntries(items: SaleItem[], o: { feePct: number; ship: number | null; perShipment: boolean; newId: () => string }): SoldEntry[] {
+/** Postage of one sale or Cardmarket shipment: what the buyer paid and what sending it cost. */
+export type Postage = { in: number | null; out: number | null }
+
+/** Which postage an item belongs to: its Cardmarket shipment, or the whole sale ("all"). */
+export function postageKey(it: { shipment?: string; ref?: string }, i: number, perShipment: boolean) {
+  return perShipment ? it.shipment ?? it.ref ?? String(i) : 'all'
+}
+
+/** Log entries for one confirmed sale: price and cost per line, commission per copy, and postage once per
+ *  Cardmarket shipment (`perShipment`) or once for the whole sale, on its first line. */
+export function saleEntries(items: SaleItem[], o: { feePct: number; postage: Record<string, Postage>; perShipment: boolean; newId: () => string }): SoldEntry[] {
   const out: SoldEntry[] = []
   const shipped = new Set<string>()
   items.forEach((it, i) => {
     for (const l of it.lines) {
       if (!(l.n > 0)) continue
       const eur = it.price == null ? null : cents(it.price * l.n)
-      const key = o.perShipment ? it.shipment ?? it.ref ?? String(i) : 'all'
-      const ship = o.ship && !shipped.has(key) ? o.ship : 0
+      const key = postageKey(it, i, o.perShipment)
+      const p = shipped.has(key) ? undefined : o.postage[key]
       shipped.add(key)
-      const fee = feeFor(eur, o.feePct)
+      const ship = p?.out || 0
+      const shipIn = p?.in || 0
+      const fee = feeFor(it.price, l.n, o.feePct)
       out.push({
         id: o.newId(),
         at: it.at,
@@ -67,6 +81,7 @@ export function saleEntries(items: SaleItem[], o: { feePct: number; ship: number
         ...(l.pulled ? { pulled: true } : {}),
         ...(fee ? { fee } : {}),
         ...(ship ? { ship } : {}),
+        ...(shipIn ? { shipIn } : {}),
         ...(it.ref ? { ref: it.ref } : {}),
       })
     }
@@ -154,17 +169,19 @@ export function takeCopies(lots: CopyLot[] | undefined, o: Owned | undefined, fo
   return { lots: nextLots, owned: { qty, foil }, taken }
 }
 
-/** Revenue, commission and shipping of all entries; cost and profit only over entries whose price and cost are known
- *  (`open` counts the others). */
+/** Revenue, commission and net postage (own postage minus the buyer's, negative when postage made money) of all
+ *  entries; cost and profit only over entries whose price and cost are known (`open` counts the others). */
 export function soldTotals(log: SoldEntry[]) {
   let revenue = 0
   let fees = 0
+  let postage = 0
   let paid = 0
   let profit = 0
   let open = 0
   for (const e of log) {
     revenue += e.eur || 0
-    fees += (e.fee || 0) + (e.ship || 0)
+    fees += e.fee || 0
+    postage += (e.ship || 0) - (e.shipIn || 0)
     const p = entryProfit(e)
     if (p == null) open += 1
     else {
@@ -172,7 +189,7 @@ export function soldTotals(log: SoldEntry[]) {
       profit += p
     }
   }
-  return { revenue: cents(revenue), fees: cents(fees), paid: cents(paid), profit: cents(profit), open }
+  return { revenue: cents(revenue), fees: cents(fees), postage: cents(postage), paid: cents(paid), profit: cents(profit), open }
 }
 
 const money = (x: unknown) => {
@@ -200,6 +217,7 @@ export function cleanSoldLog(raw: unknown): SoldEntry[] {
       ...(typeof e.note === 'string' && e.note.trim() ? { note: e.note.trim() } : {}),
       ...(money(e.fee) ? { fee: money(e.fee)! } : {}),
       ...(money(e.ship) ? { ship: money(e.ship)! } : {}),
+      ...(money(e.shipIn) ? { shipIn: money(e.shipIn)! } : {}),
       ...(typeof e.ref === 'string' && e.ref ? { ref: e.ref } : {}),
     }]
   })
