@@ -13,19 +13,24 @@ jobs:
           import re, urllib.request
           UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Safari/537.36"
           def get(u):
-              return urllib.request.urlopen(urllib.request.Request(u, headers={"User-Agent": UA}), timeout=20).read().decode("utf-8", "replace")
-          print("ROBOTS", get("https://riftdecks.com/robots.txt")[:1500])
-          h = get("https://riftdecks.com/stats/winrate")
-          print("STATS LINKS", sorted(set(re.findall(r'href="(/stats/[^"]*)"', h)))[:40])
-          print("METAGAME", re.findall(r'<option[^>]*value="(\d+)"[^>]*>([^<]{2,60})</option>', h)[:30])
-          print("FORM", [m[:300] for m in re.findall(r'<form[^>]*>', h)][:5])
-          tds = re.findall(r'<td[^>]*>.*?</td>', h, re.S)
-          print("TD SAMPLES")
-          for td in tds[30:36]: print(re.sub(r'\s+', ' ', td)[:900]); print('--')
-          tr = re.findall(r'<tr[^>]*>.*?</tr>', h, re.S)
-          print("ROWS", len(tr)); print(re.sub(r'\s+', ' ', tr[2])[:2500])
-          print("FOOT", re.sub(r'\s+', ' ', h[h.find('</table>'):h.find('</table>')+1500]))
-          for u in ["https://riftdecks.com/stats/winrate?metagame_id=5", "https://riftdecks.com/stats/cards", "https://riftdecks.com/stats"]:
-              try:
-                  x = get(u); print("OK", u, len(x), re.findall(r"<title>([^<]*)", x)[:1])
-              except Exception as e: print("ERR", u, e)
+              return urllib.request.urlopen(urllib.request.Request(u, headers={"User-Agent": UA}), timeout=25).read().decode("utf-8", "replace")
+          sm = get("https://www.riftlite.com/sitemap.xml")
+          locs = re.findall(r"<loc>([^<]+)</loc>", sm)
+          print("SITEMAP", len(locs)); print([l for l in locs if "community" in l or "stat" in l or "meta" in l or "matchup" in l][:60])
+          h = get("https://www.riftlite.com/community/matrix")
+          print("LEN", len(h))
+          i = h.find("Rengar"); print("FIRST RENGAR", i)
+          tds = re.findall(r"<td[^>]*>.*?</td>", h, re.S)
+          print("TD", len(tds));
+          for td in tds[50:54]: print(re.sub(r"\s+", " ", td)[:700]); print("--")
+          trs = re.findall(r"<tr[^>]*>", h)[:5]; print("TR ATTRS", trs)
+          ths = re.findall(r"<th[^>]*>.*?</th>", h, re.S); print("TH", len(ths), [re.sub(r"<[^>]+>", "", x)[:40] for x in ths[:12]])
+          # what dominates the 23 MB
+          chunks = re.findall(r'self\.__next_f\.push\(\[1,"(.{0,300})', h)
+          print("NEXTF", len(chunks)); 
+          for c in chunks[:3]: print(c[:300])
+          for kw in ["winRate", "winrate", "matches", "cardId", "card_id", "\\\"cards\\\"", "deckId", "legendId", "captures", "sampleSize", "wins"]:
+              print("KW", kw, h.count(kw))
+          j = h.find("captures"); print("CAP CTX", h[max(0,j-400):j+400])
+          k = h.find("cardId"); print("CARD CTX", h[max(0,k-400):k+600] if k >= 0 else None)
+          print("TEXT INTRO", re.sub(r"\s+", " ", re.sub(r"<[^>]+>", " ", h[:200000]))[:3000])
