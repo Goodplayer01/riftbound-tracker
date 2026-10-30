@@ -45,6 +45,7 @@ jobs:
           node --experimental-strip-types scripts/check_soldlog.mjs
           node --experimental-strip-types scripts/check_purchase.mjs
           node --experimental-strip-types scripts/check_rules.mjs
+          node --experimental-strip-types scripts/check_roadmap.mjs
           node scripts/check_errata.mjs
 
       # Card thumbnails ship in the installer so grids show instantly.

@@ -2,42 +2,20 @@
  *  playriftbound.com rules hub (scripts/bake_rules.mjs, workflow "Bake rules"). Loaded live from main
  *  like the prices, so new rules reach every app without a release; the bundled copy covers offline. */
 
+import { loadLiveJson } from './liveJson.ts'
+
 export type Rule = { n: string; t: string; h?: true }
 export type RulesDoc = { id: string; title: string; lastUpdated: string; url: string; rules: Rule[] }
 export type RulesFile = { updatedAt: string; docs: RulesDoc[] }
-
-const REMOTE_RULES_URL = 'https://raw.githubusercontent.com/Goodplayer01/riftbound-tracker/main/public/rules.json'
-const REMOTE_TIMEOUT_MS = 10000
 
 function isRulesFile(x: unknown): x is RulesFile {
   const f = x as RulesFile
   return !!f && Array.isArray(f.docs) && f.docs.length > 0 && f.docs.every((d) => Array.isArray(d.rules) && d.rules.length > 0)
 }
 
-async function getRules(url: string | URL, init?: RequestInit) {
-  const r = await fetch(url, init)
-  if (!r.ok) return null
-  const data = await r.json()
-  return isRulesFile(data) ? data : null
-}
-
 /** Live copy from main, the bundled file when offline. */
-export async function loadRules(): Promise<RulesFile | null> {
-  const ctrl = new AbortController()
-  const timer = setTimeout(() => ctrl.abort(), REMOTE_TIMEOUT_MS)
-  try {
-    const remote = await getRules(REMOTE_RULES_URL, { cache: 'no-cache', signal: ctrl.signal })
-    if (remote) return remote
-  } catch {
-    // offline: fall through to the bundled copy
-  } finally {
-    clearTimeout(timer)
-  }
-  try {
-    return await getRules(new URL('rules.json', window.location.href))
-  } catch {
-    return null
-  }
+export function loadRules(): Promise<RulesFile | null> {
+  return loadLiveJson('rules.json', isRulesFile)
 }
 
 /** Lower case search words; empty when there is nothing to search for. */

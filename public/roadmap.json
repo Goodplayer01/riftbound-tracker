@@ -1,0 +1,32 @@
+{
+  "updatedAt": "2026-10-26",
+  "source": "https://playriftbound.com/en-us/news/announcements/august-2026-roadmap/",
+  "items": [
+    { "kind": "convention", "name": "Lucca Comics & Games", "from": "2026-10-28", "to": "2026-11-01", "city": "Lucca", "country": "IT" },
+    { "kind": "showdown", "name": "CoolStuffCon Orlando", "from": "2026-10-30", "city": "Orlando", "country": "US" },
+    { "kind": "regional", "name": "European Regional Championship", "from": "2026-11-06", "to": "2026-11-08", "city": "Stuttgart", "country": "DE" },
+    { "kind": "skirmish", "name": "Summoner Skirmish (Radiance)", "from": "2026-11-09" },
+    { "kind": "convention", "name": "TwitchCon", "from": "2026-11-13", "to": "2026-11-15", "city": "San Diego", "country": "US" },
+    { "kind": "showdown", "name": "Gen.G Riftbound Showdown Series", "from": "2026-11-21", "to": "2026-11-22", "city": "Los Angeles", "country": "US" },
+    { "kind": "convention", "name": "DreamHack Stockholm", "from": "2026-11-27", "to": "2026-11-29", "city": "Stockholm", "country": "SE" },
+    { "kind": "convention", "name": "Toulouse Game Show", "from": "2026-11-28", "to": "2026-11-29", "city": "Toulouse", "country": "FR" },
+    { "kind": "convention", "name": "PAX Unplugged", "from": "2026-12-04", "to": "2026-12-06" },
+    { "kind": "regional", "name": "North American Regional Championship", "from": "2026-12-11", "to": "2026-12-13", "city": "Las Vegas", "country": "US" },
+    { "kind": "skirmish", "name": "Summoner Skirmish (Radiance)", "from": "2026-12-14" },
+    { "kind": "prerift", "name": "Legacy", "from": "2027-01-22", "to": "2027-01-28" },
+    { "kind": "release", "name": "Legacy", "from": "2027-01-29" },
+    { "kind": "regional", "name": "Regional Championship (Legacy)", "from": "2027-02-05", "to": "2027-02-07", "city": "Madrid", "country": "ES" },
+    { "kind": "regional", "name": "Regional Championship (Legacy)", "from": "2027-02-12", "to": "2027-02-14", "city": "Philadelphia", "country": "US" },
+    { "kind": "release", "name": "Proving Grounds, 2nd Edition", "from": "2027-02-19" },
+    { "kind": "regional", "name": "Regional Championship (Legacy)", "from": "2027-03-05", "to": "2027-03-07", "city": "Auckland", "country": "NZ" },
+    { "kind": "continental", "name": "Continental Championship (Legacy)", "from": "2027-03-26", "to": "2027-03-28", "city": "Dallas", "country": "US" },
+    { "kind": "regional", "name": "Regional Championship (The Reckoning)", "from": "2027-05-14", "to": "2027-05-16", "city": "Louisville", "country": "US" },
+    { "kind": "regional", "name": "Regional Championship (The Reckoning)", "from": "2027-05-21", "to": "2027-05-23", "city": "Düsseldorf", "country": "DE" },
+    { "kind": "continental", "name": "Continental Championship (The Reckoning)", "from": "2027-06-11", "to": "2027-06-13", "city": "Melbourne", "country": "AU" },
+    { "kind": "prerift", "name": "The Reckoning", "from": "2027-06-23", "to": "2027-06-29" },
+    { "kind": "regional", "name": "Regional Championship (The Reckoning)", "from": "2027-06-25", "to": "2027-06-27", "city": "Lyon", "country": "FR" },
+    { "kind": "release", "name": "The Reckoning", "from": "2027-06-30" },
+    { "kind": "continental", "name": "Continental Championship (Set 8)", "from": "2027-08-13", "to": "2027-08-15", "city": "London", "country": "GB" },
+    { "kind": "continental", "name": "Continental Championship (Set 9)", "from": "2027-12-10", "to": "2027-12-12", "city": "Toronto", "country": "CA" }
+  ]
+}

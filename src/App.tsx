@@ -66,6 +66,7 @@ import {
 } from './stores'
 import { StoresMap, type MapCenter } from './StoresMap'
 import { StoreDisplays } from './StoreDisplays'
+import { RoadmapView } from './RoadmapView'
 import {
   OPENING_HAND_SIZE,
   applyMulligan,
@@ -898,7 +899,7 @@ export default function App() {
   const [borrowImportOpen, setBorrowImportOpen] = useState(false)
   const [borrowNotice, setBorrowNotice] = useState<string | null>(null)
   /** Store tab: display price comparison or the store locator. */
-  const [storeView, setStoreView] = useState<'displays' | 'stores'>('displays')
+  const [storeView, setStoreView] = useState<'displays' | 'stores' | 'roadmap'>('displays')
   /** Saved home location for the store search (rb.storeHome.v1), searched when the store view opens. */
   const [storeHome, setStoreHome] = useState(() => { try { return localStorage.getItem(STORE_HOME_KEY) || '' } catch { return '' } })
   const [storeQuery, setStoreQuery] = useState(storeHome)
@@ -5307,7 +5308,7 @@ export default function App() {
 
         {tab === 'stores' && (
           <div className="stores-view-switch" role="tablist">
-            {(['displays', 'stores'] as const).map((v) => (
+            {(['displays', 'stores', 'roadmap'] as const).map((v) => (
               <button
                 key={v}
                 type="button"
@@ -5316,14 +5317,16 @@ export default function App() {
                 className={`chip${storeView === v ? ' active' : ''}`}
                 onClick={() => setStoreView(v)}
               >
-                <Icon name={v === 'displays' ? 'package' : 'map-pinned'} />
-                {t(lang, v === 'displays' ? 'stores.viewDisplays' : 'stores.viewStores')}
+                <Icon name={v === 'displays' ? 'package' : v === 'stores' ? 'map-pinned' : 'calendar'} />
+                {t(lang, v === 'displays' ? 'stores.viewDisplays' : v === 'stores' ? 'stores.viewStores' : 'stores.viewRoadmap')}
               </button>
             ))}
           </div>
         )}
 
         {tab === 'stores' && storeView === 'displays' && <StoreDisplays lang={lang} openLink={openLink} />}
+
+        {tab === 'stores' && storeView === 'roadmap' && <RoadmapView lang={lang} openLink={openLink} />}
 
         {tab === 'stores' && storeView === 'stores' && (
           <div className="stores-page">
