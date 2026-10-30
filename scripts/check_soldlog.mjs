@@ -44,19 +44,22 @@ assert(picks['free-foil'] === 1 && picks.x === 1, `foil only default: ${JSON.str
 r = takeCopies(fo, { qty: 2, foil: 0 }, true, picks)
 assert(r.owned.qty === 0 && r.owned.foil === 0 && r.lots.length === 0, 'foil only copies leave from qty')
 
-// Commission in whole cents; profit takes off cost, commission and shipping.
-assert(feeFor(95, 5) === 4.75 && feeFor(3.3, 5) === 0.17 && feeFor(null, 5) === 0 && feeFor(10, 0) === 0, 'fee in cents')
+// Commission per copy rounded to the cent, as on Stefan's Cardmarket transactions (2 × 3.30 € → 0.34 €, 16.75 € + 6.99 € → 1.19 €).
+assert(feeFor(3.3, 2, 5) === 0.34 && feeFor(16.75, 1, 5) + feeFor(6.99, 1, 5) === 1.19 && feeFor(3.8, 1, 5) + feeFor(8.5, 1, 5) === 0.62, 'fee per copy like Cardmarket')
+assert(feeFor(95, 1, 5) === 4.75 && feeFor(null, 1, 5) === 0 && feeFor(10, 1, 0) === 0, 'fee edge cases')
+// Profit: price plus the buyer's postage, minus cost, commission and own postage (a free letter makes postage a plus).
 assert(entryProfit({ eur: 33, cost: 4, fee: 1.65, ship: 1.2 }) === 26.15, 'profit after fee and shipping')
+assert(entryProfit({ eur: 9, cost: 0.39, fee: 0.45, shipIn: 1.25, ship: 0 }) === 9.41, 'buyer postage adds to the profit')
 assert(entryProfit({ eur: 33, cost: null }) === null, 'no profit without cost')
 
 // Totals: fees and shipping over everything, cost and profit only over entries with both price and cost.
 const t = soldTotals([
   { eur: 1000, cost: null },
   { eur: 6, cost: 4, fee: 0.3 },
-  { eur: 2, cost: 0.5, ship: 1 },
+  { eur: 2, cost: 0.5, ship: 1, shipIn: 1.25 },
   { eur: null, cost: 3 },
 ])
-assert(t.revenue === 1008 && t.fees === 1.3 && t.paid === 4.5 && t.profit === 2.2 && t.open === 2, `totals: ${JSON.stringify(t)}`)
+assert(t.revenue === 1008 && t.fees === 0.3 && t.postage === -0.25 && t.paid === 4.5 && t.profit === 3.45 && t.open === 2, `totals: ${JSON.stringify(t)}`)
 
 // Cardmarket "Sold Articles" CSV: one row per article, product id = cmId, refs tell rows apart.
 const csv = [
@@ -85,30 +88,30 @@ const entries = saleEntries(
     { cardId: 'b', name: 'B', at: '2026-10-27', price: 10, shipment: 's1', ref: 'cm:s1:2:10', lines: [{ n: 0, foil: false, cost: null }, { n: 2, foil: false, cost: 0.5, pulled: true }] },
     { cardId: 'c', name: 'C', at: '2026-10-28', price: null, shipment: 's2', lines: [{ n: 1, foil: false, cost: 1 }] },
   ],
-  { feePct: 5, ship: 1.2, perShipment: true, newId: () => `e${k++}` },
+  { feePct: 5, postage: { s1: { in: 1.25, out: 0 }, s2: { in: 3.95, out: 2.75 } }, perShipment: true, newId: () => `e${k++}` },
 )
 assert(entries.length === 4, `four entries, the empty line is dropped: ${entries.length}`)
-assert(entries.filter((e) => e.ship).map((e) => e.cardId).join() === 'a,c', 'shipping once per shipment')
+assert(entries.filter((e) => e.shipIn).map((e) => `${e.cardId}:${e.shipIn}:${e.ship || 0}`).join() === 'a:1.25:0,c:3.95:2.75', 'postage once per shipment, both ways')
 assert(entries[0].eur === 3.3 && entries[0].fee === 0.17 && entries[0].cost === 4 && entries[0].ref === 'cm:s1:1:3.3', 'first line with fee, cost and ref')
 assert(entries[1].cost === null && entries[1].foil === true, 'copy without a lot keeps its foil flag and no cost')
 assert(entries[2].eur === 20 && entries[2].cost === 1 && entries[2].pulled === true && entries[2].fee === 1, 'two pulled copies')
 assert(entries[3].eur === null && !entries[3].fee, 'no price, no commission')
 const once = saleEntries(
   [{ cardId: 'a', name: 'A', at: '2026-10-27', price: 5, lines: [{ n: 1, foil: false, cost: 1 }] }, { cardId: 'b', name: 'B', at: '2026-10-27', price: 5, lines: [{ n: 1, foil: false, cost: 1 }] }],
-  { feePct: 0, ship: 2, perShipment: false, newId: () => `f${k++}` },
+  { feePct: 0, postage: { all: { in: null, out: 2 } }, perShipment: false, newId: () => `f${k++}` },
 )
 assert(once.filter((e) => e.ship).length === 1 && !once.some((e) => e.fee), 'cart sale: shipping once, no commission at 0 %')
 
 // Cleaning keeps good entries, drops broken ones, normalises money.
 const clean = cleanSoldLog([
-  { id: 'a', at: '2026-10-29', name: ' Ultimate ', n: 1, eur: '1000', cost: '', fee: 50, ship: '1.2', ref: 'cm:1:2:3' },
+  { id: 'a', at: '2026-10-29', name: ' Ultimate ', n: 1, eur: '1000', cost: '', fee: 50, ship: '1.2', shipIn: 1.25, ref: 'cm:1:2:3' },
   { at: 'yesterday', name: 'x', n: 1 },
   { at: '2026-10-29', name: '', n: 1 },
   { at: '2026-10-29', name: 'y', n: 0 },
   null,
 ])
 assert(
-  clean.length === 1 && clean[0].name === 'Ultimate' && clean[0].eur === 1000 && clean[0].cost === null && clean[0].fee === 50 && clean[0].ship === 1.2 && clean[0].ref === 'cm:1:2:3',
+  clean.length === 1 && clean[0].name === 'Ultimate' && clean[0].eur === 1000 && clean[0].cost === null && clean[0].fee === 50 && clean[0].ship === 1.2 && clean[0].shipIn === 1.25 && clean[0].ref === 'cm:1:2:3',
   `clean: ${JSON.stringify(clean)}`,
 )
 assert(cleanSoldLog('nope').length === 0, 'non-array log is empty')
