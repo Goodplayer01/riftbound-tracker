@@ -15,7 +15,7 @@ Notes for Claude Code working in this repo. The README is the user-facing featur
 - `electron/main.cjs`: window, updater, IPC (`net:fetchJson`, `net:fetchImageDataUrl`, `shell:openExternal`, `clipboard:writeImage` for the deck share image, which is copied as soon as the share preview opens, window controls) and the `rbimg://` image cache protocol. `electron/preload.cjs` exposes these to the renderer.
 - `src/App.tsx` holds most of the UI (one big file, ~5100 lines). Helpers live in their own modules (`prices.ts`, `priceHistory.ts`, `copies.ts`, `cardmarket.ts`, `cardImages.ts`, `deckHelpers.ts`, `banlist.ts`, `storage.ts`, ...).
 - Styling in `src/styles.css`: dark "Apple look", graphite surfaces with amber accent, sidebar navigation. Icons from Lucide (`src/Icon.tsx`).
-- No test framework. The `scripts/check_*.mjs` / `check-dopamin.mjs` files are plain assertion scripts that run in the Release workflow.
+- No test framework. The `scripts/check_*.mjs` / `check-dopamin.mjs` files are plain assertion scripts. `checks.yml` runs them (every `scripts/check*.mjs`, new ones included) plus `npm run build` on every PR and push to main; the Release workflow runs them again.
 - Stefan's PC has no Python (only the Microsoft Store alias), so Python bake scripts run in the GitHub workflows, e.g. `gh workflow run prices.yml --ref <branch>`.
 
 ## UI structure
@@ -94,6 +94,7 @@ If a shape has to change, add a new versioned key and migrate from the old one.
 - `release.yml` (manual, "Run workflow"): runs the check scripts, bakes thumbnails, builds the installer on windows-latest and publishes the GitHub release `v<package.json version>`. **All releases go through this workflow.** Claude cannot create releases directly (403). To release: bump `version` in `package.json` on main, then start the workflow (`gh workflow run release.yml` or via the GitHub MCP).
 - `prices.yml` (daily 04:00 UTC + manual): `bake_prices.py` (Cardmarket's public price guide for game 22, no secret) and `bake_price_history.py`, then `bake_sealed.py` (may fail without blocking prices), commits `prices.json`, `price-history.json` and `sealed.json` to main.
 - `rules.yml` (daily 04:30 UTC + manual): `bake_rules.mjs`, commits `public/rules.json` when the official rules changed.
+- `checks.yml` (every PR, pushes to main except the daily data commits, manual): `npm run build` and all `scripts/check*.mjs` on ubuntu-latest.
 - `thumbs.yml`: checks thumbnail baking on PRs that touch `cards.json`.
 - `bake-images.yml` (manual): official Riot card images into `cards.json`.
 
