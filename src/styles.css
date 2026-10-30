@@ -2464,7 +2464,15 @@ input[type="checkbox"] { accent-color: var(--primary); }
 .sold-settings .money-input .field, .sold-price .money-input .field { width: 100%; min-height: 34px; }
 .sold-card { display: grid; gap: 6px; padding: 10px 2px; }
 .sold-list li.sold-card { display: grid; justify-content: stretch; }
-.sold-card-head { display: grid; grid-template-columns: auto minmax(0, 1fr) 130px; align-items: center; gap: 12px; }
+.sold-card-head { display: grid; grid-template-columns: auto minmax(0, 1fr) 130px auto; align-items: center; gap: 12px; }
+/* More cards of the same sale: a search field with a few hits under the list. */
+.sold-add { display: grid; gap: 6px; }
+.sold-add-hits { display: grid; gap: 2px; padding: 4px; border-radius: 12px; background: var(--fill); }
+.sold-add-hits button { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 10px; padding: 6px 8px; border: 0; border-radius: 8px; background: transparent; color: var(--text); text-align: left; }
+.sold-add-hits button:hover, .sold-add-hits button:focus-visible { background: var(--fill-hover); }
+.sold-add-hits span { display: grid; min-width: 0; }
+.sold-add-hits b { font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sold-add-hits small { font-size: 12px; color: var(--muted); }
 .sold-card-head .deck-thumb { width: 40px; height: 56px; }
 .sold-card-name { display: grid; gap: 2px; font-weight: 600; min-width: 0; }
 .sold-card-name small { font-size: 12px; font-weight: 400; color: var(--muted); }
