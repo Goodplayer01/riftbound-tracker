@@ -7,6 +7,8 @@ export type CmLine = {
   qty: number
   foil: number
   price?: PriceEntry | null
+  /** The seller's own asking price per copy (sales cart); replaces the trend in sell lists. */
+  ask?: number | null
   /** Language and condition of the copies; without it every copy is English NM. */
   groups?: Pick<CopyGroup, 'foil' | 'n' | 'lang' | 'cond'>[]
 }
@@ -48,14 +50,14 @@ export function wantsText(lines: CmLine[]) {
     .join('\n')
 }
 
-/** Readable sell list with the trend price per copy. */
+/** Readable sell list with the own asking price per copy, else the trend. */
 export function sellText(lines: CmLine[], fmt: (eur: number) => string | null) {
   const out: string[] = []
   for (const l of lines) {
     for (const foil of [false, true]) {
       const n = foil ? l.foil : l.qty
       if (n <= 0) continue
-      const u = sellUnit(l.price, foil)
+      const u = l.ask ?? sellUnit(l.price, foil)
       out.push(`${n}x ${cmName(l.card)} (${l.card.code})${foil ? ' Foil' : ''}${u != null ? ` – ${fmt(u)}` : ''}`)
     }
   }
@@ -68,7 +70,7 @@ function csvCell(v: string | number) {
 }
 
 /** Stock list as CSV with Cardmarket product ids (idProduct), language and condition per copy
- *  (English NM when unknown), priced at the trend minus the usual condition discount. */
+ *  (English NM when unknown), priced at the own asking price, else the trend minus the usual condition discount. */
 export function stockCsv(lines: CmLine[]) {
   const rows = [['idProduct', 'Count', 'Name', 'Expansion', 'Language', 'Condition', 'isFoil', 'Price'].join(';')]
   for (const l of lines) {
@@ -78,7 +80,9 @@ export function stockCsv(lines: CmLine[]) {
     ]
     for (const g of groups) {
       if (g.n <= 0) continue
-      const u = sellUnit(l.price, g.foil)
+      // The own price is final; the trend gets the usual discount for worse conditions.
+      const trend = sellUnit(l.price, g.foil)
+      const unit = l.ask ?? (trend != null ? trend * CONDITION_FACTOR[g.cond] : null)
       rows.push([
         l.price?.cmId ?? '',
         g.n,
@@ -87,7 +91,7 @@ export function stockCsv(lines: CmLine[]) {
         CM_LANGUAGE[g.lang],
         g.cond,
         g.foil ? 'true' : 'false',
-        u != null ? (u * CONDITION_FACTOR[g.cond]).toFixed(2) : '',
+        unit != null ? unit.toFixed(2) : '',
       ].map(csvCell).join(';'))
     }
   }

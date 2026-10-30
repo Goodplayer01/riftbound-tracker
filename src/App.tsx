@@ -77,7 +77,7 @@ import { sellText, stockCsv, wantsText, type CmLine } from './cardmarket'
 import { historyPoints, loadPriceHistory, type PriceHistoryFile } from './priceHistory'
 import { ValueHistory, type InvestRow } from './ValueHistory'
 import { CONDITION_FACTOR, cardEur, cardInvest, copyGroups, fitCopyBook, lotCost, PACK_KINDS, soldGroups, unitEur, unsourcedCopies, type CopyBook, type CopyLot, type PackSource } from './copies'
-import { CM_FEE_PCT, defaultPicks, entryProfit, feeFor, groupKey, localDay, parseCmSold, postageKey, saleEntries, soldTotals, takeCopies, type Postage, type SaleItem, type SoldEntry } from './soldLog'
+import { CM_FEE_PCT, defaultPicks, entryProfit, feeFor, groupKey, localDay, postageKey, saleEntries, soldTotals, takeCopies, type Postage, type SaleItem, type SoldEntry } from './soldLog'
 import { CopyEditor, MoneyInput, fmtSignedEur } from './CopyEditor'
 import { cardArt, cardThumb, layeredArtBackground, loadThumbIndex, preloadArt, thumbForImage } from './cardImages'
 
@@ -692,8 +692,14 @@ function CardTile({
   spare,
   dragProps,
   borrowedFrom,
+  className,
+  artFlag,
 }: {
   children?: ReactNode
+  /** Extra class on the tile (sales cart: selected for one sale). */
+  className?: string
+  /** One more flag in the art's top right (sales cart: copies without details). */
+  artFlag?: ReactNode
   /** Copies no deck needs (shown with the Not needed in decks filter). */
   spare?: number
   /** Jumps to a deck from the deck pills or the deck badge on the art. */
@@ -721,7 +727,7 @@ function CardTile({
   const ownedClass = variant === 'binder' ? (n ? 'owned' : 'missing') : (n ? 'owned' : '')
   return (
     <article
-      className={`card ${ownedClass}${c.signed || c.overnumbered ? ' shimmer' : ''}`}
+      className={`card ${ownedClass}${c.signed || c.overnumbered ? ' shimmer' : ''}${className ? ` ${className}` : ''}`}
       data-card-id={c.id}
       onClick={(e) => { if (!isControlClick(e)) onOpen(c) }}
       {...dragProps}
@@ -743,6 +749,7 @@ function CardTile({
         <ArtImg src={cardThumb(c)} />
         {n > 0 && <div className="badge">x{n}</div>}
         <div className="flags">
+          {artFlag}
           {/* One badge per deck, stacked: deck name and copies, click opens that deck. More than three decks:
               two badges and "+N decks", which opens the card detail with every deck. */}
           {(inDecks && inDecks.length > 3 ? inDecks.slice(0, 2) : inDecks)?.map((u) => (
@@ -939,9 +946,8 @@ export default function App() {
   const [soldAsk, setSoldAsk] = useState<SoldAsk | null>(null)
   /** Every sale with price, cost, commission and shipping (`rb.soldLog.v1`). */
   const [soldLog, setSoldLog] = useState<SoldEntry[]>(loadSoldLog)
-  const soldImportRef = useRef<HTMLInputElement>(null)
-  /** Search in the sold dialog for more cards of the same sale. */
-  const [soldAddQ, setSoldAddQ] = useState('')
+  /** Cart cards picked for one sale ("Mark selected as sold"), session only. */
+  const [saleSel, setSaleSel] = useState<string[]>([])
   /** The last deleted log entry, for "Undo" (session only). */
   const [soldUndo, setSoldUndo] = useState<SoldEntry | null>(null)
   const [saleQ, setSaleQ] = useState('')
@@ -2079,7 +2085,8 @@ export default function App() {
     })
   }
 
-  const saleCartCount = Object.values(saleList).filter((q) => q > 0).length
+  /** Selected cart cards that are still in the cart. */
+  const saleSelected = saleSel.filter((id) => (saleList[id] || 0) > 0)
   const saleQuery = saleQ.trim().toLowerCase()
   // The whole catalogue by default (owned counts can be set right there); plain runes are not tracked.
   const saleHits = (saleOwnedOnly ? ownedCards : cards.filter((c) => !isPlainRune(c))).filter((c) => {
@@ -2149,32 +2156,21 @@ export default function App() {
     return { lots, owned }
   }
 
-  /** Adds one more card to the open sale, so cards one buyer took together share the postage. */
+  /** Adds a cart card to the open sale (its cart count), so cards one buyer took together share the postage. */
   function addToSoldAsk(id: string) {
     setSoldAsk((ask) => {
       if (!ask) return ask
+      const n = Math.max(1, saleList[id] || 1)
       // Its default copies come from what the items already in this sale leave of that card.
       let before: { lots: CopyLot[] | undefined; owned: Owned | undefined } = { lots: copies[id], owned: collection[id] }
       walkSoldItems(ask.items, (i) => ask.picks[i] || {}, (i, _b, r) => { if (ask.items[i].id === id) before = { lots: r.lots, owned: r.owned } })
-      const picks = defaultPicks(before.lots, before.owned, foilOnlyId(id), saleSplit(before.owned, 1))
+      const picks = defaultPicks(before.lots, before.owned, foilOnlyId(id), saleSplit(before.owned, n))
       const took = Object.values(picks).reduce((a, b) => a + b, 0)
-      return { ...ask, items: [...ask.items, { id, n: 1, price: saleAsks[id] ?? null }], picks: [...ask.picks, picks], gone: [...ask.gone, Math.max(0, 1 - took)] }
+      return { ...ask, items: [...ask.items, { id, n, price: saleAsks[id] ?? null }], picks: [...ask.picks, picks], gone: [...ask.gone, Math.max(0, n - took)] }
     })
-    setSoldAddQ('')
   }
 
-  /** Cards for the "add a card to this sale" search: owned ones first, a handful at most. */
-  const soldAddHits = useMemo(() => {
-    const q = soldAddQ.trim().toLowerCase()
-    if (q.length < 2) return []
-    return cards
-      .filter((c) => !isPlainRune(c) && (displayName(c).toLowerCase().includes(q) || c.code.toLowerCase().includes(q)))
-      .sort((a, b) => ownedQty(collection[b.id]) - ownedQty(collection[a.id]))
-      .slice(0, 6)
-  }, [soldAddQ, cards, collection])
-
   function openSoldAsk(items: SoldItem[], source: SoldAsk['source'], extra?: { dupes?: number; unmatched?: string[] }) {
-    setSoldAddQ('')
     // Default picks item by item on what the earlier items left, like the old rule (normal first, no details first).
     const picks: Record<string, number>[] = []
     const gone: number[] = []
@@ -2251,29 +2247,6 @@ export default function App() {
     setSaleReport(t(lang, 'sales.sold', { cards, copies: soldCopies, cardWord: cardWord(lang, cards), copyWord: copyWord(lang, soldCopies) }))
   }
 
-  /** Reads Cardmarket's "Sold Articles" CSV and opens the sold dialog with the rows not booked yet. */
-  async function importCmSold(file: File) {
-    const { rows, skipped } = parseCmSold(await file.text())
-    const byCm = new Map<string, string>()
-    for (const [id, p] of Object.entries(priceBook?.cards || {})) if (p.cmId) byCm.set(String(p.cmId), id)
-    const booked = new Set(soldLog.map((e) => e.ref).filter(Boolean))
-    const unmatched: string[] = []
-    let dupes = 0
-    const items: SoldItem[] = []
-    for (const r of rows) {
-      if (booked.has(r.ref)) { dupes += 1; continue }
-      const id = byCm.get(r.productId)
-      if (!id) { unmatched.push(r.name); continue }
-      items.push({ id, n: r.n, price: r.price, at: r.at, ref: r.ref, shipment: r.shipment })
-    }
-    if (skipped) unmatched.push(t(lang, 'sold.badRows', { n: skipped }))
-    if (!items.length) {
-      setSaleReport(t(lang, 'sold.importNothing', { dupes, unmatched: unmatched.length }))
-      return
-    }
-    openSoldAsk(items, 'import', { dupes, unmatched })
-  }
-
   function openWantsExport() {
     const lines: CmLine[] = Object.entries(wish).flatMap(([id, o]) => {
       const card = byId.get(id)
@@ -2333,7 +2306,7 @@ export default function App() {
         ...(sold.qty > 0 ? soldGroups(copies[id], collection[id], foilOnly, false, sold.qty) : []),
         ...(sold.foil > 0 ? soldGroups(copies[id], collection[id], foilOnly, true, sold.foil) : []),
       ]
-      return [{ card, qty: sold.qty, foil: sold.foil, price: priceBook?.cards[id], groups }]
+      return [{ card, qty: sold.qty, foil: sold.foil, price: priceBook?.cards[id], ask: saleAsks[id] ?? null, groups }]
     })
     setCmCopied(false)
     setCmExport({
@@ -4520,13 +4493,14 @@ export default function App() {
                   </span>
                 )}
                 <span style={{ flex: 1 }} />
-                <button
-                  className="btn primary"
-                  disabled={saleCartCount === 0}
-                  onClick={() => openSoldAsk(Object.entries(saleList).filter(([, n]) => n > 0).map(([id, n]) => ({ id, n, price: saleAsks[id] ?? null })), 'cart')}
-                >
-                  <Icon name="badge-check" />{t(lang, 'sales.markAllSold')}{saleCartCount > 0 ? ` (${saleCartCount})` : ''}
-                </button>
+                {saleSelected.length > 0 && (
+                  <button
+                    className="btn primary"
+                    onClick={() => openSoldAsk(saleSelected.map((id) => ({ id, n: saleList[id], price: saleAsks[id] ?? null })), 'cart')}
+                  >
+                    <Icon name="badge-check" />{t(lang, 'sales.markSelectedSold', { n: saleSelected.length })}
+                  </button>
+                )}
                 <button type="button" className="btn" disabled={Object.keys(saleList).length === 0} onClick={openSellExport}><Icon name="file-down" />{t(lang, 'cm.sellBtn')}</button>
                 {poolToggle()}
               </div>
@@ -4543,16 +4517,6 @@ export default function App() {
                       <b>{fmtSignedEur(lang, tot.profit)}</b>
                       {tot.open > 0 && <small>{t(lang, 'sold.open', { n: tot.open })}</small>}
                     </div>
-                    <button type="button" className="btn" title={t(lang, 'sold.importHelp')} onClick={() => soldImportRef.current?.click()}>
-                      <Icon name="file-up" />{t(lang, 'sold.import')}
-                    </button>
-                    <input
-                      ref={soldImportRef}
-                      type="file"
-                      accept=".csv,text/csv"
-                      hidden
-                      onChange={(e) => { const f = e.target.files?.[0]; e.target.value = ''; if (f) void importCmSold(f) }}
-                    />
                   </div>
                 )
               })()}
@@ -4566,9 +4530,23 @@ export default function App() {
                     if (!c) return null
                     const have = ownedQty(collection[id])
                     const line = ownedLineEur(saleSplit(collection[id], qty), priceBook?.cards[id])
+                    const selected = saleSel.includes(id)
+                    // Copies without a lot, or bought without a price: the sale would book them without cost.
+                    const noDetails = copyGroups(copies[id], collection[id], isFoilOnly(c)).some((g) => !g.lot || (!g.lot.pulled && g.buy == null))
                     return (
                       <CardTile
                         key={id}
+                        className={selected ? 'sale-selected' : undefined}
+                        artFlag={noDetails ? (
+                          <button
+                            type="button"
+                            className="flag no-details-flag"
+                            title={t(lang, 'sales.noDetailsHint')}
+                            onClick={(e) => { e.stopPropagation(); openCardLightbox(c) }}
+                          >
+                            <Icon name="tag" size={12} />{t(lang, 'sales.noDetails')}
+                          </button>
+                        ) : undefined}
                         c={c}
                         o={collection[id] || { qty: 0, foil: 0 }}
                         lang={lang}
@@ -4613,9 +4591,20 @@ export default function App() {
                           <span className="sub">{t(lang, 'decks.owns', { have })}</span>
                           <b>{fmtEur(lang, line)}</b>
                         </div>
-                        <button type="button" className="btn small positive sale-sold" onClick={() => openSoldAsk([{ id, n: qty, price: saleAsks[id] ?? null }], 'cart')}>
-                          <Icon name="badge-check" />{t(lang, 'sales.markSold')}
-                        </button>
+                        <div className="sale-actions">
+                          <button
+                            type="button"
+                            className={`btn small sale-select${selected ? ' active' : ''}`}
+                            aria-pressed={selected}
+                            title={t(lang, 'sales.selectHint')}
+                            onClick={() => setSaleSel((p) => (p.includes(id) ? p.filter((x) => x !== id) : [...p, id]))}
+                          >
+                            <Icon name={selected ? 'check' : 'plus'} />{t(lang, selected ? 'sales.selected' : 'sales.select')}
+                          </button>
+                          <button type="button" className="btn small positive sale-sold" onClick={() => openSoldAsk([{ id, n: qty, price: saleAsks[id] ?? null }], 'cart')}>
+                            <Icon name="badge-check" />{t(lang, 'sales.markSold')}
+                          </button>
+                        </div>
                       </CardTile>
                     )
                   })}
@@ -5755,32 +5744,32 @@ export default function App() {
                   )
                 })}
               </ul>
-              {!perShipment && (
-                // Cards that one buyer took together share the postage: add them to this sale.
-                <div className="sold-add">
-                  <input
-                    className="field"
-                    value={soldAddQ}
-                    placeholder={t(lang, 'sold.addCard')}
-                    aria-label={t(lang, 'sold.addCard')}
-                    onChange={(e) => setSoldAddQ(e.target.value)}
-                  />
-                  {soldAddHits.length > 0 && (
+              {(() => {
+                // Cards that one buyer took together share the postage: the other cart cards can join this sale.
+                const more = perShipment ? [] : Object.keys(saleList).filter((id) => saleList[id] > 0 && !ask.items.some((it) => it.id === id))
+                if (!more.length) return null
+                return (
+                  <div className="sold-add">
+                    <span className="sold-add-label">{t(lang, 'sold.addCard')}</span>
                     <div className="sold-add-hits" role="list">
-                      {soldAddHits.map((c) => (
-                        <button key={c.id} type="button" role="listitem" onClick={() => addToSoldAsk(c.id)}>
-                          <DeckThumb cardId={c.id} src={c.image} />
-                          <span>
-                            <b>{displayName(c)}</b>
-                            <small>{c.code} · {t(lang, 'decks.owns', { have: ownedQty(collection[c.id]) })}</small>
-                          </span>
-                          <Icon name="plus" size={15} />
-                        </button>
-                      ))}
+                      {more.map((id) => {
+                        const c = byId.get(id)
+                        if (!c) return null
+                        return (
+                          <button key={id} type="button" role="listitem" onClick={() => addToSoldAsk(id)}>
+                            <DeckThumb cardId={c.id} src={c.image} />
+                            <span>
+                              <b>{displayName(c)}</b>
+                              <small>{c.code} · {t(lang, 'sales.inCart', { n: saleList[id] })}{saleAsks[id] != null ? ` · ${fmtEur(lang, saleAsks[id])}` : ''}</small>
+                            </span>
+                            <Icon name="plus" size={15} />
+                          </button>
+                        )
+                      })}
                     </div>
-                  )}
-                </div>
-              )}
+                  </div>
+                )
+              })()}
               {/* The sale as a receipt: what Cardmarket pays out, then what is left after postage and cost. */}
               <dl className="sold-receipt">
                 {line(t(lang, 'sold.rPrice'), price)}
