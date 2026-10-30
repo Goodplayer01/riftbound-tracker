@@ -105,5 +105,5 @@ One-off scripts no workflow runs: `bake_rules_text.py` (rules text from the play
 
 - Commit messages: `vX.Y.Z: short summary` for releases, plain summary otherwise.
 - Work on a branch and open a PR. Merge and release only when Stefan says so ("merge und release"): then bump the version, `gh pr merge <n> --squash --delete-branch`, and start `release.yml`.
-- Cardmarket export: wants list as text, sell list as CSV with `idProduct` and trend price (`src/cardmarket.ts`). The sell export and the cart value split each card with `saleSplit` (normal first, then foil), the same rule "Mark as sold" uses (`subtractOwnedCopies`), so a foil is never exported as a normal copy.
+- Cardmarket export: wants list as text, sell list as CSV with `idProduct` and the own listing price per copy (`CmLine.ask`), else the trend minus the condition discount (`src/cardmarket.ts`). The sell export and the cart value split each card with `saleSplit` (normal first, then foil), the same rule "Mark as sold" uses (`subtractOwnedCopies`), so a foil is never exported as a normal copy.
 - Fan project, not affiliated with Riot Games or UVS Games. Domain icons are drawn for the app, not Riot's artwork.
