@@ -1,4 +1,4 @@
-import { cleanSoldLog, defaultPicks, entryProfit, feeFor, groupKey, parseCmSold, saleEntries, soldTotals, takeCopies } from '../src/soldLog.ts'
+import { cleanSoldLog, defaultPicks, entryProfit, feeFor, groupKey, parseCmSold, saleEntries, soldTotals, splitCents, takeCopies } from '../src/soldLog.ts'
 import { copyGroups } from '../src/copies.ts'
 
 function assert(cond, msg) {
@@ -91,7 +91,11 @@ const entries = saleEntries(
   { feePct: 5, postage: { s1: { in: 1.25, out: 0 }, s2: { in: 3.95, out: 2.75 } }, perShipment: true, newId: () => `e${k++}` },
 )
 assert(entries.length === 4, `four entries, the empty line is dropped: ${entries.length}`)
-assert(entries.filter((e) => e.shipIn).map((e) => `${e.cardId}:${e.shipIn}:${e.ship || 0}`).join() === 'a:1.25:0,c:3.95:2.75', 'postage once per shipment, both ways')
+// Shipment s1 (3.30 + 3.30 + 20.00 €) shares 1.25 € buyer postage by price; s2 has one card that gets all of its postage.
+const s1In = entries.slice(0, 3).map((e) => e.shipIn || 0)
+assert(s1In.join() === '0.16,0.15,0.94' || s1In.join() === '0.15,0.16,0.94', `buyer postage split by price: ${s1In}`)
+assert(Math.round(s1In.reduce((a, b) => a + b, 0) * 100) === 125 && !entries.slice(0, 3).some((e) => e.ship), 'split adds up, no own postage in s1')
+assert(entries[3].shipIn === 3.95 && entries[3].ship === 2.75, 'single card shipment keeps its postage')
 assert(entries[0].eur === 3.3 && entries[0].fee === 0.17 && entries[0].cost === 4 && entries[0].ref === 'cm:s1:1:3.3', 'first line with fee, cost and ref')
 assert(entries[1].cost === null && entries[1].foil === true, 'copy without a lot keeps its foil flag and no cost')
 assert(entries[2].eur === 20 && entries[2].cost === 1 && entries[2].pulled === true && entries[2].fee === 1, 'two pulled copies')
@@ -100,7 +104,8 @@ const once = saleEntries(
   [{ cardId: 'a', name: 'A', at: '2026-10-27', price: 5, lines: [{ n: 1, foil: false, cost: 1 }] }, { cardId: 'b', name: 'B', at: '2026-10-27', price: 5, lines: [{ n: 1, foil: false, cost: 1 }] }],
   { feePct: 0, postage: { all: { in: null, out: 2 } }, perShipment: false, newId: () => `f${k++}` },
 )
-assert(once.filter((e) => e.ship).length === 1 && !once.some((e) => e.fee), 'cart sale: shipping once, no commission at 0 %')
+assert(once.map((e) => e.ship).join() === '1,1' && !once.some((e) => e.fee), 'two cards sold together share the postage, no commission at 0 %')
+assert(splitCents(1, [1, 1, 1]).reduce((a, b) => a + b, 0).toFixed(2) === '1.00' && splitCents(0, [1]).join() === '0' && splitCents(1, [0, 0]).join() === '0,0', 'cent split edge cases')
 
 // Cleaning keeps good entries, drops broken ones, normalises money.
 const clean = cleanSoldLog([

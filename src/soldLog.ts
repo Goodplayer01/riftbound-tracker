@@ -58,16 +58,12 @@ export function postageKey(it: { shipment?: string; ref?: string }, i: number, p
  *  Cardmarket shipment (`perShipment`) or once for the whole sale, on its first line. */
 export function saleEntries(items: SaleItem[], o: { feePct: number; postage: Record<string, Postage>; perShipment: boolean; newId: () => string }): SoldEntry[] {
   const out: SoldEntry[] = []
-  const shipped = new Set<string>()
+  const keys: string[] = []
   items.forEach((it, i) => {
     for (const l of it.lines) {
       if (!(l.n > 0)) continue
       const eur = it.price == null ? null : cents(it.price * l.n)
-      const key = postageKey(it, i, o.perShipment)
-      const p = shipped.has(key) ? undefined : o.postage[key]
-      shipped.add(key)
-      const ship = p?.out || 0
-      const shipIn = p?.in || 0
+      keys.push(postageKey(it, i, o.perShipment))
       const fee = feeFor(it.price, l.n, o.feePct)
       out.push({
         id: o.newId(),
@@ -80,13 +76,41 @@ export function saleEntries(items: SaleItem[], o: { feePct: number; postage: Rec
         cost: l.cost == null ? null : cents(l.cost * l.n),
         ...(l.pulled ? { pulled: true } : {}),
         ...(fee ? { fee } : {}),
-        ...(ship ? { ship } : {}),
-        ...(shipIn ? { shipIn } : {}),
         ...(it.ref ? { ref: it.ref } : {}),
       })
     }
   })
+  // Cards sold together share one postage: split it by price (by copies when there is none), so every
+  // card's profit carries its part and the parts add up to the exact amount.
+  for (const [key, p] of Object.entries(o.postage)) {
+    const idx = keys.flatMap((k, j) => (k === key ? [j] : []))
+    if (!idx.length) continue
+    const weights = idx.map((j) => out[j].eur || 0)
+    const w = weights.some((x) => x > 0) ? weights : idx.map((j) => out[j].n)
+    const ins = splitCents(p.in || 0, w)
+    const outs = splitCents(p.out || 0, w)
+    idx.forEach((j, m) => {
+      if (ins[m]) out[j].shipIn = ins[m]
+      if (outs[m]) out[j].ship = outs[m]
+    })
+  }
   return out
+}
+
+/** Splits `total` euros by `weights` into cents that add up exactly; the largest remainders get the leftover cents. */
+export function splitCents(total: number, weights: number[]) {
+  const all = Math.round(total * 100)
+  const sum = weights.reduce((s, x) => s + x, 0)
+  if (!all || !(sum > 0)) return weights.map(() => 0)
+  const raw = weights.map((x) => (all * x) / sum)
+  const parts = raw.map(Math.floor)
+  let left = all - parts.reduce((s, x) => s + x, 0)
+  for (const i of raw.map((_x, i) => i).sort((a, b) => raw[b] - parts[b] - (raw[a] - parts[a]))) {
+    if (left <= 0) break
+    parts[i] += 1
+    left -= 1
+  }
+  return parts.map((c) => c / 100)
 }
 
 /** Cardmarket writes "3.3" in the English export; other site languages may write "3,3". */

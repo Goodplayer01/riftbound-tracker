@@ -940,6 +940,8 @@ export default function App() {
   /** Every sale with price, cost, commission and shipping (`rb.soldLog.v1`). */
   const [soldLog, setSoldLog] = useState<SoldEntry[]>(loadSoldLog)
   const soldImportRef = useRef<HTMLInputElement>(null)
+  /** Search in the sold dialog for more cards of the same sale. */
+  const [soldAddQ, setSoldAddQ] = useState('')
   /** The last deleted log entry, for "Undo" (session only). */
   const [soldUndo, setSoldUndo] = useState<SoldEntry | null>(null)
   const [saleQ, setSaleQ] = useState('')
@@ -2147,7 +2149,32 @@ export default function App() {
     return { lots, owned }
   }
 
+  /** Adds one more card to the open sale, so cards one buyer took together share the postage. */
+  function addToSoldAsk(id: string) {
+    setSoldAsk((ask) => {
+      if (!ask) return ask
+      // Its default copies come from what the items already in this sale leave of that card.
+      let before: { lots: CopyLot[] | undefined; owned: Owned | undefined } = { lots: copies[id], owned: collection[id] }
+      walkSoldItems(ask.items, (i) => ask.picks[i] || {}, (i, _b, r) => { if (ask.items[i].id === id) before = { lots: r.lots, owned: r.owned } })
+      const picks = defaultPicks(before.lots, before.owned, foilOnlyId(id), saleSplit(before.owned, 1))
+      const took = Object.values(picks).reduce((a, b) => a + b, 0)
+      return { ...ask, items: [...ask.items, { id, n: 1, price: saleAsks[id] ?? null }], picks: [...ask.picks, picks], gone: [...ask.gone, Math.max(0, 1 - took)] }
+    })
+    setSoldAddQ('')
+  }
+
+  /** Cards for the "add a card to this sale" search: owned ones first, a handful at most. */
+  const soldAddHits = useMemo(() => {
+    const q = soldAddQ.trim().toLowerCase()
+    if (q.length < 2) return []
+    return cards
+      .filter((c) => !isPlainRune(c) && (displayName(c).toLowerCase().includes(q) || c.code.toLowerCase().includes(q)))
+      .sort((a, b) => ownedQty(collection[b.id]) - ownedQty(collection[a.id]))
+      .slice(0, 6)
+  }, [soldAddQ, cards, collection])
+
   function openSoldAsk(items: SoldItem[], source: SoldAsk['source'], extra?: { dupes?: number; unmatched?: string[] }) {
+    setSoldAddQ('')
     // Default picks item by item on what the earlier items left, like the old rule (normal first, no details first).
     const picks: Record<string, number>[] = []
     const gone: number[] = []
@@ -5608,6 +5635,12 @@ export default function App() {
         const payout = price - fee + shipIn
         const profit = payout - shipOut - cost
         const setItem = (i: number, patch: Partial<SoldItem>) => setSoldAsk({ ...ask, items: ask.items.map((x, j) => (j === i ? { ...x, ...patch } : x)) })
+        // Takes a card out of this sale (it stays in the cart); the dialog closes with the last one.
+        const removeItem = (i: number) => {
+          const keep = (_x: unknown, j: number) => j !== i
+          const next = { ...ask, items: ask.items.filter(keep), picks: ask.picks.filter(keep), gone: ask.gone.filter(keep) }
+          setSoldAsk(next.items.length ? next : null)
+        }
         const setPostage = (key: string, patch: Partial<Postage>) =>
           setSoldAsk((p) => p && { ...p, postage: { ...p.postage, [key]: { in: p.postage[key]?.in ?? null, out: p.postage[key]?.out ?? null, ...patch } } })
         const postageFields = (key: string) => (
@@ -5688,6 +5721,9 @@ export default function App() {
                           {t(lang, 'sold.pricePer')}
                           <MoneyInput lang={lang} value={it.price} label={t(lang, 'sold.pricePer')} placeholder="0,00" onChange={(price) => setItem(i, { price })} />
                         </label>
+                        <button type="button" className="sold-del" aria-label={t(lang, 'sold.removeItem')} title={t(lang, 'sold.removeItem')} onClick={() => removeItem(i)}>
+                          <Icon name="x" size={15} />
+                        </button>
                       </div>
                       {groups.map((g) => {
                         const key = groupKey(g)
@@ -5719,6 +5755,32 @@ export default function App() {
                   )
                 })}
               </ul>
+              {!perShipment && (
+                // Cards that one buyer took together share the postage: add them to this sale.
+                <div className="sold-add">
+                  <input
+                    className="field"
+                    value={soldAddQ}
+                    placeholder={t(lang, 'sold.addCard')}
+                    aria-label={t(lang, 'sold.addCard')}
+                    onChange={(e) => setSoldAddQ(e.target.value)}
+                  />
+                  {soldAddHits.length > 0 && (
+                    <div className="sold-add-hits" role="list">
+                      {soldAddHits.map((c) => (
+                        <button key={c.id} type="button" role="listitem" onClick={() => addToSoldAsk(c.id)}>
+                          <DeckThumb cardId={c.id} src={c.image} />
+                          <span>
+                            <b>{displayName(c)}</b>
+                            <small>{c.code} · {t(lang, 'decks.owns', { have: ownedQty(collection[c.id]) })}</small>
+                          </span>
+                          <Icon name="plus" size={15} />
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
               {/* The sale as a receipt: what Cardmarket pays out, then what is left after postage and cost. */}
               <dl className="sold-receipt">
                 {line(t(lang, 'sold.rPrice'), price)}
