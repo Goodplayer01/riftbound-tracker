@@ -16,7 +16,7 @@ jobs:
             "https://www.riftlite.com/community/matrix" \
             "https://www.riftools.app/riftbound-winrates"; do
             echo "=================== $u"
-            curl -sS -L -A "$UA" -o page.html -w "HTTP %{http_code} size %{size_download} type %{content_type}\n" "$u" || true
+            curl -sS -L --max-time 25 -A "$UA" -o page.html -w "HTTP %{http_code} size %{size_download} type %{content_type}\n" "$u" || true
             echo "--- title"; grep -o '<title>[^<]*' page.html | head -2
             echo "--- script srcs"; grep -o '<script[^>]*src="[^"]*"' page.html | head -15
             echo "--- api/json hints"; grep -o -E '(/api/[A-Za-z0-9_/?=&.-]*|https?://[A-Za-z0-9.-]*/[A-Za-z0-9_/.-]*\.json|__NEXT_DATA__|data-[a-z-]*matchup[a-z-]*|winrate[A-Za-z_]*)' page.html | sort | uniq -c | sort -rn | head -25
