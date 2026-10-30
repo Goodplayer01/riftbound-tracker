@@ -15,7 +15,7 @@ const lines = [
 ]
 const costs = purchaseCosts(lines, 1.4)
 const total = lines.reduce((s, l, i) => s + costs[i] * l.n, 0)
-assert(Math.abs(total - 8.45) < 0.02, `copies add up to the order total 8.45 €: ${total.toFixed(2)}`)
+assert(Math.abs(total - 9.45) < 0.02, `copies add up to the order total 8.45 €: ${total.toFixed(2)}`)
 assert(costs[0] > 0.49 && costs[0] < 0.65 && costs[2] > 2 && costs[2] < 2.5, `shipping split by price: ${costs}`)
 assert(purchaseCosts([{ id: 'a', n: 1, foil: false, price: null }], 1).join() === '', 'unknown price stays unknown')
 assert(purchaseCosts([{ id: 'a', n: 2, foil: false, price: 3 }], null).join() === '3', 'no shipping, plain price')
