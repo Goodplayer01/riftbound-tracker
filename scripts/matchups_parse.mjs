@@ -70,6 +70,7 @@ export const MIN_CARD_GAMES = 2
  *   matrix:  { [legend]: { [opp]: [wins, losses, draws] } } as RiftLite pools them
  *   vs:      { [opp]: { n: [games, wins], cards: { [card]: [games, wins] } } }  decks of any Legend facing opp
  *   pair:    { [legend]: { [opp]: { n, cards } } }  the same, only decks of that Legend
+ *   by:      { [legend]: { n, cards } }  every deck of that Legend, whatever it faced
  * Only decisive matches (Win / Loss) with a deck count for cards; superseded or merged ones are skipped.
  */
 export function buildMatchups(matrix, matches) {
@@ -93,6 +94,7 @@ export function buildMatchups(matrix, matches) {
 
   const vs = {}
   const pair = {}
+  const by = {}
   let decks = 0
   const bump = (bucket, names, won) => {
     bucket.n[0]++
@@ -117,11 +119,12 @@ export function buildMatchups(matrix, matches) {
     const won = m.result === 'Win'
     bump((vs[opp] ??= { n: [0, 0], cards: {} }), names, won)
     bump(((pair[me] ??= {})[opp] ??= { n: [0, 0], cards: {} }), names, won)
+    bump((by[me] ??= { n: [0, 0], cards: {} }), names, won)
   }
   const prune = (bucket) => {
     for (const [n, e] of Object.entries(bucket.cards)) if (e[0] < MIN_CARD_GAMES) delete bucket.cards[n]
   }
-  for (const b of Object.values(vs)) prune(b)
+  for (const b of [...Object.values(vs), ...Object.values(by)]) prune(b)
   for (const byOpp of Object.values(pair)) for (const b of Object.values(byOpp)) prune(b)
 
   return {
@@ -131,5 +134,6 @@ export function buildMatchups(matrix, matches) {
     matrix: table,
     vs,
     pair,
+    by,
   }
 }

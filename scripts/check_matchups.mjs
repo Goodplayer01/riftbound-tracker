@@ -1,4 +1,5 @@
 import { nextPayload, findMatrixData, buildMatchups } from './matchups_parse.mjs'
+import { counterCards, legendKey, legendRecord, matchupRows, typicalCards, MIN_COUNTER_GAMES } from '../src/matchups.ts'
 
 function assert(cond, msg) {
   if (!cond) throw new Error(msg)
@@ -45,5 +46,38 @@ assert(!vsAkali.cards['Repulse'], 'sideboard does not count')
 assert(!vsAkali.cards['Rengar, Trophy Hunter'], 'cards seen once are pruned')
 assert(JSON.stringify(m.pair.Rengar.Akali.n) === '[2,1]', 'pair keeps only that legend\'s decks')
 assert(!m.pair.Rengar.Akali.cards['Decree of Rage'], 'pair prunes by its own count')
+
+assert(JSON.stringify(m.by.Rengar.n) === '[2,1]' && JSON.stringify(m.by.Rengar.cards['Cannon Barrage']) === '[2,1]', 'all decks of a legend')
+
+// App side: ranking and counter cards.
+const file = {
+  updatedAt: '', source: '', matches: 0, decks: 0,
+  legends: { Rengar: [10, 10], 'Master Yi, Wuju Bladesman': [1, 0] },
+  matrix: { Rengar: { Akali: [3, 3, 0], Kennen: [1, 4, 1], Vex: [4, 1, 0], Rengar: [5, 5, 0], Ezreal: [0, 0, 2] } },
+  vs: { Akali: { n: [40, 20], cards: {
+    'Decree of Rage': [10, 8], // clearly better
+    'Cannon Barrage': [30, 16], // a bit better, many games
+    'Repulse': [2, 2], // too few games
+    'Hextech Ray': [20, 8], // worse than average
+    'Akali, Silent': [6, 5], // not allowed for this deck
+  } } },
+  pair: { Rengar: { Akali: { n: [2, 1], cards: { 'Cannon Barrage': [2, 1] } } } },
+  by: { Akali: { n: [4, 2], cards: { 'Akali, Silent': [4, 2], 'Shuriken Flip': [3, 1] } } },
+}
+assert(legendKey(file, 'Rengar', 'Rengar, Pridestalker') === 'Rengar', 'legend by champion name')
+assert(legendKey(file, 'Master Yi', 'Master Yi, Wuju Bladesman') === 'Master Yi, Wuju Bladesman', 'full name wins')
+assert(legendKey(file, 'Teemo', 'Teemo, Swift Scout') === null, 'unknown legend')
+const rows = matchupRows(file, 'Rengar')
+assert(rows.map((r) => r.opp).join(' ') === 'Vex Akali Kennen Ezreal', 'best first, mirror left out, no decisive games last')
+assert(rows[2].games === 6 && Math.abs(rows[2].wr - 0.2) < 1e-9, 'games include draws, win rate does not')
+assert(legendRecord(file, 'Rengar').wr === 0.5, 'overall record')
+const cc = counterCards(file, 'Rengar', 'Akali', (n) => n !== 'Akali, Silent')
+assert(MIN_COUNTER_GAMES === 3, 'min games')
+assert(cc.cards.map((c) => c.name).join(' ') === 'Decree of Rage Cannon Barrage', 'ranked by smoothed lift, weak, rare and banned cards out')
+assert(cc.cards[1].own?.join() === '2,1' && !cc.cards[0].own, 'own legend numbers attached')
+assert(cc.base.join() === '40,20', 'baseline')
+assert(counterCards(file, 'Rengar', 'Teemo', () => true).cards.length === 0, 'no data, no cards')
+const typ = typicalCards(file, 'Akali')
+assert(typ.decks === 4 && typ.cards[0].name === 'Akali, Silent' && typ.cards[0].share === 1, 'typical cards by deck share')
 
 console.log('check_matchups: ok')
