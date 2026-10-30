@@ -16,7 +16,7 @@ import {
   type CardKeywordBook,
 } from './keywords'
 import { parseBulkTokens, resolveToken } from './parseBulk'
-import { LENT_HEADER, formatBorrowList, parseBorrowList } from './borrowList'
+import { LENT_HEADER, formatBorrowList, parseBorrowList, settleBorrowed } from './borrowList'
 import {
   SECTION_CAPS,
   SECTION_LABEL,
@@ -1007,7 +1007,7 @@ export default function App() {
   const [clearSec, setClearSec] = useState<DeckSection | null>(null)
   const [deckUndoOn, setDeckUndoOn] = useState(false)
   const [borrowUndoOn, setBorrowUndoOn] = useState(false)
-  const [deckConfirm, setDeckConfirm] = useState<null | { kind: 'all' } | { kind: 'one'; id: string; name: string } | { kind: 'borrow'; id: string; name: string } | { kind: 'borrowAll' } | { kind: 'wish'; id: string; name: string }>(null)
+  const [deckConfirm, setDeckConfirm] = useState<null | { kind: 'all' } | { kind: 'one'; id: string; name: string } | { kind: 'borrow'; id: string; name: string } | { kind: 'borrowAll' } | { kind: 'wish'; id: string; name: string } | { kind: 'settle'; id: string; what: string; ids: string[]; from: boolean }>(null)
   /** Official errata by lower case "name" or "name, subtitle" (public/card-errata.json). */
   const [errata, setErrata] = useState<Record<string, CardErrata>>({})
   const [appVersion, setAppVersion] = useState('')
@@ -1114,6 +1114,13 @@ export default function App() {
     if (pending.kind === 'wish') {
       setWish((prev) => { const n = { ...prev }; delete n[pending.id]; return n })
       dropWishTarget(pending.id)
+      return
+    }
+    if (pending.kind === 'settle') {
+      const r = settleBorrowed(borrowed, pending.id, pending.ids, rawCollection)
+      setBorrowed(r.groups)
+      setCollection(r.collection)
+      setBorrowNotice(t(lang, pending.from ? 'borrowed.keptDone' : 'borrowed.gaveDone', { n: r.copies }))
       return
     }
     if (pending.kind === 'borrow') {
@@ -5154,6 +5161,13 @@ export default function App() {
                             ><Icon name="download" />{t(lang, 'borrowed.export')}</button>
                             <button
                               type="button"
+                              className="btn"
+                              disabled={g.cards.length === 0}
+                              title={t(lang, g.direction === 'from' ? 'borrowed.keepTitle' : 'borrowed.gaveTitle')}
+                              onClick={() => setDeckConfirm({ kind: 'settle', id: g.id, what: t(lang, 'borrowed.allOf', { n: groupCardCount(g), name: g.name }), ids: g.cards.map((c) => c.id), from: g.direction === 'from' })}
+                            ><Icon name={g.direction === 'from' ? 'check' : 'handshake'} />{t(lang, g.direction === 'from' ? 'borrowed.keepAll' : 'borrowed.gaveAll')}</button>
+                            <button
+                              type="button"
                               className="btn icon danger deck-trash"
                               title={t(lang, 'borrowed.delete')}
                               aria-label={t(lang, 'borrowed.delete')}
@@ -5241,6 +5255,18 @@ export default function App() {
                                       onClick={() => bumpBorrowedCard(bc.id, 1)}
                                     >+</button>
                                   </div>
+                                  <button
+                                    type="button"
+                                    className="btn icon"
+                                    title={t(lang, g.direction === 'from' ? 'borrowed.keepTitle' : 'borrowed.gaveTitle')}
+                                    aria-label={t(lang, g.direction === 'from' ? 'borrowed.keepTitle' : 'borrowed.gaveTitle')}
+                                    onClick={(e) => {
+                                      e.stopPropagation()
+                                      setDeckConfirm({ kind: 'settle', id: g.id, what: `${bc.qty}× ${c ? displayCardName(c) : bc.id}`, ids: [bc.id], from: g.direction === 'from' })
+                                    }}
+                                  >
+                                    <Icon name={g.direction === 'from' ? 'check' : 'handshake'} size={16} />
+                                  </button>
                                   <button
                                     type="button"
                                     className="btn icon danger deck-trash deck-card-trash"
@@ -5992,13 +6018,19 @@ export default function App() {
                   ? t(lang, 'borrowed.deleteAllConfirm')
                   : deckConfirm.kind === 'borrow'
                     ? t(lang, 'borrowed.deleteConfirm', { name: deckConfirm.name })
+                    : deckConfirm.kind === 'settle'
+                    ? t(lang, deckConfirm.from ? 'borrowed.keepConfirm' : 'borrowed.gaveConfirm', { what: deckConfirm.what })
                     : deckConfirm.kind === 'wish'
                     ? t(lang, 'wish.deleteConfirm', { name: deckConfirm.name })
                     : t(lang, 'decks.deleteOneConfirm', { name: deckConfirm.name })}
             </p>
             <div className="confirm-actions">
               <button type="button" className="btn small" onClick={() => setDeckConfirm(null)}><Icon name="x" />{t(lang, 'decks.clearCancel')}</button>
-              <button type="button" className="btn small deck-trash" onClick={applyDeckConfirm}><Icon name="trash-2" />{t(lang, 'decks.clearConfirm')}</button>
+              {deckConfirm.kind === 'settle' ? (
+                <button type="button" className="btn small primary" onClick={applyDeckConfirm}><Icon name={deckConfirm.from ? 'check' : 'handshake'} />{t(lang, deckConfirm.from ? 'borrowed.keep' : 'borrowed.gave')}</button>
+              ) : (
+                <button type="button" className="btn small deck-trash" onClick={applyDeckConfirm}><Icon name="trash-2" />{t(lang, 'decks.clearConfirm')}</button>
+              )}
             </div>
           </div>
         </div>
