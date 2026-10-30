@@ -886,7 +886,24 @@ textarea.field { min-height: 160px; resize: vertical; font-family: ui-monospace,
 /* Cart tile foot: owned count and line value, then the full width "mark as sold" button. */
 .sale-foot { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
 .sale-foot b { font-variant-numeric: tabular-nums; }
-.btn.sale-sold { width: 100%; justify-content: center; }
+/* Sales cart tile: select for one sale, or mark this card as sold. */
+.sale-actions { display: flex; flex-wrap: wrap; gap: 6px; }
+.sale-actions .btn { flex: 1 1 auto; justify-content: center; }
+.btn.sale-select.active { background: var(--primary-soft); color: var(--accent2); }
+.card.sale-selected { box-shadow: var(--shadow), 0 0 0 2px var(--primary); }
+.flag.no-details-flag { cursor: pointer; display: inline-flex; align-items: center; gap: 4px; color: var(--warn); border-color: rgb(var(--warn-rgb) / .45); }
+.flag.no-details-flag:hover { background: rgb(var(--warn-rgb) / .15); }
+/* Sales tab: the cart panel scrolls as one (totals, cart tiles, sold list), so no part gets squeezed in window mode. */
+.split.deck-split > .panel.col-fill[data-remove-src="sale"] { overflow: auto; }
+.split.deck-split > .panel.col-fill[data-remove-src="sale"] > .list { flex: none; overflow: visible; }
+/* The search lists on the right are a flex column: as a grid, Chromium sized every row to its min-height (102 px)
+   while a narrow row's text needed more, so it ran into the next row. */
+.split.deck-split > .panel.col-fill > .list { display: flex; flex-direction: column; }
+.picker-card { flex-shrink: 0; flex-wrap: wrap; justify-content: flex-end; }
+/* Narrow panel (window mode): the controls wrap under the card instead of squeezing its name and prices. */
+.picker-card > .grow { flex: 1 1 220px; }
+/* Cart tiles carry prices, the listing price and two buttons (which wrap): they need about 260 px, else they get cut in window mode. */
+.sale-cart .grid { grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); }
 /* "Mark as sold?" dialog: one line per card with the copies that leave the collection. */
 .sold-list { list-style: none; margin: 0; padding: 0; max-height: 40vh; overflow: auto; border-top: 1px solid var(--border); }
 .sold-list li { display: flex; justify-content: space-between; gap: 12px; padding: 6px 2px; border-bottom: 1px solid var(--border); font-size: 13px; }
@@ -2467,6 +2484,7 @@ input[type="checkbox"] { accent-color: var(--primary); }
 .sold-card-head { display: grid; grid-template-columns: auto minmax(0, 1fr) 130px auto; align-items: center; gap: 12px; }
 /* More cards of the same sale: a search field with a few hits under the list. */
 .sold-add { display: grid; gap: 6px; }
+.sold-add-label { font-size: 12.5px; color: var(--muted); }
 .sold-add-hits { display: grid; gap: 2px; padding: 4px; border-radius: 12px; background: var(--fill); }
 .sold-add-hits button { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 10px; padding: 6px 8px; border: 0; border-radius: 8px; background: transparent; color: var(--text); text-align: left; }
 .sold-add-hits button:hover, .sold-add-hits button:focus-visible { background: var(--fill-hover); }
