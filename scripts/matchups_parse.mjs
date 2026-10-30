@@ -53,7 +53,8 @@ function deckCardNames(snap) {
   const names = new Set()
   for (const sec of [snap.champion, snap.mainDeck]) {
     for (const e of sec || []) {
-      const n = String(e?.name || '').trim()
+      // Decks imported from Rift Atlas carry the print: "Falling Star [OGN-029]". Cards count by name.
+      const n = String(e?.name || '').replace(/\s*\[[^\]]*\]\s*$/, '').trim()
       if (n && (e.qty ?? 1) > 0) names.add(n)
     }
   }

@@ -8,7 +8,7 @@ function assert(cond, msg) {
 const line = JSON.stringify(['$', 'div', null, { children: [
   ['$', '$L1e', null, { matches: [
     { result: 'Win', myChampion: 'Rengar', oppChampion: 'Akali', deckSnapshot: { legend: 'Rengar', champion: [{ qty: 1, name: 'Rengar, Trophy Hunter' }], mainDeck: [{ qty: 3, name: 'Decree of Rage' }, { qty: 2, name: 'Cannon Barrage' }], sideboard: [{ qty: 1, name: 'Repulse' }] } },
-    { result: 'Loss', myChampion: 'Rengar', oppChampion: 'Akali', deckSnapshot: { legend: 'Rengar', mainDeck: [{ qty: 3, name: 'Cannon Barrage' }] } },
+    { result: 'Loss', myChampion: 'Rengar', oppChampion: 'Akali', deckSnapshot: { legend: 'Rengar', mainDeck: [{ qty: 3, name: 'Cannon Barrage [OGN-127]' }] } },
     { result: 'Win', myChampion: 'Vex', oppChampion: 'Akali', deckSnapshot: { legend: 'Vex', mainDeck: [{ qty: 3, name: 'Decree of Rage' }] } },
     { result: 'Win', myChampion: 'Rengar', oppChampion: 'Akali', superseded: true, deckSnapshot: { legend: 'Rengar', mainDeck: [{ qty: 3, name: 'Decree of Rage' }] } },
     { result: 'Draw', myChampion: 'Rengar', oppChampion: 'Akali', deckSnapshot: { legend: 'Rengar', mainDeck: [{ qty: 3, name: 'Decree of Rage' }] } },
@@ -40,7 +40,7 @@ assert(m.decks === 3, 'superseded, draws, mirrors and matches without deck are n
 const vsAkali = m.vs.Akali
 assert(JSON.stringify(vsAkali.n) === '[3,2]', 'decks facing Akali: 3 games, 2 won')
 assert(JSON.stringify(vsAkali.cards['Decree of Rage']) === '[2,2]', 'card counted over every legend facing Akali')
-assert(JSON.stringify(vsAkali.cards['Cannon Barrage']) === '[2,1]', 'card in a won and a lost deck')
+assert(JSON.stringify(vsAkali.cards['Cannon Barrage']) === '[2,1]', 'card in a won and a lost deck, print code stripped')
 assert(!vsAkali.cards['Repulse'], 'sideboard does not count')
 assert(!vsAkali.cards['Rengar, Trophy Hunter'], 'cards seen once are pruned')
 assert(JSON.stringify(m.pair.Rengar.Akali.n) === '[2,1]', 'pair keeps only that legend\'s decks')
