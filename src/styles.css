@@ -2590,6 +2590,66 @@ input[type="checkbox"] { accent-color: var(--primary); }
 /* Search card being dragged: the big preview centred on the pointer (pointer-events: none from .card-float-preview keeps drops working). */
 .card-float-preview.drag-ghost { transform: translate(-50%, -50%); opacity: .92; }
 
+/* Deck builder Matchup view (src/MatchupView.tsx): matchup lists left, details of one opponent right. */
+.mu-box { width: min(1180px, 100%); max-height: calc(100vh - 36px); display: grid; grid-template-rows: auto 1fr auto; gap: 14px; overflow: hidden; }
+.mu-head { display: flex; align-items: center; gap: 12px; }
+.mu-head h2 { margin: 0; }
+.mu-head .sub { margin: 2px 0 0; }
+.mu-body { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr); gap: 16px; min-height: 0; }
+.mu-lists, .mu-detail { min-height: 0; overflow-y: auto; padding-right: 4px; }
+.mu-lists { display: grid; gap: 14px; align-content: start; }
+.mu-filter { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.mu-filter .chip { min-height: 28px; padding: 0 12px; font-size: 12.5px; }
+.mu-h { margin: 0 0 6px; font-size: 13px; font-weight: 650; letter-spacing: .04em; text-transform: uppercase; }
+.mu-h.good { color: var(--positive); }
+.mu-h.bad { color: var(--danger); }
+.mu-list, .mu-cards { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+.mu-row-btn, .mu-card {
+  width: 100%; display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto; align-items: center; gap: 10px;
+  border: 0; border-radius: var(--r-md); padding: 4px 10px 4px 4px; background: rgb(255 255 255 / .035); color: var(--text); text-align: left;
+  transition: background-color .15s var(--ease);
+}
+.mu-row-btn:hover, .mu-card:hover:not(:disabled) { background: var(--fill); }
+.mu-row.active .mu-row-btn { background: var(--primary-soft); box-shadow: inset 0 0 0 1px var(--border-gold); }
+.mu-card { grid-template-columns: auto minmax(0, 1fr) auto auto; }
+.mu-card:disabled { cursor: default; }
+.mu-thumb { width: 28px; height: 39px; border-radius: 5px; object-fit: cover; display: block; background: var(--panel2); }
+.mu-head .mu-thumb, .mu-detail-head .mu-thumb { width: 46px; height: 64px; border-radius: 6px; }
+.mu-thumb-empty { display: inline-block; }
+.mu-row-name { display: grid; min-width: 0; }
+.mu-row-name b { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mu-row-name small { color: var(--muted); font-size: 11.5px; }
+.mu-wr { display: flex; align-items: center; gap: 8px; font-variant-numeric: tabular-nums; }
+.mu-wr b { min-width: 42px; text-align: right; font-size: 14px; }
+.mu-bar { width: 84px; height: 6px; border-radius: 3px; background: var(--track); overflow: hidden; }
+.mu-bar > span { display: block; height: 100%; background: currentColor; border-radius: 3px; }
+.mu-wr.good, .mu-wr-text.good { color: var(--positive); }
+.mu-wr.ok, .mu-wr-text.ok { color: #a3e38a; }
+.mu-wr.meh, .mu-wr-text.meh { color: #ffb86b; }
+.mu-wr.bad, .mu-wr-text.bad { color: var(--danger); }
+.mu-wr.few { opacity: .6; }
+.mu-details { display: inline-flex; align-items: center; gap: 2px; color: var(--accent2); font-size: 12.5px; font-weight: 500; }
+.mu-detail { display: grid; gap: 8px; align-content: start; background: rgb(255 255 255 / .025); border-radius: var(--r-lg); padding: 12px; }
+.mu-detail .empty { padding: 32px 20px; }
+.mu-detail-head { display: flex; align-items: center; gap: 12px; }
+.mu-detail h3 { margin: 0; font-size: 16px; }
+.mu-detail h4 { margin: 8px 0 0; font-size: 13.5px; }
+.mu-detail .help { margin: 0; font-size: 12px; }
+.mu-detail-head .sub { margin: 2px 0 0; }
+.mu-lift { font-variant-numeric: tabular-nums; font-weight: 700; color: var(--positive); min-width: 30px; text-align: right; }
+.mu-tag { font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 999px; background: var(--fill); color: var(--text); white-space: nowrap; }
+.mu-tag.in-deck { background: rgb(var(--positive-rgb) / .16); color: var(--positive); }
+.mu-tag.none { color: var(--muted); background: transparent; box-shadow: inset 0 0 0 1px var(--border); }
+.mu-typical { display: flex; flex-wrap: wrap; gap: 6px; }
+.mu-typical .chip { min-height: 28px; padding: 0 10px; font-size: 12px; }
+.mu-typical .chip small { color: var(--muted); font-variant-numeric: tabular-nums; }
+.mu-source { margin: 0; font-size: 11.5px; display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
+.mu-source .link-btn { display: inline-flex; align-items: center; gap: 3px; }
+@media (max-width: 900px) {
+  .mu-box { overflow-y: auto; }
+  .mu-body { grid-template-columns: 1fr; }
+  .mu-lists, .mu-detail { overflow: visible; }
+}
 /* Stores tab, "Dates" view: Riot's official dates by month. */
 .roadmap-page .help { margin: 0 0 14px; }
 .roadmap-month { display: grid; gap: 2px; padding: 14px 18px; margin-bottom: 14px; }

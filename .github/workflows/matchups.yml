@@ -1,0 +1,46 @@
+name: Bake matchups
+
+# Refreshes public/matchups.json (the deck builder's Matchup view) from RiftLite's community
+# match matrix. Commits only when the numbers changed. Installed apps load it live from main,
+# so no release is needed. Can also be started by hand from Actions > Bake matchups > Run workflow.
+on:
+  schedule:
+    - cron: '45 4 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: bake-matchups
+  cancel-in-progress: false
+
+jobs:
+  bake:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - run: node --experimental-strip-types scripts/check_matchups.mjs
+
+      - name: Bake matchups.json
+        run: node scripts/bake_matchups.mjs
+
+      - name: Commit matchups
+        run: |
+          if [ -z "$(git status --porcelain public/matchups.json)" ]; then
+            echo "No matchup changes"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898299+github-actions[bot]@users.noreply.github.com"
+          git add public/matchups.json
+          git commit -m "Matchups $(date -u +%F)"
+          # main may have moved since checkout (daily prices); replay this commit on top.
+          git pull --rebase
+          git push
