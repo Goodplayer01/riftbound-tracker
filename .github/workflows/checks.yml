@@ -1,0 +1,43 @@
+name: Checks
+
+# Type check, build and every check script on each PR and push to main, so a
+# broken check shows up before the Release workflow. New scripts/check*.mjs
+# files run automatically. Also startable from Actions > Checks > Run workflow.
+on:
+  workflow_dispatch:
+  pull_request:
+  push:
+    branches: [main]
+    paths-ignore:
+      - public/prices.json
+      - public/price-history.json
+      - public/sealed.json
+      - public/rules.json
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    env:
+      # The build and the checks never start Electron.
+      ELECTRON_SKIP_BINARY_DOWNLOAD: 1
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - run: npm run build
+
+      - name: Check scripts
+        shell: bash
+        run: |
+          set -e
+          for f in scripts/check*.mjs; do
+            echo "::group::$f"
+            node --experimental-strip-types "$f"
+            echo "::endgroup::"
+          done
