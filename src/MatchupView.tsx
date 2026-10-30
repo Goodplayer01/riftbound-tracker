@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import { banStatus } from './banlist'
 import { cardThumb } from './cardImages'
 import { cardMatchesLegendDomains, displayCardName, matchCardByName } from './deckHelpers'
@@ -6,11 +6,14 @@ import { Icon } from './Icon'
 import { t, type Lang } from './i18n'
 import {
   counterCards,
+  deckInMatchup,
   legendKey,
   legendRecord,
   loadMatchups,
   matchupRows,
   typicalCards,
+  typicalTricks,
+  type DeckCardStat,
   type MatchupRow,
   type MatchupsFile,
 } from './matchups'
@@ -20,6 +23,9 @@ import type { Card } from './types'
 const MIN_GAMES_CHOICES = [1, 5, 10] as const
 /** Below this many games a number is shown as uncertain. */
 const FEW_GAMES = 10
+
+/** Rules text for the short trick lines: no reminder text in parentheses, keywords as plain words (symbols stay). */
+const brief = (s: string) => s.replace(/ ?\([^()]*\)/g, '').replace(/\[(?!(?:Fury|Calm|Mind|Body|Order)\])([A-Z][a-z][^\]]*)\]/g, '$1')
 
 const pct = (x: number | null) => (x == null ? '—' : `${Math.round(x * 100)} %`)
 
@@ -48,6 +54,9 @@ export function MatchupView({
   legend,
   cards,
   deckCopies,
+  deckLines,
+  textOf,
+  renderRules,
   owned,
   onOpenCard,
   openLink,
@@ -58,6 +67,11 @@ export function MatchupView({
   cards: Card[]
   /** copies in the open deck by card name */
   deckCopies: Map<string, number>
+  /** the deck's main and sideboard cards by name; `side` when only in the sideboard */
+  deckLines: { name: string; side: boolean }[]
+  /** rules text of a card, errata first */
+  textOf: (c: Card) => string
+  renderRules: (text: string) => ReactNode
   /** copies the player can use of a card, all prints */
   owned: (c: Card) => number
   onOpenCard: (c: Card) => void
@@ -116,9 +130,11 @@ export function MatchupView({
       row: rows.find((r) => r.opp === opp),
       counters: counterCards(file, key, opp, allowed),
       typical: typicalCards(file, opp, 10),
+      tricks: typicalTricks(file, opp, (n) => { const c = byName(n); return c ? textOf(c) : '' }),
+      deck: deckInMatchup(file, opp, deckLines),
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps -- allowed only depends on legend and cards
-  }, [file, key, opp, rows, legend, cards])
+  }, [file, key, opp, rows, legend, cards, deckLines])
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -161,6 +177,28 @@ export function MatchupView({
 
   const oppCard = opp ? legendCard(opp) : undefined
   const oppName = oppCard ? displayCardName(oppCard) : opp || ''
+  const oppChamp = oppCard?.name ?? oppName
+  const oppText = oppCard ? textOf(oppCard) : ''
+
+  const renderStat = (s: DeckCardStat) => {
+    const c = byName(s.name)
+    const better = s.lift > 0
+    return (
+      <li key={s.name}>
+        <button type="button" className="mu-card" onClick={() => c && onOpenCard(c)} disabled={!c}>
+          <Thumb c={c} />
+          <span className="mu-row-name">
+            <b>{s.name}</b>
+            <small>{t(lang, 'mu.cardRecord', { wr: pct(s.wr), n: s.games })}{s.games < FEW_GAMES ? ` · ${t(lang, 'mu.few')}` : ''}</small>
+          </span>
+          <span className={`mu-lift${better ? '' : ' neg'}`}>{better ? '+' : '−'}{Math.abs(Math.round(s.lift * 100))}</span>
+          {s.side
+            ? <span className={`mu-tag${better ? ' in-deck' : ' none'}`}>{t(lang, better ? 'mu.sideIn' : 'mu.side')}</span>
+            : better ? tagFor(c, s.name) : <span className="mu-tag out">{t(lang, 'mu.mainOut')}</span>}
+        </button>
+      </li>
+    )
+  }
 
   return (
     <div className="card-lightbox" role="dialog" aria-modal="true" aria-labelledby="mu-title" onClick={onClose}>
@@ -222,7 +260,45 @@ export function MatchupView({
                     </div>
                   </div>
 
-                  <h4>{t(lang, 'mu.counters', { opp: oppName })}</h4>
+                  <h4>{t(lang, 'mu.watch')}</h4>
+                  {oppText && (
+                    <div className="mu-legend-text">
+                      <small>{t(lang, 'mu.oppLegend', { opp: oppName })}</small>
+                      <p>{renderRules(oppText)}</p>
+                    </div>
+                  )}
+                  {detail.tricks.length > 0 && (
+                    <>
+                      <p className="help">{t(lang, 'mu.tricksHelp', { opp: oppChamp })}</p>
+                      <ul className="mu-cards">
+                        {detail.tricks.map((tr) => {
+                          const c = byName(tr.name)
+                          return (
+                            <li key={tr.name}>
+                              <button type="button" className="mu-card mu-trick" onClick={() => c && onOpenCard(c)} disabled={!c}>
+                                <Thumb c={c} />
+                                <span className="mu-row-name">
+                                  <b>{tr.name}{c?.energy != null && <> {renderRules(`[${c.energy}]`)}</>}</b>
+                                  <small className="mu-trick-text">{c ? renderRules(brief(textOf(c))) : null}</small>
+                                </span>
+                                <span className={`mu-tag trick ${tr.kind}`} title={t(lang, `mu.trick.${tr.kind}`)}>{tr.kind === 'hidden' ? 'Hidden' : tr.kind === 'reaction' ? 'Reaction' : 'Action'}</span>
+                                <span className="mu-tag" title={t(lang, 'mu.share', { opp: oppChamp })}>{pct(tr.share)}</span>
+                              </button>
+                            </li>
+                          )
+                        })}
+                      </ul>
+                    </>
+                  )}
+
+                  <h4>{t(lang, 'mu.deckVs', { opp: oppChamp })}</h4>
+                  <p className="help">{t(lang, 'mu.deckHelp', { opp: oppChamp })}</p>
+                  {detail.deck.better.length + detail.deck.worse.length === 0
+                    ? <p className="sub">{t(lang, 'mu.deckNone')}</p>
+                    : <ul className="mu-cards">{detail.deck.better.map(renderStat)}{detail.deck.worse.map(renderStat)}</ul>}
+                  {detail.deck.unknown > 0 && <p className="sub">{t(lang, 'mu.deckUnknown', { n: detail.deck.unknown })}</p>}
+
+                  <h4>{t(lang, 'mu.counters', { legend: legend.name, opp: oppName })}</h4>
                   <p className="help">{t(lang, 'mu.countersHelp', { n: detail.counters.base[0], wr: pct(detail.counters.base[0] ? detail.counters.base[1] / detail.counters.base[0] : null), opp: oppCard?.name ?? oppName })}</p>
                   {detail.counters.cards.length === 0 && <p className="sub">{t(lang, 'mu.noCounters')}</p>}
                   <ul className="mu-cards">
@@ -237,6 +313,7 @@ export function MatchupView({
                               <small>
                                 {t(lang, 'mu.cardRecord', { wr: pct(cc.wr), n: cc.games })}
                                 {cc.own ? ` · ${t(lang, 'mu.ownLegend', { legend: legend.name, n: cc.own[0], w: cc.own[1] })}` : ''}
+                                {cc.inLegend ? ` · ${t(lang, 'mu.inLegend', { pct: pct(cc.inLegend), legend: legend.name })}` : ''}
                               </small>
                             </span>
                             <span className="mu-lift">+{Math.round(cc.lift * 100)}</span>

@@ -3537,6 +3537,18 @@ export default function App() {
     }
     return m
   }, [matchupDeck, byId])
+  /** Main deck and sideboard cards by name (the chosen champion is no swap candidate); `side` when no copy is in the main deck. */
+  const matchupDeckLines = useMemo(() => {
+    const side = new Map<string, boolean>()
+    for (const dc of matchupDeck?.cards || []) {
+      const sec = sectionOf(dc)
+      const c = byId.get(dc.id)
+      if (!c || (sec !== 'main' && sec !== 'sideboard')) continue
+      const name = displayCardName(c)
+      side.set(name, (side.get(name) ?? true) && sec === 'sideboard')
+    }
+    return [...side].map(([name, s]) => ({ name, side: s }))
+  }, [matchupDeck, byId])
 
   function openCardLightbox(c: Card) {
     setCardPreview(null)
@@ -6074,6 +6086,9 @@ export default function App() {
           legend={matchupLegend}
           cards={catalog.cards}
           deckCopies={matchupDeckCopies}
+          deckLines={matchupDeckLines}
+          textOf={(c) => errataFor(c)?.newText || c.rulesText || ''}
+          renderRules={(text) => <RulesText text={text} />}
           owned={(c) => poolAvailable(c.id)}
           onOpenCard={openCardLightbox}
           openLink={openLink}
