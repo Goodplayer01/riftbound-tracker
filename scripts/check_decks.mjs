@@ -1,5 +1,5 @@
 import { readFileSync } from 'node:fs'
-import { canAddToSection, copyName, coverDeckLines, groupPrints, mergePrints, parseDeckImport } from '../src/deckHelpers.ts'
+import { canAddToSection, copyName, coverDeckLines, groupPrints, parseDeckImport, printRuns, printSlots } from '../src/deckHelpers.ts'
 
 function assert(cond, msg) {
   if (!cond) throw new Error(msg)
@@ -69,13 +69,20 @@ const legImp = parseDeckImport('Legend:\n1 Pridestalker\nChampion:\n1 Rengar, Tr
 assert(legImp.cards.some((x) => x.section === 'legend' && byId.get(x.id)?.subtitle === 'Pridestalker') && legImp.unmatched.length === 0, 'title-only legend imports')
 assert(parseDeckImport('Legend:\n1 Rengar, Pridestalker', cards).cards[0]?.id === id('UNL-183'), 'full legend name imports')
 
-// Prints of one card: an alt art added later sits under its base card, and the share image shows one tile.
+// Prints of one card: an alt art added later sits under its base card, and the share image frames them together.
 const pyke = byId.get('unl-028-219')
 const pykeAlt = byId.get('unl-028a-219')
 const lines = [{ id: pyke.id, qty: 1 }, { id: id('SFD-097'), qty: 3 }, { id: id('UNL-097'), qty: 3 }, { id: pykeAlt.id, qty: 1 }]
 assert(groupPrints(lines, byId).map((l) => l.id).join() === [pyke.id, pykeAlt.id, id('SFD-097'), id('UNL-097')].join(), 'alt art grouped under its base card')
-const merged = mergePrints(lines, byId)
-assert(merged.length === 3 && merged[0].qty === 2 && merged[0].id === pykeAlt.id, `one Pyke tile with both copies, showing the alt art on a tie: ${JSON.stringify(merged[0])}`)
-assert(mergePrints([{ id: pyke.id, qty: 2 }, { id: pykeAlt.id, qty: 1 }], byId)[0].id === pyke.id, 'the print with more copies is shown')
-assert(lines[0].qty === 1 && lines[0].id === pyke.id, 'merging does not change the deck lines')
+assert(JSON.stringify(printRuns(groupPrints(lines, byId), byId)) === '[[0,1]]', 'one frame around both Pyke prints, none around single cards')
+assert(JSON.stringify(printRuns([...lines, { id: id('OGN-001'), qty: 1 }, { id: pyke.id, qty: 1 }, { id: pykeAlt.id, qty: 2 }], byId)) === '[[5,6]]', 'only neighbouring prints form a run')
+// Share grid: a run that does not fit the rest of a row starts the next one; one wider than a row wraps.
+const kaisa = ['ogn-039-298', 'ogn-039a-298', 'ven-sp1-006'].map((x) => ({ id: x, qty: 1 }))
+const singles = cards.filter((x) => x.set === 'OGN' && !x.altArt).slice(0, 5).map((x) => ({ id: x.id, qty: 3 }))
+let g = printSlots([...singles, ...kaisa], byId, 7)
+assert(JSON.stringify(g.slots.slice(5)) === '[[0,1],[1,1],[2,1]]' && g.rows === 2, `Kai'Sa prints stay together: ${JSON.stringify(g)}`)
+g = printSlots([...singles.slice(0, 4), ...kaisa], byId, 7)
+assert(JSON.stringify(g.slots.slice(4)) === '[[4,0],[5,0],[6,0]]' && g.rows === 1, 'a run that fits stays in the row')
+g = printSlots([singles[0], ...kaisa], byId, 2)
+assert(JSON.stringify(g.slots) === '[[0,0],[0,1],[1,1],[0,2]]' && g.rows === 3, `a run wider than a row wraps: ${JSON.stringify(g)}`)
 console.log('ok')

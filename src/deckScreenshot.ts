@@ -1,5 +1,5 @@
 import type { Card, Deck, DeckCard } from './types'
-import { mergePrints, sectionOf } from './deckHelpers'
+import { groupPrints, printRuns, printSlots, sectionOf } from './deckHelpers'
 
 // Same palette as the app: near-black canvas, amber accent, Apple grey for secondary text.
 const BG = '#0f0f11'
@@ -84,23 +84,26 @@ function drawQtyBadge(
   w: number,
   h: number,
   qty: number,
+  print = false,
 ) {
   if (qty <= 1) return
+  // print: the copies of one print inside a framed group, small and neutral bottom left, so the amber
+  // badge clearly counts the whole group.
   const label = `×${qty}`
-  ctx.font = `800 13px ${FONT}`
+  ctx.font = `800 ${print ? 11 : 13}px ${FONT}`
   const tw = ctx.measureText(label).width
-  const bw = tw + 14
-  const bh = 20
-  const bx = x + w - bw - 5
+  const bw = tw + (print ? 10 : 14)
+  const bh = print ? 16 : 20
+  const bx = print ? x + 5 : x + w - bw - 5
   const by = y + h - bh - 5
   ctx.save()
   ctx.shadowColor = 'rgba(0,0,0,0.6)'
   ctx.shadowBlur = 6
-  ctx.fillStyle = AMBER
+  ctx.fillStyle = print ? 'rgba(24,24,27,0.88)' : AMBER
   roundRect(ctx, bx, by, bw, bh, 10)
   ctx.fill()
   ctx.restore()
-  ctx.fillStyle = '#1c1306'
+  ctx.fillStyle = print ? '#f5f5f7' : '#1c1306'
   ctx.textAlign = 'center'
   ctx.textBaseline = 'middle'
   ctx.fillText(label, bx + bw / 2, by + bh / 2 + 0.5)
@@ -199,12 +202,12 @@ export async function renderDeckShareCanvas(
     const champion = sectionCards(deck, 'champion')[0]
     const main = sectionCards(deck, 'main')
     const battlefields = sectionCards(deck, 'battlefield')
-    const sideboard = mergePrints(sectionCards(deck, 'sideboard'), byId)
+    const sideboard = groupPrints(sectionCards(deck, 'sideboard'), byId)
     const domainCounts = runeDomainCounts(deck, byId)
 
-    // Champion is the first card of the main grid (not under Legend). One tile per card: alt art and base
-    // print of the same card become one tile with the copies added up.
-    const mainGrid: DeckCard[] = mergePrints(champion ? [champion, ...main] : main, byId)
+    // Champion is the first card of the main grid (not under Legend). Every print gets its own tile with
+    // its own count, prints of one card side by side in a frame (drawGrid).
+    const mainGrid: DeckCard[] = groupPrints(champion ? [champion, ...main] : main, byId)
 
     const allIds = [
       legend?.id,
@@ -247,12 +250,13 @@ export async function renderDeckShareCanvas(
       (battlefields.length ? 20 + labelH + battlefields.length * (bfH + bfGap) - bfGap : 0)
 
     // Pick the column count that gives the largest cards while main deck + sideboard
-    // fit next to the left stack, so the grid fills the space whatever the copy count.
+    // fit next to the left stack, so the grid fills the space whatever the copy count (more prints in
+    // frames take more rows, so the cards get smaller).
     const sideExtra = sideboard.length ? 24 + labelH : 0
     let cols = 8
     let cardW = 70
     for (let c = 6; c <= 12; c++) {
-      const rows = Math.max(1, Math.ceil(mainGrid.length / c)) + Math.ceil(sideboard.length / c)
+      const rows = Math.max(1, printSlots(mainGrid, byId, c).rows) + printSlots(sideboard, byId, c).rows
       const gaps = (rows - (sideboard.length ? 2 : 1)) * cardGap
       const byHeight = ((leftStack - labelH - sideExtra - gaps) / rows) * 744 / 1039
       const byWidth = (1200 + cardGap) / c - cardGap
@@ -263,8 +267,8 @@ export async function renderDeckShareCanvas(
       }
     }
     const cardH = Math.round(cardW * 1039 / 744)
-    const mainRows = Math.max(1, Math.ceil(mainGrid.length / cols))
-    const sideRows = Math.ceil(sideboard.length / cols)
+    const mainRows = Math.max(1, printSlots(mainGrid, byId, cols).rows)
+    const sideRows = printSlots(sideboard, byId, cols).rows
 
     const mainBlockH = labelH + (mainGrid.length ? mainRows * (cardH + cardGap) - cardGap : 40)
     const sideBlockH = sideboard.length ? 24 + labelH + sideRows * (cardH + cardGap) - cardGap : 0
@@ -347,12 +351,33 @@ export async function renderDeckShareCanvas(
     }
 
     const rx = pad + leftW + gap
-    const drawGrid = (cards: DeckCard[], top: number) =>
+    const drawGrid = (cards: DeckCard[], top: number) => {
+      const { slots } = printSlots(cards, byId, cols)
+      const tileX = (i: number) => rx + slots[i][0] * (cardW + cardGap)
+      const tileY = (i: number) => top + slots[i][1] * (cardH + cardGap)
+      const runs = printRuns(cards, byId)
+      const inRun = (i: number) => runs.some(([a, b]) => i >= a && i <= b)
       cards.forEach((dc, i) => {
-        const x = rx + (i % cols) * (cardW + cardGap)
-        const y = top + Math.floor(i / cols) * (cardH + cardGap)
-        drawCard(ctx, imgMap.get(dc.id) || null, x, y, cardW, cardH, dc.qty)
+        drawCard(ctx, imgMap.get(dc.id) || null, tileX(i), tileY(i), cardW, cardH, inRun(i) ? 0 : dc.qty)
+        if (inRun(i)) drawQtyBadge(ctx, tileX(i), tileY(i), cardW, cardH, dc.qty, true)
       })
+      // Prints of one card: an amber frame around them (inside the gap, so neighbours never touch) and one
+      // amber badge with the copies of all prints together. A run only wraps when it is wider than a row.
+      ctx.strokeStyle = AMBER
+      ctx.lineWidth = 1.5
+      for (const [a, b] of runs) {
+        for (let i = a; i <= b; ) {
+          let end = i
+          while (end < b && slots[end + 1][1] === slots[i][1]) end++
+          const o = 3
+          roundRect(ctx, tileX(i) - o, tileY(i) - o, tileX(end) + cardW - tileX(i) + o * 2, cardH + o * 2, 9)
+          ctx.stroke()
+          i = end + 1
+        }
+        const total = cards.slice(a, b + 1).reduce((n, c) => n + c.qty, 0)
+        drawQtyBadge(ctx, tileX(b), tileY(b), cardW, cardH, total)
+      }
+    }
     const mainCount = mainGrid.reduce((n, c) => n + c.qty, 0)
     drawLabel(ctx, 'Main deck', mainCount, rx, contentTop)
     drawGrid(mainGrid, contentTop + labelH)
