@@ -2626,8 +2626,10 @@ export default function App() {
         e.dataTransfer.effectAllowed = 'move'
         const el = e.currentTarget as HTMLElement
         const img = el.querySelector('img') as HTMLImageElement | null
-        if (img && img.complete && img.naturalWidth > 0) {
-          try { e.dataTransfer.setDragImage(img, img.clientWidth / 2, img.clientHeight / 2) } catch {}
+        // Same big preview as a search card (Chromium shrinks the native drag image, see onPickerDragStart).
+        if (img?.src) {
+          try { e.dataTransfer.setDragImage(EMPTY_DRAG_IMAGE, 0, 0) } catch {}
+          setDragGhost({ src: img.currentSrc || img.src, x: e.clientX, y: e.clientY })
         }
         el.classList.add('dragging')
         removeDrag.current = { zone, remove }
