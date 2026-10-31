@@ -57,6 +57,7 @@ import {
   GERMANY_CENTER,
   geocodeQuery,
   mapsUrl,
+  EventSearchError,
   searchStoresInGermany,
   searchStoresNear,
   storeReportsStock,
@@ -917,7 +918,6 @@ export default function App() {
   const [storeStockOpen, setStoreStockOpen] = useState<Record<string, boolean>>({})
   const [storeEventsOpen, setStoreEventsOpen] = useState<Record<string, boolean>>({})
   const [storeTruncated, setStoreTruncated] = useState(false)
-  const [storeSource, setStoreSource] = useState<StoreSearch['source']>('events')
   /** Only the newest store search may show its result; an older, slower one is dropped. */
   const storeSearchSeq = useRef(0)
   const [q, setQ] = useState('')
@@ -3390,7 +3390,7 @@ export default function App() {
       if (seq !== storeSearchSeq.current) return
       showStoreResult(res, sortOrigin ?? GERMANY_CENTER, t(lang, 'stores.allGermany'), storeKm)
     } catch (e) {
-      if (seq === storeSearchSeq.current) failStoreSearch(t(lang, 'stores.error', { message: e instanceof Error ? e.message : String(e) }))
+      if (seq === storeSearchSeq.current) failStoreSearch(storeErrorText(e))
     } finally {
       if (seq === storeSearchSeq.current) setStoreBusy(false)
     }
@@ -3399,12 +3399,17 @@ export default function App() {
   function showStoreResult(res: StoreSearch, center: { lat: number; lng: number }, label: string, km: number) {
     setStoreHits(res.hits)
     setStoreTruncated(res.truncated)
-    setStoreSource(res.source)
     setStoreStockOpen({})
     setStoreEventsOpen({})
     setStoreCenter(center)
     setStoreFetchedKm(km)
     setStoreLabel(label)
+  }
+
+  /** Riot's event search is the only store source, so name it (and the usual blocker) when it is unreachable. */
+  function storeErrorText(e: unknown) {
+    const message = (e instanceof Error ? e.message : String(e)).replace(/^Error:\s*/, '')
+    return t(lang, e instanceof EventSearchError ? 'stores.unreachable' : 'stores.error', { message })
   }
 
   function failStoreSearch(message: string) {
@@ -3425,7 +3430,7 @@ export default function App() {
       if (seq !== storeSearchSeq.current) return
       showStoreResult(res, { lat, lng }, label, km)
     } catch (e) {
-      if (seq === storeSearchSeq.current) failStoreSearch(t(lang, 'stores.error', { message: e instanceof Error ? e.message : String(e) }))
+      if (seq === storeSearchSeq.current) failStoreSearch(storeErrorText(e))
     } finally {
       if (seq === storeSearchSeq.current) setStoreBusy(false)
     }
@@ -3453,7 +3458,7 @@ export default function App() {
       if (seq !== storeSearchSeq.current) return
       showStoreResult(res, { lat: geo.lat, lng: geo.lng }, geo.label, km)
     } catch (e) {
-      if (seq === storeSearchSeq.current) failStoreSearch(t(lang, 'stores.error', { message: e instanceof Error ? e.message : String(e) }))
+      if (seq === storeSearchSeq.current) failStoreSearch(storeErrorText(e))
     } finally {
       if (seq === storeSearchSeq.current) setStoreBusy(false)
     }
@@ -3490,7 +3495,7 @@ export default function App() {
     return true
   })
 
-  // After slider/input settles: re-query UVS if radius changed (circle already updates live).
+  // After slider/input settles: search again if the radius changed (circle already updates live).
   useEffect(() => {
     if (storeAllGermany) return
     if (!storeCenter) return
@@ -5475,7 +5480,6 @@ export default function App() {
               <p className="help stores-help">{storeAllGermany ? t(lang, 'stores.allGermany') : t(lang, 'stores.near', { label: storeLabel })} · {t(lang, 'stores.results', { n: visibleStoreHits.length })}
                 {!storeAllGermany && storeKm > storeFetchedKm + 0.5 ? ` · ${t(lang, 'stores.enlargeHint')}` : ''}
                 {storeTruncated ? ` · ${t(lang, 'stores.truncated')}` : ''}
-                {storeSource === 'uvs' ? ` · ${t(lang, 'stores.uvsFallback')}` : ''}
               </p>
             )}
             <div className="stores-body">
