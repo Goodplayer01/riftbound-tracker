@@ -8,7 +8,8 @@ Two parts, both from public sources without a key:
     displays as the "fair price" reference.
   - shops / offers: German shops that answer an open product search
     (Shopify /search/suggest.json or the WooCommerce Store API). Candidates are
-    the official UVS store list for Germany plus a few online shops (ONLINE_SHOPS).
+    the websites of German stores with upcoming events in Riot's official event
+    search (events.playriftbound.com) plus a few online shops (ONLINE_SHOPS).
     Only shops that answered make it into the file; the app asks them again live.
 
 The app loads the file live from main (like prices.json), so a daily bake keeps
@@ -22,7 +23,7 @@ import sys
 import urllib.request
 from collections import Counter, defaultdict
 from concurrent.futures import ThreadPoolExecutor
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from urllib.parse import urlencode, urlsplit
 
@@ -36,10 +37,23 @@ GUIDE_URL = f"{CM}/priceGuide/price_guide_22.json"
 SINGLES_URL = f"{CM}/productList/products_singles_22.json"
 NONSINGLES_URL = f"{CM}/productList/products_nonsingles_22.json"
 
-UVS_STORES = "https://api.riftbound.uvsgames.com/api/v2/game-stores/"
-GERMANY = (51.1657, 10.4515)
+# Riot's event search, same persisted queries and ids as net:rbEvents in electron/main.cjs (keep in sync).
+RB_EVENTS_URL = "https://events.playriftbound.com/api/gql"
+RB_SEARCH = ("CompeteTournamentSearch", "868030f676276bec926c740aada7129713d4097f6e2dd7c3a0451c4fb43852eb")
+RB_ORGANIZER = ("OrganizerSummary", "3c1b5c84a25e8c304922e4130a99a196e6eac6c90d740690ba1afd0f040010cf")
+# GERMANY_CIRCLES in src/stores.ts: 5x4 grid, every German spot within ~130 km of a center.
+GERMANY_CIRCLES = [(lat, lng) for lat in (47.8, 49.4, 51.0, 52.6, 54.2) for lng in (6.8, 9.4, 12.0, 14.6)]
+EVENT_SEARCH_METERS = 160_000  # the search answers at most ~160 km around a point
+MAX_PAGES = 20
+GERMANY_BOX = (47.27, 55.06, 5.87, 15.04)  # south, north, west, east
+# "No letter" edges like isGermanEvent: \b fails next to letters like Ö.
+NOT_GERMANY = re.compile(
+    r"(?<![^\W\d_])(netherlands|nederland|belgium|belgi[eë]|belgique|poland|polska|czechia|czech republic|česko"
+    r"|austria|österreich|switzerland|schweiz|suisse|svizzera|denmark|danmark|france|luxembourg|luxemburg)(?![^\W\d_])",
+    re.I,
+)
 
-# Online shops that sell Riftbound displays in Germany (not all are in the UVS list).
+# Online shops that sell Riftbound displays in Germany (not all hold events in Riot's search).
 ONLINE_SHOPS = [
     ("Cardcosmos", "https://cardcosmos.de"),
     ("Break the Case", "https://www.breakthecase.de"),
@@ -184,31 +198,101 @@ def origin_of(website: str | None) -> str | None:
     return f"https://{host}"
 
 
-def uvs_german_stores() -> list[tuple[str, str, str | None]]:
-    out = []
-    seen = set()
-    page = 1
-    for _ in range(40):
-        q = urlencode({
-            "latitude": GERMANY[0], "longitude": GERMANY[1], "num_miles": 404,
-            "page": page, "page_size": 100, "game_id": 3,
-        })
-        data = fetch_json(f"{UVS_STORES}?{q}")
-        rows = data.get("results") or []
-        for r in rows:
-            s = r.get("store") or {}
-            country = (s.get("country") or "").strip().upper()
-            if country not in ("DE", "DEU", "GERMANY", "DEUTSCHLAND"):
-                continue
-            origin = origin_of(s.get("website"))
-            if origin and origin not in seen:
-                seen.add(origin)
-                out.append((s.get("name") or origin, origin, s.get("city") or None))
-        nxt = data.get("next_page_number")
-        if not nxt or nxt == page or not rows:
+def rb_events(op: tuple[str, str], variables: dict):
+    body = json.dumps({
+        "operationName": op[0],
+        "variables": variables,
+        "extensions": {"persistedQuery": {"version": 1, "sha256Hash": op[1]}},
+    }).encode()
+    req = urllib.request.Request(RB_EVENTS_URL, data=body, method="POST", headers={
+        "User-Agent": UA,
+        "Content-Type": "application/json",
+        "Accept": "application/graphql-response+json,application/json;q=0.9",
+        # The endpoint rejects requests without Apollo client headers.
+        "apollographql-client-name": "Esports Web",
+        "apollographql-client-version": "bake",
+    })
+    with urllib.request.urlopen(req, timeout=30) as resp:
+        doc = json.loads(resp.read().decode("utf-8", "replace"))
+    if doc.get("errors"):
+        raise RuntimeError(f"{op[0]}: {doc['errors'][0].get('message')}")
+    return doc.get("data") or {}
+
+
+def is_german_event(loc: dict | None) -> bool:
+    """Same rule as isGermanEvent in src/stores.ts."""
+    loc = loc or {}
+    text = loc.get("formattedAddress") or ""
+    if re.search(r"\b(germany|deutschland)\b", text, re.I):
+        return True
+    if NOT_GERMANY.search(text):
+        return False
+    lat, lng = loc.get("latitude"), loc.get("longitude")
+    s, n, w, e = GERMANY_BOX
+    return isinstance(lat, (int, float)) and isinstance(lng, (int, float)) and s <= lat <= n and w <= lng <= e
+
+
+def circle_organizers(center: tuple[float, float], start: str) -> dict[str, str | None]:
+    """Organizer id -> city of its first German event within one search circle."""
+    out: dict[str, str | None] = {}
+    after = None
+    for _ in range(MAX_PAGES):
+        rb = {"coords": {"latitude": center[0], "longitude": center[1]}, "startDate": start,
+              "distanceMeters": EVENT_SEARCH_METERS}
+        variables = {"sport": "rb", "first": 50, "filter": {"rb": rb}, **({"after": after} if after else {})}
+        conn = rb_events(RB_SEARCH, variables).get("competeTournamentSearch") or {}
+        for e in conn.get("edges") or []:
+            node = e.get("node") or {}
+            org = (node.get("organizer") or {}).get("id")
+            loc = (node.get("tournament") or {}).get("tournamentLocation")
+            if org and org not in out and is_german_event(loc):
+                out[org] = (loc or {}).get("city") or None
+        info = conn.get("pageInfo") or {}
+        after = info.get("endCursor")
+        if not info.get("hasNextPage") or not after:
             break
-        page = nxt
     return out
+
+
+def organizer_shop(item: tuple[str, str | None]) -> tuple[str, str, str | None] | None:
+    org_id, city = item
+    try:
+        o = rb_events(RB_ORGANIZER, {"id": org_id}).get("organizerSummary") or {}
+    except Exception:
+        return None
+    origin = origin_of(o.get("website"))
+    if not origin:
+        return None
+    return (o.get("name") or origin, origin, city)  # the profile address has no city field
+
+
+def riot_german_stores() -> list[tuple[str, str, str | None]]:
+    """Websites of German stores with upcoming events in Riot's event search (the Store tab's All Germany)."""
+    # Same as the site: events that started up to an hour ago still count.
+    start = (datetime.now(timezone.utc) - timedelta(hours=1)).strftime("%Y-%m-%dT%H:%M:%S.000Z")
+    orgs: dict[str, str | None] = {}
+    failed = 0
+    with ThreadPoolExecutor(max_workers=4) as pool:
+        for found in pool.map(lambda c: _try(circle_organizers, c, start), GERMANY_CIRCLES):
+            if found is None:
+                failed += 1
+                continue
+            for k, v in found.items():
+                orgs.setdefault(k, v)
+    if failed == len(GERMANY_CIRCLES):
+        raise RuntimeError("event search failed for every circle")
+    with ThreadPoolExecutor(max_workers=6) as pool:
+        stores = [s for s in pool.map(organizer_shop, orgs.items()) if s]
+    print(f"event search: {len(orgs)} German organizers, {len(stores)} with a website, {failed} circles failed")
+    return stores  # bake_shops merges stores sharing one web shop
+
+
+def _try(fn, *args):
+    try:
+        return fn(*args)
+    except Exception as e:
+        print(f"  {fn.__name__}{args[:1]} failed: {e}")
+        return None
 
 
 def to_eur(v) -> float | None:
@@ -317,11 +401,11 @@ def probe(shop: tuple[str, str, str | None], names: dict[str, str]):
 def bake_shops(names: dict[str, str]) -> dict:
     candidates = [(n, u, None) for n, u in ONLINE_SHOPS]
     try:
-        local = uvs_german_stores()
-    except Exception as e:  # keep the online shops when UVS is down
-        print(f"UVS store list failed: {e}")
+        local = riot_german_stores()
+    except Exception as e:  # keep the online shops when the event search is down
+        print(f"event search failed: {e}")
         local = []
-    # Several UVS stores can share one web shop (www. or not, branches): ask it once.
+    # Several stores can share one web shop (www. or not, branches): ask it once.
     known: dict[str, int] = {}
     merged = []
     for name, url, city in candidates + local:
@@ -334,7 +418,7 @@ def bake_shops(names: dict[str, str]) -> dict:
         known[key] = len(merged)
         merged.append((name, url, city))
     candidates = merged
-    print(f"shops: {len(candidates)} candidates ({len(local)} from UVS)")
+    print(f"shops: {len(candidates)} candidates ({len(local)} from the event search)")
 
     shops, offers = [], []
     with ThreadPoolExecutor(max_workers=12) as pool:
