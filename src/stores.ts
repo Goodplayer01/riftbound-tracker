@@ -1,9 +1,8 @@
-/** Riftbound stores near a place, from the official event search on playriftbound.com/events
- *  (every store that runs upcoming events, with its events and contact details). If that search
- *  fails, the older UVS / Spicerack retailer list is used instead. Online stock only from a real
- *  Shopify suggest.json hit whose title contains "riftbound" (available flag); no quantities. */
+/** Riftbound stores near a place, from Riot's official event search on playriftbound.com/events
+ *  (every store that runs upcoming events, with its events and contact details). It is the only
+ *  source: the old UVS retailer list reached end of life. Online stock only from a real Shopify
+ *  suggest.json hit whose title contains "riftbound" (available flag); no quantities. */
 
-export const RIFTBOUND_GAME_ID = 3
 export const STORE_LOCATOR_URL = 'https://playriftbound.com/de-DE/events/'
 
 /** Entry fee as text, or null when the event is free (no fee, or 0). Uses the currency's own number of
@@ -23,10 +22,9 @@ export function formatEntryFee(feeMinor: number | null, currency: string | null,
 export function eventUrl(id: string, lang: 'de' | 'en') {
   return `https://playriftbound.com/${lang === 'de' ? 'de-DE' : 'en-US'}/events/${encodeURIComponent(id)}`
 }
-const STORES_API = 'https://api.riftbound.uvsgames.com/api/v2/game-stores/'
 const NOMINATIM = 'https://nominatim.openstreetmap.org/search'
 
-/** UI / filter radius limits (km). UVS API still takes miles — we convert. */
+/** UI / filter radius limits (km). */
 export const STORE_RADIUS_KM_MIN = 1
 export const STORE_RADIUS_KM_MAX = 250
 export const STORE_RADIUS_KM_DEFAULT = 50
@@ -51,10 +49,9 @@ export type StoreHit = {
   lat: number | null
   lng: number | null
   distanceKm: number | null
-  types: string[]
   /** null = no real source. Non empty = Shopify titles that matched. */
   products: StoreProduct[] | null
-  /** Upcoming events of this store, soonest first (empty when the result came from the UVS fallback). */
+  /** Upcoming events of this store, soonest first. */
   events: StoreEvent[]
 }
 
@@ -117,12 +114,6 @@ function haversineKm(aLat: number, aLng: number, bLat: number, bLng: number) {
     Math.sin(dLat / 2) ** 2 +
     Math.cos(toRad(aLat)) * Math.cos(toRad(bLat)) * Math.sin(dLng / 2) ** 2
   return 2 * R * Math.asin(Math.sqrt(s))
-}
-
-/** Convert km → miles for UVS `num_miles` (ceil so we never undershoot). */
-export function kmToApiMiles(km: number) {
-  const n = Number.isFinite(km) ? km : STORE_RADIUS_KM_DEFAULT
-  return Math.max(1, Math.ceil(n / 1.609344))
 }
 
 export function clampStoreRadiusKm(km: number) {
@@ -199,84 +190,12 @@ async function withProducts(hits: StoreHit[]): Promise<StoreHit[]> {
   return out
 }
 
-type StoreRow = {
-  id: string
-  store?: {
-    name?: string
-    full_address?: string
-    city?: string
-    country?: string
-    website?: string | null
-    phone_number?: string | null
-    preferred_contact_phone?: string | null
-    email?: string | null
-    preferred_contact_email?: string | null
-    latitude?: number | null
-    longitude?: number | null
-    store_types_pretty?: string[]
-  }
-  store_types_pretty?: string[]
-}
-
-/** Geographic center of Germany. Cover radius reaches the borders, not the slider. */
+/** Geographic center of Germany: distance sort origin for "All Germany" without a typed city. */
 export const GERMANY_CENTER = { lat: 51.1657, lng: 10.4515 }
-const GERMANY_COVER_KM = 650
-
-export function isGermanCountry(country: string) {
-  const c = country.trim().toUpperCase()
-  return c === 'DE' || c === 'DEU' || c === 'GERMANY' || c === 'DEUTSCHLAND'
-}
 
 /** True only when Shopify returned a Riftbound title with available === true. */
 export function storeReportsStock(hit: StoreHit) {
   return !!hit.products?.some((p) => p.available === true)
-}
-
-function rowToHit(r: StoreRow, originLat: number, originLng: number): StoreHit {
-  const s = r.store || {}
-  const sLat = s.latitude ?? null
-  const sLng = s.longitude ?? null
-  const distanceKm =
-    sLat != null && sLng != null ? haversineKm(originLat, originLng, sLat, sLng) : null
-  return {
-    id: r.id,
-    name: s.name || 'Store',
-    address: s.full_address || '',
-    city: s.city || '',
-    country: s.country || '',
-    website: textOrNull(s.website),
-    phone: textOrNull(s.preferred_contact_phone) || textOrNull(s.phone_number),
-    email: textOrNull(s.preferred_contact_email) || textOrNull(s.email),
-    lat: sLat,
-    lng: sLng,
-    distanceKm,
-    types: s.store_types_pretty || r.store_types_pretty || [],
-    products: null,
-    events: [],
-  }
-}
-
-type StorePage = { results?: StoreRow[]; next_page_number?: number | null }
-
-async function fetchStorePage(lat: number, lng: number, radiusKm: number, page: number, pageSize: number) {
-  const params = new URLSearchParams({
-    latitude: String(lat),
-    longitude: String(lng),
-    num_miles: String(kmToApiMiles(radiusKm)),
-    page: String(page),
-    page_size: String(pageSize),
-    game_id: String(RIFTBOUND_GAME_ID),
-  })
-  return (await fetchJson(`${STORES_API}?${params}`)) as StorePage
-}
-
-/** UVS retailer list near a point (fallback when the event search fails). */
-async function uvsStoresNear(lat: number, lng: number, radiusKm: number, pageSize = 40): Promise<StoreHit[]> {
-  const data = await fetchStorePage(lat, lng, radiusKm, 1, pageSize)
-  const out = (data.results || []).map((r) => rowToHit(r, lat, lng))
-  const filtered = out.filter((h) => h.distanceKm == null || h.distanceKm <= radiusKm + 0.05)
-  filtered.sort((a, b) => (a.distanceKm ?? 1e9) - (b.distanceKm ?? 1e9))
-  return filtered
 }
 
 // ---- Official event search (playriftbound.com/events) ----
@@ -322,7 +241,6 @@ export function eventsToStores(edges: EventEdge[], originLat: number, originLng:
         lat,
         lng,
         distanceKm: lat != null && lng != null ? haversineKm(originLat, originLng, lat, lng) : null,
-        types: [],
         products: null,
         events: [],
       }
@@ -346,17 +264,20 @@ export function eventsToStores(edges: EventEdge[], originLat: number, originLng:
   return out
 }
 
+/** Riot's event search could not be reached at all (offline, blocked by a DNS filter, query ids changed). */
+export class EventSearchError extends Error {}
+
 async function rbEvents(req: Parameters<NonNullable<Window['riftbound']>['rbEvents']>[0]): Promise<unknown> {
   const api = typeof window !== 'undefined' ? window.riftbound?.rbEvents : undefined
-  if (!api) throw new Error('event search needs the desktop app')
+  if (!api) throw new EventSearchError('event search needs the desktop app')
   const res = await api(req)
-  if (!res.ok) throw new Error(res.error || 'event search failed')
+  if (!res.ok) throw new EventSearchError(res.error || 'event search failed')
   return res.data
 }
 
 /** Result of a store search. `truncated`: not every event could be loaded (page cap or a later page
- *  failed), so stores may be missing. `source`: where the list came from. */
-export type StoreSearch = { hits: StoreHit[]; truncated: boolean; source: 'events' | 'uvs' }
+ *  failed), so stores may be missing. */
+export type StoreSearch = { hits: StoreHit[]; truncated: boolean }
 
 /** Event search pages within the radius (50 events a page, at most `maxPages`). Only a failing first
  *  page throws; a later failure keeps what was loaded and reports the list as truncated. */
@@ -409,22 +330,15 @@ async function organizerContact(id: string): Promise<OrganizerContact> {
 }
 
 /** Contact details and the store's own address and position (not the first event's venue) from its
- *  organizer profile. When no profile loads at all (e.g. that query changed), `uvsFallback` supplies
- *  phone, e-mail and website from the UVS list, matched by name or a position within 300 m. */
-async function withContacts(
-  hits: StoreHit[],
-  origin: { lat: number; lng: number },
-  uvsFallback: () => Promise<StoreHit[]>,
-): Promise<StoreHit[]> {
+ *  organizer profile. A store whose profile does not load still shows with its events. */
+async function withContacts(hits: StoreHit[], origin: { lat: number; lng: number }): Promise<StoreHit[]> {
   const out = hits.slice()
-  let loaded = 0
   let cursor = 0
   const workers = Array.from({ length: Math.min(4, hits.length) }, async () => {
     while (cursor < hits.length) {
       const i = cursor++
       try {
         const c = await organizerContact(hits[i].id)
-        loaded++
         const lat = c.lat ?? hits[i].lat
         const lng = c.lng ?? hits[i].lng
         out[i] = {
@@ -443,20 +357,6 @@ async function withContacts(
     }
   })
   await Promise.all(workers)
-  if (hits.length && loaded === 0) {
-    try {
-      const uvs = await uvsFallback()
-      const norm = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, '')
-      for (let i = 0; i < out.length; i++) {
-        const h = out[i]
-        const m = uvs.find((u) => (norm(u.name) && norm(u.name) === norm(h.name))
-          || (u.lat != null && u.lng != null && h.lat != null && h.lng != null && haversineKm(u.lat, u.lng, h.lat, h.lng) < 0.3))
-        if (m) out[i] = { ...h, phone: m.phone, email: m.email, website: m.website }
-      }
-    } catch {
-      // No contact source reachable: stores and events still show.
-    }
-  }
   out.sort((a, b) => (a.distanceKm ?? 1e9) - (b.distanceKm ?? 1e9))
   return out
 }
@@ -513,13 +413,13 @@ async function searchEventCircles(circles: { lat: number; lng: number }[], radiu
     }
   })
   await Promise.all(workers)
-  if (!answered) throw lastError ?? new Error('event search failed')
+  if (!answered) throw lastError ?? new EventSearchError('event search failed')
   return { edges, truncated }
 }
 
 /**
  * Riftbound stores with upcoming events near a point, from the official event search.
- * Falls back to the UVS retailer list when the event search is not reachable.
+ * Throws EventSearchError when the event search is not reachable.
  * @param radiusKm user-facing radius in kilometres.
  */
 export async function searchStoresNear(
@@ -527,18 +427,14 @@ export async function searchStoresNear(
   lng: number,
   radiusKm = STORE_RADIUS_KM_DEFAULT,
 ): Promise<StoreSearch> {
-  try {
-    const { edges, truncated } = await searchEventCircles(searchCircles(lat, lng, radiusKm), radiusKm)
-    // Circles beyond the radius bring extra events; keep the ones inside it.
-    const inside = edges.filter((e) => {
-      const l = e.node?.tournament?.tournamentLocation
-      return typeof l?.latitude !== 'number' || typeof l?.longitude !== 'number' || haversineKm(lat, lng, l.latitude, l.longitude) <= radiusKm + 0.05
-    })
-    const hits = await withContacts(eventsToStores(inside, lat, lng), { lat, lng }, () => uvsStoresNear(lat, lng, radiusKm))
-    return { hits: await withProducts(hits), truncated, source: 'events' }
-  } catch {
-    return { hits: await withProducts(await uvsStoresNear(lat, lng, radiusKm)), truncated: false, source: 'uvs' }
-  }
+  const { edges, truncated } = await searchEventCircles(searchCircles(lat, lng, radiusKm), radiusKm)
+  // Circles beyond the radius bring extra events; keep the ones inside it.
+  const inside = edges.filter((e) => {
+    const l = e.node?.tournament?.tournamentLocation
+    return typeof l?.latitude !== 'number' || typeof l?.longitude !== 'number' || haversineKm(lat, lng, l.latitude, l.longitude) <= radiusKm + 0.05
+  })
+  const hits = await withContacts(eventsToStores(inside, lat, lng), { lat, lng })
+  return { hits: await withProducts(hits), truncated }
 }
 
 /** Rough box around Germany; neighbours inside it are caught by their country name in the address. */
@@ -560,52 +456,17 @@ export function isGermanEvent(loc: EventLocation | null | undefined) {
 
 /**
  * Every store in Germany with upcoming events (event search around the center of Germany, German
- * events only), sorted by distance to `sortOrigin` when given. Falls back to the UVS list, also when
- * the event search finds no German store at all.
+ * events only), sorted by distance to `sortOrigin` when given. Throws EventSearchError when the event
+ * search is not reachable.
  */
 export async function searchStoresInGermany(
   sortOrigin?: { lat: number; lng: number },
 ): Promise<StoreSearch> {
   const origin = { lat: sortOrigin?.lat ?? GERMANY_CENTER.lat, lng: sortOrigin?.lng ?? GERMANY_CENTER.lng }
-  try {
-    const { edges, truncated } = await searchEventCircles(GERMANY_CIRCLES, EVENT_SEARCH_MAX_KM)
-    const stores = eventsToStores(edges.filter((e) => isGermanEvent(e.node?.tournament?.tournamentLocation)), origin.lat, origin.lng)
-    if (!stores.length) throw new Error('no German stores in the event search')
-    const hits = await withContacts(stores, origin, () => uvsStoresInGermany(sortOrigin))
-    return { hits: await withProducts(hits), truncated, source: 'events' }
-  } catch {
-    return { hits: await withProducts(await uvsStoresInGermany(sortOrigin)), truncated: false, source: 'uvs' }
-  }
-}
-
-/**
- * Every UVS store whose country is Germany (fallback). Ignores the UI radius.
- * Distances and sort use `sortOrigin` when given (typed city), else Germany center.
- */
-async function uvsStoresInGermany(
-  sortOrigin?: { lat: number; lng: number },
-): Promise<StoreHit[]> {
-  const cover = GERMANY_CENTER
-  const originLat = sortOrigin?.lat ?? cover.lat
-  const originLng = sortOrigin?.lng ?? cover.lng
-  const out: StoreHit[] = []
-  const seen = new Set<string>()
-  let page = 1
-  for (let guard = 0; guard < 40; guard++) {
-    const data = await fetchStorePage(cover.lat, cover.lng, GERMANY_COVER_KM, page, 100)
-    const results = data.results || []
-    for (const r of results) {
-      const hit = rowToHit(r, originLat, originLng)
-      if (!isGermanCountry(hit.country) || seen.has(hit.id)) continue
-      seen.add(hit.id)
-      out.push(hit)
-    }
-    const next = data.next_page_number
-    if (!next || next === page || results.length === 0) break
-    page = next
-  }
-  out.sort((a, b) => (a.distanceKm ?? 1e9) - (b.distanceKm ?? 1e9))
-  return out
+  const { edges, truncated } = await searchEventCircles(GERMANY_CIRCLES, EVENT_SEARCH_MAX_KM)
+  const stores = eventsToStores(edges.filter((e) => isGermanEvent(e.node?.tournament?.tournamentLocation)), origin.lat, origin.lng)
+  const hits = await withContacts(stores, origin)
+  return { hits: await withProducts(hits), truncated }
 }
 
 export function mapsUrl(hit: StoreHit) {

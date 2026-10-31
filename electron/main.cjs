@@ -281,9 +281,9 @@ ipcMain.handle('window:close', () => {
 
 // Riftbound event search on events.playriftbound.com (the "Events" page on playriftbound.com).
 // The endpoint only runs persisted queries by id; ids are the sha256 of the query body in the site's
-// query manifest. shortcut: ids are pinned here. When Riot changes the search query the Store tab falls back
-// to the UVS locator; when only the organizer query changes, stores keep their events and take contacts from
-// the UVS list. Then copy the new ids from the manifest chunk of the events page.
+// query manifest. shortcut: ids are pinned here. When Riot changes the search query the Store tab says the
+// search is not reachable; when only the organizer query changes, stores keep their events without contacts.
+// Then copy the new ids from the manifest chunk of the events page.
 const RB_EVENTS_URL = 'https://events.playriftbound.com/api/gql'
 const RB_EVENTS_QUERIES = {
   search: { name: 'CompeteTournamentSearch', hash: '868030f676276bec926c740aada7129713d4097f6e2dd7c3a0451c4fb43852eb' },
@@ -365,8 +365,6 @@ ipcMain.handle('net:fetchJson', async (_e, url) => {
     return { ok: false, error: 'invalid url' }
   }
   const allowed = new Set([
-    'api.riftbound.uvsgames.com',
-    'api.cloudflare.riftbound.uvsgames.com',
     'nominatim.openstreetmap.org',
   ])
   // Open shop searches only, and only for the fixed Riftbound queries:
