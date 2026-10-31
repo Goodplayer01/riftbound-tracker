@@ -119,10 +119,6 @@ Everything in the app fits in one JSON file: your collection with language, cond
 - The app runs in German or English
 - Card images load fast: small previews ship with the app, full-size art is cached on your PC after the first view
 
-## Feedback
-
-Found a bug, have an idea or just want to say something? Write me at [riftbound@mr-internet.de](mailto:riftbound@mr-internet.de).
-
 ## Note
 
 This is a fan project and free to use.
