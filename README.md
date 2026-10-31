@@ -129,7 +129,7 @@ Everything in the app fits in one JSON file: your collection with language, cond
 
 ## Note
 
-This is a hobby project, built because I enjoy it and because I think the Riftbound community deserves good tools. It's free, with no ads and no tracking.
+I built this app for myself and my friends I play with in real life. Anyone is welcome to use it, but it's a hobby project with no commercial goal of any kind: it's free, has no ads, no tracking and no accounts, and it runs 100 % locally on your PC.
 
 Deakrix Riftbound Tracker isn't endorsed by Riot Games and doesn't reflect the views or opinions of Riot Games or anyone officially involved in producing or managing Riot Games properties. Riot Games, Riftbound and all associated properties are trademarks or registered trademarks of Riot Games, Inc. It's not affiliated with UVS Games either.
 
