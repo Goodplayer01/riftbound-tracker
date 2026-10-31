@@ -1,4 +1,4 @@
-const { app, BrowserWindow, shell, ipcMain, Menu, nativeImage, protocol, net, dialog, clipboard } = require('electron')
+const { app, BrowserWindow, shell, ipcMain, Menu, nativeImage, protocol, net, dialog, clipboard, ClipboardItem } = require('electron')
 const path = require('path')
 const fs = require('fs')
 const crypto = require('crypto')
@@ -509,12 +509,18 @@ ipcMain.handle('net:fetchImageDataUrl', async (_e, url) => {
 })
 
 /** Deck share image into the system clipboard, ready to paste into Discord / WhatsApp. Only PNG data URLs. */
-ipcMain.handle('clipboard:writeImage', (_e, dataUrl) => {
-  if (typeof dataUrl !== 'string' || !dataUrl.startsWith('data:image/png;base64,')) return { ok: false }
-  const img = nativeImage.createFromDataURL(dataUrl)
-  if (img.isEmpty()) return { ok: false }
-  clipboard.writeImage(img)
-  return { ok: true }
+// Electron 44 dropped clipboard.writeImage; write() takes W3C style ClipboardItems (Windows gets PNG and a bitmap).
+ipcMain.handle('clipboard:writeImage', async (_e, dataUrl) => {
+  const prefix = 'data:image/png;base64,'
+  if (typeof dataUrl !== 'string' || !dataUrl.startsWith(prefix)) return { ok: false }
+  const png = Buffer.from(dataUrl.slice(prefix.length), 'base64')
+  if (!png.length) return { ok: false }
+  try {
+    await clipboard.write([new ClipboardItem({ 'image/png': new Blob([png], { type: 'image/png' }) })])
+    return { ok: true }
+  } catch {
+    return { ok: false }
+  }
 })
 
 ipcMain.handle('shell:openExternal', async (_e, url) => {
