@@ -2,7 +2,7 @@
 
 I play Riftbound and got tired of keeping my collection in spreadsheets, so I built this. It's a Windows app for Riftbound only. No other card games, no account, everything stays on your PC.
 
-Made by Stefan.
+Made by Stefan. Website: [goodplayer01.github.io/riftbound-tracker](https://goodplayer01.github.io/riftbound-tracker/)
 
 ## Install
 
@@ -88,7 +88,7 @@ When a card changes hands for good, say you traded it or sold it to them, tick i
 
 **Stores**
 
-Compare booster display prices before you buy. For each set you see the Cardmarket trend (and the price per booster), then every offer from German online shops sorted by price, marked green or red against the trend, with stock and pre-order info. Filter by print language (English, Chinese Slim / Jumbo, French, Korean), set a max price per display and see which offers fit your budget. With your own CardTrader API token the cheapest CardTrader listings show up too.
+Compare booster display prices before you buy. For each set you see the Cardmarket trend (and the price per booster), then every offer from German online shops and local stores (the ones with events in the official event search) sorted by price, marked green or red against the trend, with stock and pre-order info. Filter by print language (English, Chinese Slim / Jumbo, French, Korean), set a max price per display and see which offers fit your budget. With your own CardTrader API token the cheapest CardTrader listings show up too.
 
 The second view shows Riftbound stores on a map with a radius around you, taken from the official event search on playriftbound.com: every store with upcoming events, its contact info, its next events (date, type, entry fee, sign-ups) with a link to each event, and a stock hint where the shop publishes one. Save a place as home location and the search runs there as soon as you open the view.
 
@@ -125,7 +125,9 @@ Found a bug, have an idea or just want to say something? Write me at [riftbound@
 
 ## Note
 
-This is a fan project. It's not affiliated with or endorsed by Riot Games or UVS Games.
+This is a fan project and free to use.
+
+Deakrix Riftbound Tracker isn't endorsed by Riot Games and doesn't reflect the views or opinions of Riot Games or anyone officially involved in producing or managing Riot Games properties. Riot Games, Riftbound and all associated properties are trademarks or registered trademarks of Riot Games, Inc. It's not affiliated with UVS Games either.
 
 ## Credits
 
