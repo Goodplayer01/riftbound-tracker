@@ -263,7 +263,7 @@ def organizer_shop(item: tuple[str, str | None]) -> tuple[str, str, str | None] 
     origin = origin_of(o.get("website"))
     if not origin:
         return None
-    return (o.get("name") or origin, origin, ((o.get("physicalAddress") or {}).get("city")) or city)
+    return (o.get("name") or origin, origin, city)  # the profile address has no city field
 
 
 def riot_german_stores() -> list[tuple[str, str, str | None]]:
