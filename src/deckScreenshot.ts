@@ -87,15 +87,15 @@ function drawQtyBadge(
   print = false,
 ) {
   if (qty <= 1) return
-  // print: the copies of one print inside a framed group, small and neutral bottom left, so the amber
-  // badge clearly counts the whole group.
+  // print: the copies of one print inside a framed group, small and neutral at the top centre of the art
+  // (the top corners hold cost and might), far from the amber badge that counts the whole group.
   const label = `×${qty}`
   ctx.font = `800 ${print ? 11 : 13}px ${FONT}`
   const tw = ctx.measureText(label).width
   const bw = tw + (print ? 10 : 14)
   const bh = print ? 16 : 20
-  const bx = print ? x + 5 : x + w - bw - 5
-  const by = y + h - bh - 5
+  const bx = print ? x + (w - bw) / 2 : x + w - bw - 5
+  const by = print ? y + 6 : y + h - bh - 5
   ctx.save()
   ctx.shadowColor = 'rgba(0,0,0,0.6)'
   ctx.shadowBlur = 6
