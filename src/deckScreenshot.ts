@@ -301,14 +301,6 @@ export async function renderDeckShareCanvas(
     ctx.fillStyle = MUTED
     ctx.font = `500 14px ${FONT}`
     ctx.fillText([legendName, `${total} cards`].filter(Boolean).join('  ·  '), pad, pad + 50)
-    ctx.textAlign = 'right'
-    ctx.fillStyle = AMBER
-    ctx.font = `700 14px ${FONT}`
-    ctx.fillText('DEAKRIX', width - pad, pad + 26)
-    ctx.fillStyle = MUTED
-    ctx.font = `500 12px ${FONT}`
-    ctx.fillText('Riftbound Tracker', width - pad, pad + 46)
-    ctx.textAlign = 'left'
     ctx.fillStyle = 'rgba(255,255,255,0.08)'
     ctx.fillRect(pad, pad + headerH + 2, width - pad * 2, 1)
 
