@@ -914,6 +914,10 @@ export default function App() {
   const [storeError, setStoreError] = useState<string | null>(null)
   const [storeAllGermany, setStoreAllGermany] = useState(false)
   const [storeStockOnly, setStoreStockOnly] = useState(false)
+  /** Only stores with an event today, and only today's events. */
+  const [storeTodayOnly, setStoreTodayOnly] = useState(false)
+  /** Store card under the pointer: its pin stands out on the map. */
+  const [storeHoverId, setStoreHoverId] = useState<string | null>(null)
   /** Store ids whose stock list is expanded past the collapsed preview. */
   const [storeStockOpen, setStoreStockOpen] = useState<Record<string, boolean>>({})
   const [storeEventsOpen, setStoreEventsOpen] = useState<Record<string, boolean>>({})
@@ -3489,11 +3493,29 @@ export default function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps -- only when the view opens
   }, [tab, storeView])
 
-  const visibleStoreHits = storeHits.filter((h) => {
-    if (!storeAllGermany && h.distanceKm != null && h.distanceKm > storeKm + 0.05) return false
-    if (storeStockOnly && !storeReportsStock(h)) return false
-    return true
-  })
+  // Memoized: the map rebuilds its markers whenever this array changes, which would close an open tooltip.
+  const visibleStoreHits = useMemo(() => {
+    const today = new Date().toDateString()
+    return storeHits.flatMap((h) => {
+      if (!storeAllGermany && h.distanceKm != null && h.distanceKm > storeKm + 0.05) return []
+      if (storeStockOnly && !storeReportsStock(h)) return []
+      if (!storeTodayOnly) return [h]
+      const events = h.events.filter((ev) => ev.startsAt && new Date(ev.startsAt).toDateString() === today)
+      return events.length ? [{ ...h, events }] : []
+    })
+  }, [storeHits, storeAllGermany, storeKm, storeStockOnly, storeTodayOnly])
+
+  /** Map tooltip under the store name: its next events with day, time and type. */
+  const storeTooltipLines = useCallback((h: StoreHit) => {
+    const locale = lang === 'de' ? 'de-DE' : 'en-GB'
+    const MAX = 4
+    const lines = h.events.slice(0, MAX).map((ev) => {
+      const when = ev.startsAt ? new Date(ev.startsAt).toLocaleString(locale, { weekday: 'short', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) : '–'
+      return `${when} · ${ev.name || prettyEventType(ev.type)}`
+    })
+    if (h.events.length > MAX) lines.push(t(lang, 'stores.moreEvents', { n: h.events.length - MAX }))
+    return lines
+  }, [lang])
 
   // After slider/input settles: search again if the radius changed (circle already updates live).
   useEffect(() => {
@@ -5457,6 +5479,13 @@ export default function App() {
                 title={t(lang, 'stores.stockOnlyHint')}
                 onClick={() => setStoreStockOnly((v) => !v)}
               ><Icon name="package" />{t(lang, 'stores.stockOnly')}</button>
+              <button
+                type="button"
+                className={`btn${storeTodayOnly ? ' on' : ''}`}
+                aria-pressed={storeTodayOnly}
+                title={t(lang, 'stores.todayHint')}
+                onClick={() => setStoreTodayOnly((v) => !v)}
+              ><Icon name="calendar" />{t(lang, 'stores.today')}</button>
               <button className="btn primary" disabled={storeBusy} onClick={() => void runStoreSearch()}>
                 <Icon name="search" />{storeBusy ? t(lang, 'stores.searching') : t(lang, 'stores.search')}
               </button>
@@ -5489,6 +5518,8 @@ export default function App() {
                   radiusKm={storeKm}
                   hits={visibleStoreHits}
                   fitHits={storeAllGermany}
+                  highlightId={storeHoverId}
+                  tooltipLines={storeTooltipLines}
                   emptyHint={t(lang, 'stores.mapHint')}
                 />
               </section>
@@ -5496,7 +5527,7 @@ export default function App() {
                 <div className="stores-results">
                   {!storeLabel && <div className="empty">{t(lang, 'stores.listHint')}</div>}
                   {!storeBusy && storeLabel && visibleStoreHits.length === 0 && (
-                    <div className="empty">{storeStockOnly ? t(lang, 'stores.emptyStock') : storeAllGermany ? t(lang, 'stores.emptyGermany') : t(lang, 'stores.empty')}</div>
+                    <div className="empty">{storeStockOnly ? t(lang, 'stores.emptyStock') : storeTodayOnly ? t(lang, 'stores.emptyToday') : storeAllGermany ? t(lang, 'stores.emptyGermany') : t(lang, 'stores.empty')}</div>
                   )}
                   {visibleStoreHits.map((h) => {
                     const STOCK_PREVIEW = 4
@@ -5507,7 +5538,12 @@ export default function App() {
                       : []
                     const canToggle = !!products && products.length > STOCK_PREVIEW
                     return (
-                      <article key={h.id} className="store-card">
+                      <article
+                        key={h.id}
+                        className={`store-card${storeHoverId === h.id ? ' hovered' : ''}`}
+                        onMouseEnter={() => setStoreHoverId(h.id)}
+                        onMouseLeave={() => setStoreHoverId((id) => (id === h.id ? null : id))}
+                      >
                         <div className="store-card-top">
                           <div className="name">{h.name}</div>
                           {h.distanceKm != null && (
