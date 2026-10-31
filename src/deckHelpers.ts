@@ -113,31 +113,37 @@ export function groupPrints<T extends { id: string }>(lines: T[], byId: Map<stri
   return lines.map((l, i) => ({ l, i })).sort((a, b) => order.get(keyOf(a.l))! - order.get(keyOf(b.l))! || a.i - b.i).map((x) => x.l)
 }
 
-/** One line per card for the share image: the prints added up, shown with the print that has the most
- *  copies (an alt art / overnumbered / signed print wins a tie, it is the one people show off). */
-export function mergePrints(lines: DeckCard[], byId: Map<string, Card>): DeckCard[] {
-  const special = (id: string) => { const c = byId.get(id); return !!c && !!(c.altArt || c.overnumbered || c.signed) }
-  const out: DeckCard[] = []
-  const at = new Map<string, number>()
-  const best = new Map<string, number>()
-  for (const l of groupPrints(lines, byId)) {
-    const c = byId.get(l.id)
-    const key = c ? cardKey(c) : l.id
-    const i = at.get(key)
-    if (i == null) {
-      at.set(key, out.length)
-      best.set(key, l.qty)
-      out.push({ ...l })
-      continue
-    }
-    const shown = out[i]
-    if (l.qty > best.get(key)! || (l.qty === best.get(key) && special(l.id) && !special(shown.id))) {
-      best.set(key, l.qty)
-      shown.id = l.id
-    }
-    shown.qty += l.qty
+/** Runs of neighbouring lines that are prints of one card (at least two), as [first, last] indexes. The
+ *  share image shows every print with its own count and frames each run. Expects `groupPrints` order. */
+export function printRuns(lines: { id: string }[], byId: Map<string, Card>): [number, number][] {
+  const keyOf = (id: string) => { const c = byId.get(id); return c ? cardKey(c) : id }
+  const out: [number, number][] = []
+  for (let i = 0; i < lines.length; ) {
+    let j = i
+    while (j + 1 < lines.length && keyOf(lines[j + 1].id) === keyOf(lines[i].id)) j++
+    if (j > i) out.push([i, j])
+    i = j + 1
   }
   return out
+}
+
+/** Grid places [col, row] for the share image: the prints of one card never break across rows (only a run
+ *  wider than a whole row still wraps). */
+export function printSlots(lines: { id: string }[], byId: Map<string, Card>, cols: number) {
+  const runEnd = new Map(printRuns(lines, byId))
+  const slots: [number, number][] = []
+  let col = 0
+  let row = 0
+  for (let i = 0; i < lines.length; ) {
+    const len = (runEnd.get(i) ?? i) - i + 1
+    if (col > 0 && col + len > cols) { col = 0; row++ }
+    for (let k = 0; k < len; k++) {
+      if (col === cols) { col = 0; row++ }
+      slots.push([col++, row])
+    }
+    i += len
+  }
+  return { slots, rows: lines.length ? row + 1 : 0 }
 }
 
 export function migrateDeck(d: Deck, byId: Map<string, Card>): Deck {

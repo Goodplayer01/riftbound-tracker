@@ -12,6 +12,10 @@ type Props = {
   emptyHint: string
   /** Fit markers and skip the radius circle (Ganz Deutschland). */
   fitHits?: boolean
+  /** Store whose pin stands out (pointer over its card in the list). */
+  highlightId?: string | null
+  /** Lines under the store name in the hover tooltip (its next events). */
+  tooltipLines?: (h: StoreHit) => string[]
 }
 
 const DE_CENTER: [number, number] = [51.1657, 10.4515]
@@ -35,13 +39,14 @@ function centerDivIcon() {
   })
 }
 
-export function StoresMap({ center, radiusKm, hits, emptyHint, fitHits = false }: Props) {
+export function StoresMap({ center, radiusKm, hits, emptyHint, fitHits = false, highlightId = null, tooltipLines }: Props) {
   const containerRef = useRef<HTMLDivElement | null>(null)
   const mapRef = useRef<L.Map | null>(null)
   const circleRef = useRef<L.Circle | null>(null)
   const centerMarkerRef = useRef<L.Marker | null>(null)
   const markersLayerRef = useRef<L.LayerGroup | null>(null)
   const lastFitKey = useRef<string>('')
+  const markerById = useRef(new Map<string, L.Marker>())
 
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return
@@ -84,6 +89,7 @@ export function StoresMap({ center, radiusKm, hits, emptyHint, fitHits = false }
     if (!map || !layer) return
 
     layer.clearLayers()
+    markerById.current.clear()
 
     if (!center) {
       if (circleRef.current) {
@@ -132,6 +138,16 @@ export function StoresMap({ center, radiusKm, hits, emptyHint, fitHits = false }
         `<strong>${escapeHtml(h.name)}</strong><br/>${escapeHtml(h.address || '')}` +
           (dist ? `<br/><span style="opacity:.8">${escapeHtml(dist)}</span>` : ''),
       )
+      const lines = tooltipLines?.(h) || []
+      m.bindTooltip(
+        `<strong>${escapeHtml(h.name)}</strong>` + lines.map((l) => `<br/>${escapeHtml(l)}`).join(''),
+        { direction: 'top', offset: [0, -10], className: 'stores-tooltip' },
+      )
+      if (h.id === highlightId) {
+        m.setIcon(storeDivIcon(true))
+        m.setZIndexOffset(1000)
+      }
+      markerById.current.set(h.id, m)
       layer.addLayer(m)
     }
 
@@ -179,7 +195,20 @@ export function StoresMap({ center, radiusKm, hits, emptyHint, fitHits = false }
     }
 
     map.invalidateSize({ animate: false })
-  }, [center, radiusKm, hits, fitHits])
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- the highlight has its own effect below
+  }, [center, radiusKm, hits, fitHits, tooltipLines])
+
+  // Only swap the icon of the store under the pointer; rebuilding every marker would close tooltips.
+  useEffect(() => {
+    const m = highlightId ? markerById.current.get(highlightId) : undefined
+    if (!m) return
+    m.setIcon(storeDivIcon(true))
+    m.setZIndexOffset(1000)
+    return () => {
+      m.setIcon(storeDivIcon())
+      m.setZIndexOffset(0)
+    }
+  }, [highlightId, hits])
 
   return (
     <div className="stores-map-wrap">

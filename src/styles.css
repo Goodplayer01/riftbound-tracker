@@ -1394,6 +1394,7 @@ body[data-removing] .deck-split > section:not([data-remove-src]) {
   display: grid;
   gap: 3px;
 }
+.store-card.hovered { border-color: rgb(var(--primary-rgb) / .55); }
 .store-card-top { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; }
 .store-card .name { font-weight: 650; }
 .store-dist { color: var(--accent2); font-size: 12px; font-variant-numeric: tabular-nums; white-space: nowrap; }
@@ -1494,6 +1495,14 @@ body[data-removing] .deck-split > section:not([data-remove-src]) {
   border: 2px solid #e8eefc;
   box-shadow: 0 1px 4px rgba(0,0,0,.45);
 }
+/* The store whose card is under the pointer. */
+.stores-marker-sel .stores-marker-dot {
+  background: var(--accent);
+  border-color: #fff4cc;
+  transform: scale(1.45);
+  box-shadow: 0 0 0 4px rgb(var(--primary-rgb) / .35), 0 1px 6px rgba(0,0,0,.5);
+}
+.stores-marker-dot { transition: transform .12s ease; }
 .stores-marker-pin {
   display: block;
   width: 16px;
@@ -1522,6 +1531,18 @@ body[data-removing] .deck-split > section:not([data-remove-src]) {
   font-size: 13px;
   line-height: 1.35;
 }
+.leaflet-tooltip.stores-tooltip {
+  background: var(--panel2);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(0,0,0,.4);
+  padding: 8px 10px;
+  font-size: 12.5px;
+  line-height: 1.45;
+  white-space: nowrap;
+}
+.leaflet-tooltip-top.stores-tooltip::before { border-top-color: var(--panel2); }
 .leaflet-control-attribution {
   background: rgb(var(--bg-rgb) / .85) !important;
   color: var(--muted);
