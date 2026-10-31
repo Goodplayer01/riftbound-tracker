@@ -12,7 +12,7 @@ Notes for Claude Code working in this repo. The README is the user-facing featur
 ## Stack
 
 - Electron 44 + React 19 + Vite 7 + TypeScript. Windows NSIS installer via electron-builder, auto-update via electron-updater from GitHub Releases.
-- `electron/main.cjs`: window, updater, IPC (`net:fetchJson`, `net:fetchImageDataUrl`, `shell:openExternal`, `clipboard:writeImage` for the deck share image, which is copied as soon as the share preview opens, window controls) and the `rbimg://` image cache protocol. `electron/preload.cjs` exposes these to the renderer.
+- `electron/main.cjs`: window, updater, IPC (`net:fetchJson`, `net:fetchImageDataUrl`, `shell:openExternal`, `clipboard:writeImage` for the deck share image, which is copied as soon as the share preview opens (Electron 44 removed the sync `clipboard.writeImage`: images go through `await clipboard.write([new ClipboardItem({ "image/png": blob })])`), window controls) and the `rbimg://` image cache protocol. `electron/preload.cjs` exposes these to the renderer.
 - `src/App.tsx` holds most of the UI (one big file, ~5100 lines). Helpers live in their own modules (`prices.ts`, `priceHistory.ts`, `copies.ts`, `cardmarket.ts`, `cardImages.ts`, `deckHelpers.ts`, `banlist.ts`, `storage.ts`, ...).
 - Styling in `src/styles.css`: dark "Apple look", graphite surfaces with amber accent, sidebar navigation. Icons from Lucide (`src/Icon.tsx`).
 - No test framework. The `scripts/check_*.mjs` / `check-dopamin.mjs` files are plain assertion scripts. `checks.yml` runs them (every `scripts/check*.mjs`, new ones included) plus `npm run build` on every PR and push to main; the Release workflow runs them again.
