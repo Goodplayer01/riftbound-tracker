@@ -1,8 +1,10 @@
 # Deakrix Riftbound Tracker
 
-I play Riftbound and got tired of keeping my collection in spreadsheets, so I built this. It's a Windows app for Riftbound only. No other card games, no account, everything stays on your PC.
+I love Riftbound. Opening packs, building decks, hunting that one missing card for a set: at some point my spreadsheets just couldn't keep up any more. So I built the app I always wanted for myself: my cards, my decks, their prices and everything around the game in one place.
 
-Made by Stefan. Website: [goodplayer01.github.io/riftbound-tracker](https://goodplayer01.github.io/riftbound-tracker/)
+It started as a simple collection list and kept growing with every new set and every idea that came up while playing. It's made for Riftbound and nothing else, so every part of it can fit the game exactly. No account, no server, no ads: everything stays on your PC.
+
+Made by Stefan, with my Bengal cat Dante watching over it (he's the app icon). Website: [goodplayer01.github.io/riftbound-tracker](https://goodplayer01.github.io/riftbound-tracker/)
 
 ## Install
 
@@ -12,7 +14,11 @@ Windows SmartScreen might complain the first time because the installer isn't si
 
 ## What it does
 
+Here's everything that's in it so far.
+
 **Sets and All owned**
+
+This is where it all started: see at a glance what you have, what's missing and what it's worth.
 
 - Sets tab: binders per set: OGN, OGS, SFD, UNL, VEN and RAD. Nexus Night binders can be hidden
 - All owned tab: every card you own in one place, with a filter per set, Borrowed only and Not needed in decks, sorted by set or by price. Not needed in decks shows how many copies no deck needs (all decks added up); together with Borrowed only it lists the borrowed copies you can give back
@@ -53,6 +59,8 @@ Windows SmartScreen might complain the first time because the installer isn't si
 - Value history: a chart of what your collection was worth at each price update, plus the cards that went up or down the most
 
 **Decks**
+
+Building decks is half the fun of Riftbound, so this part got a lot of love.
 
 - Legend, Champion, Main Deck (39), Battlefields, Runes and Sideboard, with the usual limits. The 3 copy limit counts per full name, so "Evelynn, in Control" and "Evelynn, Entrancing" are separate cards
 - Find a Legend by typing the champion name
@@ -96,7 +104,7 @@ The third view, Dates, lists Riot's official dates still ahead: set releases and
 
 **Dopamin**
 
-Open simulated booster packs for each set with the real pack art. Every slot of a real pack is in there: commons, uncommons, the token or rune slot, the foil slot, the rare slot and the slot that can turn into an Epic, Alt Art, Overnumbered, Signature or Ultimate. Cards flip one at a time with price and pull chance, or reveal the whole pack at once and see what it was worth. A counter per set adds up what the packs would have cost on Cardmarket against what you pulled, so you see whether you are up or down, plus your best pull. The odds are the ones Riot published (Epic 1 in 4 packs, Alt Art 1 in 12, Overnumbered 1 in 72, 1 in 10 of those signed, Ultimate 0.025 % in Radiance); the few slots Riot gave no numbers for are marked as estimates.
+Because cracking packs is the best feeling in the game, even when they aren't real. Open simulated booster packs for each set with the real pack art. Every slot of a real pack is in there: commons, uncommons, the token or rune slot, the foil slot, the rare slot and the slot that can turn into an Epic, Alt Art, Overnumbered, Signature or Ultimate. Cards flip one at a time with price and pull chance, or reveal the whole pack at once and see what it was worth. A counter per set adds up what the packs would have cost on Cardmarket against what you pulled, so you see whether you are up or down, plus your best pull. The odds are the ones Riot published (Epic 1 in 4 packs, Alt Art 1 in 12, Overnumbered 1 in 72, 1 in 10 of those signed, Ultimate 0.025 % in Radiance); the few slots Riot gave no numbers for are marked as estimates.
 
 **Da Rules**
 
@@ -121,7 +129,7 @@ Everything in the app fits in one JSON file: your collection with language, cond
 
 ## Note
 
-This is a fan project and free to use.
+This is a hobby project, built because I enjoy it and because I think the Riftbound community deserves good tools. It's free, with no ads and no tracking.
 
 Deakrix Riftbound Tracker isn't endorsed by Riot Games and doesn't reflect the views or opinions of Riot Games or anyone officially involved in producing or managing Riot Games properties. Riot Games, Riftbound and all associated properties are trademarks or registered trademarks of Riot Games, Inc. It's not affiliated with UVS Games either.
 
