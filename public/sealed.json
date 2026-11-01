@@ -1,5 +1,5 @@
 {
- "updatedAt": "2026-10-31T10:14:37.780Z",
+ "updatedAt": "2026-11-01T11:06:19.781Z",
  "currency": "EUR",
  "sets": {
   "OGN": "Origins",
@@ -10,7 +10,7 @@
   "LEGACY": "Legacy"
  },
  "cardmarket": {
-  "guideCreatedAt": "2026-10-31T02:42:54+0100",
+  "guideCreatedAt": "2026-11-01T02:47:37+0100",
   "products": [
    {
     "id": 917595,
@@ -75,7 +75,7 @@
     "avg1": null,
     "avg7": null,
     "avg30": null,
-    "trend": 176.89
+    "trend": 177.26
    },
    {
     "id": 862274,
@@ -127,7 +127,7 @@
     "avg1": null,
     "avg7": null,
     "avg30": null,
-    "trend": 506.36
+    "trend": 497.04
    },
    {
     "id": 873075,
@@ -179,7 +179,7 @@
     "avg1": null,
     "avg7": null,
     "avg30": null,
-    "trend": 21.14
+    "trend": 19.72
    },
    {
     "id": 887715,
@@ -244,7 +244,7 @@
     "avg1": null,
     "avg7": null,
     "avg30": null,
-    "trend": 6.76
+    "trend": 6.62
    },
    {
     "id": 862354,
@@ -322,7 +322,7 @@
     "avg1": null,
     "avg7": null,
     "avg30": null,
-    "trend": 184.6
+    "trend": 160.33
    },
    {
     "id": 847069,
@@ -348,7 +348,7 @@
     "avg1": null,
     "avg7": null,
     "avg30": null,
-    "trend": 6.24
+    "trend": 7.33
    },
    {
     "id": 848218,
@@ -357,7 +357,7 @@
     "category": "RB Set",
     "display": false,
     "lang": "EN",
-    "low": 1849,
+    "low": 1700,
     "avg1": null,
     "avg7": null,
     "avg30": null,
@@ -383,7 +383,7 @@
     "category": "RB Set",
     "display": false,
     "lang": "EN",
-    "low": 10,
+    "low": 12.5,
     "avg1": null,
     "avg7": null,
     "avg30": null,
@@ -426,7 +426,7 @@
     "avg1": null,
     "avg7": null,
     "avg30": null,
-    "trend": 23.02
+    "trend": 26.74
    },
    {
     "id": 887716,
@@ -478,7 +478,7 @@
     "avg1": null,
     "avg7": null,
     "avg30": null,
-    "trend": 23.17
+    "trend": 20.71
    },
    {
     "id": 862801,
@@ -491,7 +491,7 @@
     "avg1": null,
     "avg7": null,
     "avg30": null,
-    "trend": 606.81
+    "trend": 595.24
    },
    {
     "id": 862852,
@@ -517,7 +517,7 @@
     "avg1": null,
     "avg7": null,
     "avg30": null,
-    "trend": 114.73
+    "trend": 113.11
    },
    {
     "id": 897517,
@@ -530,7 +530,7 @@
     "avg1": null,
     "avg7": null,
     "avg30": null,
-    "trend": 22.99
+    "trend": 22.05
    },
    {
     "id": 897512,
@@ -543,7 +543,7 @@
     "avg1": null,
     "avg7": null,
     "avg30": null,
-    "trend": 5.56
+    "trend": 5.5
    },
    {
     "id": 897516,
@@ -556,7 +556,7 @@
     "avg1": null,
     "avg7": null,
     "avg30": null,
-    "trend": 738.64
+    "trend": 734.68
    },
    {
     "id": 917622,
@@ -569,7 +569,7 @@
     "avg1": null,
     "avg7": null,
     "avg30": null,
-    "trend": 7
+    "trend": 4.89
    },
    {
     "id": 897513,
@@ -578,7 +578,7 @@
     "category": "Riftbound Booster",
     "display": false,
     "lang": "EN",
-    "low": 37.5,
+    "low": 5,
     "avg1": null,
     "avg7": null,
     "avg30": null,
@@ -595,7 +595,7 @@
     "avg1": null,
     "avg7": null,
     "avg30": null,
-    "trend": 30.97
+    "trend": 30.87
    },
    {
     "id": 920168,
@@ -608,7 +608,7 @@
     "avg1": null,
     "avg7": null,
     "avg30": null,
-    "trend": null
+    "trend": 3.99
    },
    {
     "id": 920171,
@@ -647,7 +647,7 @@
     "avg1": null,
     "avg7": null,
     "avg30": null,
-    "trend": 31.01
+    "trend": 30.92
    },
    {
     "id": 920170,
@@ -660,7 +660,7 @@
     "avg1": null,
     "avg7": null,
     "avg30": null,
-    "trend": null
+    "trend": 45
    },
    {
     "id": 920169,
@@ -673,7 +673,7 @@
     "avg1": null,
     "avg7": null,
     "avg30": null,
-    "trend": null
+    "trend": 7
    },
    {
     "id": 860997,
@@ -686,7 +686,7 @@
     "avg1": null,
     "avg7": null,
     "avg30": null,
-    "trend": 143.27
+    "trend": 142.23
    },
    {
     "id": 864142,
@@ -712,7 +712,7 @@
     "avg1": null,
     "avg7": null,
     "avg30": null,
-    "trend": 36.34
+    "trend": 37.29
    },
    {
     "id": 897506,
@@ -738,7 +738,7 @@
     "avg1": null,
     "avg7": null,
     "avg30": null,
-    "trend": 29.6
+    "trend": 31.04
    },
    {
     "id": 861000,
@@ -751,7 +751,7 @@
     "avg1": null,
     "avg7": null,
     "avg30": null,
-    "trend": 18.1
+    "trend": 19.1
    },
    {
     "id": 860999,
@@ -764,7 +764,7 @@
     "avg1": null,
     "avg7": null,
     "avg30": null,
-    "trend": 6.43
+    "trend": 6.37
    },
    {
     "id": 866424,
@@ -816,7 +816,7 @@
     "avg1": null,
     "avg7": null,
     "avg30": null,
-    "trend": 834.19
+    "trend": 837.8
    },
    {
     "id": 872892,
@@ -855,7 +855,7 @@
     "avg1": null,
     "avg7": null,
     "avg30": null,
-    "trend": 3.88
+    "trend": 5.28
    },
    {
     "id": 871911,
@@ -933,7 +933,7 @@
     "avg1": null,
     "avg7": null,
     "avg30": null,
-    "trend": 139.84
+    "trend": 139.77
    },
    {
     "id": 884445,
@@ -985,7 +985,7 @@
     "avg1": null,
     "avg7": null,
     "avg30": null,
-    "trend": 6.02
+    "trend": 6.04
    },
    {
     "id": 884447,
@@ -1037,7 +1037,7 @@
     "avg1": null,
     "avg7": null,
     "avg30": null,
-    "trend": 790.74
+    "trend": 788.53
    },
    {
     "id": 889063,
@@ -1050,7 +1050,7 @@
     "avg1": null,
     "avg7": null,
     "avg30": null,
-    "trend": 23.06
+    "trend": 20.21
    },
    {
     "id": 897511,
@@ -1089,7 +1089,7 @@
     "avg1": null,
     "avg7": null,
     "avg30": null,
-    "trend": 2.79
+    "trend": 3.02
    },
    {
     "id": 886613,
@@ -1128,7 +1128,7 @@
     "avg1": null,
     "avg7": null,
     "avg30": null,
-    "trend": 30.18
+    "trend": 30.5
    },
    {
     "id": 906004,
@@ -1180,7 +1180,7 @@
     "avg1": null,
     "avg7": null,
     "avg30": null,
-    "trend": 20.53
+    "trend": 20.9
    },
    {
     "id": 877275,
@@ -1193,7 +1193,7 @@
     "avg1": null,
     "avg7": null,
     "avg30": null,
-    "trend": 15.17
+    "trend": 15.02
    },
    {
     "id": 888358,
@@ -1202,11 +1202,11 @@
     "category": "Riftbound Display",
     "display": true,
     "lang": "EN",
-    "low": 90,
+    "low": 92,
     "avg1": null,
     "avg7": null,
     "avg30": null,
-    "trend": 127.25
+    "trend": 122.35
    },
    {
     "id": 901070,
@@ -1219,7 +1219,7 @@
     "avg1": null,
     "avg7": null,
     "avg30": null,
-    "trend": 80.82
+    "trend": 80.28
    },
    {
     "id": 901066,
@@ -1228,11 +1228,11 @@
     "category": "Riftbound Display",
     "display": true,
     "lang": "ZH",
-    "low": 42.99,
+    "low": 49.99,
     "avg1": null,
     "avg7": null,
     "avg30": null,
-    "trend": 46.16
+    "trend": 44.92
    },
    {
     "id": 914404,
@@ -1267,11 +1267,11 @@
     "category": "Riftbound Booster",
     "display": false,
     "lang": "EN",
-    "low": 4.5,
+    "low": 2.5,
     "avg1": null,
     "avg7": null,
     "avg30": null,
-    "trend": 5.97
+    "trend": 6.08
    },
    {
     "id": 901072,
@@ -1323,7 +1323,7 @@
     "avg1": null,
     "avg7": null,
     "avg30": null,
-    "trend": 882.22
+    "trend": 840.18
    },
    {
     "id": 898171,
@@ -1336,7 +1336,7 @@
     "avg1": null,
     "avg7": null,
     "avg30": null,
-    "trend": 3.96
+    "trend": 3.7
    },
    {
     "id": 914406,
@@ -1375,7 +1375,7 @@
     "avg1": null,
     "avg7": null,
     "avg30": null,
-    "trend": 34.72
+    "trend": 34.79
    },
    {
     "id": 914405,
@@ -1401,7 +1401,7 @@
     "avg1": null,
     "avg7": null,
     "avg30": null,
-    "trend": 5.54
+    "trend": 4.15
    },
    {
     "id": 898217,
@@ -1436,11 +1436,11 @@
     "category": "Riftbound Riftbound Box Sets",
     "display": false,
     "lang": "EN",
-    "low": 1,
+    "low": 2.9,
     "avg1": null,
     "avg7": null,
     "avg30": null,
-    "trend": 24.9
+    "trend": 25.88
    },
    {
     "id": 898216,
@@ -1479,7 +1479,7 @@
     "avg1": null,
     "avg7": null,
     "avg30": null,
-    "trend": 14.99
+    "trend": 15.58
    },
    {
     "id": 917164,
@@ -1544,7 +1544,7 @@
     "avg1": null,
     "avg7": null,
     "avg30": null,
-    "trend": 37.29
+    "trend": 37.18
    },
    {
     "id": 887718,
@@ -1583,7 +1583,7 @@
     "avg1": null,
     "avg7": null,
     "avg30": null,
-    "trend": 142.78
+    "trend": 141.97
    }
   ]
  },
@@ -1631,9 +1631,9 @@
    "platform": "shopify"
   },
   {
-   "name": "Card Game Store",
+   "name": "Card Game Store Grafenwöhr",
    "url": "https://cardgamestore.de",
-   "city": "Pirk, Grafenwöhr",
+   "city": "Grafenwöhr, Pirk",
    "platform": "shopify"
   },
   {
@@ -1748,12 +1748,6 @@
    "name": "Heroes Stash",
    "url": "https://heroes-stash.de",
    "city": "Recklinghausen",
-   "platform": "woo"
-  },
-  {
-   "name": "Holon Cardshop",
-   "url": "https://holoncardshop.com",
-   "city": "Zweibrücken",
    "platform": "woo"
   },
   {
@@ -1973,6 +1967,16 @@
    "preorder": false
   },
   {
+   "shop": "https://cardcosmos.de",
+   "title": "Riftbound: League of Legends TCG - Origins Slim Display - CHN",
+   "price": 39.9,
+   "available": true,
+   "url": "https://cardcosmos.de/products/riftbound-league-of-legends-tcg-1-set-origins-slim-display-chn",
+   "set": "OGN",
+   "lang": "ZH",
+   "preorder": false
+  },
+  {
    "shop": "https://heartforcards.com",
    "title": "Riftbound Origins Slim Booster Box – Chinesische Version | 24 Boosterpacks | 5 Karten pro Pack",
    "price": 64.99,
@@ -1983,21 +1987,21 @@
    "preorder": false
   },
   {
-   "shop": "https://heartforcards.com",
-   "title": "Riftbound Origins Jumbo Booster Box – Chinesische Version | 12 Boosterpacks | 14 Karten pro Pack",
-   "price": 79.99,
-   "available": true,
-   "url": "https://heartforcards.com/products/riftbound-origins-jumbo-booster-box-chinesische-version-12-boosterpacks-14-karten-pro-pack",
-   "set": "OGN",
-   "lang": "ZH",
-   "preorder": false
-  },
-  {
    "shop": "https://www.geeksheaven.de",
    "title": "Riftbound League of Legends TCG - Origins Slim Display (chinesisch)",
    "price": 79.99,
    "available": true,
    "url": "https://www.geeksheaven.de/products/riftbound-league-of-legends-tcg-origins-slim-display-chinesisch",
+   "set": "OGN",
+   "lang": "ZH",
+   "preorder": false
+  },
+  {
+   "shop": "https://heartforcards.com",
+   "title": "Riftbound Origins Jumbo Booster Box – Chinesische Version | 12 Boosterpacks | 14 Karten pro Pack",
+   "price": 79.99,
+   "available": true,
+   "url": "https://heartforcards.com/products/riftbound-origins-jumbo-booster-box-chinesische-version-12-boosterpacks-14-karten-pro-pack",
    "set": "OGN",
    "lang": "ZH",
    "preorder": false
@@ -2183,6 +2187,16 @@
    "preorder": true
   },
   {
+   "shop": "https://superelf-cards.de",
+   "title": "Riftbound: League of Legends TCG - Radiance - Display - EN",
+   "price": 128.0,
+   "available": true,
+   "url": "https://superelf-cards.de/products/riftbound-league-of-legends-tcg-radiance-display-en",
+   "set": "RAD",
+   "lang": "EN",
+   "preorder": false
+  },
+  {
    "shop": "https://www.yugi-oase.de",
    "title": "Riftbound: League of Legends - RADIANCE - Display - englisch -",
    "price": 129.0,
@@ -2203,6 +2217,16 @@
    "preorder": false
   },
   {
+   "shop": "https://dualitygames.de",
+   "title": "Riftbound - Radiance - Booster-Box",
+   "price": 129.99,
+   "available": true,
+   "url": "https://dualitygames.de/products/riftbound-radiance-booster-box",
+   "set": "RAD",
+   "lang": null,
+   "preorder": false
+  },
+  {
    "shop": "https://tcgtavern.de",
    "title": "Vorbestellung: Riftbound: League of Legends TCG - Radiance Booster Display 24 Booster (EN)",
    "price": 129.99,
@@ -2213,21 +2237,21 @@
    "preorder": true
   },
   {
-   "shop": "https://www.moon-shadow.de",
-   "title": "Riftbound League of Legends - Radiance - Booster-Display - englisch",
-   "price": 129.99,
-   "available": true,
-   "url": "https://www.moon-shadow.de/products/riftbound-league-of-legends-radiance-booster-display-englisch",
-   "set": "RAD",
-   "lang": "EN",
-   "preorder": false
-  },
-  {
    "shop": "https://goose-games.de",
    "title": "Riftbound: League of Legends-TCG – Radiance-Boosterbox - EN",
    "price": 129.99,
    "available": true,
    "url": "https://goose-games.de/products/riftbound-league-of-legends-tcg-radiance-boosterbox-en",
+   "set": "RAD",
+   "lang": "EN",
+   "preorder": false
+  },
+  {
+   "shop": "https://www.moon-shadow.de",
+   "title": "Riftbound League of Legends - Radiance - Booster-Display - englisch",
+   "price": 129.99,
+   "available": true,
+   "url": "https://www.moon-shadow.de/products/riftbound-league-of-legends-radiance-booster-display-englisch",
    "set": "RAD",
    "lang": "EN",
    "preorder": false
@@ -2273,11 +2297,11 @@
    "preorder": false
   },
   {
-   "shop": "https://holoncardshop.com",
-   "title": "Riftbound Display &#8211; Radiance &#8211; Englisch",
-   "price": 139.99,
+   "shop": "https://www.chasethemcards.de",
+   "title": "Riftbound Display - Radiance (24 Booster) (ENG)",
+   "price": 150.0,
    "available": true,
-   "url": "https://holoncardshop.com/product/riftbound-display-radiance-englisch/",
+   "url": "https://www.chasethemcards.de/products/riftbound-display-radiance-24-booster-eng",
    "set": "RAD",
    "lang": "EN",
    "preorder": false
@@ -2323,21 +2347,21 @@
    "preorder": false
   },
   {
-   "shop": "https://heartforcards.com",
-   "title": "Riftbound Spiritforged Jumbo Booster Box – Chinesische Version | 12 Boosterpacks | 14 Karten pro Pack | TCG Display",
-   "price": 99.99,
-   "available": true,
-   "url": "https://heartforcards.com/products/riftbound-spiritforged-jumbo-booster-box-chinesische-version-12-boosterpacks-14-karten-pro-pack-tcg-display",
-   "set": "SFD",
-   "lang": "ZH",
-   "preorder": false
-  },
-  {
    "shop": "https://www.geeksheaven.de",
    "title": "Riftbound League of Legends TCG Spiritforged Jumbo Display (chinesisch)",
    "price": 99.99,
    "available": true,
    "url": "https://www.geeksheaven.de/products/riftbound-league-of-legends-tcg-spiritforged-jumbo-display-chinesisch",
+   "set": "SFD",
+   "lang": "ZH",
+   "preorder": false
+  },
+  {
+   "shop": "https://heartforcards.com",
+   "title": "Riftbound Spiritforged Jumbo Booster Box – Chinesische Version | 12 Boosterpacks | 14 Karten pro Pack | TCG Display",
+   "price": 99.99,
+   "available": true,
+   "url": "https://heartforcards.com/products/riftbound-spiritforged-jumbo-booster-box-chinesische-version-12-boosterpacks-14-karten-pro-pack-tcg-display",
    "set": "SFD",
    "lang": "ZH",
    "preorder": false
