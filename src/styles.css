@@ -1195,12 +1195,12 @@ body[data-removing] .deck-split > section:not([data-remove-src]) {
   color: var(--muted);
 }
 .hand-grid {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(118px, 1fr));
   gap: 10px;
   align-items: stretch;
 }
 .hand-card {
-  flex: 1 1 0;
   min-width: 0;
   position: relative;
   border: 2px solid var(--border);
@@ -1259,6 +1259,16 @@ body[data-removing] .deck-split > section:not([data-remove-src]) {
   color: var(--muted);
   margin-top: 2px;
 }
+.hand-card.affordable { border-color: rgb(var(--positive-rgb) / .7); }
+.hand-card.champion-zone { border-style: dashed; border-color: rgb(var(--primary-rgb) / .55); cursor: default; }
+.hand-card.champion-zone.affordable { border-color: rgb(var(--positive-rgb) / .7); }
+.hand-card:disabled { cursor: default; }
+.hand-card:disabled:hover { transform: none; }
+.hand-order { display: inline-flex; gap: 4px; }
+.hand-order .chip { min-height: 30px; padding: 0 12px; font-size: 12.5px; }
+.hand-status { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; font-size: 13px; }
+.hand-runes { display: inline-flex; align-items: center; gap: 8px; }
+.hand-runes > span { display: inline-flex; align-items: center; gap: 2px; font-variant-numeric: tabular-nums; }
 .hand-empty-msg {
   padding: 10px 4px;
   color: var(--muted);

@@ -1,10 +1,10 @@
 import type { Deck, DeckCard } from './types'
-import { sectionOf } from './deckHelpers'
+import { sectionOf } from './deckHelpers.ts'
 
-/** Opening hand size (Riftbound CR / InkSight consensus). */
+/** Opening hand size (Core Rules 116: players each draw 4). */
 export const OPENING_HAND_SIZE = 4
 
-/** Max cards bottomed in a single mulligan. */
+/** Max cards set aside in the mulligan (Core Rules 117.1). */
 export const MULLIGAN_MAX = 2
 
 /** Sections that form the draw library (Main Deck only).
@@ -12,16 +12,25 @@ export const MULLIGAN_MAX = 2
  * Legend / Battlefield / Rune / Sideboard stay excluded. */
 export const DRAW_POOL_SECTIONS = new Set(['main'] as const)
 
-/** Expand Main Deck by qty into a multiset of card ids (Champion excluded). */
-export function buildDrawPool(cards: DeckCard[]): string[] {
+/** Expand one deck section by qty into a multiset of card ids. */
+function expandSection(cards: DeckCard[], section: 'main' | 'rune'): string[] {
   const pool: string[] = []
   for (const dc of cards) {
-    const sec = sectionOf(dc)
-    if (sec !== 'main') continue
+    if (sectionOf(dc) !== section) continue
     const n = Math.max(0, Math.floor(dc.qty) || 0)
     for (let i = 0; i < n; i++) pool.push(dc.id)
   }
   return pool
+}
+
+/** Expand Main Deck by qty into a multiset of card ids (Champion excluded). */
+export function buildDrawPool(cards: DeckCard[]): string[] {
+  return expandSection(cards, 'main')
+}
+
+/** The Rune Deck as card ids, one per rune. */
+export function buildRunePool(cards: DeckCard[]): string[] {
+  return expandSection(cards, 'rune')
 }
 
 export function drawPoolSize(deck: Deck): number {
@@ -48,20 +57,53 @@ export type DealResult = {
   library: string[]
 }
 
-/** Shuffle the draw pool and deal an opening hand of OPENING_HAND_SIZE. */
-export function dealOpeningHand(cards: DeckCard[]): DealResult | null {
+/** A test game: hand and Main Deck, plus the runes on the board and the rest of the Rune Deck. */
+export type HandState = DealResult & {
+  runes: string[]
+  runeLibrary: string[]
+  /** turns played so far; 0 = still in setup (mulligan allowed) */
+  turn: number
+}
+
+/** Shuffle Main and Rune Deck and draw an opening hand of OPENING_HAND_SIZE (Core Rules 114, 116). */
+export function dealOpeningHand(cards: DeckCard[]): HandState | null {
   const pool = buildDrawPool(cards)
   if (pool.length < OPENING_HAND_SIZE) return null
   const shuffled = shuffleCopy(pool)
-  const hand = shuffled.slice(0, OPENING_HAND_SIZE)
-  const library = shuffled.slice(OPENING_HAND_SIZE)
-  return { hand, library }
+  return {
+    hand: shuffled.slice(0, OPENING_HAND_SIZE),
+    library: shuffled.slice(OPENING_HAND_SIZE),
+    runes: [],
+    runeLibrary: shuffleCopy(buildRunePool(cards)),
+    turn: 0,
+  }
+}
+
+/** Runes channeled in one of your turns: 2 (Core Rules 431.4.a), plus 1 on your first turn when you go
+ *  second (1v1, 487.7 / 488.7). */
+export function runesToChannel(turn: number, goingFirst: boolean) {
+  return 2 + (turn === 1 && !goingFirst ? 1 : 0)
+}
+
+/** Your next turn: Channel Phase, then Draw Phase (Core Rules 315.3, 315.4). In 1v1 the player going
+ *  first draws on turn 1 too; only the 3 player modes skip that draw. */
+export function playTurn(s: HandState, goingFirst: boolean): HandState {
+  const turn = s.turn + 1
+  const n = Math.min(runesToChannel(turn, goingFirst), s.runeLibrary.length)
+  const draw = s.library.length ? 1 : 0
+  return {
+    hand: [...s.hand, ...s.library.slice(0, draw)],
+    library: s.library.slice(draw),
+    runes: [...s.runes, ...s.runeLibrary.slice(0, n)],
+    runeLibrary: s.runeLibrary.slice(n),
+    turn,
+  }
 }
 
 /**
- * Mulligan: put selected hand indices on the bottom of the remaining library
- * in random order, then draw that many replacements from the top.
- * One mulligan per deal — caller enforces mulliganUsed.
+ * Mulligan (Core Rules 117): set aside up to 2 cards, draw as many, then recycle the set-aside cards
+ * (bottom of the Main Deck, random order when several, 417.5). Once per game, before turn 1;
+ * the caller enforces that.
  */
 export function applyMulligan(
   hand: string[],
@@ -89,10 +131,4 @@ export function applyMulligan(
   nextLib.push(...shuffleCopy(bottomed))
 
   return { hand: [...keep, ...drawn], library: nextLib }
-}
-
-/** Draw exactly one card from the top of the remaining library. */
-export function drawTopCard(hand: string[], library: string[]): DealResult | null {
-  if (library.length < 1) return null
-  return { hand: [...hand, library[0]!], library: library.slice(1) }
 }
