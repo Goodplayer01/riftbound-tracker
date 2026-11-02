@@ -1,5 +1,5 @@
 import { readFileSync } from 'node:fs'
-import { canAddToSection, copyName, coverDeckLines, groupPrints, parseDeckImport, printRuns, printSlots } from '../src/deckHelpers.ts'
+import { canAddToSection, copiesBySection, copyName, coverDeckLines, groupPrints, parseDeckImport, printRuns, printSlots } from '../src/deckHelpers.ts'
 
 function assert(cond, msg) {
   if (!cond) throw new Error(msg)
@@ -85,4 +85,16 @@ g = printSlots([...singles.slice(0, 4), ...kaisa], byId, 7)
 assert(JSON.stringify(g.slots.slice(4)) === '[[4,0],[5,0],[6,0]]' && g.rows === 1, 'a run that fits stays in the row')
 g = printSlots([singles[0], ...kaisa], byId, 2)
 assert(JSON.stringify(g.slots) === '[[0,0],[0,1],[1,1],[0,2]]' && g.rows === 3, `a run wider than a row wraps: ${JSON.stringify(g)}`)
+
+// Where else a card sits: main deck and sideboard copies by name, prints added up, other sections ignored.
+const split = copiesBySection([
+  { id: 'ogn-039-298', qty: 2, section: 'main' },
+  { id: 'ogn-039a-298', qty: 1, section: 'sideboard' },
+  { id: 'ven-sp1-006', qty: 1, section: 'sideboard' },
+  { id: singles[0].id, qty: 3, section: 'main' },
+  { id: 'nope', qty: 1, section: 'main' },
+], byId)
+const kaisaSplit = split.get(copyName(byId.get('ogn-039-298')))
+assert(kaisaSplit.main === 2 && kaisaSplit.sideboard === 2 && kaisaSplit.champion === undefined, `prints count per section: ${JSON.stringify(kaisaSplit)}`)
+assert(JSON.stringify(split.get(copyName(byId.get(singles[0].id)))) === '{"main":3}' && split.size === 2, 'single-section cards and unknown ids')
 console.log('ok')

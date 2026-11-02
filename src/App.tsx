@@ -20,6 +20,9 @@ import { LENT_HEADER, formatBorrowList, parseBorrowList, settleBorrowed } from '
 import {
   SECTION_CAPS,
   SECTION_LABEL,
+  SPLIT_SECTIONS,
+  copiesBySection,
+  copyName,
   SECTION_ORDER,
   isDeckComplete,
   canAddToSection,
@@ -2839,6 +2842,18 @@ export default function App() {
     const cardsIn = deck.cards.filter((dc) => sectionOf(dc) === sec)
     const cover = deckCoverage(deck)
     const deckTotals = deckTotalQtyById(deck.cards)
+    const bySection = copiesBySection(deck.cards, byId)
+    /** "2× in Main Deck" pills: the same card (any print) in the deck's other playing sections. */
+    const elsewherePills = (c: Card) => {
+      if (!(SPLIT_SECTIONS as readonly DeckSection[]).includes(sec)) return null
+      const split = bySection.get(copyName(c)) || {}
+      const total = SPLIT_SECTIONS.reduce((s, x) => s + (split[x] || 0), 0)
+      return SPLIT_SECTIONS.filter((x) => x !== sec && split[x]).map((x) => (
+        <span key={x} className="ban-badge elsewhere-badge" title={t(lang, 'decks.elsewhereHint', { n: total })}>
+          {t(lang, `decks.elsewhere.${x}`, { n: split[x]! })}
+        </span>
+      ))
+    }
     // Rune deck: plain runes as one big counter per Legend domain, alt art runes stay as rows.
     const runeDomains = sec === 'rune' ? getLegendDomains(deck.cards, byId) || [] : []
     const isPlainIn = (dc: (typeof cardsIn)[number]) => { const c = byId.get(dc.id); return !!c && isPlainRune(c) }
@@ -2949,6 +2964,7 @@ export default function App() {
                     <SetBadge c={c} /><BanBadge status={banStatus(c)} lang={lang} />
                     <ErrataBadge show={!!errataFor(c)} lang={lang} />
                     <BorrowedBadge from={borrowedInFrom.get(c.id)} lang={lang} />
+                    {elsewherePills(c)}
                     {otherDeckPills(c.id, deck)}
                   </div>
                   <div className="sub">

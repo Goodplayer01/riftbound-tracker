@@ -62,7 +62,7 @@ This is where it all started: see at a glance what you have, what's missing and 
 
 Building decks is half the fun of Riftbound, so this part got a lot of love.
 
-- Legend, Champion, Main Deck (39), Battlefields, Runes and Sideboard, with the usual limits. The 3 copy limit counts per full name, so "Evelynn, in Control" and "Evelynn, Entrancing" are separate cards
+- Legend, Champion, Main Deck (39), Battlefields, Runes and Sideboard, with the usual limits. The 3 copy limit counts per full name, so "Evelynn, in Control" and "Evelynn, Entrancing" are separate cards. A card split between main deck and sideboard says so on both rows ("+1× in Sideboard", "+2× in Main Deck")
 - Find a Legend by typing the champion name
 - Drag cards from the search list into a deck section, and drag them out again to remove one copy per drag. The search list shows how many copies are already in the deck
 - Every deck card shows how many you own and how many the deck needs, with buttons to add or remove normal and foil copies in your collection. Alt arts, overnumbered, signed and reprinted versions of a card count as the same card, so owning the alt art Kai'Sa covers the normal one in your deck and in the missing list
