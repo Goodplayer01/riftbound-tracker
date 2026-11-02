@@ -3589,13 +3589,18 @@ export default function App() {
       else if (sharePreview) setSharePreview(null)
       else if (deckExportText != null) setDeckExportText(null)
       else if (clearSec) setClearSec(null)
-      else if (handPromptDeckId) setHandPromptDeckId(null)
       else if (handDeckId && !cardLightbox) setHandDeckId(null)
       else setCardLightbox(null)
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [cardLightbox, clearSec, deckExportText, sharePreview, cmExport, lbNav, handPromptDeckId, handDeckId])
+  }, [cardLightbox, clearSec, deckExportText, sharePreview, cmExport, lbNav, handDeckId])
+
+  useEffect(() => {
+    if (!handPromptDeckId) return
+    const timer = window.setTimeout(() => setHandPromptDeckId(null), 12000)
+    return () => window.clearTimeout(timer)
+  }, [handPromptDeckId])
 
   const matchupDeck = matchupDeckId ? decks.find((d) => d.id === matchupDeckId) : undefined
   const matchupLegendId = matchupDeck?.cards.find((c) => sectionOf(c) === 'legend')?.id
@@ -6223,15 +6228,18 @@ export default function App() {
                   })()}
 
       {handPrompt && (
-        <div className="card-lightbox" role="dialog" aria-modal="true" aria-labelledby="hand-prompt-title" onClick={() => setHandPromptDeckId(null)}>
-          <div className="panel confirm-box" onClick={(e) => e.stopPropagation()}>
-            <h2 id="hand-prompt-title">{t(lang, 'hand.promptTitle')}</h2>
-            <p className="help" style={{ margin: 0 }}>{t(lang, 'hand.prompt', { deck: handPrompt.name })}</p>
-            <div className="confirm-actions">
-              <button type="button" className="btn small" onClick={() => setHandPromptDeckId(null)}>{t(lang, 'hand.later')}</button>
+        // A notification, not a dialog: it slides in at the bottom right and blocks nothing.
+        <div key={handPrompt.id} className="app-toast" role="status" aria-live="polite">
+          <span className="app-toast-icon" aria-hidden><Icon name="hand" size={20} /></span>
+          <div className="app-toast-body">
+            <b>{t(lang, 'hand.promptTitle')}</b>
+            <p>{t(lang, 'hand.prompt', { deck: handPrompt.name })}</p>
+            <div className="app-toast-actions">
               <button type="button" className="btn small primary" onClick={() => openHandTester(handPrompt)}><Icon name="hand" />{t(lang, 'hand.open')}</button>
+              <button type="button" className="btn small" onClick={() => setHandPromptDeckId(null)}>{t(lang, 'hand.later')}</button>
             </div>
           </div>
+          <button type="button" className="app-toast-close" aria-label={t(lang, 'decks.shareClose')} onClick={() => setHandPromptDeckId(null)}><Icon name="x" size={14} /></button>
         </div>
       )}
 
