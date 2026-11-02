@@ -1,4 +1,4 @@
-import { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState, type DragEvent as ReactDragEvent, type MouseEvent as ReactMouseEvent, type PointerEvent as ReactPointerEvent, type ReactNode, type RefObject } from 'react'
+import { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState, type CSSProperties, type DragEvent as ReactDragEvent, type MouseEvent as ReactMouseEvent, type PointerEvent as ReactPointerEvent, type ReactNode, type RefObject } from 'react'
 import { fetchRemotePrices, loadBundledPrices, loadCachedPrices, newerPriceBook } from './prices'
 import type { BorrowedCard, BorrowedGroup, Card, Catalog, Deck, DeckSection, Owned, PriceBook, PriceEntry } from './types'
 import { backupOnce, loadAlertsSeen, loadBorrowed, loadCollection, loadCopies, loadDecks, loadSaleAsks, loadSales, loadSoldLog, loadWish, loadWishTargets, saveAlertsSeen, saveBorrowed, saveCollection, saveCopies, saveDecks, saveSaleAsks, saveSales, saveSoldLog, saveWish, saveWishTargets, type Collection } from './storage'
@@ -241,9 +241,25 @@ function isControlClick(e: ReactMouseEvent) {
 }
 
 /** Set code pill next to the card name; full set name on hover. */
+/** Set tag colours, taken from each set's display box (light tones, so the code reads on dark and amber
+ *  backgrounds). Nexus Night sets ("OGN-NN") use their base set's colour; unknown sets keep the amber tag. */
+const SET_RGB: Record<string, string> = {
+  OGN: '129 140 248', // Origins: navy box (indigo, so it does not look like the blue Errata pill)
+  OGS: '148 170 196', // Proving Grounds: slate box
+  SFD: '240 113 103', // Spiritforged: ivory box, red title
+  UNL: '192 132 252', // Unleashed: purple box
+  VEN: '244 114 182', // Vendetta: magenta box
+  RAD: '103 232 249', // Radiance: sky blue box (cyan, apart from Errata)
+}
+
 function SetBadge({ c }: { c: Card }) {
   if (!c.set) return null
-  return <span className="ban-badge set-badge" title={c.setName || c.set}>{c.set}</span>
+  const rgb = SET_RGB[c.set.split('-')[0]]
+  return (
+    <span className={`ban-badge set-badge${rgb ? ' set-tinted' : ''}`} style={rgb ? ({ '--set-rgb': rgb } as CSSProperties) : undefined} title={c.setName || c.set}>
+      {c.set}
+    </span>
+  )
 }
 
 function cardWord(lang: Lang, n: number) {

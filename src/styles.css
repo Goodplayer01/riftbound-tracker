@@ -1096,6 +1096,11 @@ body[data-removing] .deck-split > section:not([data-remove-src]) {
 .in-deck-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .in-deck-flag b { flex-shrink: 0; font-weight: 700; }
 .flag.in-deck-flag:hover { background: rgb(var(--primary-rgb) / .3); }
+.ban-badge.set-badge.set-tinted {
+  border-color: rgb(var(--set-rgb) / .55);
+  background: rgb(var(--set-rgb) / .14);
+  color: rgb(var(--set-rgb));
+}
 .ban-badge.set-badge {
   border-color: rgb(var(--primary-rgb) / .45);
   background: rgb(var(--primary-rgb) / .12);
