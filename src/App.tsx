@@ -240,23 +240,25 @@ function isControlClick(e: ReactMouseEvent) {
   return !!(e.target as HTMLElement).closest('button, input, select, textarea, a, [role="button"]')
 }
 
-/** Set code pill next to the card name; full set name on hover. */
 /** Set tag colours, taken from each set's display box (light tones, so the code reads on dark and amber
- *  backgrounds). Nexus Night sets ("OGN-NN") use their base set's colour; unknown sets keep the amber tag. */
-const SET_RGB: Record<string, string> = {
-  OGN: '129 140 248', // Origins: navy box (indigo, so it does not look like the blue Errata pill)
-  OGS: '148 170 196', // Proving Grounds: slate box
-  SFD: '240 113 103', // Spiritforged: ivory box, red title
-  UNL: '192 132 252', // Unleashed: purple box
-  VEN: '244 114 182', // Vendetta: magenta box
-  RAD: '103 232 249', // Radiance: sky blue box (cyan, apart from Errata)
+ *  backgrounds): [main, second] where a box has two (the second one colours the border and blends into the
+ *  fill). Nexus Night sets ("OGN-NN") use their base set's colours; unknown sets keep the amber tag. */
+const SET_RGB: Record<string, [string, string?]> = {
+  OGN: ['129 140 248'], // Origins: navy box (indigo, so it does not look like the blue Errata pill)
+  OGS: ['148 170 196'], // Proving Grounds: slate box
+  SFD: ['244 238 228', '240 90 90'], // Spiritforged: white and red box
+  UNL: ['192 132 252'], // Unleashed: purple box
+  VEN: ['110 231 150', '248 90 110'], // Vendetta: green and red box
+  RAD: ['103 232 249'], // Radiance: sky blue box (cyan, apart from Errata)
 }
 
+/** Set code pill next to the card name; full set name on hover. */
 function SetBadge({ c }: { c: Card }) {
   if (!c.set) return null
-  const rgb = SET_RGB[c.set.split('-')[0]]
+  const tones = SET_RGB[c.set.split('-')[0]]
+  const style = tones ? ({ '--set-rgb': tones[0], '--set-rgb2': tones[1] ?? tones[0] } as CSSProperties) : undefined
   return (
-    <span className={`ban-badge set-badge${rgb ? ' set-tinted' : ''}`} style={rgb ? ({ '--set-rgb': rgb } as CSSProperties) : undefined} title={c.setName || c.set}>
+    <span className={`ban-badge set-badge${tones ? ' set-tinted' : ''}`} style={style} title={c.setName || c.set}>
       {c.set}
     </span>
   )
