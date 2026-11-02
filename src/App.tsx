@@ -72,6 +72,7 @@ import {
 import { StoresMap, type MapCenter } from './StoresMap'
 import { StoreDisplays } from './StoreDisplays'
 import { RoadmapView } from './RoadmapView'
+import { cardMatchesQuery } from './search'
 import {
   MULLIGAN_MAX,
   OPENING_HAND_SIZE,
@@ -1413,19 +1414,6 @@ export default function App() {
     return String(c.set || '').endsWith('-NN')
   }
 
-  function cardSearchHay(c: Card) {
-    return [
-      c.name,
-      c.subtitle || '',
-      c.code,
-      c.id,
-      ...(c.domains || []),
-      ...(c.types || []),
-      c.rarity || '',
-      ...(c.tags || []),
-    ].join(' ').toLowerCase()
-  }
-
   /** Domain, signed/over/promo, and search haystack. Set and type stay catalog-only. */
   function matchesSharedFilters(c: Card, query: string) {
     if (!cardMatchesDomains(c.domains, domainFilter)) return false
@@ -1438,8 +1426,7 @@ export default function App() {
       if (!hit) return false
     }
     if (!abilityFilter.every((id) => ABILITIES.find((a) => a.id === id)?.re.test(c.rulesText || ''))) return false
-    if (!query) return true
-    return cardSearchHay(c).includes(query)
+    return cardMatchesQuery(c, query)
   }
 
   function matchesFilters(c: Card, query: string) {
@@ -2152,10 +2139,7 @@ export default function App() {
   const saleHits = (saleOwnedOnly ? ownedCards : cards.filter((c) => !isPlainRune(c))).filter((c) => {
     if (!saleQuery) return true
     return (
-      c.name.toLowerCase().includes(saleQuery) ||
-      (c.subtitle || '').toLowerCase().includes(saleQuery) ||
-      c.code.toLowerCase().includes(saleQuery) ||
-      displayName(c).toLowerCase().includes(saleQuery)
+      cardMatchesQuery(c, saleQuery)
     )
   }).slice(0, 80)
 
@@ -2258,7 +2242,7 @@ export default function App() {
     const q = buyQ.trim().toLowerCase()
     if (q.length < 2) return []
     return cards
-      .filter((c) => !isPlainRune(c) && (displayName(c).toLowerCase().includes(q) || c.code.toLowerCase().includes(q)))
+      .filter((c) => !isPlainRune(c) && cardMatchesQuery(c, q))
       .sort((a, b) => ownedQty(collection[b.id]) - ownedQty(collection[a.id]))
       .slice(0, 6)
   }, [buyQ, cards, collection])
@@ -5030,13 +5014,7 @@ export default function App() {
                       const required = requiredDomainsFromDeck(activeDeck.cards, byId)
                       if (!legendCoversRequiredDomains(c, required)) return false
                     }
-                    const query = q.trim().toLowerCase()
-                    if (!query) return true
-                    return (
-                      c.name.toLowerCase().includes(query) ||
-                      (c.subtitle || '').toLowerCase().includes(query) ||
-                      c.code.toLowerCase().includes(query)
-                    )
+                    return cardMatchesQuery(c, q)
                   })
                   .slice(0, 100)
                   .map((c) => {
@@ -5341,12 +5319,7 @@ export default function App() {
                     if (!from && ownedQty(collection[c.id]) <= 0) return false
                     if (remainingToLend(c.id) <= 0) return false
                     if (setFilter && c.set !== setFilter) return false
-                    if (!query) return true
-                    return (
-                      c.name.toLowerCase().includes(query) ||
-                      (c.subtitle || '').toLowerCase().includes(query) ||
-                      c.code.toLowerCase().includes(query)
-                    )
+                    return cardMatchesQuery(c, query)
                   })
                   if (owned.length === 0) {
                     return <div className="empty">{t(lang, 'borrowed.noneOwned')}</div>
