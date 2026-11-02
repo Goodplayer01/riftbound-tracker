@@ -202,9 +202,10 @@ export function copiesBySection(cards: DeckCard[], byId: Map<string, Card>) {
   return out
 }
 
-/** Name without punctuation, so "Evelynn in Control" (deck sites drop the comma) matches "Evelynn, in Control". */
+/** Name without punctuation, so "Evelynn in Control" (deck sites drop the comma) matches "Evelynn, in Control"
+ *  and "Khazix" matches "Kha'Zix". */
 function loose(s: string) {
-  return norm(s.replace(/[,'’.\-]/g, ' '))
+  return norm(s.replace(/['’]/g, '').replace(/[,.\-]/g, ' '))
 }
 
 /** Prefer base print (non-signed / non-ON / non-alt). */
