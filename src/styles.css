@@ -803,7 +803,7 @@ textarea.field { min-height: 160px; resize: vertical; font-family: ui-monospace,
 .list-item .grow { min-width: 0; }
 .card-float-preview {
   position: fixed;
-  z-index: 9999;
+  z-index: 13000; /* above modals: the hand tester window shows previews too */
   pointer-events: none;
   width: 240px;
   border-radius: 12px;
@@ -1156,39 +1156,11 @@ body[data-removing] .deck-split > section:not([data-remove-src]) {
 }
 
 /* Hand Tester (Decks tab) */
-.hand-tester {
-  margin-top: 14px;
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  background: var(--panel2);
-  overflow: hidden;
-}
-.hand-tester-head {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 10px 12px;
-  cursor: pointer;
-  user-select: none;
-  border-bottom: 1px solid transparent;
-  list-style: none;
-}
-.hand-tester-head::-webkit-details-marker { display: none; }
-.hand-tester[open] .hand-tester-head {
-  border-bottom-color: var(--border);
-  background: rgb(var(--primary-rgb) / .05);
-}
-.hand-tester-head:hover { background: rgb(var(--primary-rgb) / .06); }
-.hand-tester-title {
-  font-weight: 650;
-  letter-spacing: .03em;
-  color: var(--accent2);
-  flex: 1;
-}
-.hand-tester-chevron { color: var(--muted); font-size: 12px; }
-.hand-tester-chevron::before { content: '▸'; }
-.hand-tester[open] .hand-tester-chevron::before { content: '▾'; }
-.hand-tester-body { padding: 12px; display: grid; gap: 10px; }
+/* Hand tester window (Test hand, next to Share). */
+.hand-box { width: min(1180px, 100%); max-height: calc(100vh - 36px); overflow-y: auto; display: grid; gap: 12px; align-content: start; }
+.hand-box-head { display: flex; align-items: center; gap: 10px; }
+.hand-box-head h2 { margin: 0; flex: 1; min-width: 0; font-size: 18px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.hand-tester-body { display: grid; gap: 10px; }
 .hand-tester-controls {
   display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
 }
@@ -1196,13 +1168,15 @@ body[data-removing] .deck-split > section:not([data-remove-src]) {
   font-size: 12px;
   color: var(--muted);
 }
+/* One row: the cards share it and get narrower as the hand grows. */
 .hand-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(118px, 1fr));
-  gap: 10px;
+  display: flex;
+  gap: 8px;
   align-items: stretch;
 }
 .hand-card {
+  flex: 1 1 0;
+  max-width: 150px;
   min-width: 0;
   position: relative;
   border: 2px solid var(--border);
@@ -1260,6 +1234,9 @@ body[data-removing] .deck-split > section:not([data-remove-src]) {
   font-size: 11px;
   color: var(--muted);
   margin-top: 2px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .hand-card.affordable { border-color: rgb(var(--positive-rgb) / .7); }
 .hand-card.champion-zone { border-style: dashed; border-color: rgb(var(--primary-rgb) / .55); cursor: default; }
