@@ -6121,8 +6121,9 @@ export default function App() {
                           <div className="meta">
                             <div className="name">{name}</div>
                             <div className="sub">
+                              {/* Cost first: a narrow card cuts the end of this line. */}
+                              {c?.energy != null && <><RulesText text={`[${c.energy}]`} /> · </>}
                               {idx == null ? t(lang, 'hand.championZone') : c?.code}
-                              {c?.energy != null && <> · <RulesText text={`[${c.energy}]`} /></>}
                             </div>
                           </div>
                         </button>
