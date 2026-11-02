@@ -1,13 +1,27 @@
 import type { Card, Deck, DeckCard } from './types'
-import { groupPrints, printRuns, printSlots, sectionOf } from './deckHelpers'
+import { groupPrints, printRuns, printSlots, sectionOf } from './deckHelpers.ts'
 
 // Same palette as the app: near-black canvas, amber accent, Apple grey for secondary text.
 const BG = '#0f0f11'
 const AMBER = '#f5a623'
 const MUTED = '#98989f'
 const FONT = '"Inter Variable", system-ui, sans-serif'
-/** Fixed 3× logical layout so exported PNG stays crisp on all displays. */
+/** 3× logical layout so the exported PNG stays crisp, unless that breaks the limits below. */
 const RENDER_SCALE = 3
+/** Share image limits: at most 16 megapixels and 8 MB, so chat apps take it without recompressing. */
+export const SHARE_MAX_PIXELS = 16_000_000
+export const SHARE_MAX_BYTES = 8_000_000
+
+/** Render scale for a layout of width × height logical px: 3×, or less when that would pass 16 MP. */
+export function shareScale(width: number, height: number) {
+  return Math.min(RENDER_SCALE, Math.sqrt(SHARE_MAX_PIXELS / (width * height)))
+}
+
+/** Bytes of the file behind a base64 data URL. */
+export function dataUrlBytes(dataUrl: string) {
+  const b64 = dataUrl.slice(dataUrl.indexOf(',') + 1)
+  return Math.floor((b64.length * 3) / 4) - (b64.endsWith('==') ? 2 : b64.endsWith('=') ? 1 : 0)
+}
 const DOMAINS = new Set(['Fury', 'Calm', 'Mind', 'Body', 'Chaos', 'Order', 'Colorless'])
 
 type Loaded = HTMLImageElement | null
@@ -278,12 +292,13 @@ export async function renderDeckShareCanvas(
     const contentTop = pad + headerH + 18
     const height = contentTop + Math.max(leftStack, mainBlockH + sideBlockH) + pad
 
+    const scale = shareScale(width, height)
     const canvas = document.createElement('canvas')
-    canvas.width = Math.round(width * RENDER_SCALE)
-    canvas.height = Math.round(height * RENDER_SCALE)
+    canvas.width = Math.floor(width * scale)
+    canvas.height = Math.floor(height * scale)
     const ctx = canvas.getContext('2d')
     if (!ctx) return { ok: false, error: 'canvas' }
-    ctx.setTransform(RENDER_SCALE, 0, 0, RENDER_SCALE, 0, 0)
+    ctx.setTransform(scale, 0, 0, scale, 0, 0)
     ctx.imageSmoothingEnabled = true
     ctx.imageSmoothingQuality = 'high'
 
@@ -389,7 +404,22 @@ export async function renderDeckShareCanvas(
     }
 
     const fileName = `${safeFileName(deck.name)}_share.png`
-    const dataUrl = canvas.toDataURL('image/png')
+    let out = canvas
+    let dataUrl = out.toDataURL('image/png')
+    // Still over 8 MB (busy art compresses badly): scale the finished image down until it fits.
+    for (let tries = 0; dataUrlBytes(dataUrl) > SHARE_MAX_BYTES && tries < 6; tries++) {
+      const f = Math.sqrt(SHARE_MAX_BYTES / dataUrlBytes(dataUrl)) * 0.95
+      const smaller = document.createElement('canvas')
+      smaller.width = Math.floor(out.width * f)
+      smaller.height = Math.floor(out.height * f)
+      const sctx = smaller.getContext('2d')
+      if (!sctx) break
+      sctx.imageSmoothingEnabled = true
+      sctx.imageSmoothingQuality = 'high'
+      sctx.drawImage(out, 0, 0, smaller.width, smaller.height)
+      out = smaller
+      dataUrl = out.toDataURL('image/png')
+    }
     return { ok: true, fileName, dataUrl }
   } catch (e) {
     return { ok: false, error: String(e) }
