@@ -988,7 +988,9 @@ button.deck-stat {
 button.deck-stat:hover { background: var(--fill-hover); }
 .deck-stat small { display: inline-flex; align-items: center; gap: 4px; }
 .deck-hero-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-.deck-hero-delete { margin-left: auto; }
+/* Export / Import / delete beside the deck name, right aligned. */
+.deck-hero-title { flex-wrap: wrap; }
+.deck-hero-tools { margin-left: auto; align-self: center; display: flex; align-items: center; gap: 4px; }
 .deck-acc-name-input {
   flex: 1 1 140px;
   min-width: 0;
@@ -1094,6 +1096,11 @@ body[data-removing] .deck-split > section:not([data-remove-src]) {
 .in-deck-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .in-deck-flag b { flex-shrink: 0; font-weight: 700; }
 .flag.in-deck-flag:hover { background: rgb(var(--primary-rgb) / .3); }
+.ban-badge.set-badge.set-tinted {
+  border-color: rgb(var(--set-rgb2) / .6);
+  background: linear-gradient(90deg, rgb(var(--set-rgb) / .16), rgb(var(--set-rgb2) / .16));
+  color: rgb(var(--set-rgb));
+}
 .ban-badge.set-badge {
   border-color: rgb(var(--primary-rgb) / .45);
   background: rgb(var(--primary-rgb) / .12);
@@ -1186,10 +1193,39 @@ body[data-removing] .deck-split > section:not([data-remove-src]) {
 .hand-box { width: min(1180px, 100%); max-height: calc(100vh - 36px); overflow-y: auto; display: grid; gap: 12px; align-content: start; }
 .hand-box-head { display: flex; align-items: center; gap: 10px; }
 .hand-box-head h2 { margin: 0; flex: 1; min-width: 0; font-size: 18px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.hand-tester-body { display: grid; gap: 10px; }
-.hand-tester-controls {
-  display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
+.hand-tester-body { display: grid; gap: 12px; }
+.hand-toolbar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.hand-toolbar-label { font-size: 12.5px; color: var(--muted); }
+.hand-left { margin-left: auto; }
+/* Segmented switch: who goes first. */
+.hand-seg { display: inline-flex; padding: 3px; gap: 2px; border-radius: 10px; background: var(--fill); }
+.hand-seg button {
+  border: 0; background: transparent; color: var(--muted); font: inherit; font-size: 12.5px; font-weight: 600;
+  padding: 5px 12px; border-radius: 8px; cursor: pointer;
 }
+.hand-seg button:hover { color: var(--text); }
+.hand-seg button.active { background: var(--accent); color: var(--bg); }
+/* The current step and its buttons. */
+.hand-phase {
+  display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+  padding: 12px 14px; border-radius: 12px;
+  background: var(--fill); box-shadow: inset 3px 0 0 var(--positive);
+}
+.hand-phase.setup { background: var(--primary-soft); box-shadow: inset 3px 0 0 var(--accent); }
+.hand-phase.waiting { box-shadow: inset 3px 0 0 var(--muted); }
+.hand-phase-text { display: grid; gap: 2px; flex: 1; min-width: 220px; }
+.hand-phase-step { font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--accent2); }
+.hand-phase-text b { font-size: 15px; }
+.hand-phase-text small { font-size: 12px; color: var(--muted); }
+.hand-phase-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.hand-energy { color: var(--muted); font-weight: 600; }
+/* Champion Zone and hand side by side, each with a label. */
+.hand-zones { display: flex; gap: 14px; align-items: stretch; }
+.hand-zone { display: grid; gap: 6px; align-content: start; min-width: 0; }
+.hand-zone-champ { flex: 0 1 150px; min-width: 72px; padding-right: 14px; border-right: 1px solid var(--border); }
+.hand-zone-hand { flex: 1; }
+.hand-zone-label { font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.hand-zone-champ .hand-card { max-width: none; }
 .hand-hint {
   font-size: 12px;
   color: var(--muted);
@@ -1269,9 +1305,6 @@ body[data-removing] .deck-split > section:not([data-remove-src]) {
 .hand-card.champion-zone.affordable { border-color: rgb(var(--positive-rgb) / .7); }
 .hand-card:disabled { cursor: default; }
 .hand-card:disabled:hover { transform: none; }
-.hand-order { display: inline-flex; gap: 4px; }
-.hand-order .chip { min-height: 30px; padding: 0 12px; font-size: 12.5px; }
-.hand-status { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; font-size: 13px; }
 .hand-runes { display: inline-flex; align-items: center; gap: 8px; }
 .hand-runes > span { display: inline-flex; align-items: center; gap: 2px; font-variant-numeric: tabular-nums; }
 .hand-empty-msg {
