@@ -4880,6 +4880,31 @@ export default function App() {
                                 aria-label={t(lang, 'decks.rename')}
                               />
                               <span className="deck-acc-count">{deckCount(d)} {cardWord(lang, deckCount(d))}</span>
+                              {/* File actions and delete sit up here, so the action row keeps the deck tools in one line. */}
+                              <div className="deck-hero-tools" onClick={(e) => e.stopPropagation()} onKeyDown={(e) => e.stopPropagation()}>
+                                <button type="button" className="btn small ghost" onClick={openDeckExport}>
+                                  <Icon name="download" />{t(lang, 'decks.export')}
+                                </button>
+                                <button
+                                  type="button"
+                                  className="btn small ghost"
+                                  onClick={() => {
+                                    setDeckImportOpen((v) => !v)
+                                    setDeckImportText('')
+                                  }}
+                                >
+                                  <Icon name="upload" />{t(lang, 'decks.import')}
+                                </button>
+                                <button
+                                  type="button"
+                                  className="btn small icon danger deck-trash"
+                                  title={t(lang, 'decks.delete')}
+                                  aria-label={t(lang, 'decks.delete')}
+                                  onClick={() => setDeckConfirm({ kind: 'one', id: d.id, name: d.name })}
+                                >
+                                  <Icon name="trash-2" size={16} />
+                                </button>
+                              </div>
                             </div>
                             {sums && (
                               <div className="deck-hero-stats">
@@ -4923,28 +4948,6 @@ export default function App() {
                                   <Icon name="swords" />{t(lang, 'decks.matchup')}
                                 </button>
                               )}
-                              <button type="button" className="btn small" onClick={openDeckExport}>
-                                <Icon name="download" />{t(lang, 'decks.export')}
-                              </button>
-                              <button
-                                type="button"
-                                className="btn small"
-                                onClick={() => {
-                                  setDeckImportOpen((v) => !v)
-                                  setDeckImportText('')
-                                }}
-                              >
-                                <Icon name="upload" />{t(lang, 'decks.import')}
-                              </button>
-                              <button
-                                type="button"
-                                className="btn small icon danger deck-trash deck-hero-delete"
-                                title={t(lang, 'decks.delete')}
-                                aria-label={t(lang, 'decks.delete')}
-                                onClick={() => setDeckConfirm({ kind: 'one', id: d.id, name: d.name })}
-                              >
-                                <Icon name="trash-2" size={16} />
-                              </button>
                             </div>
                           </div>
                         ) : (
@@ -6128,7 +6131,7 @@ export default function App() {
                             <div className="sub">
                               {/* Cost first: a narrow card cuts the end of this line. */}
                               {c?.energy != null && <><RulesText text={`[${c.energy}]`} /> · </>}
-                              {idx == null ? t(lang, 'hand.championZone') : c?.code}
+                              {c?.code}
                             </div>
                           </div>
                         </button>
@@ -6147,75 +6150,87 @@ export default function App() {
                               <div className="hand-empty-msg">{t(lang, 'hand.poolTooSmall')}</div>
                             ) : (
                               <>
-                                <div className="hand-tester-controls">
-                                  <button type="button" className="btn primary" onClick={() => dealNewHand()}>
-                                    <Icon name="hand" />{t(lang, 'hand.new')}
-                                  </button>
-                                  <div className="hand-order" role="group" title={t(lang, 'hand.orderHint')}>
+                                <div className="hand-toolbar">
+                                  <span className="hand-toolbar-label">{t(lang, 'hand.orderLabel')}</span>
+                                  <div className="hand-seg" role="group" aria-label={t(lang, 'hand.orderLabel')} title={t(lang, 'hand.orderHint')}>
                                     {[true, false].map((first) => (
                                       <button
                                         key={String(first)}
                                         type="button"
-                                        className={`chip${handFirst === first ? ' active' : ''}`}
+                                        className={handFirst === first ? 'active' : ''}
                                         aria-pressed={handFirst === first}
                                         // Mid-game the order cannot change, so switching it deals a new hand.
                                         onClick={() => { if (first === handFirst) return; setHandFirst(first); if (handKept) dealNewHand() }}
                                       >{t(lang, first ? 'hand.first' : 'hand.second')}</button>
                                     ))}
                                   </div>
-                                  {mulliganOpen && (
-                                    <>
-                                      <button
-                                        type="button"
-                                        className="btn"
-                                        disabled={handSelected.length < 1}
-                                        title={t(lang, 'hand.selectHint')}
-                                        onClick={runMulligan}
-                                      >
-                                        <Icon name="shuffle" />{t(lang, 'hand.mulligan')} ({handSelected.length}/{MULLIGAN_MAX})
-                                      </button>
-                                      <button type="button" className="btn" title={t(lang, 'hand.keepHint')} onClick={() => hand && finishSetup(hand)}>
-                                        <Icon name="check" />{t(lang, 'hand.keep')}
-                                      </button>
-                                    </>
-                                  )}
-                                  {hand && handKept && (
-                                    <button
-                                      type="button"
-                                      className={`btn${hand.turn === 0 ? ' primary' : ''}`}
-                                      title={t(lang, 'hand.turnHint')}
-                                      onClick={nextHandTurn}
-                                    >
-                                      <Icon name="arrow-down-to-line" />{t(lang, hand.turn === 0 ? 'hand.myTurn' : 'hand.nextTurn')}
-                                    </button>
-                                  )}
+                                  {hand && <span className="hand-hint hand-left">{t(lang, 'hand.left', { n: hand.library.length, r: hand.runeLibrary.length })}</span>}
+                                  <button type="button" className="btn small" onClick={() => dealNewHand()}>
+                                    <Icon name="rotate-ccw" />{t(lang, 'hand.new')}
+                                  </button>
                                 </div>
                                 {!hand ? (
                                   <div className="hand-empty-msg">{t(lang, 'hand.empty')}</div>
                                 ) : (
                                   <>
-                                    <div className="hand-status">
-                                      <b>{hand.turn === 0 ? t(lang, 'hand.setup') : t(lang, 'hand.turn', { n: hand.turn })}</b>
-                                      {hand.turn > 0 && (
-                                        <span className="hand-runes">
-                                          {t(lang, 'hand.runes', { n: hand.runes.length })}
-                                          {[...runeDomains].map(([d, n]) => (
-                                            <span key={d}><RulesText text={`[${d === 'Chaos' ? 'C' : d}]`} />{n}</span>
-                                          ))}
+                                    {/* What happens now, and the buttons for it, in one bar. */}
+                                    <div className={`hand-phase${mulliganOpen ? ' setup' : hand.turn === 0 ? ' waiting' : ''}`}>
+                                      <div className="hand-phase-text">
+                                        <span className="hand-phase-step">
+                                          {mulliganOpen ? t(lang, 'hand.setup') : hand.turn === 0 ? t(lang, 'hand.waitStep') : t(lang, 'hand.turn', { n: hand.turn })}
                                         </span>
-                                      )}
-                                      <span className="hand-hint">{t(lang, 'hand.left', { n: hand.library.length, r: hand.runeLibrary.length })}</span>
-                                      {hand.turn === 0 && hand.runeLibrary.length === 0 && <span className="hand-hint">{t(lang, 'hand.noRunes')}</span>}
+                                        {mulliganOpen ? (
+                                          <>
+                                            <b>{t(lang, 'hand.mulliganQ')}</b>
+                                            <small>{t(lang, 'hand.mulliganText')}</small>
+                                          </>
+                                        ) : hand.turn === 0 ? (
+                                          <>
+                                            <b>{t(lang, 'hand.waitTitle')}</b>
+                                            <small>{t(lang, 'hand.oppTurn')}</small>
+                                          </>
+                                        ) : (
+                                          <>
+                                            <b className="hand-runes">
+                                              {t(lang, 'hand.runes', { n: hand.runes.length })}
+                                              {[...runeDomains].map(([d, n]) => (
+                                                <span key={d}><RulesText text={`[${d === 'Chaos' ? 'C' : d}]`} />{n}</span>
+                                              ))}
+                                              <span className="hand-energy">{t(lang, 'hand.energy', { n: energy })}</span>
+                                            </b>
+                                            <small>{t(lang, 'hand.affordHint')}</small>
+                                          </>
+                                        )}
+                                        {hand.runes.length === 0 && hand.runeLibrary.length === 0 && <small>{t(lang, 'hand.noRunes')}</small>}
+                                      </div>
+                                      <div className="hand-phase-actions">
+                                        {mulliganOpen ? (
+                                          <>
+                                            <button type="button" className={`btn${handSelected.length ? ' primary' : ''}`} disabled={handSelected.length < 1} onClick={runMulligan}>
+                                              <Icon name="shuffle" />{t(lang, 'hand.mulligan')} ({handSelected.length}/{MULLIGAN_MAX})
+                                            </button>
+                                            <button type="button" className={`btn${handSelected.length ? '' : ' primary'}`} title={t(lang, 'hand.keepHint')} onClick={() => finishSetup(hand)}>
+                                              <Icon name="check" />{t(lang, 'hand.keep')}
+                                            </button>
+                                          </>
+                                        ) : (
+                                          <button type="button" className="btn primary" title={t(lang, 'hand.turnHint')} onClick={nextHandTurn}>
+                                            <Icon name="arrow-down-to-line" />{t(lang, hand.turn === 0 ? 'hand.myTurn' : 'hand.nextTurn')}
+                                          </button>
+                                        )}
+                                      </div>
                                     </div>
-                                    {mulliganOpen && (
-                                      <div className="hand-hint">{t(lang, 'hand.selectHint')}</div>
-                                    )}
-                                    {handKept && hand.turn === 0 && (
-                                      <div className="hand-hint">{t(lang, 'hand.oppTurn')}</div>
-                                    )}
-                                    <div className="hand-grid">
-                                      {champ && renderHandCard(champCard, champ.id, null)}
-                                      {hand.hand.map((id, idx) => renderHandCard(byId.get(id), id, idx))}
+                                    <div className="hand-zones">
+                                      {champ && (
+                                        <div className="hand-zone hand-zone-champ">
+                                          <span className="hand-zone-label">{t(lang, 'hand.championZone')}</span>
+                                          <div className="hand-grid">{renderHandCard(champCard, champ.id, null)}</div>
+                                        </div>
+                                      )}
+                                      <div className="hand-zone hand-zone-hand">
+                                        <span className="hand-zone-label">{t(lang, 'hand.zoneHand', { n: hand.hand.length })}</span>
+                                        <div className="hand-grid">{hand.hand.map((id, idx) => renderHandCard(byId.get(id), id, idx))}</div>
+                                      </div>
                                     </div>
                                   </>
                                 )}
