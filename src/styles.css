@@ -803,7 +803,7 @@ textarea.field { min-height: 160px; resize: vertical; font-family: ui-monospace,
 .list-item .grow { min-width: 0; }
 .card-float-preview {
   position: fixed;
-  z-index: 9999;
+  z-index: 13000; /* above modals: the hand tester window shows previews too */
   pointer-events: none;
   width: 240px;
   border-radius: 12px;
@@ -1072,6 +1072,8 @@ body[data-removing] .deck-split > section:not([data-remove-src]) {
 }
 .ban-badge.other-deck-badge.short { border-color: rgb(var(--danger-rgb) / .55); background: rgb(var(--danger-rgb) / .14); color: var(--danger); }
 .ban-badge.other-deck-badge:hover { filter: brightness(1.2); }
+/* The same card in the deck's other sections (main deck / sideboard / champion). */
+.ban-badge.elsewhere-badge { font-weight: 650; border-style: dashed; border-color: rgb(var(--primary-rgb) / .6); background: rgb(var(--primary-rgb) / .08); color: var(--accent2); }
 /* Catalogue tile of a plain rune: no counters, plain runes are not tracked. */
 .untracked-note { margin-top: 6px; text-align: center; font-size: 11.5px; color: var(--muted); }
 .row-stat-note { font-size: 10.5px; color: var(--muted); white-space: nowrap; }
@@ -1154,39 +1156,37 @@ body[data-removing] .deck-split > section:not([data-remove-src]) {
 }
 
 /* Hand Tester (Decks tab) */
-.hand-tester {
-  margin-top: 14px;
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  background: var(--panel2);
-  overflow: hidden;
+/* Notification at the bottom right (like a launcher toast): visible, never in the way. */
+.app-toast {
+  position: fixed; right: 22px; bottom: 22px; z-index: 11000;
+  width: min(360px, calc(100vw - 44px));
+  display: grid; grid-template-columns: auto 1fr auto; gap: 12px; align-items: start;
+  padding: 14px 14px 14px 16px;
+  border-radius: 14px; border: 1px solid var(--border-strong);
+  background: rgb(28 28 30 / .92); backdrop-filter: blur(14px);
+  box-shadow: 0 18px 40px rgb(0 0 0 / .45), inset 3px 0 0 var(--accent);
+  animation: toast-in .32s cubic-bezier(.2, .9, .3, 1.15);
 }
-.hand-tester-head {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 10px 12px;
-  cursor: pointer;
-  user-select: none;
-  border-bottom: 1px solid transparent;
-  list-style: none;
+.app-toast-icon {
+  width: 36px; height: 36px; border-radius: 10px; display: grid; place-items: center;
+  background: var(--primary-soft); color: var(--accent2);
 }
-.hand-tester-head::-webkit-details-marker { display: none; }
-.hand-tester[open] .hand-tester-head {
-  border-bottom-color: var(--border);
-  background: rgb(var(--primary-rgb) / .05);
+.app-toast-body b { display: block; font-size: 14px; }
+.app-toast-body p { margin: 3px 0 10px; font-size: 12.5px; color: var(--muted); line-height: 1.4; }
+.app-toast-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+.app-toast-close {
+  border: 0; background: transparent; color: var(--muted); cursor: pointer;
+  width: 24px; height: 24px; border-radius: 6px; display: grid; place-items: center;
 }
-.hand-tester-head:hover { background: rgb(var(--primary-rgb) / .06); }
-.hand-tester-title {
-  font-weight: 650;
-  letter-spacing: .03em;
-  color: var(--accent2);
-  flex: 1;
-}
-.hand-tester-chevron { color: var(--muted); font-size: 12px; }
-.hand-tester-chevron::before { content: '▸'; }
-.hand-tester[open] .hand-tester-chevron::before { content: '▾'; }
-.hand-tester-body { padding: 12px; display: grid; gap: 10px; }
+.app-toast-close:hover { background: var(--fill); color: var(--text); }
+@keyframes toast-in { from { opacity: 0; transform: translateX(24px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .app-toast { animation: none; } }
+
+/* Hand tester window (Test hand, next to Share). */
+.hand-box { width: min(1180px, 100%); max-height: calc(100vh - 36px); overflow-y: auto; display: grid; gap: 12px; align-content: start; }
+.hand-box-head { display: flex; align-items: center; gap: 10px; }
+.hand-box-head h2 { margin: 0; flex: 1; min-width: 0; font-size: 18px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.hand-tester-body { display: grid; gap: 10px; }
 .hand-tester-controls {
   display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
 }
@@ -1194,13 +1194,15 @@ body[data-removing] .deck-split > section:not([data-remove-src]) {
   font-size: 12px;
   color: var(--muted);
 }
+/* One row: the cards share it and get narrower as the hand grows. */
 .hand-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(118px, 1fr));
-  gap: 10px;
+  display: flex;
+  gap: 8px;
   align-items: stretch;
 }
 .hand-card {
+  flex: 1 1 0;
+  max-width: 150px;
   min-width: 0;
   position: relative;
   border: 2px solid var(--border);
@@ -1258,6 +1260,9 @@ body[data-removing] .deck-split > section:not([data-remove-src]) {
   font-size: 11px;
   color: var(--muted);
   margin-top: 2px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .hand-card.affordable { border-color: rgb(var(--positive-rgb) / .7); }
 .hand-card.champion-zone { border-style: dashed; border-color: rgb(var(--primary-rgb) / .55); cursor: default; }

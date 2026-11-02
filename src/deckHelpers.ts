@@ -183,6 +183,25 @@ export function copyName(c: Card) {
   return norm(displayCardName(c))
 }
 
+/** Sections whose cards count toward the copy limit and show where else a card sits. */
+export const SPLIT_SECTIONS = ['champion', 'main', 'sideboard'] as const
+export type SplitSection = (typeof SPLIT_SECTIONS)[number]
+
+/** Copies of each card per section (champion, main deck, sideboard), keyed by `copyName` so every print
+ *  counts, like the copy limit. A deck row uses it to name the copies in the other sections. */
+export function copiesBySection(cards: DeckCard[], byId: Map<string, Card>) {
+  const out = new Map<string, Partial<Record<SplitSection, number>>>()
+  for (const dc of cards) {
+    const sec = sectionOf(dc)
+    const c = byId.get(dc.id)
+    if (!c || !(SPLIT_SECTIONS as readonly DeckSection[]).includes(sec) || dc.qty <= 0) continue
+    const e = out.get(copyName(c)) || {}
+    e[sec as SplitSection] = (e[sec as SplitSection] || 0) + dc.qty
+    out.set(copyName(c), e)
+  }
+  return out
+}
+
 /** Name without punctuation, so "Evelynn in Control" (deck sites drop the comma) matches "Evelynn, in Control". */
 function loose(s: string) {
   return norm(s.replace(/[,'’.\-]/g, ' '))

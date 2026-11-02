@@ -20,6 +20,9 @@ import { LENT_HEADER, formatBorrowList, parseBorrowList, settleBorrowed } from '
 import {
   SECTION_CAPS,
   SECTION_LABEL,
+  SPLIT_SECTIONS,
+  copiesBySection,
+  copyName,
   SECTION_ORDER,
   isDeckComplete,
   canAddToSection,
@@ -1211,10 +1214,12 @@ export default function App() {
     window.addEventListener('pointercancel', end)
   }
 
-  const [handTesterOpen, setHandTesterOpen] = useState(true)
+  /** Deck the hand tester window is open for, and the deck whose "test your hand?" prompt shows. */
+  const [handDeckId, setHandDeckId] = useState<string | null>(null)
+  const [handPromptDeckId, setHandPromptDeckId] = useState<string | null>(null)
   const [hand, setHand] = useState<HandState | null>(null)
   const [handSelected, setHandSelected] = useState<number[]>([])
-  const [mulliganUsed, setMulliganUsed] = useState(false)
+  const [handKept, setHandKept] = useState(false)
   /** Going first or second: in 1v1 the second player channels an extra rune on turn 1. */
   const [handFirst, setHandFirst] = useState(true)
 
@@ -2416,6 +2421,16 @@ export default function App() {
   }
 
   const activeDeck = decks.find((d) => d.id === activeDeckId) || null
+  const handDeck = handDeckId ? decks.find((d) => d.id === handDeckId) || null : null
+  const handPrompt = handPromptDeckId ? decks.find((d) => d.id === handPromptDeckId) || null : null
+  const activeComplete = !!activeDeck && isDeckComplete(activeDeck.cards)
+  const completeSeen = useRef<{ id: string | null; done: boolean }>({ id: null, done: false })
+  // The open deck just got its last card: offer the hand tester (opening another deck does not count).
+  useEffect(() => {
+    const prev = completeSeen.current
+    completeSeen.current = { id: activeDeckId, done: activeComplete }
+    if (prev.id === activeDeckId && !prev.done && activeComplete) setHandPromptDeckId(activeDeckId)
+  }, [activeDeckId, activeComplete])
   const activeBorrowed = borrowed.find((g) => g.id === activeBorrowedId) || null
 
   /** Owned copies minus lent-out copies plus borrowed ones — used for deck missing-copies. */
@@ -2519,7 +2534,7 @@ export default function App() {
   useEffect(() => {
     setHand(null)
     setHandSelected([])
-    setMulliganUsed(false)
+    setHandKept(false)
     setMissingExpanded(false)
   }, [activeDeckId])
 
@@ -2528,17 +2543,24 @@ export default function App() {
     setDecks((prev) => prev.map((d) => (d.id === activeDeckId ? { ...mut(d), updatedAt: new Date().toISOString() } : d)))
   }
 
-  function dealNewHand() {
-    if (!activeDeck) return
-    const dealt = dealOpeningHand(activeDeck.cards)
+  function dealNewHand(deck = handDeck) {
+    if (!deck) return
+    const dealt = dealOpeningHand(deck.cards)
     if (!dealt) return
     setHand(dealt)
     setHandSelected([])
-    setMulliganUsed(false)
+    setHandKept(false)
   }
 
-  /** The mulligan happens once, during setup (Core Rules 117), so only before turn 1. */
-  const mulliganOpen = !!hand && hand.turn === 0 && !mulliganUsed
+  /** Opens the hand tester window for a deck with a fresh opening hand. */
+  function openHandTester(deck: Deck) {
+    setHandPromptDeckId(null)
+    setHandDeckId(deck.id)
+    dealNewHand(deck)
+  }
+
+  /** The mulligan happens once, during setup (Core Rules 117): until the player mulligans or keeps. */
+  const mulliganOpen = !!hand && hand.turn === 0 && !handKept
 
   function toggleHandSelect(index: number) {
     if (!mulliganOpen) return
@@ -2549,13 +2571,18 @@ export default function App() {
     })
   }
 
+  /** Setup ends with the mulligan (or keeping): going first starts turn 1 right away, going second waits
+   *  until the player confirms the opponent's turn is over. */
+  function finishSetup(s: HandState) {
+    setHand(handFirst ? playTurn(s, true) : s)
+    setHandSelected([])
+    setHandKept(true)
+  }
+
   function runMulligan() {
     if (!hand || !mulliganOpen || handSelected.length < 1 || handSelected.length > MULLIGAN_MAX) return
     const next = applyMulligan(hand.hand, hand.library, handSelected)
-    if (!next) return
-    setHand({ ...hand, ...next })
-    setHandSelected([])
-    setMulliganUsed(true)
+    if (next) finishSetup({ ...hand, ...next })
   }
 
   function nextHandTurn() {
@@ -2839,6 +2866,18 @@ export default function App() {
     const cardsIn = deck.cards.filter((dc) => sectionOf(dc) === sec)
     const cover = deckCoverage(deck)
     const deckTotals = deckTotalQtyById(deck.cards)
+    const bySection = copiesBySection(deck.cards, byId)
+    /** "2× in Main Deck" pills: the same card (any print) in the deck's other playing sections. */
+    const elsewherePills = (c: Card) => {
+      if (!(SPLIT_SECTIONS as readonly DeckSection[]).includes(sec)) return null
+      const split = bySection.get(copyName(c)) || {}
+      const total = SPLIT_SECTIONS.reduce((s, x) => s + (split[x] || 0), 0)
+      return SPLIT_SECTIONS.filter((x) => x !== sec && split[x]).map((x) => (
+        <span key={x} className="ban-badge elsewhere-badge" title={t(lang, 'decks.elsewhereHint', { n: total })}>
+          {t(lang, `decks.elsewhere.${x}`, { n: split[x]! })}
+        </span>
+      ))
+    }
     // Rune deck: plain runes as one big counter per Legend domain, alt art runes stay as rows.
     const runeDomains = sec === 'rune' ? getLegendDomains(deck.cards, byId) || [] : []
     const isPlainIn = (dc: (typeof cardsIn)[number]) => { const c = byId.get(dc.id); return !!c && isPlainRune(c) }
@@ -2949,6 +2988,7 @@ export default function App() {
                     <SetBadge c={c} /><BanBadge status={banStatus(c)} lang={lang} />
                     <ErrataBadge show={!!errataFor(c)} lang={lang} />
                     <BorrowedBadge from={borrowedInFrom.get(c.id)} lang={lang} />
+                    {elsewherePills(c)}
                     {otherDeckPills(c.id, deck)}
                   </div>
                   <div className="sub">
@@ -3034,6 +3074,8 @@ export default function App() {
                 return
               }
               setActiveSection(sec)
+              // Adding needs the card search: bring it back when it was hidden.
+              if (poolHidden) { localStorage.setItem('rb.poolHidden', '0'); setPoolHidden(false) }
             }}
           >
             {locked ? t(lang, 'decks.legendLocked') : t(lang, 'decks.addSection', { section: SECTION_LABEL[sec] })}
@@ -3369,6 +3411,7 @@ export default function App() {
     }
     setDeckNotice(parts.length ? parts.join(' · ') : null)
     setDeckImportOpen(false)
+    if (isDeckComplete(sanitized.cards)) setHandPromptDeckId(activeDeckId)
   }
 
 
@@ -3546,11 +3589,18 @@ export default function App() {
       else if (sharePreview) setSharePreview(null)
       else if (deckExportText != null) setDeckExportText(null)
       else if (clearSec) setClearSec(null)
+      else if (handDeckId && !cardLightbox) setHandDeckId(null)
       else setCardLightbox(null)
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [cardLightbox, clearSec, deckExportText, sharePreview, cmExport, lbNav])
+  }, [cardLightbox, clearSec, deckExportText, sharePreview, cmExport, lbNav, handDeckId])
+
+  useEffect(() => {
+    if (!handPromptDeckId) return
+    const timer = window.setTimeout(() => setHandPromptDeckId(null), 12000)
+    return () => window.clearTimeout(timer)
+  }, [handPromptDeckId])
 
   const matchupDeck = matchupDeckId ? decks.find((d) => d.id === matchupDeckId) : undefined
   const matchupLegendId = matchupDeck?.cards.find((c) => sectionOf(c) === 'legend')?.id
@@ -3786,137 +3836,6 @@ export default function App() {
                     {SECTION_ORDER.filter((s) => s !== 'legend' && s !== 'champion').map((sec) => renderDeckSection(sec, activeDeck))}
                   </div>
 
-                  {(() => {
-                    const poolN = drawPoolSize(activeDeck)
-                    const canTest = poolN >= OPENING_HAND_SIZE
-                    const champ = activeDeck.cards.find((dc) => sectionOf(dc) === 'champion')
-                    const champCard = champ ? byId.get(champ.id) : undefined
-                    // A rune gives 1 Energy by exhausting and can still be recycled for Power, so Energy = runes on the board.
-                    const energy = hand?.runes.length ?? 0
-                    const runeDomains = new Map<string, number>()
-                    for (const id of hand?.runes || []) {
-                      const d = byId.get(id)?.domains[0]
-                      if (d) runeDomains.set(d, (runeDomains.get(d) || 0) + 1)
-                    }
-                    const renderHandCard = (c: Card | undefined, id: string, idx: number | null) => {
-                      const selected = idx != null && handSelected.includes(idx)
-                      const name = c ? displayName(c) : id
-                      const affordable = !!hand && hand.turn > 0 && c?.energy != null && c.energy <= energy
-                      return (
-                        <button
-                          key={idx == null ? `champ-${id}` : `${id}-${idx}`}
-                          type="button"
-                          className={`hand-card${selected ? ' selected' : ''}${affordable ? ' affordable' : ''}${idx == null ? ' champion-zone' : ''}`}
-                          disabled={idx == null || !mulliganOpen}
-                          onClick={() => idx != null && toggleHandSelect(idx)}
-                          onMouseEnter={(e) => c?.image && showCardPreview(e, c.image)}
-                          onMouseMove={(e) => c?.image && showCardPreview(e, c.image)}
-                          onMouseLeave={hideCardPreview}
-                          title={affordable ? `${name} · ${t(lang, 'hand.affordable')}` : name}
-                        >
-                          <div className="art"><ArtImg src={cardThumb(c)} /></div>
-                          <div className="meta">
-                            <div className="name">{name}</div>
-                            <div className="sub">
-                              {idx == null ? t(lang, 'hand.championZone') : c?.code}
-                              {c?.energy != null && <> · <RulesText text={`[${c.energy}]`} /></>}
-                            </div>
-                          </div>
-                        </button>
-                      )
-                    }
-                    return (
-                      <details
-                        className="hand-tester"
-                        open={handTesterOpen}
-                        onToggle={(e) => setHandTesterOpen(e.currentTarget.open)}
-                      >
-                        <summary
-                          className="hand-tester-head"
-                          title={t(lang, 'hand.toggle')}
-                        >
-                          <span className="hand-tester-chevron" aria-hidden />
-                          <span className="hand-tester-title">{t(lang, 'hand.title')}</span>
-                          <span className="pill">{t(lang, 'hand.poolSize', { n: poolN })}</span>
-                        </summary>
-                          <div className="hand-tester-body">
-                            {!canTest ? (
-                              <div className="hand-empty-msg">{t(lang, 'hand.poolTooSmall')}</div>
-                            ) : (
-                              <>
-                                <div className="hand-tester-controls">
-                                  <button type="button" className="btn primary" onClick={dealNewHand}>
-                                    <Icon name="hand" />{t(lang, 'hand.new')}
-                                  </button>
-                                  <button
-                                    type="button"
-                                    className="btn"
-                                    disabled={!mulliganOpen || handSelected.length < 1}
-                                    title={mulliganUsed ? t(lang, 'hand.mulliganDone') : hand && hand.turn > 0 ? t(lang, 'hand.mulliganClosed') : t(lang, 'hand.selectHint')}
-                                    onClick={runMulligan}
-                                  >
-                                    <Icon name="shuffle" />{t(lang, 'hand.mulligan')}
-                                  </button>
-                                  {mulliganOpen && (
-                                    <span className="hand-hint">{t(lang, 'hand.selected', { n: handSelected.length })}</span>
-                                  )}
-                                  {mulliganUsed && hand?.turn === 0 && (
-                                    <span className="hand-hint">{t(lang, 'hand.mulliganDone')}</span>
-                                  )}
-                                  <div className="hand-order" role="group" title={hand && hand.turn > 0 ? t(lang, 'hand.orderLocked') : t(lang, 'hand.orderHint')}>
-                                    {[true, false].map((first) => (
-                                      <button
-                                        key={String(first)}
-                                        type="button"
-                                        className={`chip${handFirst === first ? ' active' : ''}`}
-                                        disabled={!!hand && hand.turn > 0}
-                                        aria-pressed={handFirst === first}
-                                        onClick={() => setHandFirst(first)}
-                                      >{t(lang, first ? 'hand.first' : 'hand.second')}</button>
-                                    ))}
-                                  </div>
-                                  <button
-                                    type="button"
-                                    className="btn"
-                                    disabled={!hand}
-                                    title={t(lang, 'hand.turnHint')}
-                                    onClick={nextHandTurn}
-                                  >
-                                    <Icon name="arrow-down-to-line" />{t(lang, 'hand.nextTurn')}
-                                  </button>
-                                </div>
-                                {!hand ? (
-                                  <div className="hand-empty-msg">{t(lang, 'hand.empty')}</div>
-                                ) : (
-                                  <>
-                                    <div className="hand-status">
-                                      <b>{hand.turn === 0 ? t(lang, 'hand.setup') : t(lang, 'hand.turn', { n: hand.turn })}</b>
-                                      {hand.turn > 0 && (
-                                        <span className="hand-runes">
-                                          {t(lang, 'hand.runes', { n: hand.runes.length })}
-                                          {[...runeDomains].map(([d, n]) => (
-                                            <span key={d}><RulesText text={`[${d === 'Chaos' ? 'C' : d}]`} />{n}</span>
-                                          ))}
-                                        </span>
-                                      )}
-                                      <span className="hand-hint">{t(lang, 'hand.left', { n: hand.library.length, r: hand.runeLibrary.length })}</span>
-                                      {hand.turn === 0 && hand.runeLibrary.length === 0 && <span className="hand-hint">{t(lang, 'hand.noRunes')}</span>}
-                                    </div>
-                                    {mulliganOpen && (
-                                      <div className="hand-hint">{t(lang, 'hand.selectHint')}</div>
-                                    )}
-                                    <div className="hand-grid">
-                                      {champ && renderHandCard(champCard, champ.id, null)}
-                                      {hand.hand.map((id, idx) => renderHandCard(byId.get(id), id, idx))}
-                                    </div>
-                                  </>
-                                )}
-                              </>
-                            )}
-                          </div>
-                      </details>
-                    )
-                  })()}
       </>
     )
   }
@@ -4992,6 +4911,11 @@ export default function App() {
                               {isDeckComplete(d.cards) && (
                                 <button type="button" className="btn small primary" disabled={deckShotBusy} onClick={() => void openDeckShare(d)}>
                                   <Icon name="share-2" />{deckShotBusy ? t(lang, 'decks.shareBusy') : t(lang, 'decks.share')}
+                                </button>
+                              )}
+                              {isDeckComplete(d.cards) && (
+                                <button type="button" className="btn small" onClick={() => openHandTester(d)}>
+                                  <Icon name="hand" />{t(lang, 'hand.open')}
                                 </button>
                               )}
                               {legendId && (
@@ -6168,6 +6092,155 @@ export default function App() {
           openLink={openLink}
           onClose={() => setMatchupDeckId(null)}
         />
+      )}
+
+      {handDeck && (() => {
+                    const poolN = drawPoolSize(handDeck)
+                    const canTest = poolN >= OPENING_HAND_SIZE
+                    const champ = handDeck.cards.find((dc) => sectionOf(dc) === 'champion')
+                    const champCard = champ ? byId.get(champ.id) : undefined
+                    // A rune gives 1 Energy by exhausting and can still be recycled for Power, so Energy = runes on the board.
+                    const energy = hand?.runes.length ?? 0
+                    const runeDomains = new Map<string, number>()
+                    for (const id of hand?.runes || []) {
+                      const d = byId.get(id)?.domains[0]
+                      if (d) runeDomains.set(d, (runeDomains.get(d) || 0) + 1)
+                    }
+                    const renderHandCard = (c: Card | undefined, id: string, idx: number | null) => {
+                      const selected = idx != null && handSelected.includes(idx)
+                      const name = c ? displayName(c) : id
+                      const affordable = !!hand && hand.turn > 0 && c?.energy != null && c.energy <= energy
+                      return (
+                        <button
+                          key={idx == null ? `champ-${id}` : `${id}-${idx}`}
+                          type="button"
+                          className={`hand-card${selected ? ' selected' : ''}${affordable ? ' affordable' : ''}${idx == null ? ' champion-zone' : ''}`}
+                          disabled={idx == null || !mulliganOpen}
+                          onClick={() => idx != null && toggleHandSelect(idx)}
+                          onMouseEnter={(e) => c?.image && showCardPreview(e, c.image)}
+                          onMouseMove={(e) => c?.image && showCardPreview(e, c.image)}
+                          onMouseLeave={hideCardPreview}
+                          title={affordable ? `${name} · ${t(lang, 'hand.affordable')}` : name}
+                        >
+                          <div className="art"><ArtImg src={cardThumb(c)} /></div>
+                          <div className="meta">
+                            <div className="name">{name}</div>
+                            <div className="sub">
+                              {/* Cost first: a narrow card cuts the end of this line. */}
+                              {c?.energy != null && <><RulesText text={`[${c.energy}]`} /> · </>}
+                              {idx == null ? t(lang, 'hand.championZone') : c?.code}
+                            </div>
+                          </div>
+                        </button>
+                      )
+                    }
+                    return (
+                      <div className="card-lightbox" role="dialog" aria-modal="true" aria-labelledby="hand-title" onClick={() => setHandDeckId(null)}>
+                      <div className="panel hand-box" onClick={(e) => e.stopPropagation()}>
+                        <div className="hand-box-head">
+                          <h2 id="hand-title">{t(lang, 'hand.title')} · {handDeck.name}</h2>
+                          <span className="pill">{t(lang, 'hand.poolSize', { n: poolN })}</span>
+                          <button type="button" className="btn small" onClick={() => setHandDeckId(null)}><Icon name="x" />{t(lang, 'decks.shareClose')}</button>
+                        </div>
+                          <div className="hand-tester-body">
+                            {!canTest ? (
+                              <div className="hand-empty-msg">{t(lang, 'hand.poolTooSmall')}</div>
+                            ) : (
+                              <>
+                                <div className="hand-tester-controls">
+                                  <button type="button" className="btn primary" onClick={() => dealNewHand()}>
+                                    <Icon name="hand" />{t(lang, 'hand.new')}
+                                  </button>
+                                  <div className="hand-order" role="group" title={t(lang, 'hand.orderHint')}>
+                                    {[true, false].map((first) => (
+                                      <button
+                                        key={String(first)}
+                                        type="button"
+                                        className={`chip${handFirst === first ? ' active' : ''}`}
+                                        aria-pressed={handFirst === first}
+                                        // Mid-game the order cannot change, so switching it deals a new hand.
+                                        onClick={() => { if (first === handFirst) return; setHandFirst(first); if (handKept) dealNewHand() }}
+                                      >{t(lang, first ? 'hand.first' : 'hand.second')}</button>
+                                    ))}
+                                  </div>
+                                  {mulliganOpen && (
+                                    <>
+                                      <button
+                                        type="button"
+                                        className="btn"
+                                        disabled={handSelected.length < 1}
+                                        title={t(lang, 'hand.selectHint')}
+                                        onClick={runMulligan}
+                                      >
+                                        <Icon name="shuffle" />{t(lang, 'hand.mulligan')} ({handSelected.length}/{MULLIGAN_MAX})
+                                      </button>
+                                      <button type="button" className="btn" title={t(lang, 'hand.keepHint')} onClick={() => hand && finishSetup(hand)}>
+                                        <Icon name="check" />{t(lang, 'hand.keep')}
+                                      </button>
+                                    </>
+                                  )}
+                                  {hand && handKept && (
+                                    <button
+                                      type="button"
+                                      className={`btn${hand.turn === 0 ? ' primary' : ''}`}
+                                      title={t(lang, 'hand.turnHint')}
+                                      onClick={nextHandTurn}
+                                    >
+                                      <Icon name="arrow-down-to-line" />{t(lang, hand.turn === 0 ? 'hand.myTurn' : 'hand.nextTurn')}
+                                    </button>
+                                  )}
+                                </div>
+                                {!hand ? (
+                                  <div className="hand-empty-msg">{t(lang, 'hand.empty')}</div>
+                                ) : (
+                                  <>
+                                    <div className="hand-status">
+                                      <b>{hand.turn === 0 ? t(lang, 'hand.setup') : t(lang, 'hand.turn', { n: hand.turn })}</b>
+                                      {hand.turn > 0 && (
+                                        <span className="hand-runes">
+                                          {t(lang, 'hand.runes', { n: hand.runes.length })}
+                                          {[...runeDomains].map(([d, n]) => (
+                                            <span key={d}><RulesText text={`[${d === 'Chaos' ? 'C' : d}]`} />{n}</span>
+                                          ))}
+                                        </span>
+                                      )}
+                                      <span className="hand-hint">{t(lang, 'hand.left', { n: hand.library.length, r: hand.runeLibrary.length })}</span>
+                                      {hand.turn === 0 && hand.runeLibrary.length === 0 && <span className="hand-hint">{t(lang, 'hand.noRunes')}</span>}
+                                    </div>
+                                    {mulliganOpen && (
+                                      <div className="hand-hint">{t(lang, 'hand.selectHint')}</div>
+                                    )}
+                                    {handKept && hand.turn === 0 && (
+                                      <div className="hand-hint">{t(lang, 'hand.oppTurn')}</div>
+                                    )}
+                                    <div className="hand-grid">
+                                      {champ && renderHandCard(champCard, champ.id, null)}
+                                      {hand.hand.map((id, idx) => renderHandCard(byId.get(id), id, idx))}
+                                    </div>
+                                  </>
+                                )}
+                              </>
+                            )}
+                          </div>
+                      </div>
+                      </div>
+                    )
+                  })()}
+
+      {handPrompt && (
+        // A notification, not a dialog: it slides in at the bottom right and blocks nothing.
+        <div key={handPrompt.id} className="app-toast" role="status" aria-live="polite">
+          <span className="app-toast-icon" aria-hidden><Icon name="hand" size={20} /></span>
+          <div className="app-toast-body">
+            <b>{t(lang, 'hand.promptTitle')}</b>
+            <p>{t(lang, 'hand.prompt', { deck: handPrompt.name })}</p>
+            <div className="app-toast-actions">
+              <button type="button" className="btn small primary" onClick={() => openHandTester(handPrompt)}><Icon name="hand" />{t(lang, 'hand.open')}</button>
+              <button type="button" className="btn small" onClick={() => setHandPromptDeckId(null)}>{t(lang, 'hand.later')}</button>
+            </div>
+          </div>
+          <button type="button" className="app-toast-close" aria-label={t(lang, 'decks.shareClose')} onClick={() => setHandPromptDeckId(null)}><Icon name="x" size={14} /></button>
+        </div>
       )}
 
       {cardPreview && !cardLightbox && (

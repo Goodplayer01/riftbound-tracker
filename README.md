@@ -62,7 +62,7 @@ This is where it all started: see at a glance what you have, what's missing and 
 
 Building decks is half the fun of Riftbound, so this part got a lot of love.
 
-- Legend, Champion, Main Deck (39), Battlefields, Runes and Sideboard, with the usual limits. The 3 copy limit counts per full name, so "Evelynn, in Control" and "Evelynn, Entrancing" are separate cards
+- Legend, Champion, Main Deck (39), Battlefields, Runes and Sideboard, with the usual limits. The 3 copy limit counts per full name, so "Evelynn, in Control" and "Evelynn, Entrancing" are separate cards. A card split between main deck and sideboard says so on both rows ("+1× in Sideboard", "+2× in Main Deck")
 - Find a Legend by typing the champion name
 - Drag cards from the search list into a deck section, and drag them out again to remove one copy per drag. The search list shows how many copies are already in the deck
 - Every deck card shows how many you own and how many the deck needs, with buttons to add or remove normal and foil copies in your collection. Alt arts, overnumbered, signed and reprinted versions of a card count as the same card, so owning the alt art Kai'Sa covers the normal one in your deck and in the missing list
@@ -73,7 +73,7 @@ Building decks is half the fun of Riftbound, so this part got a lot of love.
 - Drag decks around to sort them
 - Delete asks first, and Delete all can be undone until you close the app
 - Once a deck is full you get a Share button that makes a clean image of the whole deck: Legend, runes, battlefields, main deck and sideboard with counts. The image goes straight into your clipboard, so you just paste it into Discord or WhatsApp; saving it as a file is still there
-- Hand tester by the Core Rules: opening hand of 4, mulligan of up to 2 cards before the first turn, going first or second (the second player channels an extra rune on turn 1), then turn by turn 2 runes and 1 draw. The Chosen Champion sits in the Champion Zone, and cards whose Energy cost the runes on the board can pay are marked
+- Hand tester by the Core Rules ("Test hand" next to Share once the deck is complete; the app offers it when you add the last card or import a full list): opening hand of 4, mulligan of up to 2 cards before the first turn, going first or second (the second player channels an extra rune on turn 1), then turn by turn 2 runes and 1 draw. The Chosen Champion sits in the Champion Zone, and cards whose Energy cost the runes on the board can pay are marked
 - Matchup button (once the deck has a Legend): how that Legend does against every other Legend, good and bad matchups with win rate and number of games, like lolalytics. Details on an opponent shows what to watch out for (its Legend ability and the Hidden / Reaction / Action tricks most of its decks run), which of your deck and sideboard cards do better or worse against it, counter cards (cards from your domains that win more often against it, marked when they are in your deck or collection, with how many decks of your Legend already run them) and what that Legend usually plays. Numbers come from RiftLite's community games of the current season and update daily
 
 **Purchases**
