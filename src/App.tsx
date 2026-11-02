@@ -3050,6 +3050,8 @@ export default function App() {
                 return
               }
               setActiveSection(sec)
+              // Adding needs the card search: bring it back when it was hidden.
+              if (poolHidden) { localStorage.setItem('rb.poolHidden', '0'); setPoolHidden(false) }
             }}
           >
             {locked ? t(lang, 'decks.legendLocked') : t(lang, 'decks.addSection', { section: SECTION_LABEL[sec] })}
