@@ -47,6 +47,7 @@ import {
   sectionOf,
   cardKey,
   groupPrints,
+  swapPrint,
 } from './deckHelpers'
 import { banStatus, type BanStatus } from './banlist'
 import { cardMatchesDomains, deckDropIndex, moveDeckTo } from './domainMatch.ts'
@@ -3013,21 +3014,50 @@ export default function App() {
                           {otherPrints.map((pid) => {
                             const p = byId.get(pid)
                             if (!p) return null
+                            // A print another deck uses only names that deck; a free one drags into a section or
+                            // takes this line's place (as many copies as are owned and not already in this deck).
+                            const elsewhere = (decksByCard.get(pid) || []).filter((u) => u.id !== deck.id)
+                            const free = availableForDecks(pid) - (deckTotals.get(pid) ?? 0)
+                            const swapN = elsewhere.length ? 0 : Math.min(dc.qty, free)
                             return (
-                              <button
+                              <span
                                 key={pid}
-                                type="button"
                                 role="listitem"
-                                title={t(lang, 'decks.showInOwned')}
-                                onClick={(e) => { e.stopPropagation(); showInOwned(p) }}
+                                className={`prints-pop-item${elsewhere.length ? '' : ' free'}`}
+                                draggable={!elsewhere.length}
+                                onDragStart={(e) => { e.stopPropagation(); onPickerDragStart(e, pid) }}
+                                onDragEnd={(e) => { e.stopPropagation(); onPickerDragEnd(e) }}
                               >
-                                <span className="prints-pop-art">
-                                  {p.image ? <img src={thumbForImage(p.image)} alt="" loading="lazy" decoding="async" /> : null}
-                                  <b>×{availableForDecks(pid)}</b>
-                                </span>
-                                <SetBadge c={p} />
-                                <span className="prints-pop-name">{displayName(p)}</span>
-                              </button>
+                                <button
+                                  type="button"
+                                  title={elsewhere.length ? t(lang, 'decks.showInOwned') : t(lang, 'decks.printDragHint')}
+                                  onClick={(e) => { e.stopPropagation(); showInOwned(p) }}
+                                >
+                                  <span className="prints-pop-art">
+                                    {p.image ? <img src={thumbForImage(p.image)} alt="" loading="lazy" decoding="async" draggable={false} /> : null}
+                                    <b>×{availableForDecks(pid)}</b>
+                                  </span>
+                                  <SetBadge c={p} />
+                                  <span className="prints-pop-name">{displayName(p)}</span>
+                                </button>
+                                {elsewhere.length ? (
+                                  <span className="card-tags">
+                                    {elsewhere.map((u) => (
+                                      <button key={u.id} type="button" className="ban-badge other-deck-badge" title={t(lang, 'collection.openDeck', { deck: u.name })} onClick={(e) => { e.stopPropagation(); openDeck(u.id) }}>
+                                        {t(lang, 'decks.inPill', { deck: u.name, n: u.qty })}
+                                      </button>
+                                    ))}
+                                  </span>
+                                ) : swapN > 0 ? (
+                                  <button
+                                    type="button"
+                                    className="btn ghost small"
+                                    onClick={(e) => { e.stopPropagation(); updateDeck((d) => ({ ...d, cards: swapPrint(d.cards, sec, c.id, pid, swapN) })) }}
+                                  >
+                                    <Icon name="repeat" size={14} />{t(lang, 'decks.swapPrint', { n: swapN })}
+                                  </button>
+                                ) : null}
+                              </span>
                             )
                           })}
                         </span>
