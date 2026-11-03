@@ -1,5 +1,5 @@
 import { readFileSync } from 'node:fs'
-import { canAddToSection, copiesBySection, copyName, coverDeckLines, groupPrints, parseDeckImport, printRuns, printSlots, swapPrint } from '../src/deckHelpers.ts'
+import { canAddToSection, copiesBySection, copyName, coverDeckLines, groupPrints, parseDeckImport, plannedCopies, printRuns, printSlots, swapPrint } from '../src/deckHelpers.ts'
 
 function assert(cond, msg) {
   if (!cond) throw new Error(msg)
@@ -104,4 +104,19 @@ assert(sw([{ id: 'base', qty: 3, section: 'main' }], 2) === '[{"id":"alt","qty":
 assert(sw([{ id: 'x', qty: 1, section: 'main' }, { id: 'base', qty: 2, section: 'main' }], 5) === '[{"id":"x","qty":1,"section":"main"},{"id":"alt","qty":2,"section":"main"}]', 'full swap keeps the place')
 assert(sw([{ id: 'base', qty: 2, section: 'main' }, { id: 'alt', qty: 1, section: 'main' }, { id: 'base', qty: 1, section: 'sideboard' }], 1) === '[{"id":"base","qty":1,"section":"main"},{"id":"alt","qty":2,"section":"main"},{"id":"base","qty":1,"section":"sideboard"}]', 'joins the existing line, other sections untouched')
 assert(sw([{ id: 'base', qty: 2, section: 'sideboard' }], 2) === '[{"id":"base","qty":2,"section":"sideboard"}]', 'nothing to swap in that section')
+
+// Planned copies: only decks made before this one count. Old decks without createdAt are older than new
+// ones, and among themselves further down the list is older (new decks go to the top).
+const dk = (id, createdAt, cards) => ({ id, name: id, updatedAt: '', ...(createdAt ? { createdAt } : {}), cards })
+const listed = [
+  dk('new2', '2026-11-03T10:00:00Z', [{ id: 'x', qty: 1, section: 'main' }]),
+  dk('new1', '2026-11-02T10:00:00Z', [{ id: 'x', qty: 2, section: 'main' }, { id: 'y', qty: 1, section: 'sideboard' }]),
+  dk('oldTop', null, [{ id: 'x', qty: 3, section: 'main' }]),
+  dk('oldBottom', null, [{ id: 'y', qty: 2, section: 'main' }]),
+]
+const pl = (id) => JSON.stringify([...plannedCopies(listed, listed.find((d) => d.id === id))].sort())
+assert(pl('oldBottom') === '[]', 'the oldest deck has nothing planned elsewhere')
+assert(pl('oldTop') === '[["y",2]]', `old decks: further down is older: ${pl('oldTop')}`)
+assert(pl('new1') === '[["x",3],["y",2]]', `old decks come before dated ones: ${pl('new1')}`)
+assert(pl('new2') === '[["x",5],["y",3]]', `every older deck adds up, all sections: ${pl('new2')}`)
 console.log('ok')

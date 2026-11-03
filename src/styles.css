@@ -643,6 +643,8 @@ textarea.field { min-height: 160px; resize: vertical; font-family: ui-monospace,
   color: var(--text); font-size: 13px;
 }
 .deck-warn-title { display: inline-flex; align-items: center; gap: 8px; margin: 0 auto 0 0; font-size: 15px; color: var(--info); }
+.missing-planned { display: inline-flex; align-items: center; gap: 6px; color: var(--muted); cursor: pointer; }
+.missing-planned input { accent-color: var(--accent); }
 /* Need / Owns / Missing in the missing list: big numbers with a label above, like the deck rows. */
 .miss-stats { display: flex; gap: 8px; margin-top: 8px; }
 .miss-stats span {
