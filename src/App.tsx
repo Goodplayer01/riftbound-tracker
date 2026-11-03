@@ -48,6 +48,7 @@ import {
   cardKey,
   groupPrints,
   swapPrint,
+  plannedCopies,
 } from './deckHelpers'
 import { banStatus, type BanStatus } from './banlist'
 import { cardMatchesDomains, deckDropIndex, moveDeckTo } from './domainMatch.ts'
@@ -877,6 +878,8 @@ function prettyEventType(type: string | null) {
 }
 
 const HIDE_NN_KEY = 'riftbound-hide-nexus-night'
+/** Missing list: count copies older decks already use as missing (off by default). */
+const MISSING_PLANNED_KEY = 'rb.missingPlanned.v1'
 const STORE_HOME_KEY = 'rb.storeHome.v1'
 /** Source review skips copies cheaper than this: nobody sorts bulk. */
 const REVIEW_MIN_EUR = 1
@@ -885,17 +888,17 @@ const REVIEW_MIN_EUR = 1
 let deckListUndo: Deck[] | null = null
 let borrowedListUndo: BorrowedGroup[] | null = null
 
-function loadHideNexusNight(): boolean {
+function loadFlag(key: string): boolean {
   try {
-    return localStorage.getItem(HIDE_NN_KEY) === '1'
+    return localStorage.getItem(key) === '1'
   } catch {
     return false
   }
 }
 
-function saveHideNexusNight(v: boolean) {
+function saveFlag(key: string, v: boolean) {
   try {
-    localStorage.setItem(HIDE_NN_KEY, v ? '1' : '0')
+    localStorage.setItem(key, v ? '1' : '0')
   } catch {
     /* ignore */
   }
@@ -1011,6 +1014,7 @@ export default function App() {
   /** Deck whose Matchup view is open. */
   const [matchupDeckId, setMatchupDeckId] = useState<string | null>(null)
   const [missingExpanded, setMissingExpanded] = useState(false)
+  const [missingPlanned, setMissingPlanned] = useState<boolean>(() => loadFlag(MISSING_PLANNED_KEY))
   const [cardPreview, setCardPreview] = useState<{ src: string; x: number; y: number } | null>(null)
   /** Big card preview that follows the pointer while a search card is dragged (centred on it). */
   const [dragGhost, setDragGhost] = useState<{ src: string; x: number; y: number } | null>(null)
@@ -1046,7 +1050,7 @@ export default function App() {
   const [rawPriceBook, setPriceBook] = useState<PriceBook | null>(null)
   // null = binder dashboard; 'owned' = all owned; set code = that set binder
   const [binderView, setBinderView] = useState<string | null>(null)
-  const [hideNexusNight, setHideNexusNight] = useState<boolean>(() => loadHideNexusNight())
+  const [hideNexusNight, setHideNexusNight] = useState<boolean>(() => loadFlag(HIDE_NN_KEY))
   const [binderOwnedOnly, setBinderOwnedOnly] = useState(false)
   /** Set filter in the All owned tab ('' = every set). */
   const [ownedSet, setOwnedSet] = useState('')
@@ -1675,18 +1679,20 @@ export default function App() {
   }
 
   /** Copies of each card in a deck that the collection covers. A card's own print serves it first, then
-   *  the spare copies of its other prints (alt arts, reprints) fill the gaps, so no copy counts twice. */
-  function deckCoverage(d: Deck) {
+   *  the spare copies of its other prints (alt arts, reprints) fill the gaps, so no copy counts twice.
+   *  `planned`: copies older decks already use (`plannedCopies`), taken out of the collection first. */
+  function deckCoverage(d: Deck, planned?: Map<string, number>) {
     const lines: { id: string; key: string; need: number; own: number }[] = []
     const pool = new Map<string, number>()
     const untracked = new Map<string, number>()
+    const free = (id: string) => Math.max(0, availableForDecks(id) - (planned?.get(id) ?? 0))
     for (const [id, need] of deckTotalQtyById(d.cards)) {
       const c = byId.get(id)
       // Plain runes are not tracked, so a deck never misses them.
       if (c && isPlainRune(c)) { untracked.set(id, need); continue }
       const key = c ? cardKey(c) : id
-      lines.push({ id, key, need, own: availableForDecks(id) })
-      if (!pool.has(key)) pool.set(key, poolAvailable(id))
+      lines.push({ id, key, need, own: free(id) })
+      if (!pool.has(key)) pool.set(key, printsOf(id).reduce((s, pid) => s + free(pid), 0))
     }
     const out = coverDeckLines(lines, pool)
     for (const [id, need] of untracked) out.set(id, need)
@@ -2423,7 +2429,8 @@ export default function App() {
   }
 
   function newDeck() {
-    const d: Deck = { id: uid(), name: t(lang, 'decks.newName', { n: decks.length + 1 }), cards: [], updatedAt: new Date().toISOString() }
+    const now = new Date().toISOString()
+    const d: Deck = { id: uid(), name: t(lang, 'decks.newName', { n: decks.length + 1 }), cards: [], updatedAt: now, createdAt: now }
     setDecks((prev) => [d, ...prev])
     setActiveDeckId(d.id)
     setActiveSection('legend')
@@ -3179,9 +3186,15 @@ export default function App() {
     return d.cards.reduce((s, c) => s + c.qty, 0)
   }
 
-  function underOwnedLines(d: Deck) {
+  /** Coverage for what a deck still misses: with "Count copies planned in older decks" on, older decks keep
+   *  their copies, so buying extra copies shows up here instead of moving cards between deck boxes. */
+  function missingCoverage(d: Deck, planned = missingPlanned) {
+    return deckCoverage(d, planned ? plannedCopies(decks, d) : undefined)
+  }
+
+  function underOwnedLines(d: Deck, planned = missingPlanned) {
     const totals = deckTotalQtyById(d.cards)
-    const cover = deckCoverage(d)
+    const cover = missingCoverage(d, planned)
     const out: { id: string; name: string; need: number; have: number; short: number }[] = []
     for (const [id, need] of totals) {
       const have = cover.get(id) ?? 0
@@ -3350,7 +3363,7 @@ export default function App() {
   /** Deck aggregate using Cardmarket Low (`ab`), non-foil — same primary as Katalog totals. */
   function deckPriceSums(d: Deck) {
     const totals = deckTotalQtyById(d.cards)
-    const cover = deckCoverage(d)
+    const cover = missingCoverage(d)
     let deckLow = 0
     let missingLow = 0
     let priced = 0
@@ -3760,7 +3773,6 @@ export default function App() {
                     // Opened from the "Still missing" tile in the deck header.
                     if (!missingExpanded) return null
                     const under = underOwnedLines(activeDeck)
-                    if (!under.length) return null
                     // Grouped by set in binder order, by card code inside a set, so the binder can be flipped through.
                     const setRank = (s: string) => {
                       const i = (BINDER_SET_ORDER as readonly string[]).indexOf(s)
@@ -3781,10 +3793,19 @@ export default function App() {
                       <div className="deck-warn">
                         <div className="toolbar deck-warn-tools">
                           <h3 className="deck-warn-title"><Icon name="list-x" />{t(lang, 'decks.missingTitle')}</h3>
-                          <button type="button" className="btn small" onClick={() => openDeckMissingExport(activeDeck)}>
+                          <label className="missing-planned" title={t(lang, 'decks.missingPlannedHint')}>
+                            <input
+                              type="checkbox"
+                              checked={missingPlanned}
+                              onChange={(e) => { setMissingPlanned(e.target.checked); saveFlag(MISSING_PLANNED_KEY, e.target.checked) }}
+                            />
+                            {t(lang, 'decks.missingPlanned')}
+                          </label>
+                          <button type="button" className="btn small" disabled={!under.length} onClick={() => openDeckMissingExport(activeDeck)}>
                             <Icon name="download" />{t(lang, 'cm.wantsBtn')}
                           </button>
                         </div>
+                        {!under.length && <p className="muted">{t(lang, 'decks.nothingMissing')}</p>}
                         {[...groups].map(([setId, rows]) => (
                           <div key={setId || '-'} className="deck-warn-set">
                           <div className="deck-warn-set-head">
@@ -3828,6 +3849,10 @@ export default function App() {
                                       >{u.name}</button>
                                       {byId.get(u.id) && <SetBadge c={byId.get(u.id)!} />}
                                     </div>
+                                    {(() => {
+                                      const pills = otherDeckPills(u.id, activeDeck)
+                                      return pills.length > 0 && <div className="card-tags">{pills}</div>
+                                    })()}
                                     <div className="sub">{byId.get(u.id)?.code}</div>
                                     <div className="miss-stats">
                                       <span><small>{t(lang, 'decks.needLabel')}</small><b>{u.need}</b></span>
@@ -4015,7 +4040,7 @@ export default function App() {
                 onClick={() => {
                   setHideNexusNight((v) => {
                     const next = !v
-                    saveHideNexusNight(next)
+                    saveFlag(HIDE_NN_KEY, next)
                     return next
                   })
                 }}
@@ -4954,7 +4979,8 @@ export default function App() {
                                   <b>{sums.priced > 0 ? fmtEur(lang, sums.deckLow) : '—'}</b>
                                   {sums.priced > 0 && sums.priced < deckCount(d) && <small>{t(lang, 'decks.partialPrice')}</small>}
                                 </div>
-                                {missCopies > 0 && (
+                                {/* Also with nothing missing when planned copies would be, so the option stays in reach. */}
+                                {(missCopies > 0 || (!missingPlanned && underOwnedLines(d, true).length > 0)) && (
                                   <button
                                     type="button"
                                     className="deck-stat deck-stat-warn"

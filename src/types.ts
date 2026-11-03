@@ -32,6 +32,8 @@ export type Deck = {
   name: string
   cards: DeckCard[]
   updatedAt: string
+  /** When the deck was made; decks from before v1.0.8 lack it (see `isOlderDeck`). */
+  createdAt?: string
 }
 
 export type Catalog = { sets: Record<string, string>; cards: Card[] }

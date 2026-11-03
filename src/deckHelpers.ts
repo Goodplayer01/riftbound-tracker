@@ -630,6 +630,26 @@ export function swapPrint(cards: DeckCard[], section: DeckSection, fromId: strin
   return out
 }
 
+/** True when deck `a` was made before deck `b` (indexes are their places in the deck list). Decks from before
+ *  `createdAt` existed count as older than every deck that has it, and among themselves by list position:
+ *  a new deck goes to the top, so further down is older. */
+export function isOlderDeck(a: Deck, ai: number, b: Deck, bi: number): boolean {
+  if (!a.createdAt !== !b.createdAt) return !a.createdAt
+  if (a.createdAt && b.createdAt && a.createdAt !== b.createdAt) return a.createdAt < b.createdAt
+  return ai > bi
+}
+
+/** Copies per card id that decks older than `deck` already plan to use (all their sections). */
+export function plannedCopies(decks: Deck[], deck: Deck): Map<string, number> {
+  const me = decks.findIndex((d) => d.id === deck.id)
+  const out = new Map<string, number>()
+  decks.forEach((d, i) => {
+    if (d.id === deck.id || !isOlderDeck(d, i, deck, me)) return
+    for (const [id, n] of deckTotalQtyById(d.cards)) out.set(id, (out.get(id) ?? 0) + n)
+  })
+  return out
+}
+
 export function deckTotalQtyById(cards: DeckCard[]): Map<string, number> {
   const m = new Map<string, number>()
   for (const dc of cards) {
