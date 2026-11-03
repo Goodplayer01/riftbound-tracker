@@ -1783,8 +1783,14 @@ export default function App() {
     setCardLightbox(null)
     setTab('decks')
     setActiveDeckId(deckId)
-    // The deck list renders on the next frame; then bring the opened deck to the top.
-    window.setTimeout(() => document.querySelector(`[data-deck-id="${deckId}"]`)?.scrollIntoView({ block: 'start', behavior: 'smooth' }), 60)
+    scrollDeckToTop(deckId)
+  }
+
+  /** The deck list renders on the next frame (a deck open above it collapses); then the opened deck starts at
+   *  the top of the list, so it never opens scrolled down into its sideboard. A jump, not a smooth scroll:
+   *  the collapsing deck and the loading rows shift the layout and cut a smooth scroll short. */
+  function scrollDeckToTop(deckId: string) {
+    window.setTimeout(() => document.querySelector(`[data-deck-id="${deckId}"]`)?.scrollIntoView({ block: 'start' }), 60)
   }
 
   const setProgress = useMemo(() => {
@@ -4880,6 +4886,7 @@ export default function App() {
                           else {
                             setActiveDeckId(d.id)
                             setActiveSection('main')
+                            scrollDeckToTop(d.id)
                           }
                         }}
                         onKeyDown={(e) => {
@@ -4889,6 +4896,7 @@ export default function App() {
                           else {
                             setActiveDeckId(d.id)
                             setActiveSection('main')
+                            scrollDeckToTop(d.id)
                           }
                         }}
                       >
