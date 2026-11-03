@@ -16162,6 +16162,316 @@
       "cmId": null,
       "languageId": 1,
       "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance/Jarvan-IV-Exemplar-of-Demacia-V3-Showcase?language=1"
+    },
+    "rad-002-p": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": "917623",
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance-Promos/Banner-of-Conquest?language=1",
+      "languageId": 1
+    },
+    "rad-008-p": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": "917624",
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance-Promos/War-Scout?language=1",
+      "languageId": 1
+    },
+    "rad-014-p": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": "917625",
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance-Promos/Shimmering-Swimmer?language=1",
+      "languageId": 1
+    },
+    "rad-019-p": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": "917626",
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance-Promos/Firebrand-Raider?language=1",
+      "languageId": 1
+    },
+    "rad-027-p": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": "917627",
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance-Promos/Iridescent-Avian?language=1",
+      "languageId": 1
+    },
+    "rad-029-p": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": "917628",
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance-Promos/Life-from-Stone?language=1",
+      "languageId": 1
+    },
+    "rad-037-p": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": "917629",
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance-Promos/Watchful-Curator?language=1",
+      "languageId": 1
+    },
+    "rad-041-p": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": "917630",
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance-Promos/Hush?language=1",
+      "languageId": 1
+    },
+    "rad-048-p": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": "917631",
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance-Promos/High-Note?language=1",
+      "languageId": 1
+    },
+    "rad-054-p": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": "917632",
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance-Promos/Trinket-Peddler?language=1",
+      "languageId": 1
+    },
+    "rad-055-p": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": "917633",
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance-Promos/Clanging-Sentry?language=1",
+      "languageId": 1
+    },
+    "rad-066-p": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": "917634",
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance-Promos/Spirit-of-the-Forge?language=1",
+      "languageId": 1
+    },
+    "rad-070-p": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": "917635",
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance-Promos/Hold-Em?language=1",
+      "languageId": 1
+    },
+    "rad-076-p": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": "917636",
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance-Promos/Sneaky-Zeebles?language=1",
+      "languageId": 1
+    },
+    "rad-083-p": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": "917637",
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance-Promos/Stalwart-Goatherd?language=1",
+      "languageId": 1
+    },
+    "rad-087-p": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": "917638",
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance-Promos/Portable-Portal?language=1",
+      "languageId": 1
+    },
+    "rad-094-p": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": "917639",
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance-Promos/Explosimian?language=1",
+      "languageId": 1
+    },
+    "rad-096-p": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": "917640",
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance-Promos/Satchel-Charge?language=1",
+      "languageId": 1
+    },
+    "rad-105-p": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": "917641",
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance-Promos/Reckless-Innovator?language=1",
+      "languageId": 1
+    },
+    "rad-107-p": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": "917642",
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance-Promos/Bedeviling-Stranger?language=1",
+      "languageId": 1
+    },
+    "rad-119-p": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": "917643",
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance-Promos/Hunting-Dog?language=1",
+      "languageId": 1
+    },
+    "rad-122-p": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": "917644",
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance-Promos/Party-Crasher?language=1",
+      "languageId": 1
+    },
+    "rad-127-p": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": "917645",
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance-Promos/Rousing-Display?language=1",
+      "languageId": 1
+    },
+    "rad-130-p": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": "917646",
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance-Promos/Battlefield-Armorer?language=1",
+      "languageId": 1
+    },
+    "rad-110-p": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": "917607",
+      "cmUrl": null,
+      "languageId": 1
+    },
+    "rad-r01b-p": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": "917608",
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance-Promos/Fury-Rune?language=1",
+      "languageId": 1
+    },
+    "rad-r02b-p": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": "917609",
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance-Promos/Calm-Rune?language=1",
+      "languageId": 1
+    },
+    "rad-r03b-p": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": "917610",
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance-Promos/Mind-Rune?language=1",
+      "languageId": 1
+    },
+    "rad-r04b-p": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": "917611",
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance-Promos/Body-Rune?language=1",
+      "languageId": 1
+    },
+    "rad-r05b-p": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": "917612",
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance-Promos/Chaos-Rune?language=1",
+      "languageId": 1
+    },
+    "rad-r06b-p": {
+      "low": null,
+      "avg30": null,
+      "trend": null,
+      "foilLow": null,
+      "foilTrend": null,
+      "cmId": "917613",
+      "cmUrl": "https://www.cardmarket.com/en/Riftbound/Products/Singles/Radiance-Promos/Order-Rune?language=1",
+      "languageId": 1
     }
   },
   "language": "English",

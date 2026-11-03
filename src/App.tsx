@@ -397,6 +397,7 @@ const BINDER_SET_ORDER = [
   'VEN',
   'VEN-NN',
   'RAD',
+  'RAD-NN',
 ] as const
 
 
