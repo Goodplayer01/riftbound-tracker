@@ -9,7 +9,8 @@
     "UNL-NN": "Unleashed | Nexus Night",
     "RAD": "Radiance",
     "SFD-NN": "Spiritforged | Nexus Night",
-    "VEN-NN": "Vendetta | Nexus Night"
+    "VEN-NN": "Vendetta | Nexus Night",
+    "RAD-NN": "Radiance | Nexus Night"
   },
   "cards": [
     {
@@ -43519,6 +43520,919 @@
         "overnumbered"
       ],
       "rulesText": "Champion units here have +1 [S]."
+    },
+    {
+      "id": "rad-002-p",
+      "name": "Banner of Conquest",
+      "subtitle": null,
+      "code": "RAD-002-P",
+      "cn": 2,
+      "set": "RAD-NN",
+      "setName": "Radiance | Nexus Night",
+      "types": [
+        "Gear"
+      ],
+      "superTypes": [],
+      "rarity": "Showcase",
+      "domains": [
+        "Fury"
+      ],
+      "energy": 1,
+      "might": 0,
+      "image": "https://static.dotgg.gg/riftbound/cards/RAD-002-P.webp",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": false,
+      "tags": [
+        "showcase",
+        "promo",
+        "nexus-night"
+      ],
+      "rulesText": "[Deploy] (Play this only to a battlefield. When an opponent holds here, kill this.)\nFriendly units here have [Assault]. (+1 [S] while they're attackers.)"
+    },
+    {
+      "id": "rad-008-p",
+      "name": "War Scout",
+      "subtitle": null,
+      "code": "RAD-008-P",
+      "cn": 8,
+      "set": "RAD-NN",
+      "setName": "Radiance | Nexus Night",
+      "types": [
+        "Unit"
+      ],
+      "superTypes": [],
+      "rarity": "Showcase",
+      "domains": [
+        "Fury"
+      ],
+      "energy": 3,
+      "might": 2,
+      "image": "https://static.dotgg.gg/riftbound/cards/RAD-008-P.webp",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": false,
+      "tags": [
+        "showcase",
+        "promo",
+        "nexus-night"
+      ],
+      "rulesText": "[Accelerate] (You may pay [1] [Fury] as an additional cost to have me enter ready.)\nWhen you play me, give a unit +2 [Might] this turn."
+    },
+    {
+      "id": "rad-014-p",
+      "name": "Shimmering Swimmer",
+      "subtitle": null,
+      "code": "RAD-014-P",
+      "cn": 14,
+      "set": "RAD-NN",
+      "setName": "Radiance | Nexus Night",
+      "types": [
+        "Unit"
+      ],
+      "superTypes": [],
+      "rarity": "Showcase",
+      "domains": [
+        "Fury"
+      ],
+      "energy": 3,
+      "might": 3,
+      "image": "https://static.dotgg.gg/riftbound/cards/RAD-014-P.webp",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": false,
+      "tags": [
+        "showcase",
+        "promo",
+        "nexus-night"
+      ],
+      "rulesText": "You may kill a friendly unit or gear as an additional cost to play me.\nWhen you play me, if you paid the additional cost, deal 2 to a unit."
+    },
+    {
+      "id": "rad-019-p",
+      "name": "Firebrand Raider",
+      "subtitle": null,
+      "code": "RAD-019-P",
+      "cn": 19,
+      "set": "RAD-NN",
+      "setName": "Radiance | Nexus Night",
+      "types": [
+        "Unit"
+      ],
+      "superTypes": [],
+      "rarity": "Showcase",
+      "domains": [
+        "Fury"
+      ],
+      "energy": 6,
+      "might": 6,
+      "image": "https://static.dotgg.gg/riftbound/cards/RAD-019-P.webp",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": false,
+      "tags": [
+        "showcase",
+        "promo",
+        "nexus-night"
+      ],
+      "rulesText": "I enter ready.\nWhen you play me, ready all enemy units.\nOther units enter ready.\nUnits don;t ready during the Awaken Phase."
+    },
+    {
+      "id": "rad-027-p",
+      "name": "Iridescent Avian",
+      "subtitle": null,
+      "code": "RAD-027-P",
+      "cn": 27,
+      "set": "RAD-NN",
+      "setName": "Radiance | Nexus Night",
+      "types": [
+        "Unit"
+      ],
+      "superTypes": [],
+      "rarity": "Showcase",
+      "domains": [
+        "Calm"
+      ],
+      "energy": 3,
+      "might": 3,
+      "image": "https://static.dotgg.gg/riftbound/cards/RAD-027-P.webp",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": false,
+      "tags": [
+        "showcase",
+        "promo",
+        "nexus-night"
+      ],
+      "rulesText": "[T]: [Buff] a unit. If it's already buffed, give it +2 [S] this turn instead. (To buff a unit, give it a +1 [S] buff if it doesn't have one.)"
+    },
+    {
+      "id": "rad-029-p",
+      "name": "Life from Stone",
+      "subtitle": null,
+      "code": "RAD-029-P",
+      "cn": 29,
+      "set": "RAD-NN",
+      "setName": "Radiance | Nexus Night",
+      "types": [
+        "Spell"
+      ],
+      "superTypes": [],
+      "rarity": "Showcase",
+      "domains": [
+        "Calm"
+      ],
+      "energy": 1,
+      "might": 0,
+      "image": "https://static.dotgg.gg/riftbound/cards/RAD-029-P.webp",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": false,
+      "tags": [
+        "showcase",
+        "promo",
+        "nexus-night"
+      ],
+      "rulesText": "[Reaction] (Play any time, even before spells and abilities resolve.)\nAs an additional cost to play this, exhaust a friendly unit.\nDraw 1 and channel 1 rune exhausted."
+    },
+    {
+      "id": "rad-037-p",
+      "name": "Watchful Curator",
+      "subtitle": null,
+      "code": "RAD-037-P",
+      "cn": 37,
+      "set": "RAD-NN",
+      "setName": "Radiance | Nexus Night",
+      "types": [
+        "Unit"
+      ],
+      "superTypes": [],
+      "rarity": "Showcase",
+      "domains": [
+        "Calm"
+      ],
+      "energy": 3,
+      "might": 4,
+      "image": "https://static.dotgg.gg/riftbound/cards/RAD-037-P.webp",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": false,
+      "tags": [
+        "showcase",
+        "promo",
+        "nexus-night"
+      ],
+      "rulesText": "Your gear have [Deflect]. (Opponents must pay [A] to choose each with a spell or ability.)"
+    },
+    {
+      "id": "rad-041-p",
+      "name": "Hush",
+      "subtitle": null,
+      "code": "RAD-041-P",
+      "cn": 41,
+      "set": "RAD-NN",
+      "setName": "Radiance | Nexus Night",
+      "types": [
+        "Spell"
+      ],
+      "superTypes": [],
+      "rarity": "Showcase",
+      "domains": [
+        "Calm"
+      ],
+      "energy": 1,
+      "might": 0,
+      "image": "https://static.dotgg.gg/riftbound/cards/RAD-041-P.webp",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": false,
+      "tags": [
+        "showcase",
+        "promo",
+        "nexus-night"
+      ],
+      "rulesText": "[Reaction] (Play any time, even before spells and abilities resolve.)\nCounter a spell with Power cost [Rune] [Rune] or more."
+    },
+    {
+      "id": "rad-048-p",
+      "name": "High Note",
+      "subtitle": null,
+      "code": "RAD-048-P",
+      "cn": 48,
+      "set": "RAD-NN",
+      "setName": "Radiance | Nexus Night",
+      "types": [
+        "Spell"
+      ],
+      "superTypes": [],
+      "rarity": "Showcase",
+      "domains": [
+        "Mind"
+      ],
+      "energy": 3,
+      "might": 0,
+      "image": "https://static.dotgg.gg/riftbound/cards/RAD-048-P.webp",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": false,
+      "tags": [
+        "showcase",
+        "promo",
+        "nexus-night"
+      ],
+      "rulesText": "[Reaction] (Play any time, even before spells and abilities resolve.)\nGive a unit –[S] this turn equal to the number of exhausted units you control."
+    },
+    {
+      "id": "rad-054-p",
+      "name": "Trinket Peddler",
+      "subtitle": null,
+      "code": "RAD-054-P",
+      "cn": 54,
+      "set": "RAD-NN",
+      "setName": "Radiance | Nexus Night",
+      "types": [
+        "Unit"
+      ],
+      "superTypes": [],
+      "rarity": "Showcase",
+      "domains": [
+        "Mind"
+      ],
+      "energy": 3,
+      "might": 3,
+      "image": "https://static.dotgg.gg/riftbound/cards/RAD-054-P.webp",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": false,
+      "tags": [
+        "showcase",
+        "promo",
+        "nexus-night"
+      ],
+      "rulesText": "[Disarm] (When I attack, give an enemy unit here -1 [S] this turn.)"
+    },
+    {
+      "id": "rad-055-p",
+      "name": "Clanging Sentry",
+      "subtitle": null,
+      "code": "RAD-055-P",
+      "cn": 55,
+      "set": "RAD-NN",
+      "setName": "Radiance | Nexus Night",
+      "types": [
+        "Unit"
+      ],
+      "superTypes": [],
+      "rarity": "Showcase",
+      "domains": [
+        "Mind"
+      ],
+      "energy": 3,
+      "might": 2,
+      "image": "https://static.dotgg.gg/riftbound/cards/RAD-055-P.webp",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": false,
+      "tags": [
+        "showcase",
+        "promo",
+        "nexus-night"
+      ],
+      "rulesText": "Your Mechs have [Disarm]. (When each of us attacks, give an enemy unit there -1 [S] this turn.)"
+    },
+    {
+      "id": "rad-066-p",
+      "name": "Spirit of the Forge",
+      "subtitle": null,
+      "code": "RAD-066-P",
+      "cn": 66,
+      "set": "RAD-NN",
+      "setName": "Radiance | Nexus Night",
+      "types": [
+        "Unit"
+      ],
+      "superTypes": [],
+      "rarity": "Showcase",
+      "domains": [
+        "Mind"
+      ],
+      "energy": 6,
+      "might": 4,
+      "image": "https://static.dotgg.gg/riftbound/cards/RAD-066-P.webp",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": false,
+      "tags": [
+        "showcase",
+        "promo",
+        "nexus-night"
+      ],
+      "rulesText": "You may return a friendly gear to its owner's hand as an additional cost to play me.\nWhen you play me, if you paid the additional cost, ready me and give me + [S] this turn equal to the Energy cost of the gear you returned."
+    },
+    {
+      "id": "rad-070-p",
+      "name": "Hold 'Em",
+      "subtitle": null,
+      "code": "RAD-070-P",
+      "cn": 70,
+      "set": "RAD-NN",
+      "setName": "Radiance | Nexus Night",
+      "types": [
+        "Spell"
+      ],
+      "superTypes": [],
+      "rarity": "Showcase",
+      "domains": [
+        "Body"
+      ],
+      "energy": 3,
+      "might": 0,
+      "image": "https://static.dotgg.gg/riftbound/cards/RAD-070-P.webp",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": false,
+      "tags": [
+        "showcase",
+        "promo",
+        "nexus-night"
+      ],
+      "rulesText": "[Action] (Play on your turn or in showdowns.)\nThis costs [2] less if you've played a unit or gear to a battlefield this turn.\nGive a unit +3 [S] this turn."
+    },
+    {
+      "id": "rad-076-p",
+      "name": "Sneaky Zeebles",
+      "subtitle": null,
+      "code": "RAD-076-P",
+      "cn": 76,
+      "set": "RAD-NN",
+      "setName": "Radiance | Nexus Night",
+      "types": [
+        "Unit"
+      ],
+      "superTypes": [],
+      "rarity": "Showcase",
+      "domains": [
+        "Body"
+      ],
+      "energy": 2,
+      "might": 1,
+      "image": "https://static.dotgg.gg/riftbound/cards/RAD-076-P.webp",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": false,
+      "tags": [
+        "showcase",
+        "promo",
+        "nexus-night"
+      ],
+      "rulesText": "When I conquer, [Add] [Rune]. (Abilities that add resources can't be reacted to.)"
+    },
+    {
+      "id": "rad-083-p",
+      "name": "Stalwart Goatherd",
+      "subtitle": null,
+      "code": "RAD-083-P",
+      "cn": 83,
+      "set": "RAD-NN",
+      "setName": "Radiance | Nexus Night",
+      "types": [
+        "Unit"
+      ],
+      "superTypes": [],
+      "rarity": "Showcase",
+      "domains": [
+        "Body"
+      ],
+      "energy": 4,
+      "might": 2,
+      "image": "https://static.dotgg.gg/riftbound/cards/RAD-083-P.webp",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": false,
+      "tags": [
+        "showcase",
+        "promo",
+        "nexus-night"
+      ],
+      "rulesText": "[Shield 2] (+2 [S] while I'm a defender.)\nWhen you play me, you may kill a gear with Energy cost [4] or less."
+    },
+    {
+      "id": "rad-087-p",
+      "name": "Portable Portal",
+      "subtitle": null,
+      "code": "RAD-087-P",
+      "cn": 87,
+      "set": "RAD-NN",
+      "setName": "Radiance | Nexus Night",
+      "types": [
+        "Gear"
+      ],
+      "superTypes": [],
+      "rarity": "Showcase",
+      "domains": [
+        "Body"
+      ],
+      "energy": 2,
+      "might": 0,
+      "image": "https://static.dotgg.gg/riftbound/cards/RAD-087-P.webp",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": false,
+      "tags": [
+        "showcase",
+        "promo",
+        "nexus-night"
+      ],
+      "rulesText": "[Deploy] (Play this only to a battlefield. When an opponent holds here, kill this.)\nWhen you play this, you may pay [Body] to ready a unit here.\nFriendly units here have [Ganking]. (They can move from battlefield to battlefield.)"
+    },
+    {
+      "id": "rad-094-p",
+      "name": "Explosimian",
+      "subtitle": null,
+      "code": "RAD-094-P",
+      "cn": 94,
+      "set": "RAD-NN",
+      "setName": "Radiance | Nexus Night",
+      "types": [
+        "Unit"
+      ],
+      "superTypes": [],
+      "rarity": "Showcase",
+      "domains": [
+        "Chaos"
+      ],
+      "energy": 6,
+      "might": 6,
+      "image": "https://static.dotgg.gg/riftbound/cards/RAD-094-P.webp",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": false,
+      "tags": [
+        "showcase",
+        "promo",
+        "nexus-night"
+      ],
+      "rulesText": "When I hold, play three Bomb gear tokens to a single battlefield. (They have [Deploy]. When each dies, deal 2 to an enemy there and kill your other Bombs there.)"
+    },
+    {
+      "id": "rad-096-p",
+      "name": "Satchel Charge",
+      "subtitle": null,
+      "code": "RAD-096-P",
+      "cn": 96,
+      "set": "RAD-NN",
+      "setName": "Radiance | Nexus Night",
+      "types": [
+        "Spell"
+      ],
+      "superTypes": [],
+      "rarity": "Showcase",
+      "domains": [
+        "Chaos"
+      ],
+      "energy": 3,
+      "might": 0,
+      "image": "https://static.dotgg.gg/riftbound/cards/RAD-096-P.webp",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": false,
+      "tags": [
+        "showcase",
+        "promo",
+        "nexus-night"
+      ],
+      "rulesText": "[Action] (Play on your turn or in showdowns.)\nMove a friendly unit, then play a Bomb gear token to a battlefield. (It has [Deploy]. When it dies, deal 2 to an enemy there and kill your other Bombs there.)"
+    },
+    {
+      "id": "rad-105-p",
+      "name": "Reckless Innovator",
+      "subtitle": null,
+      "code": "RAD-105-P",
+      "cn": 105,
+      "set": "RAD-NN",
+      "setName": "Radiance | Nexus Night",
+      "types": [
+        "Unit"
+      ],
+      "superTypes": [],
+      "rarity": "Showcase",
+      "domains": [
+        "Chaos"
+      ],
+      "energy": 3,
+      "might": 3,
+      "image": "https://static.dotgg.gg/riftbound/cards/RAD-105-P.webp",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": false,
+      "tags": [
+        "showcase",
+        "promo",
+        "nexus-night"
+      ],
+      "rulesText": "[Accelerate] (You may pay [1][C] as an additional cost to have me enter ready.)\nWhen I become exhausted, choose one —Play a Gold gear token exhausted. (It has \"[Reaction][>] Kill this, [T]: [Add] [A].\")Pay [C] to draw 1."
+    },
+    {
+      "id": "rad-107-p",
+      "name": "Bedeviling Stranger",
+      "subtitle": null,
+      "code": "RAD-107-P",
+      "cn": 107,
+      "set": "RAD-NN",
+      "setName": "Radiance | Nexus Night",
+      "types": [
+        "Unit"
+      ],
+      "superTypes": [],
+      "rarity": "Showcase",
+      "domains": [
+        "Chaos"
+      ],
+      "energy": 2,
+      "might": 2,
+      "image": "https://static.dotgg.gg/riftbound/cards/RAD-107-P.webp",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": false,
+      "tags": [
+        "showcase",
+        "promo",
+        "nexus-night"
+      ],
+      "rulesText": "[Hidden] (Hide now for [A] to react with later for [0].)\nWhen you play me, choose a battlefield. If there are 4 or more units there, you may return an enemy unit there to its owner's hand."
+    },
+    {
+      "id": "rad-119-p",
+      "name": "Hunting Dog",
+      "subtitle": null,
+      "code": "RAD-119-P",
+      "cn": 119,
+      "set": "RAD-NN",
+      "setName": "Radiance | Nexus Night",
+      "types": [
+        "Unit"
+      ],
+      "superTypes": [],
+      "rarity": "Showcase",
+      "domains": [
+        "Order"
+      ],
+      "energy": 3,
+      "might": 3,
+      "image": "https://static.dotgg.gg/riftbound/cards/RAD-119-P.webp",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": false,
+      "tags": [
+        "showcase",
+        "promo",
+        "nexus-night"
+      ],
+      "rulesText": "[Deathknell][>] Play a 1 [S] Bird unit token with [Deflect] to your base. (When I die, get the effect. Opponents must pay [A] to choose a [Deflect] unit with a spell or ability.)"
+    },
+    {
+      "id": "rad-122-p",
+      "name": "Party Crasher",
+      "subtitle": null,
+      "code": "RAD-122-P",
+      "cn": 122,
+      "set": "RAD-NN",
+      "setName": "Radiance | Nexus Night",
+      "types": [
+        "Unit"
+      ],
+      "superTypes": [],
+      "rarity": "Showcase",
+      "domains": [
+        "Order"
+      ],
+      "energy": 9,
+      "might": 6,
+      "image": "https://static.dotgg.gg/riftbound/cards/RAD-122-P.webp",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": false,
+      "tags": [
+        "showcase",
+        "promo",
+        "nexus-night"
+      ],
+      "rulesText": "I cost [1] less for each exhausted unit you control.\n[Tank] (I must be assigned combat damage first.)"
+    },
+    {
+      "id": "rad-127-p",
+      "name": "Rousing Display",
+      "subtitle": null,
+      "code": "RAD-127-P",
+      "cn": 127,
+      "set": "RAD-NN",
+      "setName": "Radiance | Nexus Night",
+      "types": [
+        "Spell"
+      ],
+      "superTypes": [],
+      "rarity": "Showcase",
+      "domains": [
+        "Order"
+      ],
+      "energy": 5,
+      "might": 0,
+      "image": "https://static.dotgg.gg/riftbound/cards/RAD-127-P.webp",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": false,
+      "tags": [
+        "showcase",
+        "promo",
+        "nexus-night"
+      ],
+      "rulesText": "[Show Off] a card with Energy cost [7] or more. (As you play this, you may reveal such a card from hand or pick a friendly one.)\nPlay two 1 [S] Recruit unit tokens to your base. If you showed off, play four to your base instead.disa"
+    },
+    {
+      "id": "rad-130-p",
+      "name": "Battlefield Armorer",
+      "subtitle": null,
+      "code": "RAD-130-P",
+      "cn": 130,
+      "set": "RAD-NN",
+      "setName": "Radiance | Nexus Night",
+      "types": [
+        "Unit"
+      ],
+      "superTypes": [],
+      "rarity": "Showcase",
+      "domains": [
+        "Order"
+      ],
+      "energy": 3,
+      "might": 3,
+      "image": "https://static.dotgg.gg/riftbound/cards/RAD-130-P.webp",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": false,
+      "tags": [
+        "showcase",
+        "promo",
+        "nexus-night"
+      ],
+      "rulesText": "When a friendly gear at a battlefield dies, you may pay [1] to return it to its owner's hand."
+    },
+    {
+      "id": "rad-110-p",
+      "name": "Lulu",
+      "subtitle": "Whimsical",
+      "code": "RAD-110-P",
+      "cn": 110,
+      "set": "RAD-NN",
+      "setName": "Radiance | Nexus Night",
+      "types": [
+        "Unit"
+      ],
+      "superTypes": [
+        "Champion"
+      ],
+      "rarity": "Showcase",
+      "domains": [
+        "Chaos"
+      ],
+      "energy": 3,
+      "might": 3,
+      "image": "https://static.dotgg.gg/riftbound/cards/RAD-110-P.webp",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": false,
+      "tags": [
+        "showcase",
+        "promo",
+        "nexus-night"
+      ],
+      "rulesText": "When I move, you may have another unit's base Might become 4 this turn."
+    },
+    {
+      "id": "rad-r01b-p",
+      "name": "Fury Rune",
+      "subtitle": null,
+      "code": "RAD-R01B-P",
+      "cn": 1,
+      "set": "RAD-NN",
+      "setName": "Radiance | Nexus Night",
+      "types": [
+        "Rune"
+      ],
+      "superTypes": [
+        "Basic"
+      ],
+      "rarity": "Showcase",
+      "domains": [
+        "Fury"
+      ],
+      "energy": null,
+      "might": null,
+      "image": "https://static.dotgg.gg/riftbound/cards/RAD-R01b-P.webp",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": false,
+      "tags": [
+        "showcase",
+        "promo",
+        "nexus-night"
+      ],
+      "rulesText": null
+    },
+    {
+      "id": "rad-r02b-p",
+      "name": "Calm Rune",
+      "subtitle": null,
+      "code": "RAD-R02B-P",
+      "cn": 2,
+      "set": "RAD-NN",
+      "setName": "Radiance | Nexus Night",
+      "types": [
+        "Rune"
+      ],
+      "superTypes": [
+        "Basic"
+      ],
+      "rarity": "Showcase",
+      "domains": [
+        "Calm"
+      ],
+      "energy": null,
+      "might": null,
+      "image": "https://static.dotgg.gg/riftbound/cards/RAD-R02b-P.webp",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": false,
+      "tags": [
+        "showcase",
+        "promo",
+        "nexus-night"
+      ],
+      "rulesText": "[NO TEXT]"
+    },
+    {
+      "id": "rad-r03b-p",
+      "name": "Mind Rune",
+      "subtitle": null,
+      "code": "RAD-R03B-P",
+      "cn": 3,
+      "set": "RAD-NN",
+      "setName": "Radiance | Nexus Night",
+      "types": [
+        "Rune"
+      ],
+      "superTypes": [
+        "Basic"
+      ],
+      "rarity": "Showcase",
+      "domains": [
+        "Mind"
+      ],
+      "energy": null,
+      "might": null,
+      "image": "https://static.dotgg.gg/riftbound/cards/RAD-R03b-P.webp",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": false,
+      "tags": [
+        "showcase",
+        "promo",
+        "nexus-night"
+      ],
+      "rulesText": "[NO TEXT]"
+    },
+    {
+      "id": "rad-r04b-p",
+      "name": "Body Rune",
+      "subtitle": null,
+      "code": "RAD-R04B-P",
+      "cn": 4,
+      "set": "RAD-NN",
+      "setName": "Radiance | Nexus Night",
+      "types": [
+        "Rune"
+      ],
+      "superTypes": [
+        "Basic"
+      ],
+      "rarity": "Showcase",
+      "domains": [
+        "Body"
+      ],
+      "energy": null,
+      "might": null,
+      "image": "https://static.dotgg.gg/riftbound/cards/RAD-R04b-P.webp",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": false,
+      "tags": [
+        "showcase",
+        "promo",
+        "nexus-night"
+      ],
+      "rulesText": null
+    },
+    {
+      "id": "rad-r05b-p",
+      "name": "Chaos Rune",
+      "subtitle": null,
+      "code": "RAD-R05B-P",
+      "cn": 5,
+      "set": "RAD-NN",
+      "setName": "Radiance | Nexus Night",
+      "types": [
+        "Rune"
+      ],
+      "superTypes": [
+        "Basic"
+      ],
+      "rarity": "Showcase",
+      "domains": [
+        "Chaos"
+      ],
+      "energy": null,
+      "might": null,
+      "image": "https://static.dotgg.gg/riftbound/cards/RAD-R05b-P.webp",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": false,
+      "tags": [
+        "showcase",
+        "promo",
+        "nexus-night"
+      ],
+      "rulesText": null
+    },
+    {
+      "id": "rad-r06b-p",
+      "name": "Order Rune",
+      "subtitle": null,
+      "code": "RAD-R06B-P",
+      "cn": 6,
+      "set": "RAD-NN",
+      "setName": "Radiance | Nexus Night",
+      "types": [
+        "Rune"
+      ],
+      "superTypes": [
+        "Basic"
+      ],
+      "rarity": "Showcase",
+      "domains": [
+        "Order"
+      ],
+      "energy": null,
+      "might": null,
+      "image": "https://static.dotgg.gg/riftbound/cards/RAD-R06b-P.webp",
+      "signed": false,
+      "overnumbered": false,
+      "altArt": false,
+      "tags": [
+        "showcase",
+        "promo",
+        "nexus-night"
+      ],
+      "rulesText": null
     }
   ]
 }
