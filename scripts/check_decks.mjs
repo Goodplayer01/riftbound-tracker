@@ -1,5 +1,5 @@
 import { readFileSync } from 'node:fs'
-import { canAddToSection, copiesBySection, copyName, coverDeckLines, groupPrints, parseDeckImport, printRuns, printSlots } from '../src/deckHelpers.ts'
+import { canAddToSection, copiesBySection, copyName, coverDeckLines, groupPrints, parseDeckImport, printRuns, printSlots, swapPrint } from '../src/deckHelpers.ts'
 
 function assert(cond, msg) {
   if (!cond) throw new Error(msg)
@@ -97,4 +97,11 @@ const split = copiesBySection([
 const kaisaSplit = split.get(copyName(byId.get('ogn-039-298')))
 assert(kaisaSplit.main === 2 && kaisaSplit.sideboard === 2 && kaisaSplit.champion === undefined, `prints count per section: ${JSON.stringify(kaisaSplit)}`)
 assert(JSON.stringify(split.get(copyName(byId.get(singles[0].id)))) === '{"main":3}' && split.size === 2, 'single-section cards and unknown ids')
+
+// Swapping a print: partial swap keeps the rest, a full swap replaces the line, an existing line grows.
+const sw = (cards, n) => JSON.stringify(swapPrint(cards, 'main', 'base', 'alt', n))
+assert(sw([{ id: 'base', qty: 3, section: 'main' }], 2) === '[{"id":"alt","qty":2,"section":"main"},{"id":"base","qty":1,"section":"main"}]', 'partial swap')
+assert(sw([{ id: 'x', qty: 1, section: 'main' }, { id: 'base', qty: 2, section: 'main' }], 5) === '[{"id":"x","qty":1,"section":"main"},{"id":"alt","qty":2,"section":"main"}]', 'full swap keeps the place')
+assert(sw([{ id: 'base', qty: 2, section: 'main' }, { id: 'alt', qty: 1, section: 'main' }, { id: 'base', qty: 1, section: 'sideboard' }], 1) === '[{"id":"base","qty":1,"section":"main"},{"id":"alt","qty":2,"section":"main"},{"id":"base","qty":1,"section":"sideboard"}]', 'joins the existing line, other sections untouched')
+assert(sw([{ id: 'base', qty: 2, section: 'sideboard' }], 2) === '[{"id":"base","qty":2,"section":"sideboard"}]', 'nothing to swap in that section')
 console.log('ok')

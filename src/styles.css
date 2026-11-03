@@ -2636,12 +2636,16 @@ input[type="checkbox"] { accent-color: var(--primary); }
   opacity: 1; visibility: visible; transform: none;
   transition: opacity .16s var(--ease), transform .16s var(--ease), visibility 0s;
 }
-.prints-pop-list button {
-  display: grid; justify-items: center; align-content: start; gap: 6px; width: 166px; padding: 8px; border: 0; border-radius: 10px;
-  background: transparent; color: var(--text); text-align: center;
-  transition: background-color .12s var(--ease);
+/* One print: art button (to All owned), then its other decks or, when free, the swap button. Free prints drag into the deck. */
+.prints-pop-item { display: flex; flex-direction: column; align-items: center; gap: 6px; width: 166px; padding-bottom: 6px; border-radius: 10px; }
+.prints-pop-item.free { cursor: grab; }
+.prints-pop-item.free:hover { background: var(--fill); }
+.prints-pop-item > button:first-child {
+  display: grid; justify-items: center; align-content: start; gap: 6px; width: 100%; padding: 8px 8px 0; border: 0; border-radius: 10px;
+  background: transparent; color: var(--text); text-align: center; cursor: inherit;
 }
-.prints-pop-list button:hover, .prints-pop-list button:focus-visible { background: var(--fill-hover); }
+.prints-pop-item > button:first-child:focus-visible { background: var(--fill-hover); }
+.prints-pop-item .card-tags { justify-content: center; }
 .prints-pop-art { position: relative; width: 150px; aspect-ratio: 5 / 7; border-radius: 6px; overflow: hidden; background: var(--fill); box-shadow: 0 2px 8px rgb(0 0 0 / .35); }
 .prints-pop-art img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .prints-pop-art b {

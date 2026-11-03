@@ -610,6 +610,26 @@ export function coverDeckLines(
   return out
 }
 
+/** Moves up to `n` copies of one section's line from one print to another (same card, so the copy limit
+ *  holds). The new print joins its line in that section when there is one; an emptied line goes away. */
+export function swapPrint(cards: DeckCard[], section: DeckSection, fromId: string, toId: string, n: number): DeckCard[] {
+  const from = cards.find((x) => x.id === fromId && sectionOf(x) === section)
+  const move = Math.min(n, from?.qty ?? 0)
+  if (move <= 0 || fromId === toId) return cards
+  const hasTo = cards.some((x) => x.id === toId && sectionOf(x) === section)
+  const out: DeckCard[] = []
+  for (const x of cards) {
+    if (sectionOf(x) !== section) out.push(x)
+    else if (x.id === fromId) {
+      // The new print takes the old line's place in deck order unless it already has its own line.
+      if (!hasTo) out.push({ id: toId, qty: move, section })
+      if (x.qty > move) out.push({ ...x, qty: x.qty - move })
+    } else if (x.id === toId) out.push({ ...x, qty: x.qty + move, section })
+    else out.push(x)
+  }
+  return out
+}
+
 export function deckTotalQtyById(cards: DeckCard[]): Map<string, number> {
   const m = new Map<string, number>()
   for (const dc of cards) {
