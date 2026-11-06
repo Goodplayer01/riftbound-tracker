@@ -358,6 +358,8 @@ function DeckThumb({ cardId, src, onOpen, openTitle, zoomIcon, lg }: { cardId?: 
 }
 
 const RARITY_ORDER = ['Common', 'Uncommon', 'Rare', 'Epic', 'Showcase', 'Ultimate Rare'] as const
+/** Booster rarities in the rarity filter, ticked on top of signed / overnumbered / promo / Ultimate Rare. */
+const BASE_RARITIES = ['Common', 'Uncommon', 'Rare', 'Epic'] as const
 
 function raritySlug(rarity: string) {
   return 'rar-' + rarity.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
@@ -558,6 +560,8 @@ function RarityMenu({
   setPromo,
   ultimate,
   setUltimate,
+  rarities,
+  setRarities,
   menuRef,
 }: {
   lang: Lang
@@ -571,13 +575,15 @@ function RarityMenu({
   setPromo: (next: boolean | ((v: boolean) => boolean)) => void
   ultimate: boolean
   setUltimate: (next: boolean | ((v: boolean) => boolean)) => void
+  rarities: string[]
+  setRarities: (next: string[] | ((v: string[]) => string[])) => void
   menuRef: RefObject<HTMLDivElement | null>
 }) {
   return (
     <div className={`lang-menu${open ? ' open' : ''}`} ref={menuRef}>
       <button
         type="button"
-        className={`lang-trigger${open ? ' open' : ''}${signed || over || promo || ultimate ? ' filtered' : ''}`}
+        className={`lang-trigger${open ? ' open' : ''}${signed || over || promo || ultimate || rarities.length ? ' filtered' : ''}`}
         title={t(lang, 'filter.rarity')}
         aria-label={t(lang, 'filter.rarity')}
         aria-haspopup="menu"
@@ -591,6 +597,22 @@ function RarityMenu({
       </button>
       {open && (
         <div className="lang-dropdown" role="menu" aria-label={t(lang, 'filter.rarity')} style={{ left: 0, right: 'auto' }}>
+          {BASE_RARITIES.map((r) => {
+            const on = rarities.includes(r)
+            return (
+              <button
+                key={r}
+                type="button"
+                role="menuitemcheckbox"
+                aria-checked={on}
+                className={`lang-option${on ? ' active' : ''}`}
+                onClick={() => setRarities((v) => (v.includes(r) ? v.filter((x) => x !== r) : [...v, r]))}
+              >
+                <input type="checkbox" className="lang-check" checked={on} readOnly tabIndex={-1} />
+                <span>{r}</span>
+              </button>
+            )
+          })}
           <button
             type="button"
             role="menuitemcheckbox"
@@ -961,6 +983,7 @@ export default function App() {
   const [rarityOver, setRarityOver] = useState(false)
   const [rarityPromo, setRarityPromo] = useState(false)
   const [rarityUltimate, setRarityUltimate] = useState(false)
+  const [rarityPick, setRarityPick] = useState<string[]>([])
   const [rarityMenuOpen, setRarityMenuOpen] = useState(false)
   const rarityMenuRef = useRef<HTMLDivElement | null>(null)
   const [abilityFilter, setAbilityFilter] = useState<string[]>([])
@@ -1423,8 +1446,9 @@ export default function App() {
   /** Domain, signed/over/promo, and search haystack. Set and type stay catalog-only. */
   function matchesSharedFilters(c: Card, query: string) {
     if (!cardMatchesDomains(c.domains, domainFilter)) return false
-    if (raritySigned || rarityOver || rarityPromo || rarityUltimate) {
+    if (raritySigned || rarityOver || rarityPromo || rarityUltimate || rarityPick.length) {
       const hit =
+        rarityPick.includes(c.rarity ?? '') ||
         (raritySigned && !!c.signed) ||
         (rarityOver && !!c.overnumbered) ||
         (rarityPromo && isPromoCard(c)) ||
@@ -1507,7 +1531,7 @@ export default function App() {
       if (ownedOnly && ownedQty(collection[c.id]) <= 0) return false
       return matchesFilters(c, query)
     })
-  }, [cards, deferredQ, setFilter, typeFilter, domainFilter, raritySigned, rarityOver, rarityPromo, rarityUltimate, abilityFilter, ownedOnly, collection])
+  }, [cards, deferredQ, setFilter, typeFilter, domainFilter, raritySigned, rarityOver, rarityPromo, rarityUltimate, rarityPick, abilityFilter, ownedOnly, collection])
 
   const ownedCards = useMemo(
     () => cards.filter((c) => ownedQty(collection[c.id]) > 0),
@@ -1751,6 +1775,7 @@ export default function App() {
       setRarityOver(false)
       setRarityPromo(false)
       setRarityUltimate(false)
+      setRarityPick([])
       setAbilityFilter([])
       setDomainFilter([])
       setBinderRarity(null)
@@ -1900,7 +1925,7 @@ export default function App() {
       if (pa == null || pb == null) return (pa == null ? 1 : 0) - (pb == null ? 1 : 0) || bySet(a, b)
       return dir * (pa - pb) || bySet(a, b)
     })
-  }, [binderView, cards, collection, borrowedInTotals, deferredQ, binderOwnedOnly, binderMissing, binderMissingFoil, binderRarity, ownedSet, ownedSort, ownedBorrowedOnly, ownedNotInDeck, decksByCard, borrowedTotals, priceBook, domainFilter, raritySigned, rarityOver, rarityPromo, rarityUltimate, abilityFilter])
+  }, [binderView, cards, collection, borrowedInTotals, deferredQ, binderOwnedOnly, binderMissing, binderMissingFoil, binderRarity, ownedSet, ownedSort, ownedBorrowedOnly, ownedNotInDeck, decksByCard, borrowedTotals, priceBook, domainFilter, raritySigned, rarityOver, rarityPromo, rarityUltimate, rarityPick, abilityFilter])
 
   /** Sets with owned cards, in binder order, for the All owned set filter. */
   const ownedSets = useMemo(() => {
@@ -4261,6 +4286,8 @@ export default function App() {
                     setPromo={setRarityPromo}
                     ultimate={rarityUltimate}
                     setUltimate={setRarityUltimate}
+                    rarities={rarityPick}
+                    setRarities={setRarityPick}
                     menuRef={rarityMenuRef}
                   />
                   <AbilityMenu lang={lang} open={abilityMenuOpen} setOpen={setAbilityMenuOpen} value={abilityFilter} onChange={setAbilityFilter} menuRef={abilityMenuRef} />
@@ -4423,6 +4450,8 @@ export default function App() {
                 setPromo={setRarityPromo}
                 ultimate={rarityUltimate}
                 setUltimate={setRarityUltimate}
+                rarities={rarityPick}
+                setRarities={setRarityPick}
                 menuRef={rarityMenuRef}
               />
               <AbilityMenu lang={lang} open={abilityMenuOpen} setOpen={setAbilityMenuOpen} value={abilityFilter} onChange={setAbilityFilter} menuRef={abilityMenuRef} />
@@ -4503,6 +4532,8 @@ export default function App() {
                 setPromo={setRarityPromo}
                 ultimate={rarityUltimate}
                 setUltimate={setRarityUltimate}
+                rarities={rarityPick}
+                setRarities={setRarityPick}
                 menuRef={rarityMenuRef}
               />
               <AbilityMenu lang={lang} open={abilityMenuOpen} setOpen={setAbilityMenuOpen} value={abilityFilter} onChange={setAbilityFilter} menuRef={abilityMenuRef} />
