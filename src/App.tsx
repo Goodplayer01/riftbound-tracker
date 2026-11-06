@@ -358,7 +358,7 @@ function DeckThumb({ cardId, src, onOpen, openTitle, zoomIcon, lg }: { cardId?: 
 }
 
 const RARITY_ORDER = ['Common', 'Uncommon', 'Rare', 'Epic', 'Showcase', 'Ultimate Rare'] as const
-/** Booster rarities in the rarity filter, ticked on top of signed / overnumbered / promo / Ultimate Rare. */
+/** Booster rarities on top of the rarity filter; then Promo, Showcase, Overnumbered, Signed, Ultimate Rare (Stefan's order). */
 const BASE_RARITIES = ['Common', 'Uncommon', 'Rare', 'Epic'] as const
 
 function raritySlug(rarity: string) {
@@ -597,62 +597,39 @@ function RarityMenu({
       </button>
       {open && (
         <div className="lang-dropdown" role="menu" aria-label={t(lang, 'filter.rarity')} style={{ left: 0, right: 'auto' }}>
-          {BASE_RARITIES.map((r) => {
-            const on = rarities.includes(r)
-            return (
-              <button
-                key={r}
-                type="button"
-                role="menuitemcheckbox"
-                aria-checked={on}
-                className={`lang-option${on ? ' active' : ''}`}
-                onClick={() => setRarities((v) => (v.includes(r) ? v.filter((x) => x !== r) : [...v, r]))}
-              >
-                <input type="checkbox" className="lang-check" checked={on} readOnly tabIndex={-1} />
-                <span>{r}</span>
-              </button>
-            )
-          })}
-          <button
-            type="button"
-            role="menuitemcheckbox"
-            aria-checked={signed}
-            className={`lang-option${signed ? ' active' : ''}`}
-            onClick={() => setSigned((v) => !v)}
-          >
-            <input type="checkbox" className="lang-check" checked={signed} readOnly tabIndex={-1} />
-            <span>{t(lang, 'filter.signed')}</span>
-          </button>
-          <button
-            type="button"
-            role="menuitemcheckbox"
-            aria-checked={over}
-            className={`lang-option${over ? ' active' : ''}`}
-            onClick={() => setOver((v) => !v)}
-          >
-            <input type="checkbox" className="lang-check" checked={over} readOnly tabIndex={-1} />
-            <span>{t(lang, 'filter.overnumbered')}</span>
-          </button>
-          <button
-            type="button"
-            role="menuitemcheckbox"
-            aria-checked={promo}
-            className={`lang-option${promo ? ' active' : ''}`}
-            onClick={() => setPromo((v) => !v)}
-          >
-            <input type="checkbox" className="lang-check" checked={promo} readOnly tabIndex={-1} />
-            <span>{t(lang, 'filter.promo')}</span>
-          </button>
-          <button
-            type="button"
-            role="menuitemcheckbox"
-            aria-checked={ultimate}
-            className={`lang-option${ultimate ? ' active' : ''}`}
-            onClick={() => setUltimate((v) => !v)}
-          >
-            <input type="checkbox" className="lang-check" checked={ultimate} readOnly tabIndex={-1} />
-            <span>{t(lang, 'filter.ultimate')}</span>
-          </button>
+          {[
+            ...BASE_RARITIES.map((r) => ({
+              key: r,
+              slug: raritySlug(r),
+              label: r as string,
+              on: rarities.includes(r),
+              toggle: () => setRarities((v) => (v.includes(r) ? v.filter((x) => x !== r) : [...v, r])),
+            })),
+            { key: 'promo', slug: 'rar-promo', label: t(lang, 'filter.promo'), on: promo, toggle: () => setPromo((v) => !v) },
+            {
+              key: 'Showcase',
+              slug: 'rar-showcase',
+              label: 'Showcase',
+              on: rarities.includes('Showcase'),
+              toggle: () => setRarities((v) => (v.includes('Showcase') ? v.filter((x) => x !== 'Showcase') : [...v, 'Showcase'])),
+            },
+            { key: 'over', slug: 'rar-overnumbered', label: t(lang, 'filter.overnumbered'), on: over, toggle: () => setOver((v) => !v) },
+            { key: 'signed', slug: 'rar-signed', label: t(lang, 'filter.signed'), on: signed, toggle: () => setSigned((v) => !v) },
+            { key: 'ultimate', slug: 'rar-ultimate-rare', label: t(lang, 'filter.ultimate'), on: ultimate, toggle: () => setUltimate((v) => !v) },
+          ].map((o) => (
+            <button
+              key={o.key}
+              type="button"
+              role="menuitemcheckbox"
+              aria-checked={o.on}
+              className={`lang-option rarity-option ${o.slug}${o.on ? ' active' : ''}`}
+              onClick={o.toggle}
+            >
+              <input type="checkbox" className="lang-check" checked={o.on} readOnly tabIndex={-1} />
+              <span className="rarity-dot" aria-hidden="true" />
+              <span className="rarity-label">{o.label}</span>
+            </button>
+          ))}
         </div>
       )}
     </div>

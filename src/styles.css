@@ -403,6 +403,23 @@ textarea.field { min-height: 160px; resize: vertical; font-family: ui-monospace,
 .rar-showcase .rarity-count, .rar-showcase .rarity-label { color: var(--accent2); }
 .rar-ultimate-rare .rarity-track span { background: linear-gradient(90deg, var(--accent2), #d7b4ff); }
 .rar-ultimate-rare .rarity-count, .rar-ultimate-rare .rarity-label { color: #e4c8ff; }
+/* Rarity filter menu: each entry in its rarity colour (dot + label), Signed like the tile flag. */
+.rar-signed .rarity-label { color: var(--warn); }
+.rar-promo .rarity-label { color: #8cc4ff; }
+.rar-overnumbered .rarity-label { color: #ff8f80; }
+.rarity-option .rarity-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; background: currentColor; }
+.rarity-option.rar-common .rarity-dot { background: #9aa3b5; }
+.rarity-option.rar-uncommon .rarity-dot { background: #6ec8c4; }
+.rarity-option.rar-rare .rarity-dot { background: #e05ca8; }
+.rarity-option.rar-epic .rarity-dot { background: #e0893a; }
+.rarity-option.rar-showcase .rarity-dot { background: var(--accent2); }
+.rarity-option.rar-ultimate-rare .rarity-dot { background: linear-gradient(135deg, var(--accent2), #d7b4ff); }
+.rarity-option.rar-overnumbered .rarity-dot { background: linear-gradient(135deg, #ff8f80, var(--accent2)); }
+.rarity-option.rar-signed .rarity-dot { background: var(--warn); }
+.rarity-option.rar-promo .rarity-dot { background: #8cc4ff; }
+.rarity-option .rarity-label { font-weight: 600; }
+.rarity-option:hover .rarity-label { color: var(--on-primary); }
+.rarity-option:hover .rarity-dot { box-shadow: 0 0 0 1.5px rgb(0 0 0 / .35); }
 .value-pill {
   border: 0; background: var(--primary-soft);
   border-radius: 999px; padding: 4px 10px; font-size: 12px; color: var(--warn);
