@@ -1,5 +1,5 @@
 import { readFileSync } from 'node:fs'
-import { canAddToSection, copiesBySection, copyName, coverDeckLines, groupPrints, parseDeckImport, plannedCopies, printRuns, printSlots, swapPrint } from '../src/deckHelpers.ts'
+import { canAddToSection, copiesBySection, copyName, coverDeckLines, groupPrints, parseDeckImport, plannedCopies, printRuns, printSlots, swapPrint, takeFromOtherDecks } from '../src/deckHelpers.ts'
 
 function assert(cond, msg) {
   if (!cond) throw new Error(msg)
@@ -119,4 +119,12 @@ assert(pl('oldBottom') === '[]', 'the oldest deck has nothing planned elsewhere'
 assert(pl('oldTop') === '[["y",2]]', `old decks: further down is older: ${pl('oldTop')}`)
 assert(pl('new1') === '[["x",3],["y",2]]', `old decks come before dated ones: ${pl('new1')}`)
 assert(pl('new2') === '[["x",5],["y",3]]', `every older deck adds up, all sections: ${pl('new2')}`)
+
+// Moving imported cards out of other decks: at most the imported copies, list order, the import deck untouched.
+const mv = takeFromOtherDecks(listed, 'new2', [{ id: 'x', qty: 3, section: 'main' }, { id: 'y', qty: 1, section: 'main' }], 'T')
+assert(mv.decks[0] === listed[0], 'the import deck stays as it is')
+assert(JSON.stringify(mv.decks[1].cards) === '[]' && mv.decks[1].updatedAt === 'T', `new1 gives x×2 and y×1: ${JSON.stringify(mv.decks[1].cards)}`)
+assert(JSON.stringify(mv.decks[2].cards) === '[{"id":"x","qty":2,"section":"main"}]', 'oldTop gives the last x')
+assert(mv.decks[3] === listed[3], 'y is used up, oldBottom keeps its copies')
+assert(JSON.stringify([...mv.moved]) === '[["x",[{"deck":"new1","qty":2},{"deck":"oldTop","qty":1}]],["y",[{"deck":"new1","qty":1}]]]', `moved: ${JSON.stringify([...mv.moved])}`)
 console.log('ok')

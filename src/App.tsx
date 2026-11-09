@@ -1,6 +1,6 @@
 import { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState, type CSSProperties, type DragEvent as ReactDragEvent, type MouseEvent as ReactMouseEvent, type PointerEvent as ReactPointerEvent, type ReactNode, type RefObject } from 'react'
 import { fetchRemotePrices, loadBundledPrices, loadCachedPrices, newerPriceBook } from './prices'
-import type { BorrowedCard, BorrowedGroup, Card, Catalog, Deck, DeckSection, Owned, PriceBook, PriceEntry } from './types'
+import type { BorrowedCard, BorrowedGroup, Card, Catalog, Deck, DeckCard, DeckSection, Owned, PriceBook, PriceEntry } from './types'
 import { backupOnce, loadAlertsSeen, loadBorrowed, loadCollection, loadCopies, loadDecks, loadSaleAsks, loadSales, loadSoldLog, loadWish, loadWishTargets, saveAlertsSeen, saveBorrowed, saveCollection, saveCopies, saveDecks, saveSaleAsks, saveSales, saveSoldLog, saveWish, saveWishTargets, type Collection } from './storage'
 import { ownedQty, saleSplit } from './collection'
 import { fmtEur, loadLang, saveLang, t, type Lang } from './i18n'
@@ -48,6 +48,7 @@ import {
   cardKey,
   groupPrints,
   swapPrint,
+  takeFromOtherDecks,
   plannedCopies,
 } from './deckHelpers'
 import { banStatus, type BanStatus } from './banlist'
@@ -1105,6 +1106,10 @@ export default function App() {
   const [dragOverBorrow, setDragOverBorrow] = useState(false)
   const [dragRejectBorrow, setDragRejectBorrow] = useState(false)
   const [deckNotice, setDeckNotice] = useState<string | null>(null)
+  /** Imported cards other decks already use: the dialog asks whether to move them here. */
+  const [importMove, setImportMove] = useState<null | { deckId: string; cards: DeckCard[] }>(null)
+  /** Session only: per deck id, per card id the decks the import moved its copies from ("Was in ..."). */
+  const [movedFrom, setMovedFrom] = useState<Record<string, Record<string, { deck: string; qty: number }[]>>>({})
   const deckDragged = useRef(false)
 
   function restoreDecks() {
@@ -3009,6 +3014,9 @@ export default function App() {
                     <BorrowedBadge from={borrowedInFrom.get(c.id)} lang={lang} />
                     {elsewherePills(c)}
                     {otherDeckPills(c.id, deck)}
+                    {(movedFrom[deck.id]?.[c.id] || []).map((u) => (
+                      <span key={u.deck} className="ban-badge other-deck-badge" title={t(lang, 'decks.wasInHint', { deck: u.deck })}>{t(lang, 'decks.wasIn', { deck: u.deck, n: u.qty })}</span>
+                    ))}
                   </div>
                   <div className="sub">
                     {c.code}
@@ -3466,6 +3474,16 @@ export default function App() {
     setDeckNotice(parts.length ? parts.join(' · ') : null)
     setDeckImportOpen(false)
     if (isDeckComplete(sanitized.cards)) setHandPromptDeckId(activeDeckId)
+    if (takeFromOtherDecks(decks, activeDeckId, sanitized.cards, '').moved.size) setImportMove({ deckId: activeDeckId, cards: sanitized.cards })
+  }
+
+  function confirmImportMove() {
+    if (!importMove) return
+    const { moved } = takeFromOtherDecks(decks, importMove.deckId, importMove.cards, '')
+    const at = new Date().toISOString()
+    setDecks((prev) => takeFromOtherDecks(prev, importMove.deckId, importMove.cards, at).decks)
+    setMovedFrom((prev) => ({ ...prev, [importMove.deckId]: { ...prev[importMove.deckId], ...Object.fromEntries(moved) } }))
+    setImportMove(null)
   }
 
 
@@ -6108,6 +6126,36 @@ export default function App() {
               ) : (
                 <button type="button" className="btn small deck-trash" onClick={applyDeckConfirm}><Icon name="trash-2" />{t(lang, 'decks.clearConfirm')}</button>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+      {importMove && (
+        <div
+          className="card-lightbox"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="import-move-title"
+          onClick={() => setImportMove(null)}
+        >
+          <div className="panel confirm-box" onClick={(e) => e.stopPropagation()}>
+            <p id="import-move-title" className="help" style={{ margin: 0 }}>{t(lang, 'decks.moveAsk')}</p>
+            <div className="import-move-list">
+              {[...takeFromOtherDecks(decks, importMove.deckId, importMove.cards, '').moved].map(([id, uses]) => {
+                const c = byId.get(id)
+                return (
+                  <div key={id} className="import-move-row">
+                    <span>{c ? displayCardName(c) : id}</span>
+                    <span className="card-tags">
+                      {uses.map((u) => <span key={u.deck} className="ban-badge other-deck-badge">{t(lang, 'decks.moveFrom', { deck: u.deck, n: u.qty })}</span>)}
+                    </span>
+                  </div>
+                )
+              })}
+            </div>
+            <div className="confirm-actions">
+              <button type="button" className="btn small" onClick={() => setImportMove(null)}><Icon name="x" />{t(lang, 'decks.moveNo')}</button>
+              <button type="button" className="btn small primary" onClick={confirmImportMove}><Icon name="check" />{t(lang, 'decks.moveYes')}</button>
             </div>
           </div>
         </div>
