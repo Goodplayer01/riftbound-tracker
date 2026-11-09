@@ -650,6 +650,31 @@ export function plannedCopies(decks: Deck[], deck: Deck): Map<string, number> {
   return out
 }
 
+/** Takes the copies of `imported` (same print) out of every other deck, at most as many per card as were
+ *  imported, decks in list order. `moved`: per card id which decks gave how many. */
+export function takeFromOtherDecks(decks: Deck[], deckId: string, imported: DeckCard[], at: string) {
+  const left = deckTotalQtyById(imported)
+  const moved = new Map<string, { deck: string; qty: number }[]>()
+  const out = decks.map((d) => {
+    if (d.id === deckId) return d
+    let changed = false
+    const cards: DeckCard[] = []
+    for (const x of d.cards) {
+      const take = Math.min(x.qty, left.get(x.id) ?? 0)
+      if (take <= 0) { cards.push(x); continue }
+      changed = true
+      left.set(x.id, (left.get(x.id) ?? 0) - take)
+      const m = moved.get(x.id) || []
+      const same = m.find((u) => u.deck === d.name)
+      if (same) same.qty += take
+      else moved.set(x.id, [...m, { deck: d.name, qty: take }])
+      if (x.qty > take) cards.push({ ...x, qty: x.qty - take })
+    }
+    return changed ? { ...d, cards, updatedAt: at } : d
+  })
+  return { decks: out, moved }
+}
+
 export function deckTotalQtyById(cards: DeckCard[]): Map<string, number> {
   const m = new Map<string, number>()
   for (const dc of cards) {

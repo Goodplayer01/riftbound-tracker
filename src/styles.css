@@ -240,6 +240,8 @@ button.side-value:hover { color: var(--primary); }
 .deck-export-box { width: min(560px, 100%); }
 .deck-export-box textarea.field { min-height: 220px; user-select: text; }
 .confirm-actions { display: flex; justify-content: flex-end; gap: 8px; }
+.import-move-list { display: grid; gap: 8px; max-height: 50vh; overflow-y: auto; }
+.import-move-row { display: grid; gap: 4px; font-size: 13px; }
 
 /* Backup tab */
 .backup-actions { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; margin: 16px 0; }
