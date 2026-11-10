@@ -86,6 +86,7 @@ import {
   type HandState,
 } from './handTester'
 import { downloadSharePng, renderDeckShareCanvas } from './deckScreenshot'
+import { deckFromImage } from './deckFromImage'
 import { Icon, type IconName } from './Icon'
 import { sellText, stockCsv, wantsText, type CmLine } from './cardmarket'
 import { historyPoints, loadPriceHistory, type PriceHistoryFile } from './priceHistory'
@@ -1005,6 +1006,9 @@ export default function App() {
   const [activeSection, setActiveSection] = useState<DeckSection>('main')
   const [deckImportText, setDeckImportText] = useState('')
   const [deckImportOpen, setDeckImportOpen] = useState(false)
+  const [deckImageBusy, setDeckImageBusy] = useState(false)
+  const [deckImageNote, setDeckImageNote] = useState<string | null>(null)
+  const deckImageInput = useRef<HTMLInputElement>(null)
   const [deckExportText, setDeckExportText] = useState<string | null>(null)
   /** i18n key of the export dialog title (deck list or borrowed list). */
   const [exportTitleKey, setExportTitleKey] = useState('decks.exportTitle')
@@ -3474,6 +3478,25 @@ export default function App() {
     }
   }
 
+  /** A deck share image (file or pasted): the read list goes into the import box to check, nothing is imported yet. */
+  async function readDeckImage(file: Blob) {
+    setDeckImageBusy(true)
+    setDeckImageNote(null)
+    try {
+      const res = await deckFromImage(file, cards, cardThumb, (id) => (collection[id]?.qty || 0) + (collection[id]?.foil || 0) > 0)
+      if (res) setDeckImportText(res.text)
+      setDeckImageNote(
+        res
+          ? t(lang, 'decks.imageDone', { n: res.count }) + (res.unsure.length ? ' ' + t(lang, 'decks.imageUnsure', { names: [...new Set(res.unsure)].join(', ') }) : '')
+          : t(lang, 'decks.imageFail'),
+      )
+    } catch {
+      setDeckImageNote(t(lang, 'decks.imageFail'))
+    } finally {
+      setDeckImageBusy(false)
+    }
+  }
+
   function runDeckImport(text: string) {
     if (!activeDeckId) return
     const result = parseDeckImport(text, cards)
@@ -3799,11 +3822,32 @@ export default function App() {
                         placeholder={"Legend:\n1 Kennen, Heart of the Tempest\nChampion:\n1 Kennen, Storm of Shuriken\nMainDeck:\n3 Traveling Merchant\n..."}
                         value={deckImportText}
                         onChange={(e) => setDeckImportText(e.target.value)}
+                        onPaste={(e) => {
+                          const image = [...e.clipboardData.files].find((f) => f.type.startsWith('image/'))
+                          if (!image) return
+                          e.preventDefault()
+                          void readDeckImage(image)
+                        }}
                         rows={10}
                       />
                       <div className="toolbar" style={{ marginBottom: 0 }}>
                         <button className="btn primary" disabled={!deckImportText.trim()} onClick={() => runDeckImport(deckImportText)}><Icon name="upload" />{t(lang, 'decks.importBtn')}</button>
+                        <button className="btn" disabled={deckImageBusy} title={t(lang, 'decks.imageHint')} onClick={() => deckImageInput.current?.click()}>
+                          {deckImageBusy ? t(lang, 'decks.imageBusy') : t(lang, 'decks.imageBtn')}
+                        </button>
+                        <input
+                          ref={deckImageInput}
+                          type="file"
+                          accept="image/*"
+                          hidden
+                          onChange={(e) => {
+                            const file = e.target.files?.[0]
+                            e.target.value = ''
+                            if (file) void readDeckImage(file)
+                          }}
+                        />
                       </div>
+                      {deckImageNote && <p className="muted" style={{ margin: '8px 0 0' }}>{deckImageNote}</p>}
                     </div>
                   )}
 

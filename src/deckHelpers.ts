@@ -157,7 +157,7 @@ export function migrateDeck(d: Deck, byId: Map<string, Card>): Deck {
   return changed ? { ...d, cards } : d
 }
 
-function printScore(c: Card): number {
+export function printScore(c: Card): number {
   let s = 0
   const id = c.id.toLowerCase()
   const code = c.code.toLowerCase()
