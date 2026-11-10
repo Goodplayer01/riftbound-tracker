@@ -1056,6 +1056,8 @@ export default function App() {
   /** Set filter in the All owned tab ('' = every set). */
   const [ownedSet, setOwnedSet] = useState('')
   const [ownedSort, setOwnedSort] = useState<'set' | 'price-desc' | 'price-asc'>('set')
+  /** Sales cart order: newest first, or by the value of one copy (own price first, else Cardmarket). */
+  const [saleSort, setSaleSort] = useState<'new' | 'price-asc' | 'price-desc'>('new')
   const [ownedBorrowedOnly, setOwnedBorrowedOnly] = useState(false)
   /** All owned: only cards no deck uses (with Borrowed only: borrowed cards you can give back). */
   const [ownedNotInDeck, setOwnedNotInDeck] = useState(false)
@@ -2108,6 +2110,12 @@ export default function App() {
       parts.push(names + more)
     }
     setBulkReport(parts.join(' · '))
+  }
+
+  /** Value of n cart copies: your own price per copy when set (e.g. the cheapest German offer), else Cardmarket. */
+  function saleLineEur(id: string, n: number) {
+    const ask = saleAsks[id]
+    return ask != null ? ask * n : ownedLineEur(saleSplit(collection[id], n), priceBook?.cards[id])
   }
 
   function saleRemaining(id: string) {
@@ -4647,13 +4655,18 @@ export default function App() {
             <section className="panel col-fill" data-remove-src="sale">
               <div className="toolbar">
                 <h2 style={{ margin: 0 }}>{t(lang, 'sales.cart')}</h2>
-                <span className="deck-list-count">{t(lang, 'wish.total', { eur: fmtEur(lang, Object.entries(saleList).reduce((sum, [id, n]) => { const c = byId.get(id); return sum + (c ? ownedLineEur(saleSplit(collection[id], n), priceBook?.cards[id]) : 0) }, 0)) ?? '' })}</span>
-                {Object.keys(saleAsks).some((id) => saleList[id]) && (
-                  <span className="deck-list-count">
-                    {t(lang, 'sales.listedTotal', { eur: fmtEur(lang, Object.entries(saleAsks).reduce((sum, [id, eur]) => sum + eur * (saleList[id] || 0), 0)) ?? '' })}
-                  </span>
-                )}
+                <span className="deck-list-count">{t(lang, 'wish.total', { eur: fmtEur(lang, Object.entries(saleList).reduce((sum, [id, n]) => sum + (byId.has(id) ? saleLineEur(id, n) : 0), 0)) ?? '' })}</span>
                 <span style={{ flex: 1 }} />
+                <select
+                  className="select"
+                  aria-label={t(lang, 'owned.sort')}
+                  value={saleSort}
+                  onChange={(e) => setSaleSort(e.target.value as typeof saleSort)}
+                >
+                  <option value="new">{t(lang, 'sales.sortNew')}</option>
+                  <option value="price-asc">{t(lang, 'sales.sortPriceAsc')}</option>
+                  <option value="price-desc">{t(lang, 'sales.sortPriceDesc')}</option>
+                </select>
                 {saleSelected.length > 0 && (
                   <button
                     className="btn primary"
@@ -4686,11 +4699,18 @@ export default function App() {
                   <div className="empty">{t(lang, 'sales.emptyCart')}</div>
                 )}
                 <div className="grid">
-                  {Object.entries(saleList).map(([id, qty]) => {
+                  {(() => {
+                    // saleList keeps the order cards were added in, so newest first is that order reversed.
+                    const rows = Object.entries(saleList).reverse()
+                    if (saleSort === 'new') return rows
+                    const dir = saleSort === 'price-asc' ? 1 : -1
+                    const each = (id: string, n: number) => saleLineEur(id, n) / Math.max(1, n)
+                    return rows.sort(([a, na], [b, nb]) => dir * (each(a, na) - each(b, nb)))
+                  })().map(([id, qty]) => {
                     const c = byId.get(id)
                     if (!c) return null
                     const have = ownedQty(collection[id])
-                    const line = ownedLineEur(saleSplit(collection[id], qty), priceBook?.cards[id])
+                    const line = saleLineEur(id, qty)
                     const selected = saleSel.includes(id)
                     // Copies without a lot, or bought without a price: the sale would book them without cost.
                     const noDetails = copyGroups(copies[id], collection[id], isFoilOnly(c)).some((g) => !g.lot || (!g.lot.pulled && g.buy == null))
