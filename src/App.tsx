@@ -1056,8 +1056,8 @@ export default function App() {
   /** Set filter in the All owned tab ('' = every set). */
   const [ownedSet, setOwnedSet] = useState('')
   const [ownedSort, setOwnedSort] = useState<'set' | 'price-desc' | 'price-asc'>('set')
-  /** Sales cart order: newest first, or by the value of one copy (own price first, else Cardmarket). */
-  const [saleSort, setSaleSort] = useState<'new' | 'price-asc' | 'price-desc'>('new')
+  /** Sales search order: catalogue, recently added to the collection, or by the value of one copy. */
+  const [saleSort, setSaleSort] = useState<'default' | 'new' | 'price-asc' | 'price-desc'>('default')
   const [ownedBorrowedOnly, setOwnedBorrowedOnly] = useState(false)
   /** All owned: only cards no deck uses (with Borrowed only: borrowed cards you can give back). */
   const [ownedNotInDeck, setOwnedNotInDeck] = useState(false)
@@ -2165,12 +2165,22 @@ export default function App() {
   const saleSelected = saleSel.filter((id) => (saleList[id] || 0) > 0)
   const saleQuery = saleQ.trim().toLowerCase()
   // The whole catalogue by default (owned counts can be set right there); plain runes are not tracked.
-  const saleHits = (saleOwnedOnly ? ownedCards : cards.filter((c) => !isPlainRune(c))).filter((c) => {
-    if (!saleQuery) return true
-    return (
-      cardMatchesQuery(c, saleQuery)
-    )
-  }).slice(0, 80)
+  const saleMatches = (saleOwnedOnly ? ownedCards : cards.filter((c) => !isPlainRune(c))).filter((c) => !saleQuery || cardMatchesQuery(c, saleQuery))
+  if (saleSort === 'new') {
+    // rawCollection keeps the order cards first got a count in (a card at 0 and added again moves to the end).
+    const at = new Map(Object.keys(rawCollection).map((id, i) => [id, i]))
+    saleMatches.sort((a, b) => (at.get(b.id) ?? -1) - (at.get(a.id) ?? -1))
+  } else if (saleSort !== 'default') {
+    // One copy: your own price when set, else Cardmarket (foil when you only own foils); unpriced cards last.
+    const price = (c: Card) => saleAsks[c.id] ?? unitEur(priceBook?.cards[c.id], isFoilOnly(c) || (!(collection[c.id]?.qty || 0) && (collection[c.id]?.foil || 0) > 0))
+    const dir = saleSort === 'price-asc' ? 1 : -1
+    saleMatches.sort((a, b) => {
+      const pa = price(a), pb = price(b)
+      if (pa == null || pb == null) return (pa == null ? 1 : 0) - (pb == null ? 1 : 0)
+      return dir * (pa - pb)
+    })
+  }
+  const saleHits = saleMatches.slice(0, 80)
 
   function applySalePaste() {
     const lines = salePaste.split(/\r?\n/).map((l) => l.trim()).filter(Boolean)
@@ -4657,16 +4667,6 @@ export default function App() {
                 <h2 style={{ margin: 0 }}>{t(lang, 'sales.cart')}</h2>
                 <span className="deck-list-count">{t(lang, 'wish.total', { eur: fmtEur(lang, Object.entries(saleList).reduce((sum, [id, n]) => sum + (byId.has(id) ? saleLineEur(id, n) : 0), 0)) ?? '' })}</span>
                 <span style={{ flex: 1 }} />
-                <select
-                  className="select"
-                  aria-label={t(lang, 'owned.sort')}
-                  value={saleSort}
-                  onChange={(e) => setSaleSort(e.target.value as typeof saleSort)}
-                >
-                  <option value="new">{t(lang, 'sales.sortNew')}</option>
-                  <option value="price-asc">{t(lang, 'sales.sortPriceAsc')}</option>
-                  <option value="price-desc">{t(lang, 'sales.sortPriceDesc')}</option>
-                </select>
                 {saleSelected.length > 0 && (
                   <button
                     className="btn primary"
@@ -4699,14 +4699,7 @@ export default function App() {
                   <div className="empty">{t(lang, 'sales.emptyCart')}</div>
                 )}
                 <div className="grid">
-                  {(() => {
-                    // saleList keeps the order cards were added in, so newest first is that order reversed.
-                    const rows = Object.entries(saleList).reverse()
-                    if (saleSort === 'new') return rows
-                    const dir = saleSort === 'price-asc' ? 1 : -1
-                    const each = (id: string, n: number) => saleLineEur(id, n) / Math.max(1, n)
-                    return rows.sort(([a, na], [b, nb]) => dir * (each(a, na) - each(b, nb)))
-                  })().map(([id, qty]) => {
+                  {Object.entries(saleList).map(([id, qty]) => {
                     const c = byId.get(id)
                     if (!c) return null
                     const have = ownedQty(collection[id])
@@ -4867,6 +4860,17 @@ export default function App() {
                 <button type="button" className={`chip ${saleOwnedOnly ? 'active' : ''}`} aria-pressed={saleOwnedOnly} onClick={() => setSaleOwnedOnly((v) => !v)}>
                   {t(lang, 'catalog.ownedOnly')}
                 </button>
+                <select
+                  className="select"
+                  aria-label={t(lang, 'owned.sort')}
+                  value={saleSort}
+                  onChange={(e) => setSaleSort(e.target.value as typeof saleSort)}
+                >
+                  <option value="default">{t(lang, 'sales.sortDefault')}</option>
+                  <option value="new">{t(lang, 'sales.sortNew')}</option>
+                  <option value="price-asc">{t(lang, 'sales.sortPriceAsc')}</option>
+                  <option value="price-desc">{t(lang, 'sales.sortPriceDesc')}</option>
+                </select>
               </div>
               <div className="list">
                 {saleHits.map((c) => {
