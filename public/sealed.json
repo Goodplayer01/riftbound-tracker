@@ -1,5 +1,5 @@
 {
- "updatedAt": "2026-11-09T12:38:01.106Z",
+ "updatedAt": "2026-11-10T12:18:25.153Z",
  "currency": "EUR",
  "sets": {
   "OGN": "Origins",
@@ -1613,12 +1613,6 @@
    "platform": "shopify"
   },
   {
-   "name": "Cardbuddys",
-   "url": "https://www.cardbuddys.de",
-   "city": "Hanau",
-   "platform": "shopify"
-  },
-  {
    "name": "Cardcosmos",
    "url": "https://cardcosmos.de",
    "city": "Flensburg",
@@ -1647,12 +1641,6 @@
    "url": "https://eldoradotcg.de",
    "city": "Bad Kreuznach",
    "platform": "shopify"
-  },
-  {
-   "name": "Epic Card Store GmbH ",
-   "url": "https://epic-card-store.de",
-   "city": "Köln",
-   "platform": "woo"
   },
   {
    "name": "Geek Haven",
@@ -1709,15 +1697,9 @@
    "platform": "woo"
   },
   {
-   "name": "Kartenstube",
-   "url": "https://www.kartenstube.com",
-   "city": "Pulheim",
-   "platform": "woo"
-  },
-  {
    "name": "Lake Cards",
    "url": "https://lakecards.de",
-   "city": null,
+   "city": "Markdorf",
    "platform": "shopify"
   },
   {
@@ -1875,16 +1857,6 @@
    "preorder": false
   },
   {
-   "shop": "https://www.battle-bear-sb.de",
-   "title": "Riftbound Origins Display (24 Booster) Englisch",
-   "price": 200.0,
-   "available": true,
-   "url": "https://www.battle-bear-sb.de/products/riftbound-league-of-legends-tcg-origins-booster-display-24-packs-englisch",
-   "set": "OGN",
-   "lang": "EN",
-   "preorder": false
-  },
-  {
    "shop": "https://battle-bear-kl.de",
    "title": "Riftbound Origins Display (24 Booster) Englisch",
    "price": 200.0,
@@ -1950,16 +1922,6 @@
    "price": 119.99,
    "available": true,
    "url": "https://www.geeksheaven.de/products/riftbound-league-of-legends-tcg-radiance-booster-display-24-packs-englisch",
-   "set": "RAD",
-   "lang": "EN",
-   "preorder": false
-  },
-  {
-   "shop": "https://www.cardbuddys.de",
-   "title": "Riftbound Radiance Booster Display EN",
-   "price": 124.95,
-   "available": true,
-   "url": "https://www.cardbuddys.de/products/riftbound-radiance-booster-display-en",
    "set": "RAD",
    "lang": "EN",
    "preorder": false
@@ -2075,16 +2037,6 @@
    "preorder": false
   },
   {
-   "shop": "https://www.moon-shadow.de",
-   "title": "Riftbound League of Legends - Spiritforged-Boosterbox - englisch",
-   "price": 149.99,
-   "available": true,
-   "url": "https://www.moon-shadow.de/products/riftbound-league-of-legends-spiritforged-boosterbox-englisch",
-   "set": "SFD",
-   "lang": "EN",
-   "preorder": false
-  },
-  {
    "shop": "https://nerdbank.de",
    "title": "Riftbound Spiritforged Display - EN",
    "price": 184.9,
@@ -2180,26 +2132,6 @@
    "price": 39.99,
    "available": false,
    "url": "https://lakecards.de/products/riftbound-unleashed-display-booster-chinesisch-slim?variant=58905812107599",
-   "set": "UNL",
-   "lang": "ZH",
-   "preorder": false
-  },
-  {
-   "shop": "https://www.cardbuddys.de",
-   "title": "Riftbound Unleashed Slim Booster Display S-CH",
-   "price": 49.95,
-   "available": true,
-   "url": "https://www.cardbuddys.de/products/riftbound-unleashed-slim-booster-display-s-ch",
-   "set": "UNL",
-   "lang": "ZH",
-   "preorder": false
-  },
-  {
-   "shop": "https://www.cardbuddys.de",
-   "title": "Riftbound Unleashed Jumbo Booster Display S-CH",
-   "price": 69.95,
-   "available": true,
-   "url": "https://www.cardbuddys.de/products/riftbound-unleashed-jumbo-booster-display-s-ch",
    "set": "UNL",
    "lang": "ZH",
    "preorder": false
