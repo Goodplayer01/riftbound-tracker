@@ -28,8 +28,8 @@ export function resolveToken(token: string, cards: Card[]): Card | undefined {
       if (c.set !== n.set) return false
       if (String(c.cn) !== n.cn) return false
       const codeAlt = (
-        c.code.match(/-(\d+)([a-zA-Z])[*/]/)?.[2] ||
-        c.id.match(/-(\d+)([a-z])-/)?.[2] ||
+        c.code.match(/-(\d+)([a-zA-Z])(?:[*/]|$)/)?.[2] ||
+        c.id.match(/-(\d+)([a-z])(?:-|$)/)?.[2] ||
         ''
       ).toLowerCase()
       const isSigned = !!(c.signed || /[*★]/.test(c.code) || /-star-/.test(c.id))

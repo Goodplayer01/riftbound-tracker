@@ -49,6 +49,7 @@ jobs:
           node --experimental-strip-types scripts/check_roadmap.mjs
           node --experimental-strip-types scripts/check_handtester.mjs
           node --experimental-strip-types scripts/check_share.mjs
+          node --experimental-strip-types scripts/check_deckimage.mjs
           node --experimental-strip-types scripts/check_search.mjs
           node scripts/check_errata.mjs
 

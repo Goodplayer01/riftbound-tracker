@@ -2,12 +2,17 @@ import type { Card, Deck, DeckCard } from './types'
 import { groupPrints, printRuns, printSlots, sectionOf } from './deckHelpers.ts'
 
 // Same palette as the app: near-black canvas, amber accent, Apple grey for secondary text.
-const BG = '#0f0f11'
+export const SHARE_BG = '#0f0f11'
 const AMBER = '#f5a623'
 const MUTED = '#98989f'
 const FONT = '"Inter Variable", system-ui, sans-serif'
 /** 3× logical layout so the exported PNG stays crisp, unless that breaks the limits below. */
 const RENDER_SCALE = 3
+/** Layout values the image import (deckFromImage.ts) reads the picture back with: left column width, section
+ *  label height, rune icon size and the gap between the blocks of the left column. */
+export const SHARE_LAYOUT = { leftW: 210, labelH: 24, domainIcon: 34, stackGap: 20 }
+/** Font of the rune counts next to the domain icons. */
+export const RUNE_QTY_FONT = `700 15px ${FONT}`
 /** Share image limits: at most 16 megapixels and 8 MB, so chat apps take it without recompressing. */
 export const SHARE_MAX_PIXELS = 16_000_000
 export const SHARE_MAX_BYTES = 8_000_000
@@ -40,7 +45,7 @@ function fullResImageUrl(url: string | null | undefined): string | null {
   }
 }
 
-async function loadUrl(url: string | null | undefined): Promise<Loaded> {
+export async function loadUrl(url: string | null | undefined): Promise<Loaded> {
   const full = fullResImageUrl(url)
   if (!full) return null
   let src = full
@@ -91,7 +96,7 @@ function drawCover(ctx: CanvasRenderingContext2D, img: HTMLImageElement, cx: num
   ctx.drawImage(img, cx - dw / 2, cy - dh / 2, dw, dh)
 }
 
-function drawQtyBadge(
+export function drawQtyBadge(
   ctx: CanvasRenderingContext2D,
   x: number,
   y: number,
@@ -248,20 +253,20 @@ export async function renderDeckShareCanvas(
 
     const pad = 28
     const headerH = 58
-    const labelH = 24
-    const leftW = 210
+    const labelH = SHARE_LAYOUT.labelH
+    const leftW = SHARE_LAYOUT.leftW
     const gap = 24
     const cardGap = 8
     const legendH = Math.round(leftW * 1039 / 744)
-    const domainIcon = 34
+    const domainIcon = SHARE_LAYOUT.domainIcon
     const domainRowH = domainCounts.size ? labelH + domainIcon : 0
     // Full landscape card (744×1039 on its side); a thin strip cropped away most of the art.
     const bfH = Math.round(leftW * 744 / 1039)
     const bfGap = 10
     const leftStack =
       legendH +
-      (domainRowH ? 20 + domainRowH : 0) +
-      (battlefields.length ? 20 + labelH + battlefields.length * (bfH + bfGap) - bfGap : 0)
+      (domainRowH ? SHARE_LAYOUT.stackGap + domainRowH : 0) +
+      (battlefields.length ? SHARE_LAYOUT.stackGap + labelH + battlefields.length * (bfH + bfGap) - bfGap : 0)
 
     // Pick the column count that gives the largest cards while main deck + sideboard
     // fit next to the left stack, so the grid fills the space whatever the copy count (more prints in
@@ -302,7 +307,7 @@ export async function renderDeckShareCanvas(
     ctx.imageSmoothingEnabled = true
     ctx.imageSmoothingQuality = 'high'
 
-    ctx.fillStyle = BG
+    ctx.fillStyle = SHARE_BG
     ctx.fillRect(0, 0, width, height)
     const glow = ctx.createRadialGradient(0, 0, 0, 0, 0, width * 0.6)
     glow.addColorStop(0, 'rgba(245,166,35,0.10)')
@@ -336,7 +341,7 @@ export async function renderDeckShareCanvas(
     ly += legendH
 
     if (domainCounts.size) {
-      ly += 20
+      ly += SHARE_LAYOUT.stackGap
       drawLabel(ctx, 'Runes', null, lx, ly)
       ly += labelH
       let dx = lx
@@ -344,7 +349,7 @@ export async function renderDeckShareCanvas(
         const dimg = domainImgs.get(dom)
         if (dimg) ctx.drawImage(dimg, dx, ly, domainIcon, domainIcon)
         ctx.fillStyle = '#f5f5f7'
-        ctx.font = `700 15px ${FONT}`
+        ctx.font = RUNE_QTY_FONT
         ctx.textBaseline = 'middle'
         const qtyLabel = `×${n}`
         ctx.fillText(qtyLabel, dx + domainIcon + 6, ly + domainIcon / 2 + 1)
@@ -356,7 +361,7 @@ export async function renderDeckShareCanvas(
     }
 
     if (battlefields.length) {
-      ly += 20
+      ly += SHARE_LAYOUT.stackGap
       drawLabel(ctx, 'Battlefields', battlefields.length, lx, ly)
       ly += labelH
       for (const bf of battlefields) {
