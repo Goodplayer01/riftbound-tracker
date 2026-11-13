@@ -1,5 +1,5 @@
 {
- "updatedAt": "2026-11-12T12:19:53.468Z",
+ "updatedAt": "2026-11-13T11:58:06.258Z",
  "currency": "EUR",
  "sets": {
   "OGN": "Origins",
@@ -10,7 +10,7 @@
   "LEGACY": "Legacy"
  },
  "cardmarket": {
-  "guideCreatedAt": "2026-11-12T02:51:40+0100",
+  "guideCreatedAt": "2026-11-13T02:44:34+0100",
   "products": [
    {
     "id": 917595,
@@ -58,11 +58,11 @@
     "category": "Riftbound Riftbound Box Sets",
     "display": false,
     "lang": "EN",
-    "low": 38.5,
+    "low": 34.5,
     "avg1": null,
     "avg7": null,
     "avg30": null,
-    "trend": 39.95
+    "trend": 39.98
    },
    {
     "id": 845721,
@@ -75,7 +75,7 @@
     "avg1": null,
     "avg7": null,
     "avg30": null,
-    "trend": 181.1
+    "trend": 178.6
    },
    {
     "id": 862274,
@@ -88,7 +88,7 @@
     "avg1": null,
     "avg7": null,
     "avg30": null,
-    "trend": 71.75
+    "trend": 72.68
    },
    {
     "id": 862272,
@@ -179,7 +179,7 @@
     "avg1": null,
     "avg7": null,
     "avg30": null,
-    "trend": 20.3
+    "trend": 20.93
    },
    {
     "id": 887715,
@@ -244,7 +244,7 @@
     "avg1": null,
     "avg7": null,
     "avg30": null,
-    "trend": 7.63
+    "trend": 7.84
    },
    {
     "id": 862354,
@@ -322,7 +322,7 @@
     "avg1": null,
     "avg7": null,
     "avg30": null,
-    "trend": 15.86
+    "trend": 0.02
    },
    {
     "id": 847069,
@@ -331,7 +331,7 @@
     "category": "Riftbound Booster",
     "display": false,
     "lang": "EN",
-    "low": 10.5,
+    "low": 9.99,
     "avg1": null,
     "avg7": null,
     "avg30": null,
@@ -348,7 +348,7 @@
     "avg1": null,
     "avg7": null,
     "avg30": null,
-    "trend": 8.09
+    "trend": 8.2
    },
    {
     "id": 848218,
@@ -426,7 +426,7 @@
     "avg1": null,
     "avg7": null,
     "avg30": null,
-    "trend": 17.81
+    "trend": 15.58
    },
    {
     "id": 887716,
@@ -543,7 +543,7 @@
     "avg1": null,
     "avg7": null,
     "avg30": null,
-    "trend": 4.92
+    "trend": 4.79
    },
    {
     "id": 897516,
@@ -556,7 +556,7 @@
     "avg1": null,
     "avg7": null,
     "avg30": null,
-    "trend": 635.72
+    "trend": 628.71
    },
    {
     "id": 917622,
@@ -569,7 +569,7 @@
     "avg1": null,
     "avg7": null,
     "avg30": null,
-    "trend": 4.84
+    "trend": 57.21
    },
    {
     "id": 897513,
@@ -595,7 +595,7 @@
     "avg1": null,
     "avg7": null,
     "avg30": null,
-    "trend": 31.09
+    "trend": 30.71
    },
    {
     "id": 920168,
@@ -647,7 +647,7 @@
     "avg1": null,
     "avg7": null,
     "avg30": null,
-    "trend": 24.88
+    "trend": 24.43
    },
    {
     "id": 920170,
@@ -660,7 +660,7 @@
     "avg1": null,
     "avg7": null,
     "avg30": null,
-    "trend": 13.04
+    "trend": 5.03
    },
    {
     "id": 920169,
@@ -686,7 +686,7 @@
     "avg1": null,
     "avg7": null,
     "avg30": null,
-    "trend": 133.85
+    "trend": 134.44
    },
    {
     "id": 864142,
@@ -764,7 +764,7 @@
     "avg1": null,
     "avg7": null,
     "avg30": null,
-    "trend": 6.38
+    "trend": 6.47
    },
    {
     "id": 866424,
@@ -838,7 +838,7 @@
     "category": "Riftbound Booster",
     "display": false,
     "lang": "EN",
-    "low": 12.99,
+    "low": 9.99,
     "avg1": null,
     "avg7": null,
     "avg30": null,
@@ -894,7 +894,7 @@
     "avg1": null,
     "avg7": null,
     "avg30": null,
-    "trend": 58.97
+    "trend": 62.12
    },
    {
     "id": 871910,
@@ -933,7 +933,7 @@
     "avg1": null,
     "avg7": null,
     "avg30": null,
-    "trend": 129.14
+    "trend": 129.25
    },
    {
     "id": 884445,
@@ -985,7 +985,7 @@
     "avg1": null,
     "avg7": null,
     "avg30": null,
-    "trend": 5.9
+    "trend": 5.79
    },
    {
     "id": 884447,
@@ -1037,7 +1037,7 @@
     "avg1": null,
     "avg7": null,
     "avg30": null,
-    "trend": 786.85
+    "trend": 785.67
    },
    {
     "id": 889063,
@@ -1059,7 +1059,7 @@
     "category": "Riftbound Booster",
     "display": false,
     "lang": "EN",
-    "low": 12.99,
+    "low": 9.99,
     "avg1": null,
     "avg7": null,
     "avg30": null,
@@ -1089,7 +1089,7 @@
     "avg1": null,
     "avg7": null,
     "avg30": null,
-    "trend": 3.24
+    "trend": 3.25
    },
    {
     "id": 886613,
@@ -1128,7 +1128,7 @@
     "avg1": null,
     "avg7": null,
     "avg30": null,
-    "trend": 34.09
+    "trend": 35.64
    },
    {
     "id": 906004,
@@ -1180,7 +1180,7 @@
     "avg1": null,
     "avg7": null,
     "avg30": null,
-    "trend": 20.48
+    "trend": 22.12
    },
    {
     "id": 877275,
@@ -1193,7 +1193,7 @@
     "avg1": null,
     "avg7": null,
     "avg30": null,
-    "trend": 15.1
+    "trend": 15.32
    },
    {
     "id": 888358,
@@ -1206,7 +1206,7 @@
     "avg1": null,
     "avg7": null,
     "avg30": null,
-    "trend": 112.3
+    "trend": 114.41
    },
    {
     "id": 901070,
@@ -1258,7 +1258,7 @@
     "avg1": null,
     "avg7": null,
     "avg30": null,
-    "trend": 134.48
+    "trend": 133.72
    },
    {
     "id": 888357,
@@ -1375,7 +1375,7 @@
     "avg1": null,
     "avg7": null,
     "avg30": null,
-    "trend": 34.48
+    "trend": 34.42
    },
    {
     "id": 914405,
@@ -1401,7 +1401,7 @@
     "avg1": null,
     "avg7": null,
     "avg30": null,
-    "trend": 2.81
+    "trend": 1.23
    },
    {
     "id": 898217,
@@ -1440,7 +1440,7 @@
     "avg1": null,
     "avg7": null,
     "avg30": null,
-    "trend": 28.48
+    "trend": 31.49
    },
    {
     "id": 898216,
@@ -1479,7 +1479,7 @@
     "avg1": null,
     "avg7": null,
     "avg30": null,
-    "trend": 15.1
+    "trend": 14.9
    },
    {
     "id": 917164,
@@ -1544,7 +1544,7 @@
     "avg1": null,
     "avg7": null,
     "avg30": null,
-    "trend": 34.09
+    "trend": 33.59
    },
    {
     "id": 887718,
@@ -1570,7 +1570,7 @@
     "avg1": null,
     "avg7": null,
     "avg30": null,
-    "trend": 2691.42
+    "trend": 2241.23
    },
    {
     "id": 898213,
@@ -1583,7 +1583,7 @@
     "avg1": null,
     "avg7": null,
     "avg30": null,
-    "trend": 129.42
+    "trend": 125.58
    },
    {
     "id": 922931,
@@ -1602,10 +1602,22 @@
  },
  "shops": [
   {
+   "name": "AbedsantcgWorld",
+   "url": "https://www.abedsantcgworld.de",
+   "city": "Ennepetal",
+   "platform": "shopify"
+  },
+  {
    "name": "Adequamus - Collect 'em all!",
    "url": "https://adequamus.de",
    "city": "Neu-Isenburg",
    "platform": "woo"
+  },
+  {
+   "name": "Arcane Area GmbH",
+   "url": "https://www.arcanearea.com",
+   "city": "Hamm",
+   "platform": "shopify"
   },
   {
    "name": "Battle Bear Kaiserslautern",
@@ -1620,9 +1632,27 @@
    "platform": "shopify"
   },
   {
+   "name": "Booster - Trading Cards & more",
+   "url": "https://www.boostertcg.de",
+   "city": "Bremen",
+   "platform": "shopify"
+  },
+  {
    "name": "Break the Case",
    "url": "https://www.breakthecase.de",
    "city": "Frankfurt am Main",
+   "platform": "shopify"
+  },
+  {
+   "name": "Brudicards",
+   "url": "https://www.brudicards.de",
+   "city": "Remscheid",
+   "platform": "shopify"
+  },
+  {
+   "name": "Caiko TCG",
+   "url": "https://www.caikotcg.com",
+   "city": "Düsseldorf",
    "platform": "shopify"
   },
   {
@@ -1638,6 +1668,18 @@
    "platform": "shopify"
   },
   {
+   "name": "Card-Knights",
+   "url": "https://card-knights.de",
+   "city": "Grasleben",
+   "platform": "shopify"
+  },
+  {
+   "name": "CardaniaCity",
+   "url": "https://cardaniacity.de",
+   "city": "Löningen",
+   "platform": "shopify"
+  },
+  {
    "name": "Cardbuddys",
    "url": "https://www.cardbuddys.de",
    "city": "Hanau",
@@ -1647,6 +1689,12 @@
    "name": "Cardcosmos",
    "url": "https://cardcosmos.de",
    "city": "Flensburg",
+   "platform": "shopify"
+  },
+  {
+   "name": "Carl Otto Spiel und Freizeit GmBH",
+   "url": "https://www.carl-otto.com",
+   "city": "Delmenhorst",
    "platform": "shopify"
   },
   {
@@ -1704,6 +1752,24 @@
    "platform": "shopify"
   },
   {
+   "name": "Hall of Games",
+   "url": "https://hallofgamestcg.de",
+   "city": "Halle (Saale)",
+   "platform": "shopify"
+  },
+  {
+   "name": "Hallicards",
+   "url": "https://hallicards.de",
+   "city": "Overath",
+   "platform": "shopify"
+  },
+  {
+   "name": "Heavencards",
+   "url": "https://heavencards.de",
+   "city": "Hamburg",
+   "platform": "shopify"
+  },
+  {
    "name": "Heroes Stash",
    "url": "https://heroes-stash.de",
    "city": "Recklinghausen",
@@ -1734,6 +1800,18 @@
    "platform": "woo"
   },
   {
+   "name": "KARDS Greifswald",
+   "url": "https://kardsgreifswald.de",
+   "city": "Greifswald",
+   "platform": "shopify"
+  },
+  {
+   "name": "Kartenbasis",
+   "url": "https://kartenbasis.de",
+   "city": "Oberhausen",
+   "platform": "shopify"
+  },
+  {
    "name": "Kartenstube",
    "url": "https://www.kartenstube.com",
    "city": "Pulheim",
@@ -1752,15 +1830,39 @@
    "platform": "shopify"
   },
   {
+   "name": "MaBasso",
+   "url": "https://www.mabasso.com",
+   "city": "Kempen",
+   "platform": "shopify"
+  },
+  {
    "name": "Mad Bro's",
    "url": "https://madbrosgamingshop.com",
    "city": "Fürth",
    "platform": "woo"
   },
   {
+   "name": "Manaquelle",
+   "url": "https://manaquelle.de",
+   "city": "Bad Segeberg",
+   "platform": "shopify"
+  },
+  {
    "name": "Moon-Shadow Store",
    "url": "https://www.moon-shadow.de",
    "city": "Eußenheim",
+   "platform": "shopify"
+  },
+  {
+   "name": "Mulligan TCG Shop",
+   "url": "https://mulligantcg.com",
+   "city": "Hamburg",
+   "platform": "shopify"
+  },
+  {
+   "name": "NextGen TCG",
+   "url": "https://www.nextgen-tcg.de",
+   "city": "Berlin",
    "platform": "shopify"
   },
   {
@@ -1776,9 +1878,27 @@
    "platform": "shopify"
   },
   {
+   "name": "Olli-Baba Sammelkarten",
+   "url": "https://www.olli-baba.com",
+   "city": "Essen",
+   "platform": "shopify"
+  },
+  {
+   "name": "Olli-Baba Sammelkarten",
+   "url": "https://www.olli-baba.de",
+   "city": "Essen",
+   "platform": "shopify"
+  },
+  {
    "name": "OwnLightz TCG&Games Shop",
    "url": "https://ownztcgshop.com",
    "city": "Rheinfelden (Baden)",
+   "platform": "shopify"
+  },
+  {
+   "name": "Phoboscards Gbr",
+   "url": "https://phoboscards.de",
+   "city": "Wuppertal",
    "platform": "shopify"
   },
   {
@@ -1788,9 +1908,21 @@
    "platform": "woo"
   },
   {
+   "name": "Play Planet Ruhrpottspiele",
+   "url": "https://ruhrpottspiele.de",
+   "city": "Essen",
+   "platform": "shopify"
+  },
+  {
    "name": "Pokeminati",
    "url": "https://pokeminati.de",
    "city": "Mühlhausen",
+   "platform": "shopify"
+  },
+  {
+   "name": "SpellbookGmbH",
+   "url": "https://spellbook-celle.de",
+   "city": "Celle",
    "platform": "shopify"
   },
   {
@@ -1806,15 +1938,45 @@
    "platform": "woo"
   },
   {
+   "name": "Superelf-Cards",
+   "url": "https://superelf-cards.de",
+   "city": "Eberswalde",
+   "platform": "shopify"
+  },
+  {
+   "name": "TCG Garden",
+   "url": "https://tcg-garden.com",
+   "city": "Duderstadt",
+   "platform": "shopify"
+  },
+  {
    "name": "TCG Tavern",
    "url": "https://tcgtavern.de",
    "city": "Dachau",
    "platform": "shopify"
   },
   {
+   "name": "TCG-Cabin GmbH",
+   "url": "https://www.tcg-cabin.com",
+   "city": "Mannheim",
+   "platform": "woo"
+  },
+  {
    "name": "TCG-Siegburg",
    "url": "https://www.tcg-siegburg.de",
    "city": "Siegburg",
+   "platform": "shopify"
+  },
+  {
+   "name": "TCGBros",
+   "url": "https://tcgbros.de",
+   "city": "Buxtehude",
+   "platform": "shopify"
+  },
+  {
+   "name": "TCGHimmel",
+   "url": "https://www.tcghimmel.de",
+   "city": "Bremerhaven",
    "platform": "shopify"
   },
   {
@@ -1830,6 +1992,24 @@
    "platform": "woo"
   },
   {
+   "name": "Welt der Karten",
+   "url": "https://weltderkarten.berlin",
+   "city": "Berlin",
+   "platform": "shopify"
+  },
+  {
+   "name": "yugi-oase-store",
+   "url": "https://www.yugi-oase.de",
+   "city": "Meißen",
+   "platform": "shopify"
+  },
+  {
+   "name": "yvovle GmbH",
+   "url": "https://yvolve.shop",
+   "city": "Wietmarschen",
+   "platform": "shopify"
+  },
+  {
    "name": "ZTCards",
    "url": "https://www.ztcards.de",
    "city": "Heusenstamm",
@@ -1843,6 +2023,16 @@
   }
  ],
  "offers": [
+  {
+   "shop": "https://www.yugi-oase.de",
+   "title": "Riftbound: League of Legends - LEGACY - Display - englisch -",
+   "price": 149.0,
+   "available": true,
+   "url": "https://www.yugi-oase.de/products/riftbound-league-of-legends-legacy-display-englisch",
+   "set": "LEGACY",
+   "lang": "EN",
+   "preorder": false
+  },
   {
    "shop": "https://cardcosmos.de",
    "title": "Riftbound: League of Legends TCG - Origins Slim Display - CHN",
@@ -1864,6 +2054,26 @@
    "preorder": false
   },
   {
+   "shop": "https://www.mabasso.com",
+   "title": "[KOR] Riftbound: League of Legends - Origins - Booster Display",
+   "price": 79.99,
+   "available": true,
+   "url": "https://www.mabasso.com/products/kor-riftbound-league-of-legends-origins-booster-display",
+   "set": "OGN",
+   "lang": "KO",
+   "preorder": false
+  },
+  {
+   "shop": "https://www.mabasso.com",
+   "title": "[CN] Riftbound: League of Legends - Origins - Booster Display",
+   "price": 80.0,
+   "available": true,
+   "url": "https://www.mabasso.com/products/cn-riftbound-league-of-legends-origins-booster-display",
+   "set": "OGN",
+   "lang": "ZH",
+   "preorder": false
+  },
+  {
    "shop": "https://www.geeksheaven.de",
    "title": "Riftbound League of Legends TCG Origins Jumbo Display (chinesisch)",
    "price": 99.99,
@@ -1871,6 +2081,16 @@
    "url": "https://www.geeksheaven.de/products/riftbound-league-of-legends-tcg-origins-jumbo-display-chinesisch",
    "set": "OGN",
    "lang": "ZH",
+   "preorder": false
+  },
+  {
+   "shop": "https://phoboscards.de",
+   "title": "Riftbound League of Legends TCG Origins Booster Display (24 packs) Englisch",
+   "price": 129.99,
+   "available": false,
+   "url": "https://phoboscards.de/products/riftbound-league-of-legends-tcg-origins-booster-display-24-packs-englisch",
+   "set": "OGN",
+   "lang": "EN",
    "preorder": false
   },
   {
@@ -1914,11 +2134,31 @@
    "preorder": false
   },
   {
+   "shop": "https://kardsgreifswald.de",
+   "title": "Origins Booster Display (24 packs) - Riftbound: League of Legends TCG (ENG)",
+   "price": 240.0,
+   "available": true,
+   "url": "https://kardsgreifswald.de/products/origins-booster-display-24-packs-riftbound-league-of-legends-tcg",
+   "set": "OGN",
+   "lang": "EN",
+   "preorder": false
+  },
+  {
    "shop": "https://lakecards.de",
    "title": "Riftbound: League of Legends-TCG – Origins – Boosterbox (24 Packs) – EN",
    "price": 249.99,
    "available": true,
    "url": "https://lakecards.de/products/riftbound-league-of-legends-tcg-origins-boosterbox-24-packs-en?variant=57832064254287",
+   "set": "OGN",
+   "lang": "EN",
+   "preorder": false
+  },
+  {
+   "shop": "https://www.mabasso.com",
+   "title": "[EN] Riftbound: League of Legends - Origins - Booster Display",
+   "price": 249.99,
+   "available": true,
+   "url": "https://www.mabasso.com/products/riftbound-league-of-legends-tcg-origins-booster-display-24-packs-englisch",
    "set": "OGN",
    "lang": "EN",
    "preorder": false
@@ -1944,6 +2184,16 @@
    "preorder": false
   },
   {
+   "shop": "https://www.boostertcg.de",
+   "title": "Riftbound: Radiance Display - Englisch",
+   "price": 114.99,
+   "available": true,
+   "url": "https://www.boostertcg.de/products/riftbound-radiance-display-englisch",
+   "set": "RAD",
+   "lang": "EN",
+   "preorder": false
+  },
+  {
    "shop": "https://cardcosmos.de",
    "title": "Riftbound: League of Legends - Radiance Booster Display - EN",
    "price": 119.9,
@@ -1964,11 +2214,51 @@
    "preorder": false
   },
   {
+   "shop": "https://tcg-garden.com",
+   "title": "Riftbound - League of Legends TCG - Radiance Display (EN)",
+   "price": 119.99,
+   "available": false,
+   "url": "https://tcg-garden.com/products/riftbound-league-of-legends-tcg-radiance-display-en",
+   "set": "RAD",
+   "lang": "EN",
+   "preorder": false
+  },
+  {
    "shop": "https://www.cardbuddys.de",
    "title": "Riftbound Radiance Booster Display EN",
    "price": 124.95,
    "available": true,
    "url": "https://www.cardbuddys.de/products/riftbound-radiance-booster-display-en",
+   "set": "RAD",
+   "lang": "EN",
+   "preorder": false
+  },
+  {
+   "shop": "https://www.brudicards.de",
+   "title": "(PRE-ORDER)Riftbound: League of Legends TCG Radiance English Display/Booster",
+   "price": 124.99,
+   "available": false,
+   "url": "https://www.brudicards.de/products/riftbound-league-of-legends-tcg-radiance-english-display-booster?variant=55825811571030",
+   "set": "RAD",
+   "lang": "EN",
+   "preorder": true
+  },
+  {
+   "shop": "https://superelf-cards.de",
+   "title": "Riftbound: League of Legends TCG - Radiance - Display - EN",
+   "price": 128.0,
+   "available": true,
+   "url": "https://superelf-cards.de/products/riftbound-league-of-legends-tcg-radiance-display-en",
+   "set": "RAD",
+   "lang": "EN",
+   "preorder": false
+  },
+  {
+   "shop": "https://www.yugi-oase.de",
+   "title": "Riftbound: League of Legends - RADIANCE - Display - englisch -",
+   "price": 129.0,
+   "available": true,
+   "url": "https://www.yugi-oase.de/products/riftbound-league-of-legends-radiance-display-englisch",
    "set": "RAD",
    "lang": "EN",
    "preorder": false
@@ -2004,6 +2294,16 @@
    "preorder": false
   },
   {
+   "shop": "https://tcgbros.de",
+   "title": "Riftbound League of Legends TCG Booster Display Radiance EN",
+   "price": 129.99,
+   "available": false,
+   "url": "https://tcgbros.de/products/riftbound-league-of-legends-tcg-booster-display-radiance-en?variant=55220304609617",
+   "set": "RAD",
+   "lang": "EN",
+   "preorder": false
+  },
+  {
    "shop": "https://www.battle-bear-sb.de",
    "title": "Riftbound Radiance Display (24 Booster) Englisch",
    "price": 130.0,
@@ -2029,6 +2329,16 @@
    "price": 139.99,
    "available": true,
    "url": "https://holoncardshop.com/product/riftbound-display-radiance-englisch/",
+   "set": "RAD",
+   "lang": "EN",
+   "preorder": false
+  },
+  {
+   "shop": "https://www.mabasso.com",
+   "title": "[EN] Riftbound: League of Legends - Radiance - Booster Display",
+   "price": 146.99,
+   "available": true,
+   "url": "https://www.mabasso.com/products/en-riftbound-league-of-legends-radiance-booster-display",
    "set": "RAD",
    "lang": "EN",
    "preorder": false
@@ -2094,6 +2404,16 @@
    "preorder": false
   },
   {
+   "shop": "https://www.yugi-oase.de",
+   "title": "Riftbound: League of Legends - SPIRITFORGED - Display - englisch -",
+   "price": 189.0,
+   "available": true,
+   "url": "https://www.yugi-oase.de/products/riftbound-league-of-legends-spiritforged-display-englisch",
+   "set": "SFD",
+   "lang": "EN",
+   "preorder": false
+  },
+  {
    "shop": "https://pokeminati.de",
    "title": "League of Legends Riftbound Spiritforged Display",
    "price": 190.0,
@@ -2139,6 +2459,16 @@
    "price": 220.0,
    "available": true,
    "url": "https://www.breakthecase.de/products/riftbound-spiritforged-booster-display-englisch",
+   "set": "SFD",
+   "lang": "EN",
+   "preorder": false
+  },
+  {
+   "shop": "https://www.mabasso.com",
+   "title": "[EN] Riftbound: League of Legends - Spiritforged - Booster Display",
+   "price": 220.0,
+   "available": true,
+   "url": "https://www.mabasso.com/products/en-riftbound-league-of-legends-spiritforged-booster-display",
    "set": "SFD",
    "lang": "EN",
    "preorder": false
@@ -2194,11 +2524,31 @@
    "preorder": false
   },
   {
+   "shop": "https://www.mabasso.com",
+   "title": "[CN] Riftbound: Unleashed - Slim Booster Display",
+   "price": 60.0,
+   "available": true,
+   "url": "https://www.mabasso.com/products/cn-riftbound-unleashed-slim-booster-display",
+   "set": "UNL",
+   "lang": "ZH",
+   "preorder": false
+  },
+  {
    "shop": "https://www.cardbuddys.de",
    "title": "Riftbound Unleashed Jumbo Booster Display S-CH",
    "price": 69.95,
    "available": true,
    "url": "https://www.cardbuddys.de/products/riftbound-unleashed-jumbo-booster-display-s-ch",
+   "set": "UNL",
+   "lang": "ZH",
+   "preorder": false
+  },
+  {
+   "shop": "https://www.mabasso.com",
+   "title": "[CN] Riftbound: Unleashed - Jumbo Booster Display",
+   "price": 70.0,
+   "available": true,
+   "url": "https://www.mabasso.com/products/cn-riftbound-unleashed-jumbo-booster-display",
    "set": "UNL",
    "lang": "ZH",
    "preorder": false
@@ -2267,7 +2617,7 @@
    "shop": "https://battle-bear-kl.de",
    "title": "Riftbound Vendetta Display (24 Booster) Englisch",
    "price": 150.0,
-   "available": true,
+   "available": false,
    "url": "https://battle-bear-kl.de/products/riftbound-vendetta-display-24-booster-englisch",
    "set": "VEN",
    "lang": "EN",
