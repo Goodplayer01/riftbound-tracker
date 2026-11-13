@@ -1,5 +1,5 @@
 import type { Card } from './types'
-import { displayCardName } from './deckHelpers'
+import { displayCardName } from './deckHelpers.ts'
 
 export type BanStatus = 'banned' | 'banned2v2' | null
 
@@ -9,7 +9,8 @@ function normKey(s: string) {
 }
 
 /**
- * Official Standard Constructed bans (Rules Hub 2026-09-18).
+ * Official Standard Constructed bans, which also apply to 2v2 (Rules Hub 2026-09-18, Radiance ban list
+ * announced 2026-11-13, effective 2026-11-23).
  * Keys = normalized displayCardName (`name` + optional `, subtitle`).
  * Match all printings/promos of that name — not a single id.
  */
@@ -29,6 +30,17 @@ const STANDARD_BANNED = new Set(
     'Dreaming Tree',
     'Obelisk of Power',
     "Reaver's Row",
+    // Radiance ban list (effective 2026-11-23)
+    'Riven, Broken Blade',
+    "Zhonya's Hourglass",
+    'Stellacorn Herder',
+    'Nocturne, Horrifying',
+    'Rhasa the Sunderer',
+    'Brynhir Thundersong',
+    'Dazzling Aurora',
+    'Baited Hook',
+    "Emperor's Dais",
+    'Star Spring',
   ].map(normKey),
 )
 
