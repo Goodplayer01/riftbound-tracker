@@ -1,5 +1,5 @@
 {
- "updatedAt": "2026-11-13T11:58:06.258Z",
+ "updatedAt": "2026-11-14T11:16:03.155Z",
  "currency": "EUR",
  "sets": {
   "OGN": "Origins",
@@ -1740,12 +1740,6 @@
    "platform": "shopify"
   },
   {
-   "name": "Glitchless Game Store",
-   "url": "https://glitchless.de",
-   "city": "Mainz",
-   "platform": "shopify"
-  },
-  {
    "name": "Goose Games GmbH",
    "url": "https://goose-games.de",
    "city": "Wiesbaden",
@@ -1773,12 +1767,6 @@
    "name": "Heroes Stash",
    "url": "https://heroes-stash.de",
    "city": "Recklinghausen",
-   "platform": "woo"
-  },
-  {
-   "name": "Holon Cardshop",
-   "url": "https://holoncardshop.com",
-   "city": "Zweibrücken",
    "platform": "woo"
   },
   {
@@ -2144,16 +2132,6 @@
    "preorder": false
   },
   {
-   "shop": "https://lakecards.de",
-   "title": "Riftbound: League of Legends-TCG – Origins – Boosterbox (24 Packs) – EN",
-   "price": 249.99,
-   "available": true,
-   "url": "https://lakecards.de/products/riftbound-league-of-legends-tcg-origins-boosterbox-24-packs-en?variant=57832064254287",
-   "set": "OGN",
-   "lang": "EN",
-   "preorder": false
-  },
-  {
    "shop": "https://www.mabasso.com",
    "title": "[EN] Riftbound: League of Legends - Origins - Booster Display",
    "price": 249.99,
@@ -2324,11 +2302,11 @@
    "preorder": false
   },
   {
-   "shop": "https://holoncardshop.com",
-   "title": "Riftbound Display &#8211; Radiance &#8211; Englisch",
+   "shop": "https://lakecards.de",
+   "title": "Riftbound: Radiance – Display & Booster (Englisch)",
    "price": 139.99,
    "available": true,
-   "url": "https://holoncardshop.com/product/riftbound-display-radiance-englisch/",
+   "url": "https://lakecards.de/products/riftbound-radiance-display-booster-englisch?variant=59309906166095",
    "set": "RAD",
    "lang": "EN",
    "preorder": false
@@ -2449,16 +2427,6 @@
    "price": 209.99,
    "available": true,
    "url": "https://goose-games.de/products/riftbound-league-of-legends-tcg-spiritforged-boosterbox-en",
-   "set": "SFD",
-   "lang": "EN",
-   "preorder": false
-  },
-  {
-   "shop": "https://www.breakthecase.de",
-   "title": "League of Legends Riftbound TCG - Spiritforged - [SFD] - Display (24x Booster) - Englisch",
-   "price": 220.0,
-   "available": true,
-   "url": "https://www.breakthecase.de/products/riftbound-spiritforged-booster-display-englisch",
    "set": "SFD",
    "lang": "EN",
    "preorder": false
@@ -2631,16 +2599,6 @@
    "url": "https://pokeminati.de/products/league-of-legends-riftbound-vendetta-display",
    "set": "VEN",
    "lang": null,
-   "preorder": false
-  },
-  {
-   "shop": "https://goose-games.de",
-   "title": "Riftbound: League of Legends-TCG – Vendetta-Boosterbox - EN",
-   "price": 179.99,
-   "available": true,
-   "url": "https://goose-games.de/products/riftbound-league-of-legends-tcg-vendetta-booster-display-24-boosters-en",
-   "set": "VEN",
-   "lang": "EN",
    "preorder": false
   }
  ]
