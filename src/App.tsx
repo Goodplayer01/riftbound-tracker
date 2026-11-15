@@ -1708,12 +1708,13 @@ export default function App() {
 
   /** Copies of each card in a deck that the collection covers. A card's own print serves it first, then
    *  the spare copies of its other prints (alt arts, reprints) fill the gaps, so no copy counts twice.
-   *  `planned`: copies older decks already use (`plannedCopies`), taken out of the collection first. */
+   *  `planned`: copies older decks already use (`plannedCopies`, which also holds what this deck gave away),
+   *  taken out of the collection first. Without it only the copies this deck gave away are taken out. */
   function deckCoverage(d: Deck, planned?: Map<string, number>) {
     const lines: { id: string; key: string; need: number; own: number }[] = []
     const pool = new Map<string, number>()
     const untracked = new Map<string, number>()
-    const free = (id: string) => Math.max(0, availableForDecks(id) - (planned?.get(id) ?? 0) - givenAway(d.id, id))
+    const free = (id: string) => Math.max(0, availableForDecks(id) - (planned ? planned.get(id) ?? 0 : givenAway(d.id, id)))
     for (const [id, need] of deckTotalQtyById(d.cards)) {
       const c = byId.get(id)
       // Plain runes are not tracked, so a deck never misses them.
@@ -3249,7 +3250,7 @@ export default function App() {
   /** Coverage for what a deck still misses: with "Count copies planned in older decks" on, older decks keep
    *  their copies, so buying extra copies shows up here instead of moving cards between deck boxes. */
   function missingCoverage(d: Deck, planned = missingPlanned) {
-    return deckCoverage(d, planned ? plannedCopies(decks, d) : undefined)
+    return deckCoverage(d, planned ? plannedCopies(decks, d, gifts) : undefined)
   }
 
   function underOwnedLines(d: Deck, planned = missingPlanned) {

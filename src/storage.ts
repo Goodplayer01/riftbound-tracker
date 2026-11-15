@@ -1,5 +1,5 @@
-import { cleanCopyBook, type CopyBook } from './copies'
-import { cleanSoldLog, type SoldEntry } from './soldLog'
+import { cleanCopyBook, type CopyBook } from './copies.ts'
+import { cleanSoldLog, type SoldEntry } from './soldLog.ts'
 import type { DeckGift } from './deckHelpers'
 import type { BorrowedGroup, Deck, Owned } from './types'
 
@@ -10,9 +10,12 @@ const WISH_KEY = 'rb.wishlist.v1'
 
 export type Collection = Record<string, Owned>
 
-function readJson<T>(key: string, fallback: T): T {
+/** A stored list or map. Anything else (unreadable, null, a list where a map belongs) gives the fallback:
+ *  the app would crash on it at every start, with no window controls to get out. */
+function readJson<T extends object>(key: string, fallback: T): T {
   try {
-    return JSON.parse(localStorage.getItem(key) || JSON.stringify(fallback)) as T
+    const v = JSON.parse(localStorage.getItem(key) || 'null')
+    return v && typeof v === 'object' && Array.isArray(v) === Array.isArray(fallback) ? (v as T) : fallback
   } catch {
     return fallback
   }
@@ -31,7 +34,7 @@ export function saveCollection(c: Collection) {
 }
 
 export function loadDecks(): Deck[] {
-  return readJson(DECKS_KEY, [])
+  return readJson<Deck[]>(DECKS_KEY, []).filter((d) => d && Array.isArray(d.cards))
 }
 
 export function saveDecks(d: Deck[]) {
@@ -39,7 +42,7 @@ export function saveDecks(d: Deck[]) {
 }
 
 export function loadBorrowed(): BorrowedGroup[] {
-  return readJson(BORROWED_KEY, [])
+  return readJson<BorrowedGroup[]>(BORROWED_KEY, []).filter((g) => g && Array.isArray(g.cards))
 }
 
 export function saveBorrowed(groups: BorrowedGroup[]) {
@@ -64,18 +67,18 @@ export function saveSales(s: Record<string, number>) {
   writeJson(SALES_KEY, s)
 }
 
-/** What each cart card is listed for on Cardmarket, per copy: `{ [cardId]: eur }`. */
+/** Copies decks handed to other decks by a deck import (`DeckGift`). */
 const DECK_GIFTS_KEY = 'rb.deckGifts.v1'
 
 export function loadDeckGifts(): DeckGift[] {
-  const v = readJson<unknown>(DECK_GIFTS_KEY, [])
-  return Array.isArray(v) ? v.filter((g) => g && typeof g.from === 'string' && typeof g.to === 'string' && typeof g.id === 'string' && g.qty > 0) : []
+  return readJson<DeckGift[]>(DECK_GIFTS_KEY, []).filter((g) => g && typeof g.from === 'string' && typeof g.to === 'string' && typeof g.id === 'string' && g.qty > 0)
 }
 
 export function saveDeckGifts(g: DeckGift[]) {
   writeJson(DECK_GIFTS_KEY, g)
 }
 
+/** What each cart card is listed for on Cardmarket, per copy: `{ [cardId]: eur }`. */
 const SALE_ASKS_KEY = 'rb.saleAsks.v1'
 
 export function loadSaleAsks(): Record<string, number> {
@@ -102,7 +105,7 @@ const COPIES_KEY = 'rb.copies.v1'
 /** Language, condition and purchase price per copy. Separate from rb.collection.v1 so older
  *  versions keep reading the collection unchanged. */
 export function loadCopies(): CopyBook {
-  return cleanCopyBook(readJson<unknown>(COPIES_KEY, {}))
+  return cleanCopyBook(readJson<object>(COPIES_KEY, {}))
 }
 
 export function saveCopies(c: CopyBook) {
