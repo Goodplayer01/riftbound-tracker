@@ -52,7 +52,9 @@ export function parseBackup(text: string): BackupFile | BackupError {
     if (!isBackupKey(k) || typeof v !== 'string') return 'invalid'
     if (!PLAIN.has(k)) {
       try {
-        JSON.parse(v)
+        // Collection, decks, sales and so on are lists or maps: a file holding null there would empty them.
+        const parsed: unknown = JSON.parse(v)
+        if (backupGroup(k) !== 'other' && (!parsed || typeof parsed !== 'object')) return 'invalid'
       } catch {
         return 'invalid'
       }

@@ -120,6 +120,15 @@ assert(pl('oldTop') === '[["y",2]]', `old decks: further down is older: ${pl('ol
 assert(pl('new1') === '[["x",3],["y",2]]', `old decks come before dated ones: ${pl('new1')}`)
 assert(pl('new2') === '[["x",5],["y",3]]', `every older deck adds up, all sections: ${pl('new2')}`)
 
+// Planned copies with gifts. The older deck gave 2 of its 3 x to the newer one: the newer deck may use them,
+// the older deck may not. The other way round the older deck's own count already holds the gifted copies.
+const pair = [dk('young', '2026-11-03T10:00:00Z', [{ id: 'x', qty: 2, section: 'main' }]), dk('aged', '2026-11-02T10:00:00Z', [{ id: 'x', qty: 3, section: 'main' }])]
+const plan = (id, gifts) => plannedCopies(pair, pair.find((d) => d.id === id), gifts).get('x') ?? 0
+assert(plan('young', []) === 3 && plan('aged', []) === 0, 'no gifts: only the older deck plans')
+assert(plan('young', [{ from: 'aged', to: 'young', id: 'x', qty: 2 }]) === 1, 'gifted copies are free for the newer deck')
+assert(plan('aged', [{ from: 'aged', to: 'young', id: 'x', qty: 2 }]) === 2, 'the giving deck cannot use them')
+assert(plan('young', [{ from: 'young', to: 'aged', id: 'x', qty: 2 }]) === 3 && plan('aged', [{ from: 'young', to: 'aged', id: 'x', qty: 2 }]) === 0, 'a gift to an older deck is not counted twice')
+
 // Import: other decks keep their cards, only the copies move, at most the imported ones, in list order.
 const mv = copiesToMove(listed, 'new2', [{ id: 'x', qty: 3, section: 'main' }, { id: 'y', qty: 1, section: 'main' }])
 assert(JSON.stringify(mv) === '[{"from":"new1","to":"new2","id":"x","qty":2},{"from":"new1","to":"new2","id":"y","qty":1},{"from":"oldTop","to":"new2","id":"x","qty":1}]', `moves: ${JSON.stringify(mv)}`)

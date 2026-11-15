@@ -1,4 +1,5 @@
 import { backupGroup, sameGroup, isBackupKey, isEmptyBackup, makeBackup, parseBackup, restoreBackup, summarizeBackup } from '../src/backup.ts'
+import { loadCollection, loadDecks } from '../src/storage.ts'
 
 function assert(cond, msg) {
   if (!cond) throw new Error(msg)
@@ -62,6 +63,18 @@ assert(parseBackup('not json') === 'invalid', 'not json')
 assert(parseBackup('{"cards":[]}') === 'invalid', 'foreign json')
 assert(parseBackup(JSON.stringify({ ...b, format: 99 })) === 'newer', 'newer format')
 assert(parseBackup(JSON.stringify({ ...b, data: {} })) === 'invalid', 'empty data')
+// Lists and maps must be lists and maps: null decks would empty them (and crashed older versions at start).
+assert(parseBackup(JSON.stringify({ ...b, data: { ...b.data, 'rb.decks.v1': 'null' } })) === 'invalid', 'null decks')
+assert(parseBackup(JSON.stringify({ ...b, data: { ...b.data, 'rb.collection.v1': '7' } })) === 'invalid', 'number as collection')
+assert(typeof parseBackup(JSON.stringify({ ...b, data: { ...b.data, 'rb.someFutureKey.v1': '1' } })) === 'object', 'other keys may hold plain values')
+
+// The app reads stored values the same way: a wrong shape gives an empty list or map, never a crash.
+const broken = { 'rb.decks.v1': 'null', 'rb.collection.v1': '[1,2]' }
+globalThis.localStorage = { getItem: (k) => broken[k] ?? null, setItem: () => {} }
+assert(Array.isArray(loadDecks()) && loadDecks().length === 0, 'null decks read as no decks')
+assert(JSON.stringify(loadCollection()) === '{}', 'a list as collection reads as empty')
+broken['rb.decks.v1'] = '[null,{"id":"a","name":"A","cards":[]},{"id":"b"}]'
+assert(loadDecks().length === 1 && loadDecks()[0].id === 'a', 'broken deck entries are dropped')
 assert(parseBackup(JSON.stringify({ ...b, data: { 'evil.key': '1' } })) === 'invalid', 'foreign key')
 assert(parseBackup(JSON.stringify({ ...b, data: { 'rb.decks.v1': '[broken' } })) === 'invalid', 'broken value')
 assert(parseBackup(JSON.stringify({ ...b, data: { 'rb.decks.v1': 5 } })) === 'invalid', 'non string value')

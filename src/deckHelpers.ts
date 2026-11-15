@@ -639,19 +639,22 @@ export function isOlderDeck(a: Deck, ai: number, b: Deck, bi: number): boolean {
   return ai > bi
 }
 
-/** Copies per card id that decks older than `deck` already plan to use (all their sections). */
-export function plannedCopies(decks: Deck[], deck: Deck): Map<string, number> {
+/** Copies per card id that `deck` cannot use: what decks older than it plan to use (all their sections)
+ *  without the copies they gave away (`gifts`, as `givenCopies` returns them; those count where they went),
+ *  plus what `deck` itself gave to decks that are not older (an older deck's own count already holds them). */
+export function plannedCopies(decks: Deck[], deck: Deck, gifts: DeckGift[] = []): Map<string, number> {
   const me = decks.findIndex((d) => d.id === deck.id)
+  const older = new Set(decks.filter((d, i) => d.id !== deck.id && isOlderDeck(d, i, deck, me)).map((d) => d.id))
   const out = new Map<string, number>()
-  decks.forEach((d, i) => {
-    if (d.id === deck.id || !isOlderDeck(d, i, deck, me)) return
-    for (const [id, n] of deckTotalQtyById(d.cards)) out.set(id, (out.get(id) ?? 0) + n)
-  })
+  const add = (id: string, n: number) => out.set(id, (out.get(id) ?? 0) + n)
+  for (const d of decks) if (older.has(d.id)) for (const [id, n] of deckTotalQtyById(d.cards)) add(id, n)
+  for (const g of gifts) {
+    if (older.has(g.from)) add(g.id, -g.qty)
+    else if (g.from === deck.id && !older.has(g.to)) add(g.id, g.qty)
+  }
   return out
 }
 
-/** Takes the copies of `imported` (same print) out of every other deck, at most as many per card as were
- *  imported, decks in list order. `moved`: per card id which decks gave how many. */
 /** Copies of a print one deck handed to another by a deck import: both decks keep the card, the copies count
  *  for `to`. */
 export type DeckGift = { from: string; to: string; id: string; qty: number }
