@@ -1,5 +1,6 @@
 import { cleanCopyBook, type CopyBook } from './copies'
 import { cleanSoldLog, type SoldEntry } from './soldLog'
+import type { DeckGift } from './deckHelpers'
 import type { BorrowedGroup, Deck, Owned } from './types'
 
 const COLLECTION_KEY = 'rb.collection.v1'
@@ -64,6 +65,17 @@ export function saveSales(s: Record<string, number>) {
 }
 
 /** What each cart card is listed for on Cardmarket, per copy: `{ [cardId]: eur }`. */
+const DECK_GIFTS_KEY = 'rb.deckGifts.v1'
+
+export function loadDeckGifts(): DeckGift[] {
+  const v = readJson<unknown>(DECK_GIFTS_KEY, [])
+  return Array.isArray(v) ? v.filter((g) => g && typeof g.from === 'string' && typeof g.to === 'string' && typeof g.id === 'string' && g.qty > 0) : []
+}
+
+export function saveDeckGifts(g: DeckGift[]) {
+  writeJson(DECK_GIFTS_KEY, g)
+}
+
 const SALE_ASKS_KEY = 'rb.saleAsks.v1'
 
 export function loadSaleAsks(): Record<string, number> {
