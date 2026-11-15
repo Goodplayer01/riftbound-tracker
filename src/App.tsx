@@ -1,7 +1,7 @@
 import { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState, type CSSProperties, type DragEvent as ReactDragEvent, type MouseEvent as ReactMouseEvent, type PointerEvent as ReactPointerEvent, type ReactNode, type RefObject } from 'react'
 import { fetchRemotePrices, loadBundledPrices, loadCachedPrices, newerPriceBook } from './prices'
-import type { BorrowedCard, BorrowedGroup, Card, Catalog, Deck, DeckCard, DeckSection, Owned, PriceBook, PriceEntry } from './types'
-import { backupOnce, loadAlertsSeen, loadBorrowed, loadCollection, loadCopies, loadDecks, loadSaleAsks, loadSales, loadSoldLog, loadWish, loadWishTargets, saveAlertsSeen, saveBorrowed, saveCollection, saveCopies, saveDecks, saveSaleAsks, saveSales, saveSoldLog, saveWish, saveWishTargets, type Collection } from './storage'
+import type { BorrowedCard, BorrowedGroup, Card, Catalog, Deck, DeckSection, Owned, PriceBook, PriceEntry } from './types'
+import { backupOnce, loadAlertsSeen, loadBorrowed, loadCollection, loadCopies, loadDeckGifts, loadDecks, loadSaleAsks, loadSales, loadSoldLog, loadWish, loadWishTargets, saveAlertsSeen, saveBorrowed, saveCollection, saveCopies, saveDeckGifts, saveDecks, saveSaleAsks, saveSales, saveSoldLog, saveWish, saveWishTargets, type Collection } from './storage'
 import { ownedQty, saleSplit } from './collection'
 import { fmtEur, loadLang, saveLang, t, type Lang } from './i18n'
 import { Dopamin } from './Dopamin'
@@ -48,7 +48,9 @@ import {
   cardKey,
   groupPrints,
   swapPrint,
-  takeFromOtherDecks,
+  copiesToMove,
+  givenCopies,
+  type DeckGift,
   plannedCopies,
 } from './deckHelpers'
 import { banStatus, type BanStatus } from './banlist'
@@ -1113,9 +1115,10 @@ export default function App() {
   const [dragRejectBorrow, setDragRejectBorrow] = useState(false)
   const [deckNotice, setDeckNotice] = useState<string | null>(null)
   /** Imported cards other decks already use: the dialog asks whether to move them here. */
-  const [importMove, setImportMove] = useState<null | { deckId: string; cards: DeckCard[] }>(null)
+  const [importMove, setImportMove] = useState<null | DeckGift[]>(null)
+  const [deckGifts, setDeckGifts] = useState<DeckGift[]>(loadDeckGifts)
   /** Session only: per deck id, per card id the decks the import moved its copies from ("Was in ..."). */
-  const [movedFrom, setMovedFrom] = useState<Record<string, Record<string, { deck: string; qty: number }[]>>>({})
+
   const deckDragged = useRef(false)
 
   function restoreDecks() {
@@ -1659,14 +1662,27 @@ export default function App() {
     }
   }, [tab, binderView])
 
-  /** Per card: the decks that use it and how many copies each (all sections together). */
+  /** Copies decks handed to other decks by an import (`DeckGift`), as they still hold. */
+  const gifts = useMemo(() => givenCopies(deckGifts, decks), [deckGifts, decks])
+  useEffect(() => saveDeckGifts(deckGifts), [deckGifts])
+
+  /** Copies of a print this deck gave to other decks: they count for those decks, not this one. */
+  function givenAway(deckId: string, id: string) {
+    return gifts.reduce((s, g) => s + (g.from === deckId && g.id === id ? g.qty : 0), 0)
+  }
+
+  /** Per card: the decks that use it and how many copies each (all sections together), without copies a
+   *  deck gave to another one. */
   const decksByCard = useMemo(() => {
     const m = new Map<string, DeckUse[]>()
     for (const d of decks) {
-      for (const [id, qty] of deckTotalQtyById(d.cards)) m.set(id, [...(m.get(id) || []), { id: d.id, name: d.name, qty }])
+      for (const [id, all] of deckTotalQtyById(d.cards)) {
+        const qty = all - gifts.reduce((s, g) => s + (g.from === d.id && g.id === id ? g.qty : 0), 0)
+        if (qty > 0) m.set(id, [...(m.get(id) || []), { id: d.id, name: d.name, qty }])
+      }
     }
     return m
-  }, [decks])
+  }, [decks, gifts])
 
   /** Every print of a card (alt art, overnumbered, signed, reprints in later sets) by `cardKey`. */
   const printsByKey = useMemo(() => {
@@ -1697,7 +1713,7 @@ export default function App() {
     const lines: { id: string; key: string; need: number; own: number }[] = []
     const pool = new Map<string, number>()
     const untracked = new Map<string, number>()
-    const free = (id: string) => Math.max(0, availableForDecks(id) - (planned?.get(id) ?? 0))
+    const free = (id: string) => Math.max(0, availableForDecks(id) - (planned?.get(id) ?? 0) - givenAway(d.id, id))
     for (const [id, need] of deckTotalQtyById(d.cards)) {
       const c = byId.get(id)
       // Plain runes are not tracked, so a deck never misses them.
@@ -3002,7 +3018,7 @@ export default function App() {
             if (!c) return null
             // Own copies plus the spare copies of other prints this line really gets (coverDeckLines), so
             // several prints of one card in a deck never count the same copies twice.
-            const own = availableForDecks(c.id)
+            const own = Math.max(0, availableForDecks(c.id) - givenAway(deck.id, c.id))
             const covered = cover.get(c.id) ?? 0
             const have = own + Math.max(0, covered - own)
             const otherPrints = printsOf(c.id).filter((pid) => pid !== c.id && availableForDecks(pid) > 0)
@@ -3036,9 +3052,21 @@ export default function App() {
                     <BorrowedBadge from={borrowedInFrom.get(c.id)} lang={lang} />
                     {elsewherePills(c)}
                     {otherDeckPills(c.id, deck)}
-                    {(movedFrom[deck.id]?.[c.id] || []).map((u) => (
-                      <span key={u.deck} className="ban-badge other-deck-badge" title={t(lang, 'decks.wasInHint', { deck: u.deck })}>{t(lang, 'decks.wasIn', { deck: u.deck, n: u.qty })}</span>
-                    ))}
+                    {gifts.filter((g) => g.id === c.id && (g.to === deck.id || g.from === deck.id)).map((g) => {
+                      const mine = g.to === deck.id
+                      const other = decks.find((x) => x.id === (mine ? g.from : g.to))?.name ?? ''
+                      return mine ? (
+                        <span key={g.from} className="ban-badge other-deck-badge" title={t(lang, 'decks.wasInHint', { deck: other })}>{t(lang, 'decks.wasIn', { deck: other, n: g.qty })}</span>
+                      ) : (
+                        <button
+                          key={g.to}
+                          type="button"
+                          className="ban-badge other-deck-badge short"
+                          title={t(lang, 'decks.givenToHint', { deck: other })}
+                          onClick={() => setDeckGifts((prev) => prev.filter((x) => !(x.from === g.from && x.to === g.to && x.id === g.id)))}
+                        >{t(lang, 'decks.givenTo', { deck: other, n: g.qty })}</button>
+                      )
+                    })}
                   </div>
                   <div className="sub">
                     {c.code}
@@ -3515,15 +3543,16 @@ export default function App() {
     setDeckNotice(parts.length ? parts.join(' · ') : null)
     setDeckImportOpen(false)
     if (isDeckComplete(sanitized.cards)) setHandPromptDeckId(activeDeckId)
-    if (takeFromOtherDecks(decks, activeDeckId, sanitized.cards, '').moved.size) setImportMove({ deckId: activeDeckId, cards: sanitized.cards })
+    const move = copiesToMove(decks, activeDeckId, sanitized.cards)
+    if (move.length) setImportMove(move)
   }
 
   function confirmImportMove() {
     if (!importMove) return
-    const { moved } = takeFromOtherDecks(decks, importMove.deckId, importMove.cards, '')
-    const at = new Date().toISOString()
-    setDecks((prev) => takeFromOtherDecks(prev, importMove.deckId, importMove.cards, at).decks)
-    setMovedFrom((prev) => ({ ...prev, [importMove.deckId]: { ...prev[importMove.deckId], ...Object.fromEntries(moved) } }))
+    // A newer move of the same copies replaces an older one.
+    const key = (g: DeckGift) => `${g.from}|${g.id}`
+    const fresh = new Set(importMove.map(key))
+    setDeckGifts((prev) => [...prev.filter((g) => !fresh.has(key(g))), ...importMove])
     setImportMove(null)
   }
 
@@ -6209,13 +6238,15 @@ export default function App() {
           <div className="panel confirm-box" onClick={(e) => e.stopPropagation()}>
             <p id="import-move-title" className="help" style={{ margin: 0 }}>{t(lang, 'decks.moveAsk')}</p>
             <div className="import-move-list">
-              {[...takeFromOtherDecks(decks, importMove.deckId, importMove.cards, '').moved].map(([id, uses]) => {
+              {[...new Set(importMove.map((g) => g.id))].map((id) => {
                 const c = byId.get(id)
                 return (
                   <div key={id} className="import-move-row">
                     <span>{c ? displayCardName(c) : id}</span>
                     <span className="card-tags">
-                      {uses.map((u) => <span key={u.deck} className="ban-badge other-deck-badge">{t(lang, 'decks.moveFrom', { deck: u.deck, n: u.qty })}</span>)}
+                      {importMove.filter((g) => g.id === id).map((g) => (
+                        <span key={g.from} className="ban-badge other-deck-badge">{t(lang, 'decks.moveFrom', { deck: decks.find((x) => x.id === g.from)?.name ?? '', n: g.qty })}</span>
+                      ))}
                     </span>
                   </div>
                 )
