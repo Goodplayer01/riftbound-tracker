@@ -1,5 +1,5 @@
 {
- "updatedAt": "2026-11-15T11:49:06.332Z",
+ "updatedAt": "2026-11-16T12:30:53.877Z",
  "currency": "EUR",
  "sets": {
   "OGN": "Origins",
@@ -10,7 +10,7 @@
   "LEGACY": "Legacy"
  },
  "cardmarket": {
-  "guideCreatedAt": "2026-11-15T02:48:21+0100",
+  "guideCreatedAt": "2026-11-16T02:49:16+0100",
   "products": [
    {
     "id": 917595,
@@ -58,7 +58,7 @@
     "category": "Riftbound Riftbound Box Sets",
     "display": false,
     "lang": "EN",
-    "low": 34.5,
+    "low": 38.49,
     "avg1": null,
     "avg7": null,
     "avg30": null,
@@ -75,7 +75,7 @@
     "avg1": null,
     "avg7": null,
     "avg30": null,
-    "trend": 184.6
+    "trend": 182.06
    },
    {
     "id": 862274,
@@ -88,7 +88,7 @@
     "avg1": null,
     "avg7": null,
     "avg30": null,
-    "trend": 72.68
+    "trend": 72.63
    },
    {
     "id": 862272,
@@ -127,7 +127,7 @@
     "avg1": null,
     "avg7": null,
     "avg30": null,
-    "trend": 457.04
+    "trend": 432.54
    },
    {
     "id": 873075,
@@ -153,7 +153,7 @@
     "avg1": null,
     "avg7": null,
     "avg30": null,
-    "trend": 76.05
+    "trend": 58.16
    },
    {
     "id": 873123,
@@ -179,7 +179,7 @@
     "avg1": null,
     "avg7": null,
     "avg30": null,
-    "trend": 18.87
+    "trend": 20.42
    },
    {
     "id": 887715,
@@ -218,7 +218,7 @@
     "avg1": null,
     "avg7": null,
     "avg30": null,
-    "trend": 15.17
+    "trend": 16.94
    },
    {
     "id": 887717,
@@ -244,7 +244,7 @@
     "avg1": null,
     "avg7": null,
     "avg30": null,
-    "trend": 8.13
+    "trend": 7.82
    },
    {
     "id": 862354,
@@ -426,7 +426,7 @@
     "avg1": null,
     "avg7": null,
     "avg30": null,
-    "trend": 15.74
+    "trend": 16.45
    },
    {
     "id": 887716,
@@ -543,7 +543,7 @@
     "avg1": null,
     "avg7": null,
     "avg30": null,
-    "trend": 4.47
+    "trend": 4.42
    },
    {
     "id": 897516,
@@ -595,7 +595,7 @@
     "avg1": null,
     "avg7": null,
     "avg30": null,
-    "trend": 30.73
+    "trend": 30.87
    },
    {
     "id": 920168,
@@ -647,7 +647,7 @@
     "avg1": null,
     "avg7": null,
     "avg30": null,
-    "trend": 24.2
+    "trend": 24
    },
    {
     "id": 920170,
@@ -686,7 +686,7 @@
     "avg1": null,
     "avg7": null,
     "avg30": null,
-    "trend": 132.58
+    "trend": 130.66
    },
    {
     "id": 864142,
@@ -738,7 +738,7 @@
     "avg1": null,
     "avg7": null,
     "avg30": null,
-    "trend": 28.22
+    "trend": 28.29
    },
    {
     "id": 861000,
@@ -751,7 +751,7 @@
     "avg1": null,
     "avg7": null,
     "avg30": null,
-    "trend": 17.17
+    "trend": 16.69
    },
    {
     "id": 860999,
@@ -764,7 +764,7 @@
     "avg1": null,
     "avg7": null,
     "avg30": null,
-    "trend": 6.61
+    "trend": 6.74
    },
    {
     "id": 866424,
@@ -933,7 +933,7 @@
     "avg1": null,
     "avg7": null,
     "avg30": null,
-    "trend": 131.43
+    "trend": 132.87
    },
    {
     "id": 884445,
@@ -985,7 +985,7 @@
     "avg1": null,
     "avg7": null,
     "avg30": null,
-    "trend": 5.81
+    "trend": 5.88
    },
    {
     "id": 884447,
@@ -1128,7 +1128,7 @@
     "avg1": null,
     "avg7": null,
     "avg30": null,
-    "trend": 35.27
+    "trend": 34.84
    },
    {
     "id": 906004,
@@ -1206,7 +1206,7 @@
     "avg1": null,
     "avg7": null,
     "avg30": null,
-    "trend": 118.49
+    "trend": 120.09
    },
    {
     "id": 901070,
@@ -1228,7 +1228,7 @@
     "category": "Riftbound Display",
     "display": true,
     "lang": "ZH",
-    "low": 45,
+    "low": 44.99,
     "avg1": null,
     "avg7": null,
     "avg30": null,
@@ -1258,7 +1258,7 @@
     "avg1": null,
     "avg7": null,
     "avg30": null,
-    "trend": 127.73
+    "trend": 129.17
    },
    {
     "id": 888357,
@@ -1271,7 +1271,7 @@
     "avg1": null,
     "avg7": null,
     "avg30": null,
-    "trend": 6.34
+    "trend": 6.29
    },
    {
     "id": 901072,
@@ -1336,7 +1336,7 @@
     "avg1": null,
     "avg7": null,
     "avg30": null,
-    "trend": 7.25
+    "trend": 7.12
    },
    {
     "id": 914406,
@@ -1479,7 +1479,7 @@
     "avg1": null,
     "avg7": null,
     "avg30": null,
-    "trend": 14.46
+    "trend": 14.2
    },
    {
     "id": 917164,
@@ -1505,7 +1505,7 @@
     "avg1": null,
     "avg7": null,
     "avg30": null,
-    "trend": 291.52
+    "trend": 260.51
    },
    {
     "id": 873304,
@@ -1583,7 +1583,7 @@
     "avg1": null,
     "avg7": null,
     "avg30": null,
-    "trend": 114.29
+    "trend": 115.79
    },
    {
     "id": 922931,
@@ -1592,7 +1592,7 @@
     "category": "Riftbound Riftbound Box Sets",
     "display": false,
     "lang": "EN",
-    "low": null,
+    "low": 320,
     "avg1": null,
     "avg7": null,
     "avg30": null,
@@ -1737,6 +1737,12 @@
    "name": "Geeksheaven",
    "url": "https://www.geeksheaven.de",
    "city": "Weilerswist",
+   "platform": "shopify"
+  },
+  {
+   "name": "Glitchless Game Store",
+   "url": "https://glitchless.de",
+   "city": "Mainz",
    "platform": "shopify"
   },
   {
@@ -1992,9 +1998,21 @@
    "platform": "shopify"
   },
   {
+   "name": "WestBlueTCG",
+   "url": "https://www.westbluetcg.de",
+   "city": "Leverkusen",
+   "platform": "shopify"
+  },
+  {
    "name": "yugi-oase-store",
    "url": "https://www.yugi-oase.de",
    "city": "Meißen",
+   "platform": "shopify"
+  },
+  {
+   "name": "yvovle GmbH",
+   "url": "https://yvolve.shop",
+   "city": "Wietmarschen",
    "platform": "shopify"
   },
   {
@@ -2437,16 +2455,6 @@
    "price": 209.99,
    "available": true,
    "url": "https://goose-games.de/products/riftbound-league-of-legends-tcg-spiritforged-boosterbox-en",
-   "set": "SFD",
-   "lang": "EN",
-   "preorder": false
-  },
-  {
-   "shop": "https://www.breakthecase.de",
-   "title": "League of Legends Riftbound TCG - Spiritforged - [SFD] - Display (24x Booster) - Englisch",
-   "price": 220.0,
-   "available": false,
-   "url": "https://www.breakthecase.de/products/riftbound-spiritforged-booster-display-englisch",
    "set": "SFD",
    "lang": "EN",
    "preorder": false
