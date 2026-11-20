@@ -1,4 +1,4 @@
-import { EVENT_SEARCH_MAX_KM, GERMANY_CIRCLES, eventsToStores, formatEntryFee, isGermanEvent, searchCircles } from '../src/stores.ts'
+import { EVENT_SEARCH_MAX_KM, GERMANY_CIRCLES, eventsToStores, formatEntryFee, inEventWindow, isGermanEvent, searchCircles } from '../src/stores.ts'
 
 function assert(cond, msg) {
   if (!cond) throw new Error(msg)
@@ -68,3 +68,17 @@ assert(/1,000|1\.000/.test(formatEntryFee(1000, 'JPY', 'en-US')), 'JPY has no de
 assert(formatEntryFee(1250, 'not a code', 'de-DE') === '12.50 not a code', 'bad currency does not throw')
 
 console.log('ok')
+
+// Date window by local calendar days: late tonight is still today, the 7th day ahead is out of "week".
+{
+  const now = new Date(2026, 10, 20, 23, 30)
+  const at = (d, h = 19) => new Date(2026, 10, d, h).toISOString()
+  const pass = (iso, when) => inEventWindow(iso, when, now)
+  if (!pass(at(20, 23), 'today') || pass(at(21, 0), 'today')) throw new Error('today')
+  if (!pass(at(21, 0), 'tomorrow') || pass(at(20), 'tomorrow') || pass(at(22), 'tomorrow')) throw new Error('tomorrow')
+  if (!pass(at(20), 'week') || !pass(at(26), 'week') || pass(at(27), 'week') || pass(at(19), 'week')) throw new Error('week')
+  if (!pass(null, 'all') || pass(null, 'today') || pass('nonsense', 'week')) throw new Error('missing dates')
+  // Across the end of October DST change the day count still holds.
+  if (!inEventWindow(new Date(2026, 9, 26, 10).toISOString(), 'tomorrow', new Date(2026, 9, 25, 1))) throw new Error('dst')
+  console.log('check_stores date window ok')
+}
