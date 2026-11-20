@@ -73,6 +73,8 @@ import {
   type StoreHit,
   type StoreSearch,
   formatEntryFee,
+  inEventWindow,
+  type EventWhen,
 } from './stores'
 import { StoresMap, type MapCenter } from './StoresMap'
 import { StoreDisplays } from './StoreDisplays'
@@ -947,7 +949,7 @@ export default function App() {
   const [storeAllGermany, setStoreAllGermany] = useState(false)
   const [storeStockOnly, setStoreStockOnly] = useState(false)
   /** Only stores with an event today, and only today's events. */
-  const [storeTodayOnly, setStoreTodayOnly] = useState(false)
+  const [storeWhen, setStoreWhen] = useState<EventWhen>('all')
   /** Store card under the pointer: its pin stands out on the map. */
   const [storeHoverId, setStoreHoverId] = useState<string | null>(null)
   /** Store ids whose stock list is expanded past the collapsed preview. */
@@ -3680,15 +3682,15 @@ export default function App() {
 
   // Memoized: the map rebuilds its markers whenever this array changes, which would close an open tooltip.
   const visibleStoreHits = useMemo(() => {
-    const today = new Date().toDateString()
+    const now = new Date()
     return storeHits.flatMap((h) => {
       if (!storeAllGermany && h.distanceKm != null && h.distanceKm > storeKm + 0.05) return []
       if (storeStockOnly && !storeReportsStock(h)) return []
-      if (!storeTodayOnly) return [h]
-      const events = h.events.filter((ev) => ev.startsAt && new Date(ev.startsAt).toDateString() === today)
+      if (storeWhen === 'all') return [h]
+      const events = h.events.filter((ev) => inEventWindow(ev.startsAt, storeWhen, now))
       return events.length ? [{ ...h, events }] : []
     })
-  }, [storeHits, storeAllGermany, storeKm, storeStockOnly, storeTodayOnly])
+  }, [storeHits, storeAllGermany, storeKm, storeStockOnly, storeWhen])
 
   /** Map tooltip under the store name: its next events with day, time and type. */
   const storeTooltipLines = useCallback((h: StoreHit) => {
@@ -5620,13 +5622,19 @@ export default function App() {
                 title={t(lang, 'stores.stockOnlyHint')}
                 onClick={() => setStoreStockOnly((v) => !v)}
               ><Icon name="package" />{t(lang, 'stores.stockOnly')}</button>
-              <button
-                type="button"
-                className={`btn${storeTodayOnly ? ' on' : ''}`}
-                aria-pressed={storeTodayOnly}
-                title={t(lang, 'stores.todayHint')}
-                onClick={() => setStoreTodayOnly((v) => !v)}
-              ><Icon name="calendar" />{t(lang, 'stores.today')}</button>
+              <select
+                className="select"
+                style={{ maxWidth: 170 }}
+                value={storeWhen}
+                aria-label={t(lang, 'stores.whenHint')}
+                title={t(lang, 'stores.whenHint')}
+                onChange={(e) => setStoreWhen(e.target.value as EventWhen)}
+              >
+                <option value="all">{t(lang, 'stores.whenAll')}</option>
+                <option value="today">{t(lang, 'stores.today')}</option>
+                <option value="tomorrow">{t(lang, 'stores.tomorrow')}</option>
+                <option value="week">{t(lang, 'stores.week')}</option>
+              </select>
               <button className="btn primary" disabled={storeBusy} onClick={() => void runStoreSearch()}>
                 <Icon name="search" />{storeBusy ? t(lang, 'stores.searching') : t(lang, 'stores.search')}
               </button>
@@ -5668,7 +5676,7 @@ export default function App() {
                 <div className="stores-results">
                   {!storeLabel && <div className="empty">{t(lang, 'stores.listHint')}</div>}
                   {!storeBusy && storeLabel && visibleStoreHits.length === 0 && (
-                    <div className="empty">{storeStockOnly ? t(lang, 'stores.emptyStock') : storeTodayOnly ? t(lang, 'stores.emptyToday') : storeAllGermany ? t(lang, 'stores.emptyGermany') : t(lang, 'stores.empty')}</div>
+                    <div className="empty">{storeStockOnly ? t(lang, 'stores.emptyStock') : storeWhen !== 'all' ? t(lang, 'stores.emptyWhen') : storeAllGermany ? t(lang, 'stores.emptyGermany') : t(lang, 'stores.empty')}</div>
                   )}
                   {visibleStoreHits.map((h) => {
                     const STOCK_PREVIEW = 4

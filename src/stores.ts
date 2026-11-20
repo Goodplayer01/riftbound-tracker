@@ -479,3 +479,19 @@ export function mapsUrl(hit: StoreHit) {
 export function websiteUrl(raw: string) {
   return /^https?:\/\//i.test(raw) ? raw : `https://${raw}`
 }
+
+/** Event date filter of the Local Events view. */
+export type EventWhen = 'all' | 'today' | 'tomorrow' | 'week'
+
+/** Whether an event starting at `startsAt` falls in `when`, counted in local calendar days from `now`
+ *  ("week" = today and the 6 days after it). */
+export function inEventWindow(startsAt: string | null | undefined, when: EventWhen, now = new Date()): boolean {
+  if (when === 'all') return true
+  if (!startsAt) return false
+  const start = new Date(startsAt)
+  if (Number.isNaN(start.getTime())) return false
+  const midnight = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime()
+  // Rounded: a day across a DST change is 23 or 25 hours long.
+  const days = Math.round((midnight(start) - midnight(now)) / 86400000)
+  return when === 'today' ? days === 0 : when === 'tomorrow' ? days === 1 : days >= 0 && days <= 6
+}
