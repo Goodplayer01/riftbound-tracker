@@ -1,5 +1,5 @@
 {
- "updatedAt": "2026-11-20T12:36:26.962Z",
+ "updatedAt": "2026-11-21T12:16:22.215Z",
  "currency": "EUR",
  "sets": {
   "OGN": "Origins",
@@ -1705,6 +1705,12 @@
    "platform": "shopify"
   },
   {
+   "name": "CardLegends GmbH",
+   "url": "https://cardlegends.de",
+   "city": "Rastatt",
+   "platform": "shopify"
+  },
+  {
    "name": "Carl Otto Spiel und Freizeit GmBH",
    "url": "https://www.carl-otto.com",
    "city": "Delmenhorst",
@@ -1733,12 +1739,6 @@
    "url": "https://eldoradotcg.de",
    "city": "Bad Kreuznach",
    "platform": "shopify"
-  },
-  {
-   "name": "Epic Card Store GmbH ",
-   "url": "https://epic-card-store.de",
-   "city": "Köln",
-   "platform": "woo"
   },
   {
    "name": "Geek Haven",
@@ -1817,12 +1817,6 @@
    "url": "https://kartenbasis.de",
    "city": "Oberhausen",
    "platform": "shopify"
-  },
-  {
-   "name": "Kartenstube",
-   "url": "https://www.kartenstube.com",
-   "city": "Pulheim",
-   "platform": "woo"
   },
   {
    "name": "Lake Cards",
@@ -2014,12 +2008,6 @@
    "name": "Welt der Karten",
    "url": "https://weltderkarten.berlin",
    "city": "Berlin",
-   "platform": "shopify"
-  },
-  {
-   "name": "WestBlueTCG",
-   "url": "https://www.westbluetcg.de",
-   "city": "Leverkusen",
    "platform": "shopify"
   },
   {
@@ -2249,11 +2237,31 @@
    "preorder": false
   },
   {
+   "shop": "https://www.swett.de",
+   "title": "Riftbound - Radiance - Booster-Display",
+   "price": 119.99,
+   "available": true,
+   "url": "https://www.swett.de/products/riftbound-radiance-display",
+   "set": "RAD",
+   "lang": null,
+   "preorder": false
+  },
+  {
    "shop": "https://tcg-garden.com",
    "title": "Riftbound - League of Legends TCG - Radiance Display (EN)",
    "price": 119.99,
    "available": false,
    "url": "https://tcg-garden.com/products/riftbound-league-of-legends-tcg-radiance-display-en",
+   "set": "RAD",
+   "lang": "EN",
+   "preorder": false
+  },
+  {
+   "shop": "https://cardlegends.de",
+   "title": "Riftbound Radiance – Booster Display (24 Packs) | EN",
+   "price": 120.0,
+   "available": true,
+   "url": "https://cardlegends.de/products/riftbound-radiance-booster-display-24-packs-en-regelbesteuert",
    "set": "RAD",
    "lang": "EN",
    "preorder": false
