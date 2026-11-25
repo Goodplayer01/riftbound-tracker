@@ -495,3 +495,15 @@ export function inEventWindow(startsAt: string | null | undefined, when: EventWh
   const days = Math.round((midnight(start) - midnight(now)) / 86400000)
   return when === 'today' ? days === 0 : when === 'tomorrow' ? days === 1 : days >= 0 && days <= 6
 }
+
+/** Event type filter of the Local Events view: the two weekly formats, or everything else
+ *  (Pre-Rift, Nexus Cup, Open Play, Learn to Play, Challenge Series, ...). */
+export type EventKind = 'all' | 'nexus' | 'skirmish' | 'other'
+
+const KIND_TYPES: Record<'nexus' | 'skirmish', string> = { nexus: 'NEXUS_NIGHT', skirmish: 'SUMMONER_SKIRMISH' }
+
+export function eventKindMatches(type: string | null, kind: EventKind): boolean {
+  if (kind === 'all') return true
+  if (kind === 'other') return type !== KIND_TYPES.nexus && type !== KIND_TYPES.skirmish
+  return type === KIND_TYPES[kind]
+}

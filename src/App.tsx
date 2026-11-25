@@ -74,6 +74,8 @@ import {
   type StoreSearch,
   formatEntryFee,
   inEventWindow,
+  eventKindMatches,
+  type EventKind,
   type EventWhen,
 } from './stores'
 import { StoresMap, type MapCenter } from './StoresMap'
@@ -950,6 +952,7 @@ export default function App() {
   const [storeStockOnly, setStoreStockOnly] = useState(false)
   /** Only stores with an event today, and only today's events. */
   const [storeWhen, setStoreWhen] = useState<EventWhen>('all')
+  const [storeKind, setStoreKind] = useState<EventKind>('all')
   /** Store card under the pointer: its pin stands out on the map. */
   const [storeHoverId, setStoreHoverId] = useState<string | null>(null)
   /** Store ids whose stock list is expanded past the collapsed preview. */
@@ -3686,11 +3689,11 @@ export default function App() {
     return storeHits.flatMap((h) => {
       if (!storeAllGermany && h.distanceKm != null && h.distanceKm > storeKm + 0.05) return []
       if (storeStockOnly && !storeReportsStock(h)) return []
-      if (storeWhen === 'all') return [h]
-      const events = h.events.filter((ev) => inEventWindow(ev.startsAt, storeWhen, now))
+      if (storeWhen === 'all' && storeKind === 'all') return [h]
+      const events = h.events.filter((ev) => inEventWindow(ev.startsAt, storeWhen, now) && eventKindMatches(ev.type, storeKind))
       return events.length ? [{ ...h, events }] : []
     })
-  }, [storeHits, storeAllGermany, storeKm, storeStockOnly, storeWhen])
+  }, [storeHits, storeAllGermany, storeKm, storeStockOnly, storeWhen, storeKind])
 
   /** Map tooltip under the store name: its next events with day, time and type. */
   const storeTooltipLines = useCallback((h: StoreHit) => {
@@ -5635,6 +5638,19 @@ export default function App() {
                 <option value="tomorrow">{t(lang, 'stores.tomorrow')}</option>
                 <option value="week">{t(lang, 'stores.week')}</option>
               </select>
+              <select
+                className="select"
+                style={{ maxWidth: 190 }}
+                value={storeKind}
+                aria-label={t(lang, 'stores.kindHint')}
+                title={t(lang, 'stores.kindHint')}
+                onChange={(e) => setStoreKind(e.target.value as EventKind)}
+              >
+                <option value="all">{t(lang, 'stores.kindAll')}</option>
+                <option value="nexus">Nexus Night</option>
+                <option value="skirmish">Summoner Skirmish</option>
+                <option value="other">{t(lang, 'stores.kindOther')}</option>
+              </select>
               <button className="btn primary" disabled={storeBusy} onClick={() => void runStoreSearch()}>
                 <Icon name="search" />{storeBusy ? t(lang, 'stores.searching') : t(lang, 'stores.search')}
               </button>
@@ -5676,7 +5692,7 @@ export default function App() {
                 <div className="stores-results">
                   {!storeLabel && <div className="empty">{t(lang, 'stores.listHint')}</div>}
                   {!storeBusy && storeLabel && visibleStoreHits.length === 0 && (
-                    <div className="empty">{storeStockOnly ? t(lang, 'stores.emptyStock') : storeWhen !== 'all' ? t(lang, 'stores.emptyWhen') : storeAllGermany ? t(lang, 'stores.emptyGermany') : t(lang, 'stores.empty')}</div>
+                    <div className="empty">{storeStockOnly ? t(lang, 'stores.emptyStock') : storeWhen !== 'all' || storeKind !== 'all' ? t(lang, 'stores.emptyWhen') : storeAllGermany ? t(lang, 'stores.emptyGermany') : t(lang, 'stores.empty')}</div>
                   )}
                   {visibleStoreHits.map((h) => {
                     const STOCK_PREVIEW = 4
