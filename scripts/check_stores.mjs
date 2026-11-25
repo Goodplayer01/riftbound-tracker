@@ -1,4 +1,4 @@
-import { EVENT_SEARCH_MAX_KM, GERMANY_CIRCLES, eventsToStores, formatEntryFee, inEventWindow, isGermanEvent, searchCircles } from '../src/stores.ts'
+import { EVENT_SEARCH_MAX_KM, GERMANY_CIRCLES, eventsToStores, eventKindMatches, formatEntryFee, inEventWindow, isGermanEvent, searchCircles } from '../src/stores.ts'
 
 function assert(cond, msg) {
   if (!cond) throw new Error(msg)
@@ -81,4 +81,14 @@ console.log('ok')
   // Across the end of October DST change the day count still holds.
   if (!inEventWindow(new Date(2026, 9, 26, 10).toISOString(), 'tomorrow', new Date(2026, 9, 25, 1))) throw new Error('dst')
   console.log('check_stores date window ok')
+}
+
+// Event kind: the two weekly formats by type, everything else (and a missing type) is "other".
+{
+  const m = (type, kind) => eventKindMatches(type, kind)
+  if (!m('NEXUS_NIGHT', 'nexus') || m('NEXUS_NIGHT', 'skirmish') || m('NEXUS_NIGHT', 'other')) throw new Error('nexus')
+  if (!m('SUMMONER_SKIRMISH', 'skirmish') || m('SUMMONER_SKIRMISH', 'other')) throw new Error('skirmish')
+  if (!m('PRE_RIFT', 'other') || !m('NEXUS_CUP', 'other') || !m(null, 'other') || m('PRE_RIFT', 'nexus')) throw new Error('other')
+  if (!m(null, 'all') || !m('NEXUS_NIGHT', 'all')) throw new Error('all')
+  console.log('check_stores event kind ok')
 }
