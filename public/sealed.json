@@ -1,5 +1,5 @@
 {
- "updatedAt": "2026-11-26T13:38:56.193Z",
+ "updatedAt": "2026-11-27T13:34:44.293Z",
  "currency": "EUR",
  "sets": {
   "OGN": "Origins",
@@ -518,6 +518,32 @@
     "avg7": null,
     "avg30": null,
     "trend": 91.69
+   },
+   {
+    "id": 926395,
+    "name": "Radiance Booster Box (Chinese, Jumbo)",
+    "set": "RAD",
+    "category": "Riftbound Display",
+    "display": true,
+    "lang": "ZH",
+    "low": null,
+    "avg1": null,
+    "avg7": null,
+    "avg30": null,
+    "trend": null
+   },
+   {
+    "id": 926401,
+    "name": "Radiance Booster Box (Chinese, Slim)",
+    "set": "RAD",
+    "category": "Riftbound Display",
+    "display": true,
+    "lang": "ZH",
+    "low": null,
+    "avg1": null,
+    "avg7": null,
+    "avg30": null,
+    "trend": null
    },
    {
     "id": 897517,
@@ -2198,18 +2224,8 @@
    "shop": "https://cardcosmos.de",
    "title": "Riftbound: League of Legends - Radiance Booster Display - EN",
    "price": 99.9,
-   "available": true,
+   "available": false,
    "url": "https://cardcosmos.de/products/riftbound-league-of-legends-radiance-booster-display-englisch",
-   "set": "RAD",
-   "lang": "EN",
-   "preorder": false
-  },
-  {
-   "shop": "https://www.moon-shadow.de",
-   "title": "Riftbound League of Legends - Radiance - Booster-Display - englisch",
-   "price": 99.99,
-   "available": true,
-   "url": "https://www.moon-shadow.de/products/riftbound-league-of-legends-radiance-booster-display-englisch",
    "set": "RAD",
    "lang": "EN",
    "preorder": false
@@ -2217,7 +2233,7 @@
   {
    "shop": "https://www.boostertcg.de",
    "title": "Riftbound: Radiance Display - Englisch",
-   "price": 104.99,
+   "price": 99.99,
    "available": true,
    "url": "https://www.boostertcg.de/products/riftbound-radiance-display-englisch",
    "set": "RAD",
